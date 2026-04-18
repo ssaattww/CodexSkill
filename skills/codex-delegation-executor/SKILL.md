@@ -23,10 +23,10 @@ Run this skill as: `parent`
 Delegate:
 
 - code investigation
-- implementation
-- design-document editing as implementation work
-- test authoring as implementation work
-- code authoring as implementation work
+- implementation via `implementation-executor`
+- design-document editing as implementation work via `design-executor`
+- test authoring as implementation work via `implementation-executor`
+- code authoring as implementation work via `implementation-executor`
 - build execution
 - test execution
 - environment verification
@@ -54,6 +54,8 @@ Decide the executor inside this skill before running the work:
 - If the work matches a fixed sub-agent category, do not decide; use a `sub-agent`.
 - For implementation work, decide `main agent` vs `sub-agent` here based on coupling, urgency, write-scope overlap, and whether parallelism helps.
 - Treat design-document edits, test authoring, and code authoring as implementation work for this decision.
+- When the work is design-document editing, make the executor read `design-executor`.
+- When the work is code or test authoring, make the executor read `implementation-executor`.
 - Keep the main agent responsible for scoping, integration, and final synthesis even when a sub-agent executes the task.
 
 ## Required delegation pattern
@@ -78,6 +80,7 @@ For each delegated task:
 - Use the main agent for implementation only when the task is tightly coupled to current context, on the critical path, or risky to hand off.
 - Use a sub-agent for implementation when the task is bounded, parallelizable, or benefits from isolation.
 - Apply the same switchable implementation rule to design-document edits, test authoring, and code authoring.
+- Do not leave concrete design-editing or code-editing workflow rules scattered across unrelated skills when `design-executor` or `implementation-executor` already covers them.
 - Every sub-agent request must leave a report in `reports/`.
 - Pre-create the report file before dispatch when using `sub-agent-task-manager`.
 - Exclude noisy diffs and irrelevant generated files when preparing review inputs.

@@ -44,7 +44,8 @@ Follow this sequence:
 - Do not skip task reconciliation, design reflection, review, or progress updates.
 - Do not skip parent-owned end-of-issue skill-gap reflection when an issue reaches done.
 - Do not decide `main agent` vs `sub-agent` for implementation outside `codex-delegation-executor`.
-- Treat design-document editing, test authoring, and code authoring as switchable implementation work under `codex-delegation-executor`.
+- Treat design-document editing as switchable implementation work under `codex-delegation-executor` with `design-executor`.
+- Treat test authoring and code authoring as switchable implementation work under `codex-delegation-executor` with `implementation-executor`.
 - Do not downgrade skills that require mandatory `sub-agent` execution.
 - When work is delegated to a `sub-agent`, prefer making it read the relevant skill files instead of relying on a paraphrased prompt alone.
 - If any future skill remains `どちらでも良い`, resolve that ownership before work starts and batch the user confirmation up front.

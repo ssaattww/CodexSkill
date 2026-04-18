@@ -16,7 +16,7 @@ Ensure design documentation is updated before code changes proceed when the chan
 Run this skill as: `parent`
 
 - This skill makes contract and documentation decisions that should stay with the parent.
-- Design-document editing inside this skill is implementation work and may be executed by either the parent or a `sub-agent` through `codex-delegation-executor`.
+- Design-document editing inside this skill is implementation work and should use `design-executor`.
 
 ## Run this skill
 
@@ -51,7 +51,7 @@ If contract or user-visible behavior changes, do not proceed directly to impleme
 
 Update the relevant design docs and make sure tasks and phases reflect the design work.
 
-When the work is document editing rather than decision-making, treat it as switchable implementation and route ownership through `codex-delegation-executor`.
+When the work is document editing rather than decision-making, run it through `codex-delegation-executor` and have the executor read `design-executor`.
 
 If design changes create new implementation work, call `task-consistency-manager`.
 

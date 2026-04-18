@@ -16,7 +16,7 @@ Define expected behavior before code changes and keep the current task anchored 
 Run this skill as: `parent`
 
 - Parent owns the test strategy and stopping condition for implementation.
-- Test authoring inside this skill is implementation work and may be executed by either the parent or a `sub-agent` through `codex-delegation-executor`.
+- Test authoring inside this skill is implementation work and should use `implementation-executor`.
 - Test execution used as evidence inside this skill remains mandatory sub-agent work.
 
 ## Required flow
@@ -27,7 +27,7 @@ Run this skill as: `parent`
 4. Add or update tests so they fail for the current gap.
 5. Only then allow implementation work.
 
-Use `codex-delegation-executor` for test-authoring ownership decisions. Run test execution that serves as failing-proof or verification evidence as a `sub-agent` task through `sub-agent-task-manager`.
+Use `codex-delegation-executor` for test-authoring ownership decisions and have the executor read `implementation-executor`. Run test execution that serves as failing-proof or verification evidence as a `sub-agent` task through `sub-agent-task-manager`.
 
 ## Rules
 
