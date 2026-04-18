@@ -39,20 +39,21 @@ If the user explicitly asks for local skill creation or restructuring outside no
 
 1. Read the built-in `skill-creator` at `/home/ibis/.codex/skills/.system/skill-creator/SKILL.md`.
 2. Decide the local skill name, scope, and whether `scripts/`, `references/`, or `assets/` are actually needed.
-3. If creating a new skill, initialize it by using the built-in `skill-creator` workflow and its `init_skill.py`.
-4. If updating an existing local skill, read the current `SKILL.md`, keep the existing intent that should survive, and normalize the result through this same wrapper flow instead of editing ad hoc.
-5. Replace any generic scaffold sections with this repository's standard section structure.
-6. Ensure the resulting `SKILL.md` includes:
+3. When responsibility placement, caller placement, or parent/child decision ownership is being created or changed, read [references/responsibility-placement-policy.md](references/responsibility-placement-policy.md).
+4. If creating a new skill, initialize it by using the built-in `skill-creator` workflow and its `init_skill.py`.
+5. If updating an existing local skill, read the current `SKILL.md`, keep the existing intent that should survive, and normalize the result through this same wrapper flow instead of editing ad hoc.
+6. Replace any generic scaffold sections with this repository's standard section structure.
+7. Ensure the resulting `SKILL.md` includes:
    - `## Goal`
    - `## Execution owner`
    - `## Inputs`
    - `## Outputs`
    - `## Completion condition`
-7. If the skill can hand off executable work, route that policy through `codex-delegation-executor` instead of inventing an isolated policy.
-8. If the skill has switchable parent/sub-agent execution, add explicit provisional numeric thresholds.
-9. If the skill creates or updates governed files, state which skill paths are allowed to modify those files.
-10. Update `agents/openai.yaml` so it matches the final local skill intent.
-11. Update `/home/ibis/AI/CodexSkill/skills/design/skill-hierarchy-design.md` when the new or updated skill changes the local skill inventory, call graph, execution方式, role summary, or contract summary.
+8. If the skill can hand off executable work, route that policy through `codex-delegation-executor` instead of inventing an isolated policy.
+9. If the skill has switchable parent/sub-agent execution, add explicit provisional numeric thresholds only when the decision is truly internal to that skill tree.
+10. If the skill creates or updates governed files, state which skill paths are allowed to modify those files.
+11. Update `agents/openai.yaml` so it matches the final local skill intent.
+12. Update `/home/ibis/AI/CodexSkill/skills/design/skill-hierarchy-design.md` when the new or updated skill changes the local skill inventory, call graph, execution方式, role summary, or contract summary.
 
 ## Local standard sections
 
@@ -76,6 +77,7 @@ Add these when they apply:
 - Do not leave the built-in `skill-creator` scaffold text or TODO sections in a finished local skill.
 - Do not bypass this wrapper for substantial local skill creation or restructuring when the result should conform to repo standards.
 - Do not create a local skill that bypasses `codex-delegation-executor` for executable work unless that new skill is itself the policy owner.
+- Do not move decision responsibility upward just because an upper skill exists; follow `references/responsibility-placement-policy.md`.
 - Do not leave execution-owner ambiguity in a finished local skill.
 - Do not forget to describe governed-file update restrictions when the skill owns canonical files.
 - Do not forget to reflect local skill changes in the hierarchy design when they change local architecture or contract-level understanding.
