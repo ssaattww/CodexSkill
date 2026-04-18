@@ -1,76 +1,75 @@
-# feedback-points skill change summary (2026-04-18)
+# feedback-points skill 変更サマリ (2026-04-18)
 
-## Scope
+## 変更範囲
 
-This change set is limited to feedback-point skillization work in `CodexSkill`.
+今回の変更は `CodexSkill` における feedback-point の skill 化に限定している。
 
-Changed areas:
+変更対象:
 
 - `skills/feedback-points-manager/`
-- new feedback-prefixed child skills
-- supporting references/scripts for skillization handling
-- skill-side reports only
+- `feedback-` プレフィックス付きの新規子 skill
+- skill 化用の補助 reference / script
+- skill 側レポート
 
-No release workflow or publish automation files are modified in this change set.
+release workflow や publish 自動化ファイルは、この変更では触っていない。
 
-## Updated skill
+## 更新した skill
 
 ### `feedback-points-manager`
 
-Role:
+役割:
 
-- central manager for reusable process feedback
-- duplicate grouping
-- skillization decision
-- skill-repo issue creation flow
-- routing repeated feedback to related feedback-prefixed child skills
+- 再利用可能な process feedback の管理
+- 重複グループ化
+- skill 化判断
+- skill リポジトリ issue 化フロー
+- `feedback-` プレフィックス付き子 skill へのルーティング
 
-Supporting additions:
+補助追加:
 
-- canonical taxonomy reference
-- skillization issue template
-- issue body generation script
+- taxonomy reference
+- skill 化 issue template
+- issue 本文生成 script
 
-## New child skills
+## 新規子 skill
 
 ### `feedback-issue-intake-fallback-manager`
 
-Purpose:
+目的:
 
-- recover issue requirements when the normal `gh issue view` path fails
-- define fallback order and confidence handling before implementation starts
+- 通常の `gh issue view` 経路が使えないときに issue 要件を回収する
+- 実装前に fallback 順序と信頼度扱いを明確にする
 
 ### `feedback-autonomy-boundary-manager`
 
-Purpose:
+目的:
 
-- define when the agent should continue autonomously
-- define when the agent must stop and ask due to ambiguity, risk, or approval boundaries
+- どこまで自走継続してよいかを定義する
+- 曖昧さ、リスク、承認境界で止まる条件を定義する
 
 ### `feedback-coding-standards-enforcer`
 
-Purpose:
+目的:
 
-- enforce repeated coding-standard requirements before review/commit
-- especially public/protected API hygiene and required XML documentation
+- レビュー/コミット前に繰り返し指摘されるコーディング規約を強制する
+- 特に public/protected API と XML doc コメントの確認を対象にする
 
 ### `feedback-points-sanitizer`
 
-Purpose:
+目的:
 
-- clean noisy feedback lists
-- separate reusable process rules from issue-specific product/design decisions
-- preserve traceability while reducing active noise
+- noisy な feedback 一覧を整理する
+- 再利用可能な process ルールと issue 固有の仕様/設計判断を分離する
+- 履歴を残しながら active なノイズを減らす
 
-## Naming convention
+## 命名規則
 
-Child skills derived from feedback-point analysis now use the `feedback-` prefix so their relationship to `feedback-points-manager` is visible from the skill list.
+feedback-point 分析から派生した子 skill には `feedback-` プレフィックスを付け、`feedback-points-manager` との関係が skill 一覧から分かるようにした。
 
-## Operational boundary
+## 運用境界
 
-Release-related automation remains user-controlled:
+release 関連の自動化はユーザー管理のままとする。
 
-- automated pre-release flow is owned by existing automation
-- stable release remains manual
-- agent work in this area is audit/report only unless the user explicitly requests edits
-
+- pre-release 自動化は既存システムの責務
+- stable release は引き続き手動
+- この領域での agent 作業は、ユーザー明示指示がない限り監査/レポートのみ

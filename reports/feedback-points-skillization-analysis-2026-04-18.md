@@ -1,54 +1,55 @@
-# feedback-points skillization analysis (2026-04-18)
+# feedback-points の skill 化分析 (2026-04-18)
 
-## Scope
+## 対象範囲
 
-Analyze `tasks/feedback-points.md` (ExcelReport) and extract reusable process rules that should be skillized in `CodexSkill`.
+`ExcelReport` 側の `tasks/feedback-points.md` を確認し、`CodexSkill` に取り込むべき再利用可能な process ルールを抽出した。
 
-Reviewed skills:
+確認対象:
 
-- `codex-delegation-executor` and all related core workflow skills
-- GitHub plugin skills used for issue/PR/CI workflows
+- `codex-delegation-executor` と関連する基本 workflow skill 一式
+- issue / PR / CI に関係する GitHub plugin skill
 
-## Key findings
+## 主な結論
 
-1. A large portion of active FP entries are process rules and can be skillized.
-2. Some FP entries are issue-specific feature decisions and should not stay as reusable process rules.
-3. Release-related FP entries require a strict operational boundary:
-   - NuGet pre-release flow is fully automated (`master` push trigger).
-   - Stable release is user manual.
-   - Agent must not edit workflow/publish settings unless the user explicitly instructs.
+1. アクティブな FP には、skill 化できる process ルールが多く含まれている。
+2. 一部の FP は issue 固有の機能仕様であり、再利用可能な process ルールとしては扱うべきではない。
+3. release 系 FP には明確な運用境界が必要である。
+   - NuGet pre-release は `master` push をトリガーに完全自動
+   - stable release はユーザー手動
+   - workflow / publish 設定は、ユーザーが明示指示しない限りエージェントは編集しない
 
-## Implemented skill additions
+## 今回追加した skill
 
-Added new skills in this repo:
+このリポジトリに以下を追加した。
 
 - `skills/feedback-issue-intake-fallback-manager/SKILL.md`
 - `skills/feedback-autonomy-boundary-manager/SKILL.md`
 - `skills/feedback-coding-standards-enforcer/SKILL.md`
 - `skills/feedback-points-sanitizer/SKILL.md`
 
-Updated:
+更新したもの:
 
 - `skills/feedback-points-manager/SKILL.md`
-  - canonical handling for noisy feedback cleanup
-  - skillization issue flow
-  - routing guidance for common duplicate groups
-  - release-related routing changed to audit/report-only guidance
+  - noisy な feedback を扱うための正規化方針
+  - skill 化 issue フロー
+  - 重複グループごとのルーティング方針
+  - release 系は監査/レポート専用とする方針
 
-## Rules converted to skills
+## skill に落とし込んだルール
 
-- FP111 class: issue intake fallback when `gh` path fails
-- FP21/141/144 class: autonomy with explicit stop boundaries
-- FP19 class: coding-standard enforcement (including XML docs on public/protected APIs)
-- mixed noisy FP management: sanitize, deduplicate, and keep only reusable process points
+- FP111 系: `gh` が使えないときの issue 取得 fallback
+- FP21 / FP141 / FP144 系: 自走継続と停止条件の境界
+- FP19 系: public/protected API を含むコーディング規約チェック
+- noisy な feedback の整理: 重複統合、仕分け、再利用可能な process ルールの抽出
 
-## Not skillized in this pass
+## 今回 skill 化しなかったもの
 
-- Release automation mutation workflow as a dedicated skill
-  - excluded by user policy (automation-owned, explicit user instruction required before edits)
-- Feature/issue-specific DSL/design decisions
-  - these belong to issue/task/design tracking, not reusable process skills
+- release 自動化そのものを変更する専用 skill
+  - ユーザー方針により除外
+  - 自動化の所有者は既存システムであり、明示指示があるまで変更しない
+- issue / task 固有の DSL / 設計仕様
+  - これらは再利用可能な process skill ではなく、issue / task / design で管理する
 
-## Suggested next operation
+## 次の推奨作業
 
-Run `feedback-points-sanitizer` against current active FP set, then re-register only high-signal reusable process points and map each to related skills.
+`feedback-points-sanitizer` を使って現在の active FP を整理し、再利用価値の高い process ルールだけを再登録して、関連 skill を対応付ける。
