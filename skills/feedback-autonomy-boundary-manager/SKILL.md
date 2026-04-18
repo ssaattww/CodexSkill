@@ -17,6 +17,14 @@ Run this skill as: `parent`
 
 - This skill decides whether the parent continues or stops for user input.
 
+## Inputs
+
+Before running this skill, gather:
+
+- the next planned action
+- assumptions required to proceed
+- user approval requirements or irreversible risk if any
+
 ## Default policy
 
 - Continue execution without confirmation for internal, reversible, low-risk work.
@@ -35,6 +43,8 @@ Stop and ask the user when any apply:
 
 If item 6 applies, ask once before work starts and batch all such ownership confirmations into that same pre-work question set. Do not wait until the middle of implementation.
 
+If a borderline process classification or FP registration decision is not obvious, prefer an independent classification pass via `feedback-points-sanitizer` before deciding.
+
 ## Decision protocol
 
 For each borderline case:
@@ -44,12 +54,16 @@ For each borderline case:
 3. decide continue vs stop using the rules above
 4. log the decision in report/chat evidence
 
-## Output expectations
+## Outputs
 
 After this skill runs, the next step should be explicit:
 
 - continue now with stated assumptions
 - or stop with one concise blocking question
+
+## Completion condition
+
+This skill is complete only when the workflow has an explicit continue-or-stop decision with rationale.
 
 ## Cross-cutting rule
 

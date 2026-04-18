@@ -20,6 +20,15 @@ Run this skill as: `parent`
 - This skill owns task selection, completion flow, and final lifecycle decisions.
 - End-of-issue skill-gap reflection is parent work, not sub-agent work.
 
+## Inputs
+
+Before running this skill, confirm:
+
+- current `tasks-status.md` and `phases-status.md`
+- recent `reports/` relevant to the active issue or task
+- active `feedback-points/feedback-points.md`
+- repository state needed to choose the next task
+
 ## Required flow
 
 Follow this sequence:
@@ -50,9 +59,18 @@ Follow this sequence:
 - When work is delegated to a `sub-agent`, prefer making it read the relevant skill files instead of relying on a paraphrased prompt alone.
 - If any future skill remains `どちらでも良い`, resolve that ownership before work starts and batch the user confirmation up front.
 - Call `feedback-points-manager` whenever a reusable process problem, repeated instruction, or workflow failure is detected.
+- Call `feedback-points-manager` for reusable execution lessons discovered mid-task even when the user did not explicitly ask to register an `FP`.
 - Stop and re-plan when work required for the current task is missing from `tasks-status.md`.
 
-## Completion condition for one cycle
+## Outputs
+
+After this skill runs, the workflow should have:
+
+- one explicitly selected current task
+- a concrete next-step path through the child skills
+- evidence of completion or a clear blocking condition for the current cycle
+
+## Completion condition
 
 A task cycle is complete only when all of the following are true:
 

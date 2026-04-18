@@ -18,6 +18,14 @@ Run this skill as: `parent`
 - This skill governs feedback records and skillization decisions.
 - Parent agents may call it after issue completion, but issue-completion reflection itself is not owned here.
 
+## Inputs
+
+Before running this skill, gather:
+
+- candidate process lesson or repeated workflow problem
+- current active `feedback-points/feedback-points.md`
+- any existing duplicate group or related skill context
+
 The canonical files live in the real repository root, not inside the symlinked `skills/` tree:
 
 - active: `<repo-root>/feedback-points/feedback-points.md`
@@ -48,6 +56,8 @@ Run this skill when:
 - a point seems reusable across repositories
 - you need to decide if a point should become a skill or a skill update
 - you need to decide whether to recommend a new skill or update an existing one
+- a reusable execution lesson is discovered during work even if the user did not explicitly label it as an `FP`
+- an in-flight adjustment to tools, patch sizing, sequencing, or delegation proved necessary to keep execution stable
 
 ## Scope filter
 
@@ -90,6 +100,8 @@ If the active file is visibly noisy, mixed with issue-specific content, or hard 
 
 Before writing to `feedback-points/feedback-points.md`, get a pre-write classification review when the point is new, materially rewritten, ambiguous, or potentially duplicative. Prefer an independent sub-agent pass via `feedback-points-sanitizer` when available. Only write directly when reusable-process classification is obvious.
 
+Treat the classification as parent-direct only when the reusable-process nature is obvious. For non-obvious cases, request a classification pass from `feedback-points-sanitizer` first.
+
 Keep this skill as the parent governance point for skillization decisions. Use sub-agents for narrow classification, comparison, or review work when helpful, but keep the final proposal vs implementation decision in the main agent.
 
 ## Required output after each run
@@ -103,8 +115,21 @@ After running this skill, leave clear evidence in chat or report:
 - owner of the next lifecycle action
 - issue creation result (issue URL/number, or draft file path)
 
+## Outputs
+
+After this skill runs, there should be:
+
+- an added, merged, updated, or explicitly skipped feedback-point decision
+- duplicate-group and skillization status rationale
+- clear evidence of the next lifecycle owner
+
+## Completion condition
+
+This skill is complete only when the feedback-point decision and its rationale are recorded in chat, report, or the feedback ledger.
+
 ## Strong rules
 
 - Always make an explicit skillization decision for repeated process points.
 - Keep process feedback and feature specifications separated.
 - Keep the active feedback records current when recurrence status changes.
+- Do not wait for an explicit `FP` request when a reusable process lesson is already clear from the work itself.
