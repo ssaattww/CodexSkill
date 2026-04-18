@@ -17,12 +17,24 @@ Run this skill as: `parent`
 
 - Branch creation changes the active Git context and should stay under parent control.
 
+## Inputs
+
+Before running this skill, identify:
+
+- current task or issue scope
+- current branch state
+- desired branch naming basis
+
 ## Rules
 
 - Use a branch name tied to the issue or task scope.
 - Keep the branch purpose narrow enough to produce a reviewable PR.
 - Avoid direct work on the default branch unless explicitly intended.
 
-## Output expectations
+## Outputs
 
 After this skill runs, the current task has a clear branch context for future commit and PR steps.
+
+## Completion condition
+
+This skill is complete only when the active work is isolated on the intended branch.

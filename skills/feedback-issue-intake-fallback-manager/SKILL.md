@@ -18,6 +18,14 @@ Run this skill as: `parent`
 - Parent owns source selection, confidence judgment, and escalation decisions.
 - Requirement extraction and source reconciliation inside this skill remain mandatory sub-agent work.
 
+## Inputs
+
+Before running this skill, gather:
+
+- target issue identifier or URL
+- currently available access paths
+- any partial requirement context already known
+
 ## Run this skill
 
 Run this skill when:
@@ -39,7 +47,7 @@ If moving to a lower-confidence source, mark confidence explicitly.
 
 Run the actual intake pass as a `sub-agent` task through `sub-agent-task-manager`.
 
-## Required outputs
+## Outputs
 
 Produce an intake note in `reports/` containing:
 
@@ -50,6 +58,10 @@ Produce an intake note in `reports/` containing:
 - blocking questions if unresolved
 
 When creating a new intake report file, call `report-output-manager`.
+
+## Completion condition
+
+This skill is complete only when authoritative or explicitly lower-confidence requirements are captured in a report with confidence and gaps stated.
 
 ## Strong rules
 

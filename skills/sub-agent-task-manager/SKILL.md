@@ -17,6 +17,15 @@ Run this skill as: `parent`
 
 - This skill prepares and dispatches sub-agent work; it is not itself a sub-agent worker skill.
 
+## Inputs
+
+Before running this skill, identify:
+
+- delegated task purpose
+- exact scope and non-goals
+- relevant skill files the `sub-agent` must read
+- write boundaries and validation expectations
+
 ## Run this skill
 
 Run this skill whenever:
@@ -81,21 +90,22 @@ When a relevant skill exists, do not paraphrase it loosely as the only guidance.
 - If the `sub-agent` cannot write the report directly, the parent agent must write it immediately from the returned evidence.
 - Do not ask a sub-agent for ad hoc investigation, review, or implementation without a report path.
 - For review tasks, the built-in review result must be materialized into the report file before the task is considered complete.
+- Report text should be written in Japanese unless the user explicitly requests another language.
 
 ## Standard report sections
 
 Use these sections in order:
 
-- `# Sub-agent Execution Report`
-- `## Task`
-- `## Why Sub-agent`
-- `## Scope`
-- `## Non-goals`
-- `## Commands`
-- `## Files`
-- `## Findings`
-- `## Outcome`
-- `## Risks`
+- `# Sub-agent実行レポート`
+- `## タスク`
+- `## sub-agentを使う理由`
+- `## 対象範囲`
+- `## 対象外`
+- `## 実行コマンド`
+- `## 対象ファイル`
+- `## 指摘事項`
+- `## 結果`
+- `## リスク`
 
 ## Minimum report contents
 
@@ -109,6 +119,22 @@ Include:
 - findings summary or explicit `no findings`
 - outcome
 - unresolved risks or follow-up items
+
+## Outputs
+
+After this skill runs, there should be:
+
+- a dispatched sub-agent task with explicit scope
+- a pre-created report path under `reports/`
+- report-backed evidence for the delegated work
+
+## Completion condition
+
+This skill is complete only when:
+
+- the sub-agent task has been dispatched with the required prompt content
+- the report file exists in the expected location
+- the parent has reviewed the resulting report
 
 ## Rules
 

@@ -18,19 +18,19 @@ Run this skill as: `parent`
 - This skill describes the execution work for design-document editing.
 - `codex-delegation-executor` may assign that editing work to the parent or a `sub-agent`.
 
-## Use this skill when
-
-- `design-doc-maintainer` has already determined that design documentation must change
-- a breaking change entry must be added or updated
-- an existing design doc needs concrete edits to reflect already-approved intent
-
-## Required inputs
+## Inputs
 
 Before running this skill, make sure the parent has already decided:
 
 - which design files must change
 - what the intended behavioral or contract change is
 - whether `Design/BreakingChanges.md` must be updated
+
+## Use this skill when
+
+- `design-doc-maintainer` has already determined that design documentation must change
+- a breaking change entry must be added or updated
+- an existing design doc needs concrete edits to reflect already-approved intent
 
 ## Required flow
 
@@ -47,6 +47,14 @@ Before running this skill, make sure the parent has already decided:
 - Prefer updating an existing design document over creating a parallel duplicate.
 - Keep edits concrete enough that implementation work can proceed without guessing.
 
-## Output expectations
+## Outputs
 
 After this skill runs, the required design artifacts are updated and ready for implementation to follow.
+
+## Completion condition
+
+This skill is complete only when:
+
+- required design files have been edited
+- breaking-change logging is updated when applicable
+- remaining ambiguity is reported back to the parent

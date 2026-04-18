@@ -17,6 +17,15 @@ Run this skill as: `parent`
 
 - Final staging and commit creation should remain a parent responsibility.
 
+## Inputs
+
+Before running this skill, gather:
+
+- current task scope
+- staged or candidate file set
+- review evidence
+- validation results or explicit non-validation state
+
 ## Rules
 
 - Keep commit scope aligned to the current task.
@@ -103,6 +112,14 @@ fix(export): 集計シートの結合セル書式欠落を防ぐ
 - dotnet test
 ```
 
-## Output expectations
+## Outputs
 
 After this skill runs, the task has one or more coherent commits suitable for PR submission.
+
+## Completion condition
+
+This skill is complete only when:
+
+- commit scope is intentionally staged
+- commit message follows the required format
+- one or more coherent commits exist for the task

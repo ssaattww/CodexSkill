@@ -19,6 +19,14 @@ Run this skill as: `parent`
 - Test authoring inside this skill is implementation work and should use `implementation-executor`.
 - Test execution used as evidence inside this skill remains mandatory sub-agent work.
 
+## Inputs
+
+Before running this skill, confirm:
+
+- current task scope and exit criteria
+- relevant existing tests and code under change
+- contract or regression behavior that must be proven
+
 ## Required flow
 
 1. Read the current task and exit criteria.
@@ -42,10 +50,18 @@ Use `codex-delegation-executor` for test-authoring ownership decisions and have 
 - Do not rely on vague “manual confirmation” instead of executable checks when tests are feasible.
 - Do not leave important edge cases implicit if the task depends on them.
 
-## Output expectations
+## Outputs
 
 After this skill runs, the current task should have:
 
 - named test targets
 - explicit happy-path and error-path expectations when relevant
 - at least one failing or newly necessary test that drives implementation
+
+## Completion condition
+
+This skill is complete only when:
+
+- test cases are defined for the current task
+- at least one failing or newly required test exists when feasible
+- implementation may proceed against explicit test targets

@@ -17,7 +17,15 @@ Run this skill as: `parent`
 
 - Task and phase design set the execution contract and should stay under parent control.
 
-## Required outputs
+## Inputs
+
+Before running this skill, gather:
+
+- issue or request scope
+- known constraints and dependencies
+- current `tasks-status.md` and `phases-status.md` when they already exist
+
+## Outputs
 
 Produce or revise:
 
@@ -26,6 +34,14 @@ Produce or revise:
 - dependencies
 - exit criteria
 - size estimates
+
+## Completion condition
+
+This skill is complete only when:
+
+- task and phase breakdown is explicit
+- dependencies and exit criteria are recorded
+- another agent could execute the next task without guessing
 
 ## Breakdown rules
 

@@ -17,6 +17,15 @@ Run this skill as: `parent`
 
 - PR creation publishes the parent-owned outcome and should stay with the parent.
 
+## Inputs
+
+Before running this skill, gather:
+
+- task or issue scope
+- relevant commits and branch
+- review evidence and validation evidence
+- report references needed in the PR body
+
 ## Required PR contents
 
 Include as relevant:
@@ -33,6 +42,10 @@ Include as relevant:
 - Do not hide unresolved findings.
 - Do not create a PR with missing review evidence when the workflow requires review first.
 
-## Output expectations
+## Outputs
 
 After this skill runs, the current task has a PR that another reviewer can understand and evaluate.
+
+## Completion condition
+
+This skill is complete only when a reviewable PR exists with the necessary context and evidence.

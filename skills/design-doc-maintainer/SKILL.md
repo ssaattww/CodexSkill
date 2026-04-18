@@ -18,6 +18,15 @@ Run this skill as: `parent`
 - This skill makes contract and documentation decisions that should stay with the parent.
 - Design-document editing inside this skill is implementation work and should use `design-executor`.
 
+## Inputs
+
+Before running this skill, gather:
+
+- the current task or issue scope
+- intended behavioral or contract change
+- affected APIs, schemas, workflows, or documents
+- current related design documents
+
 ## Run this skill
 
 Run this skill before implementation whenever changes affect:
@@ -47,13 +56,22 @@ Prefer updating existing design documents over creating new ones unless the topi
 
 If contract or user-visible behavior changes, do not proceed directly to implementation without design reflection.
 
-## Required outputs
+## Outputs
 
 Update the relevant design docs and make sure tasks and phases reflect the design work.
 
 When the work is document editing rather than decision-making, run it through `codex-delegation-executor` and have the executor read `design-executor`.
 
 If design changes create new implementation work, call `task-consistency-manager`.
+
+## Completion condition
+
+This skill is complete only when:
+
+- design impact has been explicitly judged
+- required design artifacts to update are identified
+- needed document edits have been completed or routed through `design-executor`
+- tracking reflects any design-driven work additions
 
 ## Cross-cutting rule
 

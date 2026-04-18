@@ -18,6 +18,14 @@ Run this skill as: `sub-agent`
 - This skill is most valuable as an independent classification and cleanup pass.
 - Parent should consume its result and make any final governance decision afterward.
 
+## Inputs
+
+Before running this skill, gather:
+
+- current active feedback-point entries
+- candidate point to classify or cleanup scope
+- duplicate-group context when available
+
 ## Run this skill
 
 Run this skill when:
@@ -46,7 +54,7 @@ Use this skill as the pre-write reviewer for active feedback-point additions; re
 4. keep only high-signal active process rules
 5. update skillization status and related skill mapping
 
-## Required outputs
+## Outputs
 
 Produce cleanup evidence in `reports/`:
 
@@ -56,6 +64,10 @@ Produce cleanup evidence in `reports/`:
 - newly identified skillization candidates
 
 When creating a new cleanup report file, call `report-output-manager`.
+
+## Completion condition
+
+This skill is complete only when classification results and cleanup evidence are written to `reports/` for parent review.
 
 ## Strong rules
 

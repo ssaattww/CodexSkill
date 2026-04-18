@@ -17,6 +17,14 @@ Run this skill as: `parent`
 
 - This skill updates canonical tracking files and should remain under parent control.
 
+## Inputs
+
+Before running this skill, gather:
+
+- latest task, review, verification, commit, or PR outcome
+- current `tasks-status.md` and `phases-status.md`
+- relevant `reports/` references to sync
+
 ## Update targets
 
 Update as relevant:
@@ -62,6 +70,18 @@ Ensure it reflects:
 ## Strong rule
 
 Do not leave tracking updates as optional end-of-day cleanup. Update close to the work that changed the state.
+
+## Outputs
+
+After this skill runs, tracking should reflect:
+
+- the current task and phase state
+- latest report and PR references when applicable
+- the real completion status of recent work
+
+## Completion condition
+
+This skill is complete only when canonical tracking matches the actual execution state.
 
 ## Cross-cutting rule
 

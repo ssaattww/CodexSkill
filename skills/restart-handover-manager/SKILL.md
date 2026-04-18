@@ -17,6 +17,15 @@ Run this skill as: `parent`
 
 - This skill determines the resumed execution path and should stay with the parent.
 
+## Inputs
+
+Before running this skill, gather:
+
+- current `feedback-points/feedback-points.md`
+- `phases-status.md`
+- `tasks-status.md`
+- recent `reports/`
+
 ## Read in this order
 
 1. `feedback-points/feedback-points.md`
@@ -24,7 +33,7 @@ Run this skill as: `parent`
 3. `tasks-status.md`
 4. recent `reports/`
 
-## Required outputs
+## Outputs
 
 Produce:
 
@@ -33,6 +42,10 @@ Produce:
 - open dependencies
 - latest review or verification state
 - immediate next action
+
+## Completion condition
+
+This skill is complete only when the resumed next action is explicit and based on recorded project state.
 
 ## Rules
 

@@ -1,38 +1,38 @@
-# Sub-agent Execution Report
+# Sub-agent実行レポート
 
-## Task
+## タスク
 
-- Purpose:
-- Task type:
+- 目的:
+- タスク種別:
 
-## Why Sub-agent
+## sub-agentを使う理由
 
-- Reason:
+- 理由:
 
-## Scope
+## 対象範囲
 
-- In scope:
+- 対象:
 
-## Non-goals
+## 対象外
 
-- Out of scope:
+- 対象外:
 
-## Commands
+## 実行コマンド
 
-- Commands run:
+- 実行コマンド:
 
-## Files
+## 対象ファイル
 
-- Files changed or checked:
+- 変更または確認したファイル:
 
-## Findings
+## 指摘事項
 
-- Findings summary or explicit no findings:
+- 指摘要約または「指摘なし」:
 
-## Outcome
+## 結果
 
-- Result:
+- 結果:
 
-## Risks
+## リスク
 
-- Unresolved risks or follow-up items:
+- 未解決のリスクまたは後続対応:

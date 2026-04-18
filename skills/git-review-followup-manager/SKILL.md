@@ -18,6 +18,14 @@ Run this skill as: `parent`
 - Parent owns task routing, follow-up scope, and PR state updates.
 - Implementation work inside this skill may still be delegated through `codex-delegation-executor`.
 
+## Inputs
+
+Before running this skill, gather:
+
+- review findings or PR comments
+- current task and tracking context
+- affected files or behavior areas when known
+
 ## Required flow
 
 1. read the feedback
@@ -28,6 +36,18 @@ Run this skill as: `parent`
 6. refresh the PR state
 
 When creating a new follow-up report file, call `report-output-manager`.
+
+## Outputs
+
+After this skill runs, there should be:
+
+- routed follow-up work for the review findings
+- updated reports and progress references
+- refreshed PR state or clear next follow-up action
+
+## Completion condition
+
+This skill is complete only when the finding has been routed, fixed or tracked, and the PR state reflects that follow-up.
 
 ## Rules
 

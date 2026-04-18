@@ -18,6 +18,14 @@ Run this skill as: `parent`
 - Parent owns completion gating and finding disposition.
 - The actual review work inside this skill remains mandatory sub-agent work.
 
+## Inputs
+
+Before running this skill, gather:
+
+- task-scoped diff or changed-file set
+- relevant validation context and reports
+- current task identifier and review scope
+
 ## Required flow
 
 1. Prepare a task-scoped diff.
@@ -54,6 +62,22 @@ Include:
 - explicit `no findings` statement when applicable
 - disposition of findings
 - final outcome
+
+## Outputs
+
+After this skill runs, there should be:
+
+- a review report in `reports/`
+- explicit findings or explicit `no findings`
+- a clear disposition for whether follow-up work is required
+
+## Completion condition
+
+This skill is complete only when:
+
+- review has run for the current task
+- findings are materialized in the report file
+- required follow-up has been addressed or explicitly left open
 
 ## Cross-cutting rule
 

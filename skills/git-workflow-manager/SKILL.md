@@ -17,6 +17,15 @@ Run this skill as: `parent`
 
 - This skill coordinates branch, commit, and PR lifecycle across child skills.
 
+## Inputs
+
+Before running this skill, gather:
+
+- current task completion state
+- branch context
+- commit readiness
+- PR readiness including review and validation evidence
+
 ## Workflow stages
 
 Use these sub-skills as needed:
@@ -34,7 +43,15 @@ Use these sub-skills as needed:
 - Keep commits understandable and scoped.
 - Make PRs carry enough evidence to review and merge safely.
 
-## Required completion condition
+## Outputs
+
+After this skill runs, the current task should have:
+
+- the right branch context
+- coherent commits
+- a reviewable PR or an explicit reason why submission cannot proceed yet
+
+## Completion condition
 
 This skill is done for the current task only when the relevant branch, commit, and PR actions are complete.
 

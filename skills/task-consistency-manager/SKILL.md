@@ -17,6 +17,15 @@ Run this skill as: `parent`
 
 - This skill updates canonical task tracking and should remain parent-owned.
 
+## Inputs
+
+Before running this skill, gather:
+
+- current intended work item
+- `tasks-status.md`
+- `phases-status.md`
+- any newly discovered scope from implementation or review
+
 ## Run this skill
 
 Run this skill:
@@ -54,7 +63,7 @@ Do not implement significant work that is not represented in `tasks-status.md`.
 
 Allow exceptions only for tiny corrections such as obvious typos or purely mechanical renames with no behavior or contract impact.
 
-## Output expectations
+## Outputs
 
 After this skill runs, tracking must make the next step unambiguous:
 
@@ -62,3 +71,11 @@ After this skill runs, tracking must make the next step unambiguous:
 - what blocks it
 - what exits it
 - whether additional tasks were added
+
+## Completion condition
+
+This skill is complete only when:
+
+- tracking reflects the real current scope
+- any missing or split tasks are recorded
+- the next implementation step is unambiguous from tracking

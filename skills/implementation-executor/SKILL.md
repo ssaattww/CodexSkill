@@ -18,20 +18,20 @@ Run this skill as: `parent`
 - This skill describes the execution work for code and test authoring.
 - `codex-delegation-executor` may assign that editing work to the parent or a `sub-agent`.
 
-## Use this skill when
-
-- task scope and exit criteria are already known
-- code files must be changed
-- tests must be added or updated
-- review follow-up requires concrete implementation edits
-
-## Required inputs
+## Inputs
 
 Before running this skill, make sure the parent has already decided:
 
 - task scope and non-goals
 - target files or affected modules
 - validation target or expected proof
+
+## Use this skill when
+
+- task scope and exit criteria are already known
+- code files must be changed
+- tests must be added or updated
+- review follow-up requires concrete implementation edits
 
 ## Required flow
 
@@ -48,6 +48,14 @@ Before running this skill, make sure the parent has already decided:
 - Prefer the narrowest implementation that satisfies the required behavior.
 - Keep code and tests aligned; do not leave test expectations implicit when a task depends on them.
 
-## Output expectations
+## Outputs
 
 After this skill runs, the scoped code/test changes are in place and ready for validation or review.
+
+## Completion condition
+
+This skill is complete only when:
+
+- scoped code or test edits are applied
+- changed files and remaining risks are reported
+- the result is ready for validation or review

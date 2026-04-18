@@ -18,6 +18,15 @@ Run this skill as: `parent`
 - This skill is the policy owner for delegation and executor choice.
 - It may dispatch sub-agents, but the parent keeps the decision authority.
 
+## Inputs
+
+Before running this skill, identify:
+
+- the concrete work item to delegate or execute
+- whether the work is implementation, review, verification, or investigation
+- scope boundaries, target files, and non-goals when known
+- validation or evidence expectations
+
 ## Delegate these work types
 
 Delegate:
@@ -95,6 +104,14 @@ Do not personally substitute for delegated investigation, review, intake verific
 
 Reviewer work is always `sub-agent` work.
 
+## Outputs
+
+After this skill runs, there should be:
+
+- an explicit executor decision
+- a bounded delegated or locally executed work scope
+- evidence captured in `reports/` for the work performed
+
 ## Evidence rules
 
 Record in `reports/`:
@@ -107,6 +124,15 @@ Record in `reports/`:
 - unresolved risks if any
 
 When creating a new report file, call `report-output-manager` for placement and filename rules.
+
+## Completion condition
+
+This skill is complete for the current work item only when:
+
+- executor choice has been made explicitly
+- delegated or assigned work scope is fixed
+- required execution has run or been dispatched
+- results and evidence are captured in `reports/`
 
 ## Cross-cutting rule
 

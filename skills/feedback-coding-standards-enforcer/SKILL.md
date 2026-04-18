@@ -18,6 +18,15 @@ Run this skill as: `parent`
 - Parent owns the enforcement decision and any required fixes.
 - Standards detection and validation inside this skill remain mandatory sub-agent work.
 
+## Inputs
+
+Before running this skill, gather:
+
+- changed files
+- API-surface changes when applicable
+- repository-specific standards to enforce
+- current validation or analyzer setup if any
+
 ## Run this skill
 
 Run this skill:
@@ -50,6 +59,18 @@ For C# API changes, explicitly verify required XML documentation comments exist 
 - Do not defer known violations without explicit rationale.
 - If a standard is ambiguous, propose a concrete rule and record it.
 - Standards detection and standards validation are mandatory sub-agent work.
+
+## Outputs
+
+After this skill runs, there should be:
+
+- explicit standards-check evidence
+- fixed violations or a recorded rationale for any remaining item
+- report-backed verification when used as evidence
+
+## Completion condition
+
+This skill is complete only when standards-sensitive changes have been checked and any resulting violations are fixed or explicitly recorded.
 
 ## Cross-cutting rule
 
