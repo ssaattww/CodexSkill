@@ -16,7 +16,7 @@ Convert review feedback into tracked, verifiable, and reviewable follow-up work.
 1. read the feedback
 2. decide whether the fix belongs to the current task or a new task
 3. call `task-consistency-manager` if tracking changes are needed
-4. implement the fix through the normal workflow
+4. implement the fix through the normal workflow, using `codex-delegation-executor` to decide whether the main agent or a sub-agent owns the fix work
 5. update reports and progress
 6. refresh the PR state
 

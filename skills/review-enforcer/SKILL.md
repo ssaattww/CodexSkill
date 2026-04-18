@@ -14,7 +14,7 @@ Make task completion impossible until review has run and its outcome is recorded
 ## Required flow
 
 1. Prepare a task-scoped diff.
-2. Run review for that task only.
+2. Run review for that task only as a `sub-agent` task through `sub-agent-task-manager`.
 3. Save review output into `reports/`.
 4. Address findings if any.
 5. Re-run review if required.
@@ -28,6 +28,7 @@ When creating a new review report file, call `report-output-manager`.
 - Do not batch multiple unrelated tasks into one review.
 - Do not mark a task complete without recorded review evidence.
 - Distinguish between “no findings” and “review not run”.
+- Review is mandatory sub-agent work.
 
 ## Required report contents
 

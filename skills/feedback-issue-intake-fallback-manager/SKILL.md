@@ -30,6 +30,8 @@ Use this fallback order:
 
 If moving to a lower-confidence source, mark confidence explicitly.
 
+Run the actual intake pass as a `sub-agent` task through `sub-agent-task-manager`.
+
 ## Required outputs
 
 Produce an intake note in `reports/` containing:
@@ -47,6 +49,7 @@ When creating a new intake report file, call `report-output-manager`.
 - Do not start implementation from inferred requirements when authoritative issue text is missing.
 - Distinguish confirmed requirements from assumptions.
 - Escalate to user only for truly blocking ambiguity.
+- Requirement extraction and source reconciliation are mandatory sub-agent work.
 
 ## Cross-cutting rule
 

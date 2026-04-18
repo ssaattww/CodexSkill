@@ -19,6 +19,8 @@ Define expected behavior before code changes and keep the current task anchored 
 4. Add or update tests so they fail for the current gap.
 5. Only then allow implementation work.
 
+Use `codex-delegation-executor` for test-authoring ownership decisions. Run test execution that serves as failing-proof or verification evidence as a `sub-agent` task through `sub-agent-task-manager`.
+
 ## Rules
 
 - Prefer the smallest failing test that proves the intended behavior.

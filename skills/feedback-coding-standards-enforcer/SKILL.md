@@ -32,9 +32,9 @@ For C# API changes, explicitly verify required XML documentation comments exist 
 ## Enforcement flow
 
 1. identify changed files and API-surface diffs
-2. detect standards violations
+2. detect standards violations as a `sub-agent` task through `sub-agent-task-manager`
 3. fix or record each violation
-4. run configured validation commands
+4. run configured validation commands as `sub-agent` verification when they are used as evidence
 5. record evidence in `reports/`
 
 ## Strong rules
@@ -42,6 +42,7 @@ For C# API changes, explicitly verify required XML documentation comments exist 
 - Do not treat standards checks as optional cleanup.
 - Do not defer known violations without explicit rationale.
 - If a standard is ambiguous, propose a concrete rule and record it.
+- Standards detection and standards validation are mandatory sub-agent work.
 
 ## Cross-cutting rule
 

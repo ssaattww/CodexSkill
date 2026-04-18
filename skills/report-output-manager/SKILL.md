@@ -31,6 +31,8 @@ Run this skill when:
 
 - For naming, prefix selection, and examples:
   - [references/report-filename-policy.md](references/report-filename-policy.md)
+- For sub-agent execution report structure:
+  - [references/sub-agent-report-template.md](references/sub-agent-report-template.md)
 
 Use the script when you want a deterministic path:
 

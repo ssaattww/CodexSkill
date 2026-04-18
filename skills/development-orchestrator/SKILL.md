@@ -22,7 +22,7 @@ Follow this sequence:
 3. Call `task-consistency-manager`.
 4. Call `design-doc-maintainer` if design impact exists.
 5. Call `tdd-executor`.
-6. Call `codex-delegation-executor`.
+6. Call `codex-delegation-executor` to choose executor and run implementation/verification work.
 7. Call `review-enforcer`.
 8. Call `progress-sync-manager`.
 9. Call `git-workflow-manager`.
@@ -33,6 +33,8 @@ Follow this sequence:
 - Work on one task at a time.
 - Do not treat implementation as complete before commit and PR creation.
 - Do not skip task reconciliation, design reflection, review, or progress updates.
+- Do not decide `main agent` vs `sub-agent` for implementation outside `codex-delegation-executor`.
+- Do not downgrade skills that require mandatory `sub-agent` execution.
 - Call `feedback-points-manager` whenever a reusable process problem, repeated instruction, or workflow failure is detected.
 - Stop and re-plan when work required for the current task is missing from `tasks-status.md`.
 
@@ -54,3 +56,4 @@ A task cycle is complete only when all of the following are true:
 - Do not contain detailed Git instructions.
 - Do not contain detailed review criteria.
 - Do not directly replace child skills.
+- Do not bypass `codex-delegation-executor` when executable work needs an owner decision.
