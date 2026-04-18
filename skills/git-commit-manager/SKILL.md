@@ -30,6 +30,8 @@ Before running this skill, gather:
 
 - Keep commit scope aligned to the current task.
 - Avoid mixing unrelated work.
+- Default to one commit for the current task.
+- Split one task into multiple commits only when `git-workflow-manager` has determined that the task contains independently reviewable sub-units or when the user explicitly requests split history.
 - Make sure verification and review results exist before final task commit.
 - Stage intentionally; do not include noise or irrelevant generated files.
 - Default to a multi-line commit message, not a subject-only commit.
@@ -114,7 +116,7 @@ fix(export): 集計シートの結合セル書式欠落を防ぐ
 
 ## Outputs
 
-After this skill runs, the task has one or more coherent commits suitable for PR submission.
+After this skill runs, the task has one coherent commit by default, or an explicitly justified split commit set suitable for PR submission.
 
 ## Completion condition
 
@@ -122,4 +124,4 @@ This skill is complete only when:
 
 - commit scope is intentionally staged
 - commit message follows the required format
-- one or more coherent commits exist for the task
+- one coherent commit exists for the task by default, or a justified split commit set exists

@@ -40,6 +40,9 @@ Use these sub-skills as needed:
 - Do not treat local implementation as the endpoint.
 - Prefer branch-based work.
 - Prefer PR-based submission.
+- Default to `1 task -> 1 commit`.
+- Allow multiple commits for one task only when the task clearly contains independently reviewable sub-units or when the user explicitly wants a split history.
+- Treat commit-count policy as owned here; `git-commit-manager` should follow this skill's decision instead of inventing a separate default.
 - Keep commits understandable and scoped.
 - Make PRs carry enough evidence to review and merge safely.
 
@@ -48,12 +51,12 @@ Use these sub-skills as needed:
 After this skill runs, the current task should have:
 
 - the right branch context
-- coherent commits
+- a commit plan that is coherent for the current task, defaulting to one commit
 - a reviewable PR or an explicit reason why submission cannot proceed yet
 
 ## Completion condition
 
-This skill is done for the current task only when the relevant branch, commit, and PR actions are complete.
+This skill is done for the current task only when the relevant branch, commit, and PR actions are complete and the commit shape for the task has been decided.
 
 ## Cross-cutting rule
 
