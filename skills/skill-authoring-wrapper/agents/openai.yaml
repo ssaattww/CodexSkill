@@ -1,0 +1,3 @@
+interface:
+  display_name: "Skill Authoring Wrapper"
+  short_description: "Create repo-standard skills via skill-creator"

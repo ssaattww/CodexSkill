@@ -11,6 +11,22 @@ Make tests lead implementation.
 
 Define expected behavior before code changes and keep the current task anchored to executable proof.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Parent owns the test strategy and stopping condition for implementation.
+- Test authoring inside this skill is implementation work and should use `implementation-executor`.
+- Test execution used as evidence inside this skill remains mandatory sub-agent work.
+
+## Inputs
+
+Before running this skill, confirm:
+
+- current task scope and exit criteria
+- relevant existing tests and code under change
+- contract or regression behavior that must be proven
+
 ## Required flow
 
 1. Read the current task and exit criteria.
@@ -18,6 +34,14 @@ Define expected behavior before code changes and keep the current task anchored 
 3. Define test cases.
 4. Add or update tests so they fail for the current gap.
 5. Only then allow implementation work.
+
+Use `codex-delegation-executor` for test-authoring ownership decisions and have the executor read `implementation-executor`. Run test execution that serves as failing-proof or verification evidence as a `sub-agent` task through `sub-agent-task-manager`.
+
+Use these provisional thresholds as the default trigger for switchable test authoring:
+
+- tests to add or update are 3 or more
+- test files are 3 or more
+- the parent would otherwise need to inspect 4 or more existing test files before authoring
 
 ## Rules
 
@@ -32,10 +56,18 @@ Define expected behavior before code changes and keep the current task anchored 
 - Do not rely on vague “manual confirmation” instead of executable checks when tests are feasible.
 - Do not leave important edge cases implicit if the task depends on them.
 
-## Output expectations
+## Outputs
 
 After this skill runs, the current task should have:
 
 - named test targets
 - explicit happy-path and error-path expectations when relevant
 - at least one failing or newly necessary test that drives implementation
+
+## Completion condition
+
+This skill is complete only when:
+
+- test cases are defined for the current task
+- at least one failing or newly required test exists when feasible
+- implementation may proceed against explicit test targets

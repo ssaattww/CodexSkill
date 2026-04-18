@@ -11,14 +11,54 @@ Close the loop on review feedback.
 
 Convert review feedback into tracked, verifiable, and reviewable follow-up work.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Parent owns task routing, follow-up scope, and PR state updates.
+- Implementation work inside this skill may still be delegated through `codex-delegation-executor`.
+
+## Inputs
+
+Before running this skill, gather:
+
+- review findings or PR comments
+- current task and tracking context
+- affected files or behavior areas when known
+
 ## Required flow
 
 1. read the feedback
 2. decide whether the fix belongs to the current task or a new task
 3. call `task-consistency-manager` if tracking changes are needed
-4. implement the fix through the normal workflow
+4. implement the fix through the normal workflow, using `codex-delegation-executor` to decide whether the main agent or a sub-agent owns the fix work and making the executor read `implementation-executor`
 5. update reports and progress
 6. refresh the PR state
+
+When creating a new follow-up report file, call `report-output-manager`.
+
+## Outputs
+
+After this skill runs, there should be:
+
+- routed follow-up work for the review findings
+- updated reports and progress references
+- refreshed PR state or clear next follow-up action
+
+## Completion condition
+
+This skill is complete only when the finding has been routed, fixed or tracked, and the PR state reflects that follow-up.
+
+## Large-scope delegation
+
+If review follow-up is large enough that implementing the fixes inline would be noisy, the parent may rely on `codex-delegation-executor` to switch the fix work to a `sub-agent`.
+
+Use these provisional thresholds as the default trigger:
+
+- review findings to address are 3 or more
+- affected files are 4 or more
+- distinct behavior areas touched by the findings are 2 or more
+- the follow-up would otherwise require 4 or more fix bullets in the report
 
 ## Rules
 

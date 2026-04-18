@@ -11,6 +11,21 @@ Control cost and execution instability.
 
 Keep delegated development efficient, sequential, and stable.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill controls orchestration strategy and execution budget decisions.
+
+## Inputs
+
+Before running this skill, identify:
+
+- planned delegated tasks
+- current rerun or retry pressure
+- parallelism candidates
+- reasoning-effort choices under consideration
+
 ## Focus areas
 
 Control:
@@ -28,9 +43,13 @@ Control:
 - Choose reasoning effort proportionate to task complexity.
 - Reuse existing evidence and reports before rerunning expensive steps.
 
-## Output expectations
+## Outputs
 
 After this skill runs, the next delegated action should be scoped, justified, and unlikely to waste effort.
+
+## Completion condition
+
+This skill is complete only when the next execution plan is intentionally scoped and cost risks have been reduced as much as practical.
 
 ## Cross-cutting rule
 
