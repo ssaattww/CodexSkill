@@ -37,6 +37,12 @@ Before running this skill, confirm:
 
 Use `codex-delegation-executor` for test-authoring ownership decisions and have the executor read `implementation-executor`. Run test execution that serves as failing-proof or verification evidence as a `sub-agent` task through `sub-agent-task-manager`.
 
+Use these provisional thresholds as the default trigger for switchable test authoring:
+
+- tests to add or update are 3 or more
+- test files are 3 or more
+- the parent would otherwise need to inspect 4 or more existing test files before authoring
+
 ## Rules
 
 - Prefer the smallest failing test that proves the intended behavior.

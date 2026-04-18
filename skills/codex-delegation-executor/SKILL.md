@@ -67,6 +67,15 @@ Decide the executor inside this skill before running the work:
 - When the work is code or test authoring, make the executor read `implementation-executor`.
 - Keep the main agent responsible for scoping, integration, and final synthesis even when a sub-agent executes the task.
 
+Use these provisional thresholds as the default trigger for switchable implementation work:
+
+- affected files are 4 or more
+- affected modules or directories are 2 or more
+- expected edit chunks are 4 or more
+- the parent would otherwise need to read 5 or more implementation files before writing safely
+
+Use the main agent by default below those thresholds unless isolation or parallelism is clearly more valuable.
+
 ## Required delegation pattern
 
 For each delegated task:

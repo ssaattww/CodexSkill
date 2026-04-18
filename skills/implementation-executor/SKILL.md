@@ -48,6 +48,14 @@ Before running this skill, make sure the parent has already decided:
 - Prefer the narrowest implementation that satisfies the required behavior.
 - Keep code and tests aligned; do not leave test expectations implicit when a task depends on them.
 
+For executor choice, follow the switchable implementation thresholds defined in `codex-delegation-executor`.
+
+Common provisional triggers for assigning this work to a `sub-agent` are:
+
+- target files are 4 or more
+- affected modules are 2 or more
+- expected code or test edit blocks are 4 or more
+
 ## Outputs
 
 After this skill runs, the scoped code/test changes are in place and ready for validation or review.

@@ -47,6 +47,14 @@ Before running this skill, make sure the parent has already decided:
 - Prefer updating an existing design document over creating a parallel duplicate.
 - Keep edits concrete enough that implementation work can proceed without guessing.
 
+For executor choice, follow the switchable implementation thresholds defined in `codex-delegation-executor`.
+
+Common provisional triggers for assigning this work to a `sub-agent` are:
+
+- target design files are 3 or more
+- one file would require 4 or more separate edit blocks
+- the parent would otherwise need to compare 4 or more related design files before editing
+
 ## Outputs
 
 After this skill runs, the required design artifacts are updated and ready for implementation to follow.

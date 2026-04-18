@@ -49,6 +49,17 @@ After this skill runs, there should be:
 
 This skill is complete only when the finding has been routed, fixed or tracked, and the PR state reflects that follow-up.
 
+## Large-scope delegation
+
+If review follow-up is large enough that implementing the fixes inline would be noisy, the parent may rely on `codex-delegation-executor` to switch the fix work to a `sub-agent`.
+
+Use these provisional thresholds as the default trigger:
+
+- review findings to address are 3 or more
+- affected files are 4 or more
+- distinct behavior areas touched by the findings are 2 or more
+- the follow-up would otherwise require 4 or more fix bullets in the report
+
 ## Rules
 
 - Do not apply review feedback as invisible side work.

@@ -16,6 +16,7 @@ Keep `tasks-status.md` and `phases-status.md` aligned with actual implementation
 Run this skill as: `parent`
 
 - This skill updates canonical task tracking and should remain parent-owned.
+- For large tracking diffs or many discoveries, the parent may request a consistency audit from a `sub-agent`, but final tracking updates remain parent work.
 
 ## Inputs
 
@@ -81,3 +82,21 @@ This skill is complete only when:
 - tracking reflects the real current scope
 - any missing or split tasks are recorded
 - the next implementation step is unambiguous from tracking
+
+## Large-scope delegation
+
+If tracking review would span many tasks, many review findings, or a noisy mismatch between execution and tracking, the parent may:
+
+1. use `sub-agent-task-manager`
+2. ask a `sub-agent` for a bounded audit of missing tasks, stale entries, and ambiguous wording
+3. require a report under `reports/`
+4. apply and confirm the final tracking changes in the parent
+
+Do not let the `sub-agent` silently rewrite canonical tracking without parent review.
+
+Use these provisional thresholds as the default trigger:
+
+- suspected stale or missing tracking points are 3 or more
+- affected task rows are 5 or more
+- review findings or implementation discoveries to reconcile are 3 or more
+- `tasks-status.md` and `phases-status.md` both need coordinated edits across 2 or more sections each

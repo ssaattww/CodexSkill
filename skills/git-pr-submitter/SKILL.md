@@ -16,6 +16,7 @@ Submit each completed task as a PR with enough context for efficient review.
 Run this skill as: `parent`
 
 - PR creation publishes the parent-owned outcome and should stay with the parent.
+- For large PR context, the parent may request a draft summary and evidence collection pass from a `sub-agent`, but the actual PR creation remains parent work.
 
 ## Inputs
 
@@ -49,3 +50,19 @@ After this skill runs, the current task has a PR that another reviewer can under
 ## Completion condition
 
 This skill is complete only when a reviewable PR exists with the necessary context and evidence.
+
+## Large-scope delegation
+
+If PR context is large enough that assembling summary, validation evidence, and report references would be noisy, the parent may:
+
+1. use `sub-agent-task-manager`
+2. ask a `sub-agent` for a bounded PR-draft preparation pass
+3. require a report under `reports/`
+4. create or update the actual PR in the parent
+
+Use these provisional thresholds as the default trigger:
+
+- report references to collect are 3 or more
+- distinct validation commands or evidence items to summarize are 3 or more
+- changed-file groups that need separate summary bullets are 4 or more
+- the PR body would likely need 4 or more top-level bullets or sections to stay readable

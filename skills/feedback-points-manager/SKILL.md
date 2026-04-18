@@ -141,3 +141,4 @@ This skill is complete only when the feedback-point decision and its rationale a
 - Keep the active feedback records current when recurrence status changes.
 - Do not wait for an explicit `FP` request when a reusable process lesson is already clear from the work itself.
 - Do not register a new or updated feedback-point without making its origin visible to the user through `記録起点`.
+- When a feedback-point materially affects an existing skill, consider updating that skill even if the current thresholds or wording already exist.

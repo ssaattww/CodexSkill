@@ -17,6 +17,7 @@ Run this skill as: `parent`
 
 - This skill makes contract and documentation decisions that should stay with the parent.
 - Design-document editing inside this skill is implementation work and should use `design-executor`.
+- For large or unclear design surface, the parent may request a design-impact scan from a `sub-agent`, but final design judgment remains parent work.
 
 ## Inputs
 
@@ -72,6 +73,22 @@ This skill is complete only when:
 - required design artifacts to update are identified
 - needed document edits have been completed or routed through `design-executor`
 - tracking reflects any design-driven work additions
+
+## Large-scope delegation
+
+If the possible design impact spans many documents, contracts, or external behaviors, the parent may:
+
+1. use `sub-agent-task-manager`
+2. ask a `sub-agent` for a bounded impact scan covering affected docs and contract surfaces
+3. require a report under `reports/`
+4. make the final update/no-update decision in the parent
+
+Use these provisional thresholds as the default trigger:
+
+- candidate design documents to inspect are 3 or more
+- affected contract surfaces are 2 or more among API, schema, file format, configuration, and workflow
+- external or user-visible behavior changes appear in 2 or more places
+- the parent would otherwise need to compare 4 or more design-related files before judging impact
 
 ## Cross-cutting rule
 

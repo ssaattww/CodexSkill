@@ -43,8 +43,9 @@ Follow this sequence:
 8. Call `progress-sync-manager`.
 9. Call `git-workflow-manager`.
 10. When an issue or task reaches done, make an explicit parent-side decision: `no skill action needed`, `update an existing skill`, or `propose a new skill`.
-11. Call `feedback-points-manager` only if that decision should be recorded as reusable process feedback or a skillization record.
-12. Return to task confirmation.
+11. If the decision is `update an existing skill` or `propose a new skill` and the local skill work should be executed now, call `skill-authoring-wrapper`.
+12. Call `feedback-points-manager` only if that decision should be recorded as reusable process feedback or a skillization record.
+13. Return to task confirmation.
 
 ## Core rules
 
@@ -52,6 +53,7 @@ Follow this sequence:
 - Do not treat implementation as complete before commit and PR creation.
 - Do not skip task reconciliation, design reflection, review, or progress updates.
 - Do not skip parent-owned end-of-issue skill-gap reflection when an issue reaches done.
+- Do not leave local skill creation or substantial local skill updates floating without an explicit caller; use `development-orchestrator` as the default caller when the need is discovered through normal task completion.
 - Do not decide `main agent` vs `sub-agent` for implementation outside `codex-delegation-executor`.
 - Treat design-document editing as switchable implementation work under `codex-delegation-executor` with `design-executor`.
 - Treat test authoring and code authoring as switchable implementation work under `codex-delegation-executor` with `implementation-executor`.
