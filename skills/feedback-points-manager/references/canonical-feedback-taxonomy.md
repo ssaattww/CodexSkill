@@ -1,6 +1,8 @@
 # Canonical Feedback Taxonomy
 
-`feedback-points.md` uses a canonical `カテゴリ` value from this list.
+Open this only when you need a canonical category value or a stable duplicate-group name.
+
+`<repo-root>/feedback-points/feedback-points.md` uses a canonical `カテゴリ` value from this list.
 
 ## Categories
 
@@ -34,4 +36,3 @@ Do not encode issue numbers in group names.
 1. classify by process intent, not by implementation area
 2. prefer existing duplicate groups over creating new ones
 3. if a point can fit multiple categories, choose the one that drives the operational action
-

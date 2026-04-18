@@ -5,11 +5,16 @@ description: Maintain feedback-points.md as a cross-cutting record of reusable w
 
 # Feedback Points Manager
 
-Maintain `feedback-points.md` as the system of record for reusable workflow lessons.
+Maintain `<repo-root>/feedback-points/feedback-points.md` as the system of record for reusable workflow lessons.
 
 ## Goal
 
 Capture process-level feedback, detect repetition, and decide when repeated points should be skillized.
+
+The canonical files live in the real repository root, not inside the symlinked `skills/` tree:
+
+- active: `<repo-root>/feedback-points/feedback-points.md`
+- backlog: `<repo-root>/feedback-points/feedback-points-backlog.md`
 
 ## This skill is cross-cutting
 
@@ -36,14 +41,6 @@ Run this skill when:
 - a point seems reusable across repositories
 - you need to decide if a point should become a skill or a skill update
 
-## Inputs to read
-
-Read in this order:
-
-1. `tasks/feedback-points.md` (required if present)
-2. `tasks/feedback-points-backlog.md` (if present)
-3. related `tasks-status.md` and `phases-status.md` only when needed for context
-
 ## Scope filter
 
 Record workflow and development-method points, not issue-specific feature design details.
@@ -60,131 +57,30 @@ Good examples:
 
 Do not keep one-off feature specifications here if they belong in design docs, reports, tasks, or phases.
 
-## Canonical feedback format
+## Read only what you need
 
-Standardize on one cross-repository format.
+Read in this order:
 
-`tasks/feedback-points.md` should use this active table schema:
+1. active `feedback-points/feedback-points.md`
+2. `feedback-points/feedback-points-backlog.md` only if needed
+3. related `tasks-status.md` and `phases-status.md` only if needed for context
 
-- `FP`
-- `内容`
-- `カテゴリ`
-- `重複グループ`
-- `skill化状態`
-- `関連skill`
-- `状態`
-- `記録日`
-- `最終更新日`
-- `根拠リンク`
+Open only one reference unless the situation clearly spans multiple decisions:
 
-`tasks/feedback-points-backlog.md` should keep completed/closed points.
-Backlog may contain a one-time `Legacy Archive` section in old schema for historical preservation.
+- Need table columns, allowed statuses, or legacy cleanup:
+  - [references/feedback-format-and-cleanup.md](references/feedback-format-and-cleanup.md)
+- Need duplicate-group decision, threshold, or "skillize vs not":
+  - [references/skillization-policy.md](references/skillization-policy.md)
+- Need issue creation flow, routing target, or required run output:
+  - [references/skillization-operations.md](references/skillization-operations.md)
+- Need category naming or duplicate-group naming:
+  - [references/canonical-feedback-taxonomy.md](references/canonical-feedback-taxonomy.md)
 
-`カテゴリ` and `重複グループ` naming rules:
+If the answer is obvious from the active row and current skill context, do not open any reference.
 
-- see [references/canonical-feedback-taxonomy.md](references/canonical-feedback-taxonomy.md)
+If the active file is visibly noisy, mixed with issue-specific content, or hard to classify, call `feedback-points-sanitizer` first.
 
-### Canonical statuses
-
-`状態`:
-
-- `記録`
-- `対応中`
-- `対応済み`
-- `不要`
-
-`skill化状態`:
-
-- `未整理`
-- `検討中`
-- `skill化済み`
-- `不要`
-
-## Bootstrap cleanup rule
-
-If current feedback data contains noise or stale entries, do a one-time cleanup:
-
-1. move current active rows into `tasks/feedback-points-backlog.md` as `Legacy Archive` without conversion
-2. rebuild `tasks/feedback-points.md` active section with canonical header only
-3. re-register only high-signal active points that still affect current operations
-4. continue FP numbering without reuse
-
-## Duplicate grouping rules
-
-When a new point appears:
-
-1. detect whether an equivalent intent already exists
-2. append the FP to that duplicate group
-3. avoid creating isolated near-duplicate rows
-4. keep traceability to all source FP IDs
-
-Group by intent, not by literal wording.
-
-## Skillization decision rule
-
-Default threshold:
-
-- first occurrence: record only
-- second occurrence: set to `検討中`
-- third occurrence or more: skillize by default unless clearly one-off
-
-Early skillization is allowed even at first occurrence when all are true:
-
-- cross-repository applicability is obvious
-- recurrence cost is high
-- omission risk is high if not automated by skill
-
-Do not skillize when the point is:
-
-- issue-specific design content
-- one-time feature decision
-- externally constrained and not reusable as workflow
-
-## Skillization actions
-
-When a point is skillized:
-
-1. set status to `skill化済み`
-2. set `関連skill`
-3. keep links to source FP IDs
-4. rewrite wording from incident-specific to reusable rule
-
-If existing skill is close but insufficient, file a skill-improvement task instead of creating overlapping new skills.
-
-## Skill repository issue flow
-
-When a duplicate group is reusable across repositories, create an issue in the skill repository.
-
-Use this priority:
-
-1. GitHub app issue creation tool
-2. `gh issue create`
-3. if neither is available, save an issue draft markdown in `reports/`
-
-Title format:
-
-- `[skillization] <duplicate-group>: <short summary>`
-
-Issue body template:
-
-- use [references/skillization-issue-template.md](references/skillization-issue-template.md)
-- or use script for draft/create:
-  - draft body only:
-    - `scripts/build_skillization_issue.sh --group <group> --fps <fp-list> --summary <summary> --proposal <skill-or-change>`
-  - create via `gh`:
-    - `scripts/build_skillization_issue.sh --group <group> --fps <fp-list> --summary <summary> --proposal <skill-or-change> --repo <owner/repo> --title "[skillization] <group>: <summary>" --create`
-
-Do not open duplicate issues for the same group unless scope has materially changed.
-
-## Recommended routing for common groups
-
-When a recurring group maps cleanly to an existing skill, prefer updating that skill first.
-
-- release/CI/version governance -> `design-doc-maintainer` + audit report only (no workflow/publish edits unless user explicitly requests)
-- issue requirement acquisition fallback -> `feedback-issue-intake-fallback-manager`
-- autonomy vs stop-condition boundary -> `feedback-autonomy-boundary-manager`
-- coding standards enforcement regressions -> `feedback-coding-standards-enforcer`
-- feedback noise and mixed-scope cleanup -> `feedback-points-sanitizer`
+Before writing to `feedback-points/feedback-points.md`, get a pre-write classification review when the point is new, materially rewritten, ambiguous, or potentially duplicative. Prefer an independent sub-agent pass via `feedback-points-sanitizer` when available. Only write directly when reusable-process classification is obvious.
 
 ## Required output after each run
 
@@ -200,4 +96,4 @@ After running this skill, leave clear evidence in chat or report:
 
 - Always make an explicit skillization decision for repeated process points.
 - Keep process feedback and feature specifications separated.
-- Keep canonical table fields current when recurrence status changes.
+- Keep the active feedback records current when recurrence status changes.

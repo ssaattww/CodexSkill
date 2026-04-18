@@ -13,7 +13,7 @@ Restore the next actionable task from persistent project records.
 
 ## Read in this order
 
-1. `feedback-points.md`
+1. `feedback-points/feedback-points.md`
 2. `phases-status.md`
 3. `tasks-status.md`
 4. recent `reports/`

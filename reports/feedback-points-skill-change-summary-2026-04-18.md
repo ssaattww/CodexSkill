@@ -19,11 +19,10 @@ release workflow や publish 自動化ファイルは、この変更では触っ
 
 役割:
 
-- 再利用可能な process feedback の管理
-- 重複グループ化
-- skill 化判断
-- skill リポジトリ issue 化フロー
-- `feedback-` プレフィックス付き子 skill へのルーティング
+- `feedback-points/feedback-points.md` の運用責任を持つ親 skill
+- 重複グループ化、skill 化判断、issue 化判断を行う
+- active ledger 更新前に `feedback-points-sanitizer` の事前判定を要求する
+- `feedback-` プレフィックス付き子 skill へルーティングする
 
 補助追加:
 
@@ -37,30 +36,45 @@ release workflow や publish 自動化ファイルは、この変更では触っ
 
 目的:
 
-- 通常の `gh issue view` 経路が使えないときに issue 要件を回収する
-- 実装前に fallback 順序と信頼度扱いを明確にする
+- issue 要件取得の fallback 専用 skill
+- `gh` 失敗時でも信頼度付きで要件を確定する
 
 ### `feedback-autonomy-boundary-manager`
 
 目的:
 
-- どこまで自走継続してよいかを定義する
-- 曖昧さ、リスク、承認境界で止まる条件を定義する
+- 自走継続と停止確認の境界を決める skill
+- 高リスク曖昧性、承認境界、外部契約変更で止まる
 
 ### `feedback-coding-standards-enforcer`
 
 目的:
 
-- レビュー/コミット前に繰り返し指摘されるコーディング規約を強制する
-- 特に public/protected API と XML doc コメントの確認を対象にする
+- 繰り返し指摘される規約違反をレビュー前に潰す skill
+- 特に public/protected API と XML doc を強制する
 
 ### `feedback-points-sanitizer`
 
 目的:
 
-- noisy な feedback 一覧を整理する
-- 再利用可能な process ルールと issue 固有の仕様/設計判断を分離する
-- 履歴を残しながら active なノイズを減らす
+- feedback 一覧の分類とノイズ除去を担当する skill
+- active ledger へ書く前の事前判定 reviewer も兼ねる
+- `keep active / merge / move to backlog / skip` を返す
+
+## 命名と役割の整合性
+
+現時点では、skill 名と実際の役割に大きな乖離はない。
+
+- `feedback-points-manager`
+  - active ledger の管理責任と子 skill ルーティングを持つため、`manager` は妥当
+- `feedback-points-sanitizer`
+  - cleanup 専用ではなく事前分類 reviewer も担うが、役割の中心は sanitization なので現名称で問題ない
+- `feedback-issue-intake-fallback-manager`
+  - fallback 経路の管理が主目的なので名称どおり
+- `feedback-autonomy-boundary-manager`
+  - 自走/停止境界の管理が主目的なので名称どおり
+- `feedback-coding-standards-enforcer`
+  - 規約違反の検出と是正を強制するため、`enforcer` は妥当
 
 ## 命名規則
 

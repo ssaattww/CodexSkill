@@ -17,7 +17,7 @@ Advance one task at a time until it reaches commit and PR creation, then move to
 
 Follow this sequence:
 
-1. Confirm current state from `tasks-status.md`, `phases-status.md`, recent `reports/`, and `feedback-points.md`.
+1. Confirm current state from `tasks-status.md`, `phases-status.md`, recent `reports/`, and `feedback-points/feedback-points.md`.
 2. Select exactly one next task.
 3. Call `task-consistency-manager`.
 4. Call `design-doc-maintainer` if design impact exists.

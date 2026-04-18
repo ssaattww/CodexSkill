@@ -9,7 +9,7 @@ Keep feedback points actionable and reusable.
 
 ## Goal
 
-Ensure `feedback-points.md` contains process-level reusable lessons, not mixed operational noise.
+Ensure `<repo-root>/feedback-points/feedback-points.md` contains process-level reusable lessons, not mixed operational noise.
 
 ## Run this skill
 
@@ -18,6 +18,7 @@ Run this skill when:
 - active feedback list has grown noisy
 - many entries are issue-specific and no longer reusable
 - skillization decisions are blocked by mixed-quality data
+- a new active feedback-point candidate needs pre-write review before being recorded
 
 ## Classification rules
 
@@ -27,6 +28,8 @@ Classify each active point as one of:
 2. duplicate of existing rule (merge by duplicate group)
 3. issue/task-specific product decision (move to backlog with link)
 4. obsolete/no longer relevant (close or archive)
+
+Use this skill as the pre-write reviewer for active feedback-point additions; return one of: keep active, merge duplicate, move to backlog, or skip.
 
 ## Cleanup flow
 
