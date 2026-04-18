@@ -25,11 +25,14 @@ Before running this skill, gather:
 - candidate process lesson or repeated workflow problem
 - current active `feedback-points/feedback-points.md`
 - any existing duplicate group or related skill context
+- whether the trigger came from explicit user instruction, parent judgment, or sub-agent proposal
 
 The canonical files live in the real repository root, not inside the symlinked `skills/` tree:
 
 - active: `<repo-root>/feedback-points/feedback-points.md`
 - backlog: `<repo-root>/feedback-points/feedback-points-backlog.md`
+
+If either file must be created from scratch, include a top-of-file rule stating that it may be updated only through `feedback-points-manager` or `feedback-points-sanitizer`.
 
 ## This skill is cross-cutting
 
@@ -104,11 +107,14 @@ Treat the classification as parent-direct only when the reusable-process nature 
 
 Keep this skill as the parent governance point for skillization decisions. Use sub-agents for narrow classification, comparison, or review work when helpful, but keep the final proposal vs implementation decision in the main agent.
 
+When writing or updating a feedback-point row, always record `記録起点` so the user can distinguish explicitly requested entries from parent-originated entries.
+
 ## Required output after each run
 
 After running this skill, leave clear evidence in chat or report:
 
 - whether a new point was added or merged
+- recorded `記録起点`
 - duplicate group decision
 - skillization status decision and reason
 - related skill update/new-skill decision
@@ -120,6 +126,7 @@ After running this skill, leave clear evidence in chat or report:
 After this skill runs, there should be:
 
 - an added, merged, updated, or explicitly skipped feedback-point decision
+- an explicit `記録起点`
 - duplicate-group and skillization status rationale
 - clear evidence of the next lifecycle owner
 
@@ -133,3 +140,4 @@ This skill is complete only when the feedback-point decision and its rationale a
 - Keep process feedback and feature specifications separated.
 - Keep the active feedback records current when recurrence status changes.
 - Do not wait for an explicit `FP` request when a reusable process lesson is already clear from the work itself.
+- Do not register a new or updated feedback-point without making its origin visible to the user through `記録起点`.

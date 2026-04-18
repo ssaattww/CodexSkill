@@ -35,6 +35,8 @@ Produce or revise:
 - exit criteria
 - size estimates
 
+If `tasks-status.md` or `phases-status.md` must be created from scratch, write a top-of-file rule stating that the file may be updated only through `task-breakdown-planner`, `task-consistency-manager`, or `progress-sync-manager`.
+
 ## Completion condition
 
 This skill is complete only when:

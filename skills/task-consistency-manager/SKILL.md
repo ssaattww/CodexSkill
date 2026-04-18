@@ -57,6 +57,8 @@ If the task implies additional work not yet tracked, add the missing tasks first
 
 If the task changes phase scope, update `phases-status.md` as well.
 
+If `tasks-status.md` or `phases-status.md` does not exist yet and must be created, include a top-of-file rule stating that the file may be updated only through `task-breakdown-planner`, `task-consistency-manager`, or `progress-sync-manager`.
+
 ## Strong rule
 
 Do not implement significant work that is not represented in `tasks-status.md`.

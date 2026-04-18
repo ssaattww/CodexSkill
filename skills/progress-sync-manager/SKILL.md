@@ -36,6 +36,8 @@ Update as relevant:
 - report references
 - PR references if tracked
 
+If `tasks-status.md` or `phases-status.md` must be created during sync, include a top-of-file rule stating that the file may be updated only through `task-breakdown-planner`, `task-consistency-manager`, or `progress-sync-manager`.
+
 ## Required timing
 
 Run this skill:

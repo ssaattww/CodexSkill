@@ -25,6 +25,7 @@ Before running this skill, gather:
 - current active feedback-point entries
 - candidate point to classify or cleanup scope
 - duplicate-group context when available
+- existing `記録起点` values when reviewing or merging rows
 
 ## Run this skill
 
@@ -52,7 +53,8 @@ Use this skill as the pre-write reviewer for active feedback-point additions; re
 2. merge duplicates into representative rule entries
 3. move non-process items to backlog with destination links
 4. keep only high-signal active process rules
-5. update skillization status and related skill mapping
+5. preserve or normalize `記録起点`
+6. update skillization status and related skill mapping
 
 ## Outputs
 
@@ -61,6 +63,7 @@ Produce cleanup evidence in `reports/`:
 - counts before/after
 - moved FP IDs and destination
 - merged duplicate groups
+- origin handling for merged rows
 - newly identified skillization candidates
 
 When creating a new cleanup report file, call `report-output-manager`.
@@ -74,6 +77,7 @@ This skill is complete only when classification results and cleanup evidence are
 - Do not discard history without traceability.
 - Keep FP identifiers stable; do not reuse IDs.
 - Separate feedback governance from feature design governance.
+- Do not drop user-visible origin information when consolidating rows.
 
 ## Cross-cutting rule
 
