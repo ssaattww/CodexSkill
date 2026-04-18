@@ -53,6 +53,8 @@ Record in `reports/`:
 - pass/fail outcome
 - unresolved risks if any
 
+When creating a new report file, call `report-output-manager` for placement and filename rules.
+
 ## Cross-cutting rule
 
 If recurring delegation failures or repeated workflow mistakes appear, call `feedback-points-manager`.

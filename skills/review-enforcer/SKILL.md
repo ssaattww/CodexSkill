@@ -20,6 +20,8 @@ Make task completion impossible until review has run and its outcome is recorded
 5. Re-run review if required.
 6. Only then allow progress sync and Git submission.
 
+When creating a new review report file, call `report-output-manager`.
+
 ## Rules
 
 - Review one task at a time.

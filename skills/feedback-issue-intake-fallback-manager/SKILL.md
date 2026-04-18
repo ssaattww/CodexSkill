@@ -40,6 +40,8 @@ Produce an intake note in `reports/` containing:
 - confidence level and missing information
 - blocking questions if unresolved
 
+When creating a new intake report file, call `report-output-manager`.
+
 ## Strong rules
 
 - Do not start implementation from inferred requirements when authoritative issue text is missing.

@@ -20,6 +20,8 @@ Convert review feedback into tracked, verifiable, and reviewable follow-up work.
 5. update reports and progress
 6. refresh the PR state
 
+When creating a new follow-up report file, call `report-output-manager`.
+
 ## Rules
 
 - Do not apply review feedback as invisible side work.

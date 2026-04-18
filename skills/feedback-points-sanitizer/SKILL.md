@@ -48,6 +48,8 @@ Produce cleanup evidence in `reports/`:
 - merged duplicate groups
 - newly identified skillization candidates
 
+When creating a new cleanup report file, call `report-output-manager`.
+
 ## Strong rules
 
 - Do not discard history without traceability.
