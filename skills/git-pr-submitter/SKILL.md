@@ -11,6 +11,12 @@ Turn task work into a reviewable PR.
 
 Submit each completed task as a PR with enough context for efficient review.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- PR creation publishes the parent-owned outcome and should stay with the parent.
+
 ## Required PR contents
 
 Include as relevant:

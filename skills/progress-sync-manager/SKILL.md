@@ -11,6 +11,12 @@ Keep tracking files truthful and current.
 
 Make recorded project status reflect actual execution state without delay.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill updates canonical tracking files and should remain under parent control.
+
 ## Update targets
 
 Update as relevant:

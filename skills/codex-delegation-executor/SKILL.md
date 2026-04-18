@@ -11,12 +11,22 @@ Route executable work through Codex or sub-agents.
 
 Ensure investigation, implementation, build, and verification work are delegated consistently, with executor choice made explicitly and evidenced.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill is the policy owner for delegation and executor choice.
+- It may dispatch sub-agents, but the parent keeps the decision authority.
+
 ## Delegate these work types
 
 Delegate:
 
 - code investigation
 - implementation
+- design-document editing as implementation work
+- test authoring as implementation work
+- code authoring as implementation work
 - build execution
 - test execution
 - environment verification
@@ -43,6 +53,7 @@ Decide the executor inside this skill before running the work:
 
 - If the work matches a fixed sub-agent category, do not decide; use a `sub-agent`.
 - For implementation work, decide `main agent` vs `sub-agent` here based on coupling, urgency, write-scope overlap, and whether parallelism helps.
+- Treat design-document edits, test authoring, and code authoring as implementation work for this decision.
 - Keep the main agent responsible for scoping, integration, and final synthesis even when a sub-agent executes the task.
 
 ## Required delegation pattern
@@ -53,10 +64,11 @@ For each delegated task:
 2. if fixed-sub-agent, call `sub-agent-task-manager`
 3. otherwise choose executor and record why that executor was chosen
 4. define the exact scope
-5. define expected outputs
-6. define validation commands or evidence
-7. run the delegated work
-8. capture results in `reports/`
+5. identify any skill files the executor must read
+6. define expected outputs
+7. define validation commands or evidence
+8. run the delegated work
+9. capture results in `reports/`
 
 ## Rules
 
@@ -65,14 +77,20 @@ For each delegated task:
 - Do not pre-decide implementation ownership outside this skill unless the user explicitly requires it.
 - Use the main agent for implementation only when the task is tightly coupled to current context, on the critical path, or risky to hand off.
 - Use a sub-agent for implementation when the task is bounded, parallelizable, or benefits from isolation.
+- Apply the same switchable implementation rule to design-document edits, test authoring, and code authoring.
 - Every sub-agent request must leave a report in `reports/`.
 - Pre-create the report file before dispatch when using `sub-agent-task-manager`.
 - Exclude noisy diffs and irrelevant generated files when preparing review inputs.
 - Require concrete evidence instead of verbal assurance.
+- For review tasks, instruct the `sub-agent` to use the built-in review behavior rather than a custom ad hoc review style.
+- For review tasks, do not accept chat-only review output; require the findings to be written into the report file.
+- When a delegated task depends on an existing skill, instruct the executor to read that skill file explicitly.
 
 ## Strong rule
 
 Do not personally substitute for delegated investigation, review, intake verification, or test execution when this workflow expects an independent pass.
+
+Reviewer work is always `sub-agent` work.
 
 ## Evidence rules
 

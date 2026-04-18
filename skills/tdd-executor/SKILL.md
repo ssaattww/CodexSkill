@@ -11,6 +11,14 @@ Make tests lead implementation.
 
 Define expected behavior before code changes and keep the current task anchored to executable proof.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Parent owns the test strategy and stopping condition for implementation.
+- Test authoring inside this skill is implementation work and may be executed by either the parent or a `sub-agent` through `codex-delegation-executor`.
+- Test execution used as evidence inside this skill remains mandatory sub-agent work.
+
 ## Required flow
 
 1. Read the current task and exit criteria.

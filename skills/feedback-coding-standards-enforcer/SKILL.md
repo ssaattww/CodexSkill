@@ -11,6 +11,13 @@ Make coding standards executable instead of optional.
 
 Prevent review/merge of changes that violate declared coding standards.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Parent owns the enforcement decision and any required fixes.
+- Standards detection and validation inside this skill remain mandatory sub-agent work.
+
 ## Run this skill
 
 Run this skill:

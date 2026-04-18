@@ -11,6 +11,12 @@ Keep momentum high without crossing unsafe decision boundaries.
 
 Proceed autonomously by default, but stop consistently for the right reasons.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill decides whether the parent continues or stops for user input.
+
 ## Default policy
 
 - Continue execution without confirmation for internal, reversible, low-risk work.
@@ -25,6 +31,9 @@ Stop and ask the user when any apply:
 3. missing credentials, access, or legal/organizational approval
 4. conflicting requirements with no defensible interpretation
 5. acceptance criteria are materially unclear and affect architecture or scope
+6. any planned skill still has execution owner `どちらでも良い` and the ownership choice affects the workflow
+
+If item 6 applies, ask once before work starts and batch all such ownership confirmations into that same pre-work question set. Do not wait until the middle of implementation.
 
 ## Decision protocol
 

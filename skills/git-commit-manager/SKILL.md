@@ -11,6 +11,12 @@ Create clean, scoped commits.
 
 Produce commits that map cleanly to the current task and can be reviewed without guesswork.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Final staging and commit creation should remain a parent responsibility.
+
 ## Rules
 
 - Keep commit scope aligned to the current task.

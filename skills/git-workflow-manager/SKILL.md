@@ -11,6 +11,12 @@ Drive work through branch, commit, and PR completion.
 
 Ensure every implementation task reaches a clean Git submission state.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill coordinates branch, commit, and PR lifecycle across child skills.
+
 ## Workflow stages
 
 Use these sub-skills as needed:

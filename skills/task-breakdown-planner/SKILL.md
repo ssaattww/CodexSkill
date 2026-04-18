@@ -11,6 +11,12 @@ Translate large work into executable tracked units.
 
 Create a task structure that allows one-task-at-a-time execution without hidden work.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Task and phase design set the execution contract and should stay under parent control.
+
 ## Required outputs
 
 Produce or revise:

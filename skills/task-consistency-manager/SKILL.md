@@ -11,6 +11,12 @@ Ensure that no meaningful work proceeds unless it exists in task tracking.
 
 Keep `tasks-status.md` and `phases-status.md` aligned with actual implementation scope.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill updates canonical task tracking and should remain parent-owned.
+
 ## Run this skill
 
 Run this skill:

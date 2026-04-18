@@ -11,6 +11,12 @@ Resume work from recorded state.
 
 Restore the next actionable task from persistent project records.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill determines the resumed execution path and should stay with the parent.
+
 ## Read in this order
 
 1. `feedback-points/feedback-points.md`

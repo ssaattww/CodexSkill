@@ -11,6 +11,13 @@ Prevent implementation from getting ahead of design.
 
 Ensure design documentation is updated before code changes proceed when the change affects contract or intended behavior.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill makes contract and documentation decisions that should stay with the parent.
+- Design-document editing inside this skill is implementation work and may be executed by either the parent or a `sub-agent` through `codex-delegation-executor`.
+
 ## Run this skill
 
 Run this skill before implementation whenever changes affect:
@@ -43,6 +50,8 @@ If contract or user-visible behavior changes, do not proceed directly to impleme
 ## Required outputs
 
 Update the relevant design docs and make sure tasks and phases reflect the design work.
+
+When the work is document editing rather than decision-making, treat it as switchable implementation and route ownership through `codex-delegation-executor`.
 
 If design changes create new implementation work, call `task-consistency-manager`.
 

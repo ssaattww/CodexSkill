@@ -11,6 +11,12 @@ Control cost and execution instability.
 
 Keep delegated development efficient, sequential, and stable.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill controls orchestration strategy and execution budget decisions.
+
 ## Focus areas
 
 Control:

@@ -11,6 +11,12 @@ Create a safe branch boundary for the current work.
 
 Ensure task work is isolated on a branch before meaningful changes accumulate.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Branch creation changes the active Git context and should stay under parent control.
+
 ## Rules
 
 - Use a branch name tied to the issue or task scope.

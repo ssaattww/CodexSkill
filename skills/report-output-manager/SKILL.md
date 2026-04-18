@@ -11,6 +11,13 @@ Keep report files predictable across skills and repositories.
 
 Create report files in a consistent location with stable, reusable naming.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Report path selection is part of parent-owned workflow control.
+- Parent should decide filenames and create report paths before delegating work.
+
 ## Run this skill
 
 Run this skill when:

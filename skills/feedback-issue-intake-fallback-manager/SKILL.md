@@ -11,6 +11,13 @@ Resolve issue requirements without relying on a single tool path.
 
 Establish reliable, auditable issue requirements before planning or implementation.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Parent owns source selection, confidence judgment, and escalation decisions.
+- Requirement extraction and source reconciliation inside this skill remain mandatory sub-agent work.
+
 ## Run this skill
 
 Run this skill when:

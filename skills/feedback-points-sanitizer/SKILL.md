@@ -11,6 +11,13 @@ Keep feedback points actionable and reusable.
 
 Ensure `<repo-root>/feedback-points/feedback-points.md` contains process-level reusable lessons, not mixed operational noise.
 
+## Execution owner
+
+Run this skill as: `sub-agent`
+
+- This skill is most valuable as an independent classification and cleanup pass.
+- Parent should consume its result and make any final governance decision afterward.
+
 ## Run this skill
 
 Run this skill when:

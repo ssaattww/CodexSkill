@@ -25,6 +25,10 @@
 
 - Files changed or checked:
 
+## Findings
+
+- Findings summary or explicit no findings:
+
 ## Outcome
 
 - Result:

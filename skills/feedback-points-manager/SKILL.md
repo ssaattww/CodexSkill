@@ -11,6 +11,13 @@ Maintain `<repo-root>/feedback-points/feedback-points.md` as the system of recor
 
 Capture process-level feedback, detect repetition, and decide when repeated points should be skillized.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- This skill governs feedback records and skillization decisions.
+- Parent agents may call it after issue completion, but issue-completion reflection itself is not owned here.
+
 The canonical files live in the real repository root, not inside the symlinked `skills/` tree:
 
 - active: `<repo-root>/feedback-points/feedback-points.md`

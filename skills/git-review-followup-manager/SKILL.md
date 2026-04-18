@@ -11,6 +11,13 @@ Close the loop on review feedback.
 
 Convert review feedback into tracked, verifiable, and reviewable follow-up work.
 
+## Execution owner
+
+Run this skill as: `parent`
+
+- Parent owns task routing, follow-up scope, and PR state updates.
+- Implementation work inside this skill may still be delegated through `codex-delegation-executor`.
+
 ## Required flow
 
 1. read the feedback
