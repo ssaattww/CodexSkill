@@ -77,6 +77,9 @@ If `scope` is not useful, omit it:
 - Use a blank line between subject and body.
 - Use Markdown section headings and bullets in the body by default.
 - Always include `## 背景`, `## 変更内容`, and `## 検証` sections for non-trivial commits.
+- Write the body at roughly the same granularity as a good user-facing change summary: a reviewer should understand what changed without reopening the diff immediately.
+- In `## 変更内容`, prefer 2 to 4 concrete bullets that name the main files, skills, flows, or policies that changed when that naming helps understanding.
+- For `docs` or `skills` commits, do not hide the real scope behind vague words like `整備した`; say which skills or design docs were added or updated.
 - Expand `変更内容` to 2 or more bullets when one point is too compressed.
 - Write `- 未実施` in `## 検証` when no verification was executed; never imply validation that did not happen.
 - Split the work into multiple commits instead of hiding unrelated changes inside one long body.
@@ -96,6 +99,7 @@ Choose the closest fit:
 
 - Aim for a subject that is usually within about 50 to 72 characters.
 - Aim for a body that is usually 3 sections with 1 to 3 bullets each.
+- When multiple touched items matter to the reviewer, prefer naming them in the body instead of collapsing them into an abstract summary.
 - Mention the most important verification command or check result in `## 検証`.
 
 ## Example
