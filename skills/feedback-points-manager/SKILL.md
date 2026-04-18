@@ -40,6 +40,7 @@ Run this skill when:
 - workflow mistakes keep recurring
 - a point seems reusable across repositories
 - you need to decide if a point should become a skill or a skill update
+- you need to decide whether to recommend a new skill or update an existing one
 
 ## Scope filter
 
@@ -82,6 +83,8 @@ If the active file is visibly noisy, mixed with issue-specific content, or hard 
 
 Before writing to `feedback-points/feedback-points.md`, get a pre-write classification review when the point is new, materially rewritten, ambiguous, or potentially duplicative. Prefer an independent sub-agent pass via `feedback-points-sanitizer` when available. Only write directly when reusable-process classification is obvious.
 
+Keep this skill as the parent governance point for skillization decisions. Use sub-agents for narrow classification, comparison, or review work when helpful, but keep the final proposal vs implementation decision in the main agent.
+
 ## Required output after each run
 
 After running this skill, leave clear evidence in chat or report:
@@ -90,6 +93,7 @@ After running this skill, leave clear evidence in chat or report:
 - duplicate group decision
 - skillization status decision and reason
 - related skill update/new-skill decision
+- owner of the next lifecycle action
 - issue creation result (issue URL/number, or draft file path)
 
 ## Strong rules

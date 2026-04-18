@@ -32,6 +32,30 @@ Do not open duplicate issues for the same group unless scope materially changed.
 - coding standards enforcement regressions -> `feedback-coding-standards-enforcer`
 - feedback noise and mixed-scope cleanup -> `feedback-points-sanitizer`
 
+## Skill lifecycle execution
+
+If classification is `new skill candidate`:
+
+1. prepare a concise user recommendation
+2. explain why existing skills are insufficient
+3. stop before implementation
+
+If classification is `existing skill update`:
+
+1. identify the owning skill
+2. create or switch to a dedicated branch in the skill repository
+3. use focused sub-agents for narrow analysis or review when useful
+4. update the skill and any references/scripts
+5. collect evidence if behavior or routing changed
+6. commit the change
+7. create a PR
+8. tell the user the PR is ready to review
+
+Suggested supporting skills:
+
+- branch/commit/PR execution -> `git-workflow-manager`
+- report filename and placement -> `report-output-manager`
+
 ## Pre-write review for active ledger updates
 
 Before writing to `<repo-root>/feedback-points/feedback-points.md`, run a classification review with `feedback-points-sanitizer` when any are true:
@@ -60,4 +84,5 @@ Leave clear evidence in chat or report:
 - duplicate group decision
 - skillization status decision and reason
 - related skill update or new-skill decision
+- lifecycle owner and next action
 - issue creation result, or why it was skipped
