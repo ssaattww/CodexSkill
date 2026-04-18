@@ -37,9 +37,14 @@ Use this default format unless the repository or the user explicitly requests a 
 ```text
 <type>(<scope>): <short imperative summary>
 
-背景: <この変更が必要な理由>
-変更内容: <主要な変更内容>
-検証: <実行したテスト・確認、または「未実施」>
+## 背景
+- <この変更が必要な理由>
+
+## 変更内容
+- <主要な変更内容>
+
+## 検証
+- <実行したテスト・確認、または「未実施」>
 ```
 
 If `scope` is not useful, omit it:
@@ -53,9 +58,10 @@ If `scope` is not useful, omit it:
 - Keep the first line concise, imperative, and specific.
 - Keep the subject focused on the user-visible or reviewer-relevant outcome, not the editing activity.
 - Use a blank line between subject and body.
-- Always include `背景`, `変更内容`, and `検証` lines for non-trivial commits.
-- Expand `変更内容` to 2 or more concrete facts when one line is too compressed.
-- Write `検証: 未実施` when no verification was executed; never imply validation that did not happen.
+- Use Markdown section headings and bullets in the body by default.
+- Always include `## 背景`, `## 変更内容`, and `## 検証` sections for non-trivial commits.
+- Expand `変更内容` to 2 or more bullets when one point is too compressed.
+- Write `- 未実施` in `## 検証` when no verification was executed; never imply validation that did not happen.
 - Split the work into multiple commits instead of hiding unrelated changes inside one long body.
 
 ## Type guidance
@@ -72,18 +78,23 @@ Choose the closest fit:
 ## Good defaults
 
 - Aim for a subject that is usually within about 50 to 72 characters.
-- Aim for a body that is usually at least 3 lines and often 4 to 6 lines total when extra `変更内容` detail is needed.
-- Mention the most important verification command or check result in `検証`.
+- Aim for a body that is usually 3 sections with 1 to 3 bullets each.
+- Mention the most important verification command or check result in `## 検証`.
 
 ## Example
 
 ```text
 fix(export): 集計シートの結合セル書式欠落を防ぐ
 
-背景: 集計シート再生成後に結合セルの罫線が失われていた
-変更内容: シート書き換え時に元の結合範囲メタデータを保持するようにした
-変更内容: 結合復元後に罫線スタイルを再適用して見た目の崩れを防いだ
-検証: dotnet test
+## 背景
+- 集計シート再生成後に結合セルの罫線が失われていた
+
+## 変更内容
+- シート書き換え時に元の結合範囲メタデータを保持するようにした
+- 結合復元後に罫線スタイルを再適用して見た目の崩れを防いだ
+
+## 検証
+- dotnet test
 ```
 
 ## Output expectations
