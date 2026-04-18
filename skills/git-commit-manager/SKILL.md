@@ -73,6 +73,7 @@ If `scope` is not useful, omit it:
 ## Format rules
 
 - Keep the first line concise, imperative, and specific.
+- Preserve the `<type>(<scope>): ...` shape whenever `scope` helps GitHub readers scan the history quickly.
 - Keep the subject focused on the user-visible or reviewer-relevant outcome, not the editing activity.
 - Use a blank line between subject and body.
 - Use Markdown section headings and bullets in the body by default.
@@ -94,6 +95,25 @@ Choose the closest fit:
 - `test`: tests added or updated
 - `docs`: documentation-only changes
 - `chore`: maintenance or tooling work with no direct feature/fix impact
+
+## Scope guidance
+
+When `scope` improves GitHub readability, keep it instead of omitting it.
+
+Do not hardcode repository-specific scope candidates inside this skill.
+
+Derive `scope` from the current repository context in this order:
+
+1. current task wording in `tasks-status.md` or equivalent task tracking
+2. current phase wording in `phases-status.md` when it sharpens the area better than the task title
+3. recent commit history in the repository, so the scope naming stays consistent with nearby commits
+4. touched files and the primary reviewer-facing area when tracking does not provide a good label
+
+Choose the narrowest scope that still helps a reader predict the affected area from the GitHub commit list.
+
+If recent commits already use a stable naming pattern for adjacent work, prefer following that pattern.
+
+If no stable or helpful `scope` emerges from task context and recent commits, omit `scope` instead of inventing a repository-local taxonomy here.
 
 ## Good defaults
 
