@@ -118,7 +118,7 @@ After running this skill, leave clear evidence in chat or report:
 - duplicate group decision
 - skillization status decision and reason
 - related skill update/new-skill decision
-- owner of the next lifecycle action
+- `次アクション対応`
 - issue creation result (issue URL/number, or draft file path)
 
 ## Outputs
@@ -128,7 +128,7 @@ After this skill runs, there should be:
 - an added, merged, updated, or explicitly skipped feedback-point decision
 - an explicit `記録起点`
 - duplicate-group and skillization status rationale
-- clear evidence of the next lifecycle owner
+- clear evidence of `次アクション対応`
 
 ## Completion condition
 
