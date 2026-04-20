@@ -45,6 +45,7 @@ Use these sub-skills as needed:
 - Treat commit-count policy as owned here; `git-commit-manager` should follow this skill's decision instead of inventing a separate default.
 - Keep commits understandable and scoped.
 - Make PRs carry enough evidence to review and merge safely.
+- If the current commit closes or hands off a skill/process improvement loop that came from `feedback-points`, make sure the corresponding issue has been created or confirmed through `feedback-points-manager` before treating the loop as handed off.
 
 ## Outputs
 

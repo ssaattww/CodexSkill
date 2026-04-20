@@ -39,6 +39,7 @@ When a point is skillized:
 2. set `関連skill`
 3. preserve links to source FP IDs
 4. rewrite wording from incident-specific to reusable rule
+5. if ongoing execution should be tracked as work, move the loop to an issue and stop using the active FP ledger as the execution queue
 
 If an existing skill is close, prefer extending it over creating a near-duplicate skill.
 
@@ -70,6 +71,8 @@ New skill creation is high risk.
 - the recommendation should explain the recurring gap, why existing skills are insufficient, and the proposed owner scope
 
 Existing skill updates may proceed without extra approval when they stay within the current skill family and ownership.
+
+If a skill/process improvement remains as follow-up work after commit timing, prefer issue creation over leaving it in the active FP ledger.
 
 ## Ownership and maintenance
 
