@@ -55,7 +55,7 @@ Follow this sequence:
 14. Call `git-workflow-manager`.
 15. When an issue or task reaches done, make an explicit parent-side decision: `no skill action needed`, `update an existing skill`, or `propose a new skill`.
 16. If the decision is `update an existing skill` or `propose a new skill` and the local skill work should be executed now, call `skill-authoring-wrapper`.
-17. Call `feedback-points-manager` only if that decision should be recorded as reusable process feedback or a skillization record.
+17. Call `feedback-points-manager` when that decision should be recorded as reusable process feedback, when skillization state changed, or when a follow-up issue must be created at commit timing.
 18. Return to task confirmation.
 
 ## Core rules

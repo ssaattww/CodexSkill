@@ -6,6 +6,8 @@ Open this only when you need issue creation flow, routing to another skill, or t
 
 When a duplicate group is reusable across repositories, create an issue in the skill repository.
 
+At commit timing for a skill/process improvement loop, do not stop at the commit alone. Create or confirm the follow-up issue in the skill repository before considering the loop handed off.
+
 Priority:
 
 1. GitHub app issue creation tool
@@ -21,6 +23,21 @@ Body:
 - use `skillization-issue-template.md`
 - or generate with:
   - `scripts/build_skillization_issue.sh --group <group> --fps <fp-list> --summary <summary> --proposal <skill-or-change>`
+
+The issue body must preserve the full FP meaning, not just a short summary. Carry over:
+
+- duplicate group
+- original FP wording
+- why it recurred or still matters
+- related skills
+- unresolved scope or remaining gap
+- references needed to continue the loop
+
+Once the issue exists:
+
+1. remove the active FP row from `feedback-points/feedback-points.md`
+2. move it to `feedback-points/feedback-points-backlog.md` or otherwise archive it outside the active ledger
+3. include the created issue URL in `根拠リンク`
 
 Do not open duplicate issues for the same group unless scope materially changed.
 
@@ -48,8 +65,9 @@ If classification is `existing skill update`:
 4. update the skill and any references/scripts
 5. collect evidence if behavior or routing changed
 6. commit the change
-7. create a PR
-8. tell the user the PR is ready to review
+7. create or confirm the follow-up issue if ongoing loop tracking still matters after the commit
+8. create a PR
+9. tell the user the PR is ready to review
 
 Suggested supporting skills:
 
@@ -84,5 +102,5 @@ Leave clear evidence in chat or report:
 - duplicate group decision
 - skillization status decision and reason
 - related skill update or new-skill decision
-- lifecycle owner and next action
+- `次アクション対応`
 - issue creation result, or why it was skipped
