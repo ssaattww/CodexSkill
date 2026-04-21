@@ -24,6 +24,7 @@ Before running this skill, gather:
 
 - task or issue scope
 - relevant commits and branch
+- linked issue identifier(s) for the task or an explicit reason why no issue exists
 - review evidence and validation evidence
 - report references needed in the PR body
 
@@ -32,6 +33,7 @@ Before running this skill, gather:
 Include as relevant:
 
 - task or issue scope
+- explicit linked issue reference in the PR body
 - summary of changes
 - test or validation evidence
 - report references
@@ -40,8 +42,10 @@ Include as relevant:
 ## Rules
 
 - Keep PR scope aligned with the task.
+- Always link the relevant issue in the PR body. Prefer closing keywords such as `Closes #123` when the PR resolves that issue; otherwise add an explicit non-closing reference.
 - Do not hide unresolved findings.
 - Do not create a PR with missing review evidence when the workflow requires review first.
+- If no issue exists yet for a process/skill loop that must be handed off, create or confirm that issue before opening the PR.
 
 ## Outputs
 

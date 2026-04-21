@@ -45,6 +45,7 @@ Use these sub-skills as needed:
 - Treat commit-count policy as owned here; `git-commit-manager` should follow this skill's decision instead of inventing a separate default.
 - Keep commits understandable and scoped.
 - Make PRs carry enough evidence to review and merge safely.
+- Do not open or update a PR without linking the relevant issue in the PR body.
 - If the current commit closes or hands off a skill/process improvement loop that came from `feedback-points`, make sure the corresponding issue has been created or confirmed through `feedback-points-manager` before treating the loop as handed off.
 - At commit timing, expect active `feedback-points.md` to be empty again; do not leave commit-ready skill/process follow-up in the active FP ledger.
 
