@@ -13,12 +13,17 @@ Use this active table schema for `<repo-root>/feedback-points/feedback-points.md
 - `内容`
 - `カテゴリ`
 - `重複グループ`
+- `指摘回数`
 - `skill化状態`
 - `関連skill`
 - `状態`
 - `記録日`
+- `直近指摘日`
 - `最終更新日`
+- `次アクション対応`
 - `根拠リンク`
+
+Use the same schema for `<repo-root>/feedback-points/feedback-points-backlog.md` unless a one-time legacy archive section is being preserved.
 
 ## Origin values
 
@@ -47,6 +52,12 @@ It may contain a one-time `Legacy Archive` section in an older schema.
 - `検討中`
 - `skill化済み`
 - `不要`
+
+## Recurrence fields
+
+- `指摘回数`: 同一 duplicate group に紐づく累計の指摘回数。最初の記録でも `1` を明記する。
+- `直近指摘日`: その duplicate group が最後に指摘された日付。
+- `次アクション対応`: 次に誰が何をするかを短く書く。issue 化済みなら `issue #N を正本として追跡` のように書く。
 
 ## Bootstrap cleanup
 

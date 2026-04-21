@@ -7,11 +7,13 @@ Use this template when creating a skillization issue in the skill repository.
 - Duplicate Group: `<group-name>`
 - Problem: `<one-line reusable problem>`
 - Proposed Action: `<new skill | update existing skill>`
+- Next Action: `<what should happen next>`
 
 ## Source Feedback Points
 
 - Repository: `<owner/repo>`
 - FP IDs: `<FP12, FP34, FP56>`
+- Trigger Type: `<ユーザー指示 | 親判断 | sub-agent提案 | 混合>`
 - Related entries:
   - `<path-or-link-1>`
   - `<path-or-link-2>`
@@ -19,6 +21,9 @@ Use this template when creating a skillization issue in the skill repository.
 ## Recurrence and Cost
 
 - Occurrences: `<number>`
+- First Reported: `<yyyy-mm-dd>`
+- Last Reported: `<yyyy-mm-dd>`
+- Latest Trigger: `<what was just pointed out>`
 - Why repeated: `<cause>`
 - Cost of not skillizing: `<quality/risk/time impact>`
 
@@ -48,4 +53,3 @@ Use this template when creating a skillization issue in the skill repository.
 - Breaking-change considerations: `<if any>`
 - Additional references:
   - `<url-or-path>`
-

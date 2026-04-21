@@ -41,3 +41,4 @@ issue #3 の要求は、確認時点では未対応だった。
 - follow-up:
   - review-enforcer の mandatory `sub-agent` review を current run で満たせない場合は、親判断で代替せずユーザー確認へ切り替えるべきというユーザー指摘を受けた
   - この指摘に合わせて `feedback-autonomy-boundary-manager` と `review-enforcer` に stop condition を追加した
+  - 上記指摘は reusable process lesson として issue `#9` に handoff し、`feedback-points/feedback-points-backlog.md` にも記録した
