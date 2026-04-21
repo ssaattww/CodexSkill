@@ -40,8 +40,11 @@ Stop and ask the user when any apply:
 4. conflicting requirements with no defensible interpretation
 5. acceptance criteria are materially unclear and affect architecture or scope
 6. any planned skill still has execution owner `どちらでも良い` and the ownership choice affects the workflow
+7. a required skill step is mandatory `sub-agent` work, but the current run does not have explicit user permission to delegate or cannot satisfy that execution mode safely
 
 If item 6 applies, ask once before work starts and batch all such ownership confirmations into that same pre-work question set. Do not wait until the middle of implementation.
+
+If item 7 applies, stop before substituting a parent-side fallback. Ask the user whether to permit delegation, change the workflow requirement, or stop the task.
 
 If a borderline process classification or FP registration decision is not obvious, prefer an independent classification pass via `feedback-points-sanitizer` before deciding.
 

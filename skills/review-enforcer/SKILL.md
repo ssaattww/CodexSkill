@@ -37,6 +37,8 @@ Before running this skill, gather:
 7. Re-run review if required.
 8. Only then allow progress sync and Git submission.
 
+If step 2 cannot be executed because the current run lacks explicit user permission for delegation, stop and ask the user before continuing. Do not silently replace mandatory `sub-agent` review with parent review.
+
 When creating a new review report file, call `report-output-manager`.
 
 ## Rules
@@ -47,6 +49,7 @@ When creating a new review report file, call `report-output-manager`.
 - Distinguish between “no findings” and “review not run”.
 - Review is mandatory sub-agent work.
 - Reviewer assignment is never switchable to the parent.
+- If mandatory `sub-agent` review is blocked by permission or execution-mode constraints, ask the user explicitly instead of improvising a parent-side substitute.
 - Review requests should explicitly ask for a code review, not a generic diff summary.
 - Built-in review output alone is not sufficient; it must also exist in the report file.
 
