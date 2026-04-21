@@ -9,7 +9,7 @@ Maintain `<repo-root>/feedback-points/feedback-points.md` as the system of recor
 
 ## Goal
 
-Capture process-level feedback, detect repetition, and route skill-improvement follow-up into issues so the active FP ledger does not remain the long-term execution queue.
+Capture process-level feedback, detect repetition, and route skill-improvement follow-up into issues so the active FP ledger does not remain the long-term execution queue and is empty again by commit timing.
 
 ## Execution owner
 
@@ -134,10 +134,11 @@ After this skill runs, there should be:
 - duplicate-group and skillization status rationale
 - clear evidence of `次アクション対応`
 - no stale active FP row for a point that has already been handed off to an issue
+- no active FP row left behind at commit timing for points already reflected or handed off
 
 ## Completion condition
 
-This skill is complete only when the feedback-point decision and its rationale are recorded in chat, report, or the feedback ledger.
+This skill is complete only when the feedback-point decision and its rationale are recorded in chat, report, or the feedback ledger, and any commit-ready skill/process point has been removed from the active FP ledger.
 
 ## Strong rules
 
@@ -148,3 +149,4 @@ This skill is complete only when the feedback-point decision and its rationale a
 - Do not register a new or updated feedback-point without making its origin visible to the user through `記録起点`.
 - When a feedback-point materially affects an existing skill, consider updating that skill even if the current thresholds or wording already exist.
 - When a follow-up issue has been created for a skill-improvement point, preserve the FP content in the issue body and remove that point from the active FP ledger.
+- By the time related work is committed, active `feedback-points.md` should be empty again unless a truly not-yet-handoffable point was created in the same run and cannot yet be issue-tracked.

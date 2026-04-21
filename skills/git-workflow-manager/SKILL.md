@@ -46,6 +46,7 @@ Use these sub-skills as needed:
 - Keep commits understandable and scoped.
 - Make PRs carry enough evidence to review and merge safely.
 - If the current commit closes or hands off a skill/process improvement loop that came from `feedback-points`, make sure the corresponding issue has been created or confirmed through `feedback-points-manager` before treating the loop as handed off.
+- At commit timing, expect active `feedback-points.md` to be empty again; do not leave commit-ready skill/process follow-up in the active FP ledger.
 
 ## Outputs
 
@@ -57,7 +58,7 @@ After this skill runs, the current task should have:
 
 ## Completion condition
 
-This skill is done for the current task only when the relevant branch, commit, and PR actions are complete and the commit shape for the task has been decided.
+This skill is done for the current task only when the relevant branch, commit, and PR actions are complete, the commit shape for the task has been decided, and commit-ready feedback-point follow-up has been cleared from the active FP ledger.
 
 ## Cross-cutting rule
 
