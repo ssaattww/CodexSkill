@@ -27,7 +27,7 @@ Before running this skill, gather:
 - the target location under `/home/ibis/AI/CodexSkill/skills`
 - whether this is a new skill or an update to an existing local skill
 - which repo-local standards must be applied
-- whether the change affects the skill inventory, call graph, ownership model, or contract summary in `skills/design/skill-hierarchy-design.md`
+- whether the change affects the skill inventory, call graph, ownership model, or contract summary in the duplicated hierarchy design docs under `skills/design/` and `design/`
 
 ## Typical caller
 
@@ -52,8 +52,8 @@ If the user explicitly asks for local skill creation or restructuring outside no
 8. If the skill can hand off executable work, route that policy through `codex-delegation-executor` instead of inventing an isolated policy.
 9. If the skill has switchable parent/sub-agent execution, add explicit provisional numeric thresholds only when the decision is truly internal to that skill tree.
 10. If the skill creates or updates governed files, state which skill paths are allowed to modify those files.
-11. Update `agents/openai.yaml` so it matches the final local skill intent.
-12. Update `/home/ibis/AI/CodexSkill/skills/design/skill-hierarchy-design.md` when the new or updated skill changes the local skill inventory, call graph, execution方式, role summary, or contract summary.
+11. If this repository has a real canonical skill inventory or registry file, update that actual file; do not reference or require nonexistent files such as `agents/openai.yaml`.
+12. While both hierarchy design files exist, update `/home/ibis/AI/CodexSkill/skills/design/skill-hierarchy-design.md` and `/home/ibis/AI/CodexSkill/design/skill-hierarchy-design.md` together whenever the new or updated skill changes the local skill inventory, call graph, execution方式, role summary, or contract summary.
 
 ## Local standard sections
 
@@ -87,9 +87,8 @@ Add these when they apply:
 After this skill runs, there should be:
 
 - a repo-local skill folder with a completed `SKILL.md`
-- `agents/openai.yaml` aligned with the final skill intent
 - local skill wording that matches this repository's standards
-- updated hierarchy design when the local skill inventory, call graph, ownership model, or contract summary changed
+- updated hierarchy design documents when the local skill inventory, call graph, ownership model, or contract summary changed
 
 ## Completion condition
 

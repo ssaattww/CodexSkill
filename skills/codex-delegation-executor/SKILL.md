@@ -101,9 +101,11 @@ For each delegated task:
 - Do not leave concrete design-editing or code-editing workflow rules scattered across unrelated skills when `design-executor` or `implementation-executor` already covers them.
 - Every sub-agent request must leave a report in `reports/`.
 - Pre-create the report file before dispatch when using `sub-agent-task-manager`.
-- Exclude noisy diffs and irrelevant generated files when preparing review inputs.
+- Instruct the `sub-agent` to read the pre-created report and preserve its format, filling only blank sections or placeholders.
+- Exclude noisy diffs and irrelevant generated files from the explicit focus, but do not block the `sub-agent` from reading broader workspace context when needed.
 - Require concrete evidence instead of verbal assurance.
 - For review tasks, instruct the `sub-agent` to use the built-in review behavior rather than a custom ad hoc review style.
+- For review and investigation tasks, prefer workspace-direct inspection over parent-written excerpts when repository access is available.
 - For review tasks, do not accept chat-only review output; require the findings to be written into the report file.
 - When a delegated task depends on an existing skill, instruct the executor to read that skill file explicitly.
 
