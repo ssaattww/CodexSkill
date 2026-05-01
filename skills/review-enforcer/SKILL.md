@@ -23,15 +23,16 @@ Run this skill as: `parent`
 Before running this skill, gather:
 
 - task-scoped diff or changed-file set
+- surrounding repository context the reviewer may need to inspect directly
 - relevant validation context and reports
 - current task identifier and review scope
 
 ## Required flow
 
-1. Prepare a task-scoped diff.
+1. Prepare a task-scoped diff or changed-file set, but keep broader workspace context available for direct inspection by the reviewer.
 2. Run review for that task only as a `sub-agent` task through `sub-agent-task-manager`.
 3. Instruct the review `sub-agent` to use the built-in review behavior: findings first, severity-ordered, with file/line references when available.
-4. Materialize the built-in review result into the pre-created report file under `reports/`.
+4. Materialize the built-in review result into the pre-created report file under `reports/` while preserving the existing template format and filling only the intended blank sections.
 5. If the review `sub-agent` does not write the report file directly, have the parent write it immediately from the returned review findings.
 6. Address findings if any.
 7. Re-run review if required.
@@ -51,6 +52,8 @@ When creating a new review report file, call `report-output-manager`.
 - Reviewer assignment is never switchable to the parent.
 - If mandatory `sub-agent` review is blocked by permission or execution-mode constraints, ask the user explicitly instead of improvising a parent-side substitute.
 - Review requests should explicitly ask for a code review, not a generic diff summary.
+- Review requests should tell the `sub-agent` to read the pre-created report first and preserve its headings, order, spacing, and any prefilled text.
+- Do not constrain the reviewer to a parent-authored diff summary when surrounding workspace context matters.
 - Built-in review output alone is not sufficient; it must also exist in the report file.
 
 ## Required report contents

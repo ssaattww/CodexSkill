@@ -24,6 +24,7 @@ Before running this skill, identify:
 - delegated task purpose
 - exact scope and non-goals
 - relevant skill files the `sub-agent` must read
+- whether the `sub-agent` should inspect the repository directly beyond the parent-prepared diff or summary
 - write boundaries and validation expectations
 
 ## Run this skill
@@ -44,7 +45,7 @@ Run this skill whenever:
 5. call `report-output-manager` and decide the report path before dispatch
 6. create the report file before dispatch using the standard template
 7. tell the `sub-agent` to read the specified skill files before executing
-8. tell the `sub-agent` to fill in that exact report file
+8. tell the `sub-agent` to read that exact report file first and fill only the intended blank sections or placeholder values
 9. require commands run, changed files, outcome, and unresolved risks in the report
 10. do not treat the delegated task as complete until the report exists and has been reviewed
 
@@ -62,7 +63,8 @@ Every sub-agent request must include:
 - skill names and file paths that must be read first
 - validation commands or evidence expectations
 - report path
-- instruction to update the pre-created report file instead of inventing a new format
+- instruction to read the pre-created report file first and preserve its heading order, spacing, and existing filled text
+- instruction to fill only blank sections or placeholder values instead of rewriting the full report
 - required final output shape
 
 For review tasks also include:
@@ -71,7 +73,14 @@ For review tasks also include:
 - instruction to return findings first, ordered by severity
 - instruction to include file/line references when available
 - instruction to say explicitly when no findings were found
-- instruction to write those findings into the pre-created report file, not only in the chat response
+- instruction to inspect the relevant workspace directly when surrounding code context is needed, instead of relying only on a parent-prepared diff summary
+- instruction to write those findings into the pre-created report file without changing the report format
+
+For investigation tasks also include:
+
+- instruction to inspect the relevant workspace directly when the answer depends on surrounding code or configuration context
+- instruction not to stop at the parent-prepared excerpt when additional repository files are needed to confirm the result
+- instruction to record the checked files and concrete evidence in the report
 
 For coding tasks also include:
 
@@ -86,11 +95,13 @@ When a relevant skill exists, do not paraphrase it loosely as the only guidance.
 - Every sub-agent task must produce a file under `reports/`.
 - The parent agent should create the report file before dispatch whenever feasible.
 - The report must be created before the parent workflow treats the task as complete.
-- The parent agent should pre-populate the standard headings so the `sub-agent` writes into a fixed structure.
+- The parent agent should pre-populate the standard headings and placeholders so the `sub-agent` edits a fixed structure instead of rewriting the document.
 - If the `sub-agent` cannot write the report directly, the parent agent must write it immediately from the returned evidence.
 - Do not ask a sub-agent for ad hoc investigation, review, or implementation without a report path.
 - For review tasks, the built-in review result must be materialized into the report file before the task is considered complete.
 - Report text should be written in Japanese unless the user explicitly requests another language.
+- The `sub-agent` must preserve the existing report format: no heading renames, no section reordering, no blank-line cleanup, and no whole-file replacement.
+- Existing non-empty parent text in the report is immutable unless the parent explicitly marks it as editable.
 
 ## Standard report sections
 
@@ -143,6 +154,7 @@ This skill is complete only when:
 - Reuse existing reports before dispatching duplicate work.
 - Use `execution-cost-stabilizer` if the delegation plan risks wasteful reruns or excessive parallelism.
 - Do not leave report structure up to the `sub-agent`.
+- For investigation and review tasks, prefer letting the `sub-agent` read the relevant workspace directly instead of over-constraining it to parent-curated excerpts.
 - For review tasks, prefer the model's native review behavior over inventing a custom review rubric in the prompt.
 - When a task depends on an existing skill, prefer making the `sub-agent` read that skill over duplicating its workflow in the prompt.
 
