@@ -32,11 +32,17 @@ Before running this skill, gather:
 1. Prepare a task-scoped diff or changed-file set, but keep broader workspace context available for direct inspection by the reviewer.
 2. Run review for that task only as a `sub-agent` task through `sub-agent-task-manager`.
 3. Instruct the review `sub-agent` to use the built-in review behavior: findings first, severity-ordered, with file/line references when available.
-4. Materialize the built-in review result into the pre-created report file under `reports/` while preserving the existing template format and filling only the intended blank sections.
-5. If the review `sub-agent` does not write the report file directly, have the parent write it immediately from the returned review findings.
-6. Address findings if any.
-7. Re-run review if required.
-8. Only then allow progress sync and Git submission.
+4. Use `gpt-5.4` with `high` reasoning effort as the default review `sub-agent` unless the user explicitly overrides the reviewer model for the current run.
+5. Materialize the built-in review result into the pre-created report file under `reports/` while preserving the existing template format and filling only the intended blank sections.
+6. Prefer having the review `sub-agent` write the report file directly; treat parent-side report materialization as fallback only.
+7. If the review `sub-agent` does not write the report file directly, have the parent write it immediately from the returned review findings.
+8. Once review has been dispatched, keep waiting or re-polling until the review `sub-agent` finishes unless the user explicitly tells you to stop.
+9. Treat report structure as parent-owned. The reviewer may fill only blank sections or placeholder values and must not repair, reorder, rename, or reformat the template.
+10. Address findings that break the intended normal path.
+11. If a finding means the user still cannot do what they intend even with careful use, stop and confirm with the user before deciding whether to expand scope.
+12. If a finding is avoidable by careful use and the user can still achieve the intended goal, record it in the report and leave it on hold until a concrete problem appears or the user explicitly promotes it.
+13. Re-run review if required.
+14. Only then allow progress sync and Git submission.
 
 If step 2 cannot be executed because the current run lacks explicit user permission for delegation, stop and ask the user before continuing. Do not silently replace mandatory `sub-agent` review with parent review.
 
@@ -50,9 +56,16 @@ When creating a new review report file, call `report-output-manager`.
 - Distinguish between “no findings” and “review not run”.
 - Review is mandatory sub-agent work.
 - Reviewer assignment is never switchable to the parent.
+- Default reviewer model is `gpt-5.4` with `high` reasoning effort unless the user explicitly chooses another reviewer configuration.
 - If mandatory `sub-agent` review is blocked by permission or execution-mode constraints, ask the user explicitly instead of improvising a parent-side substitute.
 - Review requests should explicitly ask for a code review, not a generic diff summary.
 - Review requests should tell the `sub-agent` to read the pre-created report first and preserve its headings, order, spacing, and any prefilled text.
+- Review requests should explicitly allow and require the reviewer to fill the pre-created report file directly.
+- Report template ownership stays with the parent; the reviewer is not allowed to fix formatting, headings, spacing, or other report structure.
+- Prefer shipping a working normal path over delaying for a speculative full hardening pass.
+- If a review concern is real but avoidable by careful use, and the user can still achieve the intended goal, record it in the report and mark it as held rather than blocking release immediately.
+- If a review concern means the user cannot achieve the intended goal, stop and confirm with the user unless the intended normal path is already broken and should simply be fixed.
+- Do not cancel, replace, or abandon an in-flight review `sub-agent` only because it is slow or a wait timed out; keep waiting until it completes unless the user explicitly says to stop.
 - Do not constrain the reviewer to a parent-authored diff summary when surrounding workspace context matters.
 - Built-in review output alone is not sufficient; it must also exist in the report file.
 
@@ -67,6 +80,7 @@ Include:
 - file/line references for findings when available
 - explicit `no findings` statement when applicable
 - disposition of findings
+- explicit hold/disposition for non-blocking concerns when they are deferred
 - final outcome
 
 ## Outputs

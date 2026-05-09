@@ -9,7 +9,7 @@ Keep feedback points actionable and reusable.
 
 ## Goal
 
-Ensure `<repo-root>/feedback-points/feedback-points.md` contains process-level reusable lessons, not mixed operational noise.
+Ensure `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md` contains process-level reusable lessons, not mixed operational noise.
 
 ## Execution owner
 

@@ -1,11 +1,11 @@
 # Feedback Points
 
-Canonical active feedback-point ledger.
+Canonical active feedback-point ledger for the SKILL repository.
 
 Location rule:
 
-- real repository root: `feedback-points/feedback-points.md`
-- do not keep the active ledger inside `skills/`
+- canonical path: `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
+- do not keep the active ledger in a consuming project repository
 
 Update rule:
 

@@ -5,7 +5,7 @@ description: Maintain feedback-points.md as a cross-cutting record of reusable w
 
 # Feedback Points Manager
 
-Maintain `<repo-root>/feedback-points/feedback-points.md` as the system of record for reusable workflow lessons.
+Maintain `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md` as the system of record for reusable workflow lessons.
 
 ## Goal
 
@@ -23,14 +23,14 @@ Run this skill as: `parent`
 Before running this skill, gather:
 
 - candidate process lesson or repeated workflow problem
-- current active `feedback-points/feedback-points.md`
+- current active `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
 - any existing duplicate group or related skill context
 - whether the trigger came from explicit user instruction, parent judgment, or sub-agent proposal
 
-The canonical files live in the real repository root, not inside the symlinked `skills/` tree:
+The canonical files live in the SKILL repository root, not inside the symlinked `skills/` tree of a consuming project:
 
-- active: `<repo-root>/feedback-points/feedback-points.md`
-- backlog: `<repo-root>/feedback-points/feedback-points-backlog.md`
+- active: `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
+- backlog: `/home/ibis/AI/CodexSkill/feedback-points/feedback-points-backlog.md`
 
 If either file must be created from scratch, include a top-of-file rule stating that it may be updated only through `feedback-points-manager` or `feedback-points-sanitizer`.
 
@@ -61,7 +61,7 @@ Run this skill when:
 - you need to decide whether to recommend a new skill or update an existing one
 - a reusable execution lesson is discovered during work even if the user did not explicitly label it as an `FP`
 - an in-flight adjustment to tools, patch sizing, sequencing, or delegation proved necessary to keep execution stable
-- a commit-ready skill/process improvement needs a tracked follow-up issue before the loop can be considered handed off
+- a commit-ready skill/process improvement needs either a tracked follow-up issue or an explicit commit-backed skip rationale before the loop can be considered handed off
 
 ## Scope filter
 
@@ -83,8 +83,8 @@ Do not keep one-off feature specifications here if they belong in design docs, r
 
 Read in this order:
 
-1. active `feedback-points/feedback-points.md`
-2. `feedback-points/feedback-points-backlog.md` only if needed
+1. active `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
+2. `/home/ibis/AI/CodexSkill/feedback-points/feedback-points-backlog.md` only if needed
 3. related `tasks-status.md` and `phases-status.md` only if needed for context
 
 Open only one reference unless the situation clearly spans multiple decisions:
@@ -102,7 +102,7 @@ If the answer is obvious from the active row and current skill context, do not o
 
 If the active file is visibly noisy, mixed with issue-specific content, or hard to classify, call `feedback-points-sanitizer` first.
 
-Before writing to `feedback-points/feedback-points.md`, get a pre-write classification review when the point is new, materially rewritten, ambiguous, or potentially duplicative. Prefer an independent sub-agent pass via `feedback-points-sanitizer` when available. Only write directly when reusable-process classification is obvious.
+Before writing to `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`, get a pre-write classification review when the point is new, materially rewritten, ambiguous, or potentially duplicative. Prefer an independent sub-agent pass via `feedback-points-sanitizer` when available. Only write directly when reusable-process classification is obvious.
 
 Treat the classification as parent-direct only when the reusable-process nature is obvious. For non-obvious cases, request a classification pass from `feedback-points-sanitizer` first.
 
@@ -112,7 +112,9 @@ When writing or updating a feedback-point row, always record `記録起点` so t
 
 If the user says `〜べきです`, treat that statement as an explicit `指摘` by default, not as optional advice. Route it through this skill immediately unless it is clearly non-process content.
 
-When a skill-improvement loop has been committed or otherwise reached the point where follow-up should be tracked externally, create the corresponding issue, preserve the full FP content in that issue, and remove the active row from `feedback-points/feedback-points.md`.
+When a skill-improvement loop has been committed or otherwise reached the point where follow-up should be tracked externally, create the corresponding issue, preserve the full FP content in that issue, and remove the active row from `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`.
+If the point has been fully reflected in the same skill commit and no external follow-up remains, an issue may be skipped, but the skip rationale and commit-backed system of record must be stated explicitly in `次アクション対応` and supporting evidence before the loop is treated as closed.
+If the current run has finished the skill edits but the commit-backed closure record does not exist yet, you may move the point out of the active ledger into backlog as `対応中`, provided `次アクション対応` explicitly says the closure is waiting on the upcoming commit and does not claim closure early.
 
 ## Required output after each run
 
@@ -125,7 +127,9 @@ After running this skill, leave clear evidence in chat or report:
 - related skill update/new-skill decision
 - `次アクション対応`
 - issue creation result (issue URL/number, or draft file path)
-- whether the active FP row was removed or moved to backlog after issue creation
+- explicit skip rationale when no issue was created
+- whether the active FP row was removed or moved to backlog after issue creation or explicit skip closure
+- whether a point was moved to backlog as `対応中` while waiting for the commit-backed closure record
 
 ## Outputs
 
@@ -136,6 +140,8 @@ After this skill runs, there should be:
 - duplicate-group and skillization status rationale
 - clear evidence of `次アクション対応`
 - no stale active FP row for a point that has already been handed off to an issue
+- no ambiguous closure state when a point was closed without an issue; the commit-backed rationale must be explicit
+- no premature closure claim before the commit-backed record actually exists
 - no active FP row left behind at commit timing for points already reflected or handed off
 
 ## Completion condition
@@ -152,4 +158,6 @@ This skill is complete only when the feedback-point decision and its rationale a
 - When the user states `〜べきです`, do not defer classification or wait for an explicit `FP` request; treat it as a process finding immediately unless clearly out of scope.
 - When a feedback-point materially affects an existing skill, consider updating that skill even if the current thresholds or wording already exist.
 - When a follow-up issue has been created for a skill-improvement point, preserve the FP content in the issue body and remove that point from the active FP ledger.
-- By the time related work is committed, active `feedback-points.md` should be empty again unless a truly not-yet-handoffable point was created in the same run and cannot yet be issue-tracked.
+- When a feedback-point is fully resolved by the current skill commit and no external follow-up remains, you may skip issue creation only if the closure rationale is explicit and traceable.
+- Before that commit exists, a backlog row may remain `対応中`, but it must not claim final closure or a commit-backed system of record yet.
+- By the time related work is committed, active `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md` should be empty again unless a truly not-yet-handoffable point was created in the same run and cannot yet be issue-tracked.

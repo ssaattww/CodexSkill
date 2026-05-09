@@ -2,7 +2,7 @@
 
 Open this only when you need a canonical category value or a stable duplicate-group name.
 
-`<repo-root>/feedback-points/feedback-points.md` uses a canonical `カテゴリ` value from this list.
+`/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md` uses a canonical `カテゴリ` value from this list.
 
 ## Categories
 

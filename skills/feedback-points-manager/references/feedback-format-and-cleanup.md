@@ -6,7 +6,7 @@ Open this only when you need table format, status vocabulary, or legacy cleanup 
 
 When bootstrapping a new active or backlog file, include an update-rule note near the top stating that the file may be updated only through `feedback-points-manager` or `feedback-points-sanitizer`.
 
-Use this active table schema for `<repo-root>/feedback-points/feedback-points.md`:
+Use this active table schema for `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`:
 
 - `FP`
 - `記録起点`
@@ -23,7 +23,7 @@ Use this active table schema for `<repo-root>/feedback-points/feedback-points.md
 - `次アクション対応`
 - `根拠リンク`
 
-Use the same schema for `<repo-root>/feedback-points/feedback-points-backlog.md` unless a one-time legacy archive section is being preserved.
+Use the same schema for `/home/ibis/AI/CodexSkill/feedback-points/feedback-points-backlog.md` unless a one-time legacy archive section is being preserved.
 
 ## Origin values
 
@@ -34,7 +34,7 @@ Use the same schema for `<repo-root>/feedback-points/feedback-points-backlog.md`
 - `sub-agent提案`: sub-agent の分類や提案を受けて親が記録した
 - `混合`: 複数の起点が明確に混ざっており、単一値に落とせない
 
-`<repo-root>/feedback-points/feedback-points-backlog.md` keeps completed or archived points.
+`/home/ibis/AI/CodexSkill/feedback-points/feedback-points-backlog.md` keeps completed or archived points, and may temporarily hold `対応中` rows when active ledger items are waiting for commit-backed closure.
 It may contain a one-time `Legacy Archive` section in an older schema.
 
 ## Status values

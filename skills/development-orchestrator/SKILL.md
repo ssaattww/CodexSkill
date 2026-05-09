@@ -35,7 +35,7 @@ Before running this skill, confirm:
 - the user's intended work for this run when it is not already explicit from the request or restart context
 - current `tasks-status.md` and `phases-status.md`
 - recent `reports/` relevant to the active issue or task
-- active `feedback-points/feedback-points.md`
+- active `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
 - repository state needed to choose the next task
 
 ## Required flow
@@ -48,7 +48,7 @@ Follow this sequence:
 4. If the local skill repo is dirty, diverged, or otherwise unsafe to auto-update, stop and resolve that explicitly before trusting the workflow.
 5. When entering from a resumed or restarted session, call `restart-handover-manager` to reconstruct the current position before selecting the next task.
 6. When the intended work for this run is not already explicit, read [references/start-intake-policy.md](references/start-intake-policy.md) and confirm with the user what work should be done before selecting a task.
-7. Confirm current state from `tasks-status.md`, `phases-status.md`, recent `reports/`, and `feedback-points/feedback-points.md`.
+7. Confirm current state from `tasks-status.md`, `phases-status.md`, recent `reports/`, and `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`.
 8. Select exactly one next task.
 9. Call `task-consistency-manager`.
 10. Call `design-doc-maintainer` if design impact exists.
@@ -78,6 +78,7 @@ Follow this sequence:
 - Treat test authoring and code authoring as switchable implementation work under `codex-delegation-executor` with `implementation-executor`.
 - Do not downgrade skills that require mandatory `sub-agent` execution.
 - When work is delegated to a `sub-agent`, prefer making it read the relevant skill files instead of relying on a paraphrased prompt alone.
+- Do not make delegated `sub-agent` tasks re-enter this workflow entry skill unless the parent explicitly delegated orchestration analysis itself.
 - If any future skill remains `どちらでも良い`, resolve that ownership before work starts and batch the user confirmation up front.
 - Call `feedback-points-manager` whenever a reusable process problem, repeated instruction, or workflow failure is detected.
 - Call `feedback-points-manager` for reusable execution lessons discovered mid-task even when the user did not explicitly ask to register an `FP`.

@@ -1,10 +1,10 @@
 # Feedback Points Backlog
 
-Canonical archive and backlog for feedback-point records.
+Canonical archive and backlog for SKILL repository feedback-point records.
 
 Location rule:
 
-- real repository root: `feedback-points/feedback-points-backlog.md`
+- canonical path: `/home/ibis/AI/CodexSkill/feedback-points/feedback-points-backlog.md`
 - keep completed, archived, or non-active entries here
 
 Update rule:
@@ -19,3 +19,4 @@ Update rule:
 | FP-003 | `親判断` | 運用用語や出力項目名は、英語をそのまま残す前に自然な日本語表現を先に検討する。特に workflow や feedback の説明では、`next owner` のような曖昧な英語より `次アクション対応` のように役割が分かる日本語を優先する。issue 化後は active FP ではなく issue を正本として追跡する。 | `communication` | `prefer_clear_japanese_operational_terms` | 1 | `skill化済み` | `feedback-points-manager` | `対応済み` | `2026-04-18` | `2026-04-18` | `2026-04-21` | `issue #6 を正本として追跡` | `https://github.com/ssaattww/CodexSkill/issues/6`, `skills/feedback-points-manager/SKILL.md`, `skills/design/skill-hierarchy-design.md` |
 | FP-004 | `ユーザー指示` | mandatory な `sub-agent` 手順を current run で満たせない場合、親判断で代替して進めず、必ずユーザー確認で止まる。特に `review-enforcer` の mandatory `sub-agent` review は親レビューで黙って代替してはならない。issue 化後は active FP ではなく issue を正本として追跡する。 | `governance` | `stop_and_ask_when_mandatory_sub_agent_execution_is_blocked` | 2 | `skill化済み` | `feedback-autonomy-boundary-manager`, `review-enforcer` | `対応済み` | `2026-04-21` | `2026-04-21` | `2026-04-21` | `issue #9 を正本として追跡` | `https://github.com/ssaattww/CodexSkill/issues/9`, `skills/feedback-autonomy-boundary-manager/SKILL.md`, `skills/review-enforcer/SKILL.md`, `reports/issue3-skill-presence-guard-20260421092352.md`, `reports/issue3-review-20260421092352.md` |
 | FP-005 | `ユーザー指示` | ユーザーが `〜べきです` と述べた場合は 100% 指摘として扱い、指示待ちにせず即時 `feedback-points-manager` の記録対象にする。issue 化後は active FP ではなく issue を正本として追跡する。 | `governance` | `treat_user_should_statements_as_immediate_feedback_points` | 1 | `skill化済み` | `feedback-points-manager` | `対応済み` | `2026-04-21` | `2026-04-21` | `2026-04-21` | `issue #11 を正本として追跡` | `https://github.com/ssaattww/CodexSkill/issues/11`, `skills/feedback-points-manager/SKILL.md`, `skills/feedback-points-manager/references/feedback-format-and-cleanup.md`, `reports/fp-format-and-review-trigger-hardening-20260421094402.md` |
+| FP-006 | `ユーザー指示` | review 系 skill では reviewer の既定構成を `gpt-5.4` / `high` に固定し、親が作った report 雛形に reviewer 自身が穴埋めする。reviewer は report 形式を修正してはならない。さらに正常系が動く暫定版のリリースを優先し、正常系をまだ壊していない懸念は report に記録して保留できるようにする。ユーザーがやりたいことを careful use でも達成できない場合はユーザー確認を行い、正常系が壊れている場合は対応する。sub-agent は内部で `codex exec`、nested Codex、同等の agent-spawning workflow を実行してはならず、親が明示した task と supporting skill だけを処理し、`development-orchestrator` のような parent-owned workflow に自律再突入してはならない。feedback-point の canonical ledger は consuming repo ではなく SKILL repo 側 `/home/ibis/AI/CodexSkill/feedback-points/` に集約する。直接 skill へ反映したため、関連 commit 完了後はその commit を正本として追跡する。 | `review` | `standardize_reviewer_model_report_write_and_skill_repo_feedback_ledger` | 5 | `skill化済み` | `review-enforcer`, `sub-agent-task-manager`, `codex-delegation-executor`, `feedback-points-manager`, `development-orchestrator` | `対応中` | `2026-05-09` | `2026-05-09` | `2026-05-09` | `issue は不要。関連 skill 更新を commit した後、その commit を正本として追跡` | `skills/review-enforcer/SKILL.md`, `skills/sub-agent-task-manager/SKILL.md`, `skills/codex-delegation-executor/SKILL.md`, `skills/feedback-points-manager/SKILL.md`, `skills/development-orchestrator/SKILL.md`, `feedback-points/README.md`, `reports/skills-review-policy-feedback-ledger-review-r5-20260509190627.md` |

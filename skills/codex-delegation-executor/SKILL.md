@@ -55,6 +55,7 @@ The following work must be executed by a `sub-agent` now, not merely preferred:
 - standards detection or standards validation
 
 Use `sub-agent-task-manager` for these categories and require a report in `reports/`.
+Use `gpt-5.4` with `high` reasoning effort as the default reviewer configuration for review tasks unless the user explicitly overrides it for the current run.
 
 ## Executor selection
 
@@ -104,7 +105,11 @@ For each delegated task:
 - Instruct the `sub-agent` to read the pre-created report and preserve its format, filling only blank sections or placeholders.
 - Exclude noisy diffs and irrelevant generated files from the explicit focus, but do not block the `sub-agent` from reading broader workspace context when needed.
 - Require concrete evidence instead of verbal assurance.
+- Do not instruct a `sub-agent` to run `codex exec`, nested Codex, or equivalent agent-spawning workflows inside the delegated task.
+- Do not instruct a `sub-agent` to re-enter `development-orchestrator` or any other parent-owned workflow unless that orchestration work is itself the explicit delegated task.
 - For review tasks, instruct the `sub-agent` to use the built-in review behavior rather than a custom ad hoc review style.
+- For review tasks, instruct the `sub-agent` to edit the pre-created report directly and treat parent-side report transcription as fallback only.
+- For review tasks, instruct the reviewer to separate normal-path blockers, user-confirmation-required capability gaps, and non-blocking concerns that should only be recorded and held.
 - For review and investigation tasks, prefer workspace-direct inspection over parent-written excerpts when repository access is available.
 - For review tasks, do not accept chat-only review output; require the findings to be written into the report file.
 - When a delegated task depends on an existing skill, instruct the executor to read that skill file explicitly.

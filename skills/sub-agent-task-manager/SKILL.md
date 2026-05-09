@@ -60,6 +60,8 @@ Every sub-agent request must include:
 - task purpose
 - exact scope
 - explicit non-goals
+- explicit instruction not to run `codex exec`, nested Codex, or equivalent agent-spawning inside the sub-agent task
+- explicit instruction not to re-enter `development-orchestrator` or any other parent-owned workflow unless the parent explicitly named that workflow as part of the delegated task
 - skill names and file paths that must be read first
 - validation commands or evidence expectations
 - report path
@@ -69,12 +71,15 @@ Every sub-agent request must include:
 
 For review tasks also include:
 
+- instruction to use `gpt-5.4` with `high` reasoning effort by default unless the user explicitly overrides the reviewer model
 - explicit instruction to perform a code review using the built-in review behavior
 - instruction to return findings first, ordered by severity
 - instruction to include file/line references when available
 - instruction to say explicitly when no findings were found
+- instruction to treat the report template as immutable structure and fill only blank sections or placeholder values
+- instruction to distinguish blocking normal-path problems, user-confirmation-required capability gaps, and non-blocking concerns that should only be recorded and held
 - instruction to inspect the relevant workspace directly when surrounding code context is needed, instead of relying only on a parent-prepared diff summary
-- instruction to write those findings into the pre-created report file without changing the report format
+- explicit permission and requirement to write those findings into the pre-created report file without changing the report format
 
 For investigation tasks also include:
 
@@ -99,6 +104,9 @@ When a relevant skill exists, do not paraphrase it loosely as the only guidance.
 - If the `sub-agent` cannot write the report directly, the parent agent must write it immediately from the returned evidence.
 - Do not ask a sub-agent for ad hoc investigation, review, or implementation without a report path.
 - For review tasks, the built-in review result must be materialized into the report file before the task is considered complete.
+- For review tasks, direct report editing by the reviewer is the default path; parent-side transcription is fallback only when direct editing is not possible.
+- For review tasks, a concern that does not break the intended normal path yet should still be written to the report, but may be held instead of blocking release immediately.
+- For review tasks, do not stop or replace an in-flight reviewer just because waiting took too long; keep waiting until completion unless the user explicitly says to stop.
 - Report text should be written in Japanese unless the user explicitly requests another language.
 - The `sub-agent` must preserve the existing report format: no heading renames, no section reordering, no blank-line cleanup, and no whole-file replacement.
 - Existing non-empty parent text in the report is immutable unless the parent explicitly marks it as editable.
@@ -153,6 +161,8 @@ This skill is complete only when:
 - Prefer one bounded request over one broad speculative request.
 - Reuse existing reports before dispatching duplicate work.
 - Use `execution-cost-stabilizer` if the delegation plan risks wasteful reruns or excessive parallelism.
+- Do not make a sub-agent run `codex exec`, nested Codex, or equivalent agent-spawning workflows inside the delegated task.
+- Do not let a sub-agent re-run `development-orchestrator` or other parent-owned workflow entry skills just because they exist in the repo; the sub-agent should execute only the delegated task and the explicitly named supporting skills.
 - Do not leave report structure up to the `sub-agent`.
 - For investigation and review tasks, prefer letting the `sub-agent` read the relevant workspace directly instead of over-constraining it to parent-curated excerpts.
 - For review tasks, prefer the model's native review behavior over inventing a custom review rubric in the prompt.
