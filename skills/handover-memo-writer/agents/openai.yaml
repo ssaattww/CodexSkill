@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handover Memo Writer"
+  short_description: "Write resume-ready handover memos for the next chat"
+  default_prompt: "Create a complete handover memo for moving this work to a new chat without losing context."
