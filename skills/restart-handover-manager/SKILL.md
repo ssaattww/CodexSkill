@@ -24,14 +24,14 @@ Run this skill as: `parent`
 
 Before running this skill, gather:
 
-- current `feedback-points/feedback-points.md`
+- current `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
 - `phases-status.md`
 - `tasks-status.md`
 - recent `reports/`
 
 ## Read in this order
 
-1. `feedback-points/feedback-points.md`
+1. `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
 2. `phases-status.md`
 3. `tasks-status.md`
 4. recent `reports/`

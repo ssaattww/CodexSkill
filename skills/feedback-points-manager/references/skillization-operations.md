@@ -6,7 +6,7 @@ Open this only when you need issue creation flow, routing to another skill, or t
 
 When a duplicate group is reusable across repositories, create an issue in the skill repository.
 
-At commit timing for a skill/process improvement loop, do not stop at the commit alone. Create or confirm the follow-up issue in the skill repository before considering the loop handed off.
+At commit timing for a skill/process improvement loop, do not stop at the commit alone. Either create or confirm the follow-up issue in the skill repository, or record an explicit commit-backed skip rationale when the point is fully resolved by the same skill commit.
 
 Priority:
 
@@ -35,11 +35,25 @@ The issue body must preserve the full FP meaning, not just a short summary. Carr
 
 Once the issue exists:
 
-1. remove the active FP row from `feedback-points/feedback-points.md`
-2. move it to `feedback-points/feedback-points-backlog.md` or otherwise archive it outside the active ledger
+1. remove the active FP row from `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
+2. move it to `/home/ibis/AI/CodexSkill/feedback-points/feedback-points-backlog.md` or otherwise archive it outside the active ledger
 3. include the created issue URL in `根拠リンク`
 
 Do not open duplicate issues for the same group unless scope materially changed.
+
+If no issue is needed because the point is fully resolved by the same skill commit:
+
+1. remove the active FP row from `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
+2. move it to `/home/ibis/AI/CodexSkill/feedback-points/feedback-points-backlog.md` or otherwise archive it outside the active ledger
+3. state the skip rationale explicitly in `次アクション対応`
+4. include commit-backed evidence in `根拠リンク`
+
+If the skill edits are done but the commit-backed closure record does not exist yet:
+
+1. remove the active FP row from `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
+2. move it to `/home/ibis/AI/CodexSkill/feedback-points/feedback-points-backlog.md` as `対応中`
+3. state explicitly in `次アクション対応` that closure is waiting on the upcoming commit
+4. include report-backed progress evidence in `根拠リンク` until the commit exists
 
 ## Recommended routing
 
@@ -65,7 +79,7 @@ If classification is `existing skill update`:
 4. update the skill and any references/scripts
 5. collect evidence if behavior or routing changed
 6. commit the change
-7. create or confirm the follow-up issue if ongoing loop tracking still matters after the commit
+7. create or confirm the follow-up issue if ongoing loop tracking still matters after the commit; otherwise record an explicit skip rationale
 8. create a PR
 9. tell the user the PR is ready to review
 
@@ -76,7 +90,7 @@ Suggested supporting skills:
 
 ## Pre-write review for active ledger updates
 
-Before writing to `<repo-root>/feedback-points/feedback-points.md`, run a classification review with `feedback-points-sanitizer` when any are true:
+Before writing to `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`, run a classification review with `feedback-points-sanitizer` when any are true:
 
 - the point is new
 - the point is materially rewritten

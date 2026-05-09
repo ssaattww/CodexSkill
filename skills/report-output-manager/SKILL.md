@@ -40,6 +40,8 @@ Run this skill when:
 - Place reports in `<repo-root>/reports/`.
 - For new filenames, use:
   - `<issue-prefix>-<item-name>-<yyyymmddhhmmss>.md`
+- When the same logical report needs another revision, keep the same prefix and item name, then insert `-r<revision>` before the timestamp:
+  - `<issue-prefix>-<item-name>-r<revision>-<yyyymmddhhmmss>.md`
 - Prefer canonical issue-based prefixes over freeform labels.
 - Write report body text in Japanese unless the user explicitly requests another language.
 - Do not rename legacy reports unless explicitly requested.
@@ -54,6 +56,11 @@ Run this skill when:
 Use the script when you want a deterministic path:
 
 - [scripts/build_report_path.sh](scripts/build_report_path.sh)
+
+Current limitation:
+
+- `build_report_path.sh` generates the base `<issue-prefix>-<item-name>-<timestamp>.md` form.
+- When you need a revisioned filename with `-r<revision>-`, choose the final path manually unless the script has been extended for that case.
 
 ## Outputs
 
