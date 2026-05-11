@@ -32,7 +32,7 @@ Before running this skill, gather:
 ## Required flow
 
 1. Prepare a task-scoped diff or changed-file set, but keep broader workspace context available for direct inspection by the reviewer.
-2. Read [references/session-reviewer-policy.md](references/session-reviewer-policy.md) before selecting or reusing a reviewer.
+2. When the review touches source layout, naming, partial types, XML documentation, or test comments, read [references/session-review-shape-policy.md](references/session-review-shape-policy.md) before drafting the review request.
 3. Reuse the same review `sub-agent` for the session when one is already assigned and still available; otherwise select one reviewer and record that assignment in the report or parent progress note.
 4. Include task-specific review criteria from earlier audit/design decisions in the review request, and require the reviewer to evaluate the diff against those criteria.
 5. Run review for that task only as a `sub-agent` task through `sub-agent-task-manager`.
