@@ -39,7 +39,7 @@ Before running this skill, gather:
 6. Include task-specific review criteria from earlier audit/design decisions in the review request, and require the reviewer to evaluate the diff against those criteria.
 7. Run review for that task only as a `sub-agent` task through `sub-agent-task-manager`.
 8. Instruct the review `sub-agent` to use the built-in review behavior: findings first, severity-ordered, with file/line references when available.
-9. Use `gpt-5.4` with `high` reasoning effort as the default review `sub-agent` unless the user explicitly overrides the reviewer model for the current run.
+9. Use `gpt-5.5` with `high` reasoning effort as the first-choice review `sub-agent` unless the user explicitly overrides the reviewer model for the current run. If `gpt-5.5` is unavailable, use `gpt-5.4` with `high` reasoning effort as the next choice.
 10. Materialize the built-in review result into the pre-created report file under `reports/` while preserving the existing template format and filling only the intended blank sections.
 11. Prefer having the review `sub-agent` write the report file directly; treat parent-side report materialization as fallback only.
 12. If the review `sub-agent` does not write the report file directly, have the parent write it immediately from the returned review findings.
@@ -66,7 +66,7 @@ When creating a new review report file, call `report-output-manager`.
 - A single session should normally use one reviewer `sub-agent` for initial review and re-review so review standards remain consistent.
 - If the reviewer must change because the original reviewer is unavailable, conflicted, or explicitly replaced by the user, record the reason in the review report.
 - When a session has established concrete review criteria, such as naming, placement, XML comment, test-comment, or design-consistency rules, later reviews in that session must apply those criteria unless the user supersedes them.
-- Default reviewer model is `gpt-5.4` with `high` reasoning effort unless the user explicitly chooses another reviewer configuration.
+- Default reviewer model priority is `gpt-5.5 high` first, then `gpt-5.4 high` if `gpt-5.5` is unavailable, unless the user explicitly chooses another reviewer configuration.
 - If mandatory `sub-agent` review is blocked by permission or execution-mode constraints, ask the user explicitly instead of improvising a parent-side substitute.
 - Review requests should explicitly ask for a code review, not a generic diff summary.
 - Review requests should tell the `sub-agent` to read the pre-created report first and preserve its headings, order, spacing, and any prefilled text.
