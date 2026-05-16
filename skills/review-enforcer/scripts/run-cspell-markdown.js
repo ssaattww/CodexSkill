@@ -18,6 +18,10 @@ const entries = Array.isArray(whitelist.entries) ? whitelist.entries : [];
 const values = entries.flatMap(entryValues).filter(Boolean);
 const dictionaryTerms = values.filter((value) => !/\s/.test(value));
 const ignoredValues = values.filter((value) => /\s|[._-]/.test(value));
+const markdownLinkTargetPatterns = [
+  "/\\]\\(\\s*<?[^)\\s>]+>?(?:\\s+[^)]*)?\\s*\\)/g",
+  "/\\]:\\s+\\S+.*$/gm"
+];
 
 if (values.length === 0) {
   throw new Error(`${whitelistPath}: entries must contain at least one term.`);
@@ -43,6 +47,7 @@ fs.writeFileSync(
       ],
       dictionaries: [...(baseConfig.dictionaries || []), "markdown-whitelist"],
       ignoreRegExpList: [
+        ...markdownLinkTargetPatterns,
         ...ignoredValues.map((value) => whitelistValuePattern(value)),
         ...(baseConfig.ignoreRegExpList || [])
       ]

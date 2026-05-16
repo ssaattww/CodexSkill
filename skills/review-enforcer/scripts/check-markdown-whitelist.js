@@ -185,6 +185,7 @@ function stripMarkdownNoise(text) {
     .replace(/https?:\/\/[^\s)]+/g, blankPreserving)
     .replace(/mailto:[^\s)]+/g, blankPreserving)
     .replace(/<!--[\s\S]*?-->/g, blankPreserving)
+    .replace(/^\[[^\]\n]+\]:\s+\S+.*$/gm, (value) => value.replace(/:\s+\S+.*$/, ": "))
     .replace(/\[[^\]\n]+\]\([^)]+\)/g, (value) => value.replace(/\([^)]+\)/g, ""));
 }
 
