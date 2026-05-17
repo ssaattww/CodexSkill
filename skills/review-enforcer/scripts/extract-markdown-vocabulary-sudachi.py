@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import unicodedata
+import warnings
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -24,6 +25,10 @@ TARGET_SUFFIXES = (".md", ".txt")
 DEPENDENCY_HINT = (
     "Missing dependency: {module}. Run `pip install -r tools/lint/requirements.txt` "
     "from the target repository root."
+)
+CHIKKARPY_DEPENDENCY_HINT = (
+    "Missing dependency: {module}. Install ChikkarPy for synonym grouping, or pass "
+    "`--synonyms none` to skip synonym grouping."
 )
 
 ENGLISH_RE = re.compile(r"(?<![A-Za-z0-9])[A-Za-z][A-Za-z0-9]*(?:[._-][A-Za-z0-9]+)*")
@@ -47,6 +52,7 @@ class VocabularyEntry:
     reading: str = ""
     part_of_speech: str = ""
     group_key: str = ""
+    synonyms: tuple[str, ...] = field(default_factory=tuple)
     count: int = 0
     sources: Counter[str] = field(default_factory=Counter)
 
@@ -66,6 +72,9 @@ def main() -> int:
         collect_english_tokens(vocabulary, cleaned, relative_path)
         collect_japanese_tokens(vocabulary, tokenizer_obj, split_mode, cleaned, relative_path)
 
+    if args.synonyms == "chikkarpy":
+        apply_synonym_groups(list(vocabulary.values()), create_chikkarpy_grouper())
+
     entries = sorted(
         vocabulary.values(),
         key=lambda item: (-item.count, item.kind, item.group_key.casefold(), item.surface.casefold(), item.part_of_speech),
@@ -83,6 +92,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--files", nargs="+", help="Specific .md/.txt files to inspect.")
     parser.add_argument("--changed", action="store_true", help="Inspect changed .md/.txt files only.")
     parser.add_argument("--format", choices=("tsv", "json"), default="tsv", help="Output format.")
+    parser.add_argument(
+        "--synonyms",
+        choices=("chikkarpy", "none"),
+        default="chikkarpy",
+        help="Candidate synonym grouping source.",
+    )
     return parser.parse_args()
 
 
@@ -294,6 +309,125 @@ def sudachi_value(morpheme, name: str) -> str:
     return "" if result == "*" else str(result)
 
 
+class ChikkarpyGrouper:
+    def __init__(self, chikkar) -> None:
+        self.chikkar = chikkar
+        self.cache: dict[str, tuple[str, ...]] = {}
+
+    def find(self, value: str) -> tuple[str, ...]:
+        normalized = normalize_term(value)
+        if normalized in self.cache:
+            return self.cache[normalized]
+
+        try:
+            raw_synonyms = self.chikkar.find(value)
+        except Exception:
+            raw_synonyms = []
+
+        synonyms = tuple(
+            sorted(
+                {
+                    str(synonym).strip()
+                    for synonym in raw_synonyms
+                    if str(synonym).strip() and normalize_term(str(synonym)) != normalized
+                },
+                key=lambda item: (normalize_term(item), item),
+            )
+        )
+        self.cache[normalized] = synonyms
+        return synonyms
+
+
+def create_chikkarpy_grouper() -> ChikkarpyGrouper:
+    try:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="pkg_resources is deprecated.*", category=UserWarning)
+            from chikkarpy import Chikkar
+            from chikkarpy.dictionarylib import Dictionary
+    except ImportError as exc:
+        print(CHIKKARPY_DEPENDENCY_HINT.format(module=exc.name or "ChikkarPy"), file=sys.stderr)
+        raise SystemExit(2) from exc
+
+    try:
+        chikkar = Chikkar()
+        chikkar.add_dictionary(Dictionary())
+        return ChikkarpyGrouper(chikkar)
+    except Exception as exc:
+        print(CHIKKARPY_DEPENDENCY_HINT.format(module="ChikkarPy dictionary"), file=sys.stderr)
+        print(f"ChikkarPy initialization failed: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+
+
+def apply_synonym_groups(entries: list[VocabularyEntry], grouper: ChikkarpyGrouper) -> None:
+    parent = list(range(len(entries)))
+    candidate_sets: list[set[str]] = [set() for _ in entries]
+    synonym_sets: list[set[str]] = [set() for _ in entries]
+    candidate_to_entry_indexes: dict[str, list[int]] = {}
+
+    for index, entry in enumerate(entries):
+        candidate_sets[index].add(entry.normalized)
+        if entry.kind in {"japanese", "katakana"}:
+            lookup_values = {entry.surface, entry.normalized}
+            for lookup_value in lookup_values:
+                if not contains_japanese(lookup_value):
+                    continue
+                for synonym in grouper.find(lookup_value):
+                    synonym_sets[index].add(synonym)
+                    candidate_sets[index].add(normalize_term(synonym))
+
+        for candidate in candidate_sets[index]:
+            candidate_to_entry_indexes.setdefault(candidate, []).append(index)
+
+    for indexes in candidate_to_entry_indexes.values():
+        first_index = indexes[0]
+        for index in indexes[1:]:
+            union(parent, first_index, index)
+
+    grouped_indexes: dict[int, list[int]] = {}
+    for index in range(len(entries)):
+        grouped_indexes.setdefault(find_parent(parent, index), []).append(index)
+
+    for indexes in grouped_indexes.values():
+        if not any(synonym_sets[index] for index in indexes):
+            continue
+
+        group_candidates = set[str]()
+        for index in indexes:
+            group_candidates.update(candidate_sets[index])
+            entries[index].synonyms = tuple(
+                sorted(synonym_sets[index], key=lambda item: (normalize_term(item), item))
+            )
+
+        group_id = select_group_identifier(group_candidates)
+        for index in indexes:
+            entries[index].group_key = f"synonym:{group_id}"
+
+
+def find_parent(parent: list[int], index: int) -> int:
+    if parent[index] != index:
+        parent[index] = find_parent(parent, parent[index])
+    return parent[index]
+
+
+def union(parent: list[int], left: int, right: int) -> None:
+    left_parent = find_parent(parent, left)
+    right_parent = find_parent(parent, right)
+    if left_parent != right_parent:
+        parent[right_parent] = left_parent
+
+
+def select_group_identifier(candidates: set[str]) -> str:
+    sorted_candidates = sorted(candidates)
+    for candidate in sorted_candidates:
+        if contains_japanese(candidate):
+            return candidate
+    return sorted_candidates[0] if sorted_candidates else ""
+
+
+def contains_japanese(value: str) -> bool:
+    return bool(KATAKANA_RE.search(value) or CJK_RE.search(value))
+
+
 def normalize_term(value: str) -> str:
     return unicodedata.normalize("NFKC", value).casefold()
 
@@ -323,9 +457,10 @@ def group_key(kind: str, normalized: str, reading: str) -> str:
 
 
 def write_tsv(entries: list[VocabularyEntry]) -> None:
-    print("type\tsurface\tnormalized\treading\tpartOfSpeech\tgroupKey\tcount\tsources")
+    print("type\tsurface\tnormalized\treading\tpartOfSpeech\tgroupKey\tsynonyms\tcount\tsources")
     for entry in entries:
         sources = ",".join(f"{source}:{count}" for source, count in sorted(entry.sources.items()))
+        synonyms = "|".join(entry.synonyms)
         print(
             "\t".join(
                 [
@@ -335,6 +470,7 @@ def write_tsv(entries: list[VocabularyEntry]) -> None:
                     entry.reading,
                     entry.part_of_speech,
                     entry.group_key,
+                    synonyms,
                     str(entry.count),
                     sources,
                 ]
@@ -353,6 +489,7 @@ def write_json(entries: list[VocabularyEntry]) -> None:
                     "reading": entry.reading,
                     "partOfSpeech": entry.part_of_speech,
                     "groupKey": entry.group_key,
+                    "synonyms": list(entry.synonyms),
                     "count": entry.count,
                     "sources": dict(sorted(entry.sources.items())),
                 }
