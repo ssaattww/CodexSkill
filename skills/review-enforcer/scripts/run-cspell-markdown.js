@@ -16,11 +16,14 @@ const baseConfig = JSON.parse(fs.readFileSync(baseConfigPath, "utf8"));
 const whitelist = YAML.parse(fs.readFileSync(whitelistPath, "utf8"));
 const entries = Array.isArray(whitelist.entries) ? whitelist.entries : [];
 const values = entries.flatMap(entryValues).filter(Boolean);
-const dictionaryTerms = values.filter((value) => !/\s/.test(value));
-const ignoredValues = values.filter((value) => /\s|[._-]/.test(value));
+const dictionaryTerms = values.filter((value) => !/[\s._:<>-]/.test(value));
+const ignoredValues = values.filter((value) => /[\s._:<>-]/.test(value));
 const markdownLinkTargetPatterns = [
   "/\\]\\(\\s*<?[^)\\s>]+>?(?:\\s+[^)]*)?\\s*\\)/g",
   "/\\]:\\s+\\S+.*$/gm"
+];
+const yamlKeyPatterns = [
+  "/^\\s*-?\\s*(version|entries|term|aliases|description):/gm"
 ];
 
 if (values.length === 0) {
@@ -48,6 +51,7 @@ fs.writeFileSync(
       dictionaries: [...(baseConfig.dictionaries || []), "markdown-whitelist"],
       ignoreRegExpList: [
         ...markdownLinkTargetPatterns,
+        ...yamlKeyPatterns,
         ...ignoredValues.map((value) => whitelistValuePattern(value)),
         ...(baseConfig.ignoreRegExpList || [])
       ]

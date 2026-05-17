@@ -52,7 +52,12 @@ if (violations.length > 0) {
 function readInputs() {
   if (readsStdin) {
     const relativePath = process.argv[3] || "<stdin>";
-    return [{ relativePath, text: fs.readFileSync(0, "utf8") }];
+    const text = fs.readFileSync(0, "utf8");
+    if (normalizePath(relativePath) === normalizePath(path.relative(root, whitelistPath))) {
+      return readWhitelistValueInputs(relativePath, text);
+    }
+
+    return [{ relativePath, text }];
   }
 
   const filePaths = readExplicitMarkdownFiles() || (process.argv.includes("--changed") ? listChangedMarkdownFiles() : listMarkdownFiles(root));
@@ -60,6 +65,29 @@ function readInputs() {
     relativePath: path.relative(root, filePath).replaceAll(path.sep, "/"),
     text: fs.readFileSync(filePath, "utf8")
   }));
+}
+
+function readWhitelistValueInputs(relativePath, text) {
+  const data = YAML.parse(text);
+  const entries = Array.isArray(data.entries) ? data.entries : [];
+  return entries.flatMap((entry) => {
+    const values = entryValues(entry).map((value) => ({
+      relativePath: `${relativePath}:${entry.term} [whitelist value]`,
+      text: value
+    }));
+    if (entry.description) {
+      values.push({
+        relativePath: `${relativePath}:${entry.term} [whitelist description]`,
+        text: entry.description
+      });
+    }
+
+    return values;
+  });
+}
+
+function normalizePath(filePath) {
+  return filePath.replaceAll(path.sep, "/");
 }
 
 function readExplicitMarkdownFiles() {
