@@ -1,0 +1,4 @@
+interface:
+  display_name: "Markdown Word Checker"
+  short_description: "Check Markdown wording with repo-local lint rules"
+  default_prompt: "Use $markdown-word-checker to check Markdown wording with repo-local lint rules."

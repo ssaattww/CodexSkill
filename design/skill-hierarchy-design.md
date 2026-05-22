@@ -46,6 +46,7 @@ development-orchestrator [親が実行]
 │  ├─ sub-agent-task-manager [親が実行, review/verificationはsub-agent]
 │  └─ report-output-manager [親が実行]
 ├─ review-enforcer [親が実行]
+│  ├─ markdown-word-checker [親が実行, Markdown関連変更時]
 │  ├─ sub-agent-task-manager [親が実行, reviewerは常にsub-agent]
 │  └─ report-output-manager [親が実行]
 ├─ progress-sync-manager [親が実行]
@@ -78,7 +79,8 @@ restart-handover-manager [親が実行]
 └─ reports/ と進捗ファイルを参照して再開状態を組み立てる
 
 handover-memo-writer [親が実行]
-└─ report-output-manager [親が実行, handover report を常時出力する]
+├─ report-output-manager [親が実行, handover report を常時出力する]
+└─ markdown-word-checker [親が実行, 作成したhandover Markdownをfocused lintへ渡す]
 
 execution-cost-stabilizer [親が実行]
 └─ 委譲前の実行計画とコスト制御を支援する
@@ -112,6 +114,21 @@ development-orchestrator [親が実行]
    ├─ 既存 skill の場合は既存 `SKILL.md` を読み、repo 標準へ正規化する
    ├─ 実在する canonical skill inventory がある場合だけそれを更新する
    └─ `skills/design/skill-hierarchy-design.md` と `design/skill-hierarchy-design.md` を同期更新する
+```
+
+## Markdown資料チェックフローの呼び出しツリー
+
+```text
+review-enforcer [親が実行]
+└─ markdown-word-checker [親が実行]
+   ├─ sub-agent-task-manager [親が実行, 大きいlint証跡収集はsub-agent]
+   └─ report-output-manager [親が実行, sub-agent report path決定]
+
+design-executor [親が実行]
+└─ markdown-word-checker [親が実行, 編集Markdownのfocused lint]
+
+handover-memo-writer [親が実行]
+└─ markdown-word-checker [親が実行, 作成reportのfocused lint]
 ```
 
 ## 標準作業フロー
@@ -214,14 +231,14 @@ local skill を新規作成または実質更新するときは、親が次の�
 | `task-consistency-manager` | 実際に必要な作業が `tasks-status.md` と `phases-status.md` に漏れなく反映されている状態を保つ。 | `親が実行` |
 | `progress-sync-manager` | report や進捗管理ファイルを、実際の作業結果に合わせて同期する。 | `親が実行` |
 | `restart-handover-manager` | tracking と reports から現在地を復元し、再開時の次アクションを明確にする。大きい文脈では要約下書きを sub-agent に切り出せる。 | `親が実行` |
-| `handover-memo-writer` | 別チャットへ移る前に、背景、経緯、決定事項、未解決事項、次の依頼文まで含む resume-ready な handover memo を作り、同内容の handover report を `reports/` へ常時出力する。 | `親が実行` |
+| `handover-memo-writer` | 別チャットへ移る前に、背景、経緯、決定事項、未解決事項、次の依頼文まで含む resume-ready な handover memo を作り、同内容の handover report を `reports/` へ常時出力し、作成した Markdown を `markdown-word-checker` へ渡す。 | `親が実行` |
 
 ### 設計
 
 | Skill名 | 役割 | 実行方式 |
 | --- | --- | --- |
 | `design-doc-maintainer` | 設計変更が必要かを判断し、どの設計成果物を更新するべきかを決める。大きい設計影響調査は sub-agent に切り出せる。 | `親が実行` |
-| `design-executor` | 決定済みの設計変更に基づいて、設計文書や breaking changes 記録を実際に編集する。 | `親が実行` |
+| `design-executor` | 決定済みの設計変更に基づいて、設計文書や breaking changes 記録を実際に編集し、編集した Markdown を `markdown-word-checker` へ渡す。 | `親が実行` |
 
 ### 実装と TDD
 
@@ -234,7 +251,8 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 | Skill名 | 役割 | 実行方式 |
 | --- | --- | --- |
-| `review-enforcer` | task 完了前に必ずレビューを通し、セッション内で原則同じ reviewer sub-agent を使い、review report が残るまで完了扱いにしない。Markdown 許可一覧変更では、利用者が実 entry を明示確認したことも完了条件に含める。 | `親が実行` |
+| `review-enforcer` | task 完了前に必ずレビューを通し、セッション内で原則同じ reviewer sub-agent を使い、review report が残るまで完了扱いにしない。Markdown 関連変更では `markdown-word-checker` の結果を review report に含め、許可一覧、`prh`、target 除外変更では利用者が実 entry を明示確認したことも完了条件に含める。 | `親が実行` |
+| `markdown-word-checker` | 対象repoの `tools/lint/` 設定を読み、Markdown用語、表記揺れ、backtick回避、`skip` / `unsupported` / `failed gate` を分類して呼び出し元へ返す。 | `親が実行` |
 | `feedback-coding-standards-enforcer` | API ドキュメント、命名、解析ルールなどのコーディング規約を review/commit 前に強制する。 | `親が実行` |
 | `feedback-issue-intake-fallback-manager` | issue 要件の取得が失敗したときに、代替経路で authoritative な要件を確保する。 | `親が実行` |
 
@@ -284,14 +302,14 @@ local skill を新規作成または実質更新するときは、親が次の�
 | `task-consistency-manager` | current work item、tasks/phases、new scope | 更新済み tracking、明確な next step | tracking が実 scope と一致。大きい監査では sub-agent audit を parent が確認する |
 | `progress-sync-manager` | 最新の task/review/verification/git 結果、reports | 同期済み tracking と references | canonical tracking が実状態と一致 |
 | `restart-handover-manager` | feedback-points、tasks/phases、recent reports | current position、next task、open deps | 再開時の次アクションが明示されている。大きい文脈では sub-agent summary を parent が採用する |
-| `handover-memo-writer` | current chat history、agreed constraints、repo/report/git state、user format request | next-chat ready handover memo、handover report | 新しい chat が旧会話なしでも再開可能な handover と report が完成している |
+| `handover-memo-writer` | current chat history、agreed constraints、repo/report/git state、user format request、作成Markdown report path | next-chat ready handover memo、handover report、`markdown-word-checker` focused lint結果 | 新しい chat が旧会話なしでも再開可能な handover と report が完成し、作成Markdownのcheck結果が記録されている |
 
 ### 設計
 
 | Skill名 | 入力 | 出力 | 完了条件 |
 | --- | --- | --- | --- |
 | `design-doc-maintainer` | task/issue scope、behavior change、related design docs | design impact 判断、更新対象の設計成果物 | design reflection と必要な更新方針が確定。大きい影響面では sub-agent scan を parent が採用する |
-| `design-executor` | target design files、intended change、breaking change 要否 | 更新済み design docs、残 ambiguity の報告 | 必要な設計文書編集が完了 |
+| `design-executor` | target design files、intended change、breaking change 要否、編集Markdown file list | 更新済み design docs、`markdown-word-checker` focused lint結果、残 ambiguity の報告 | 必要な設計文書編集が完了し、編集Markdownのcheck結果が記録されている |
 
 ### 実装と TDD
 
@@ -304,7 +322,8 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 | Skill名 | 入力 | 出力 | 完了条件 |
 | --- | --- | --- | --- |
-| `review-enforcer` | task-scoped diff、review scope、workspace context、validation context、session reviewer、適用するレビュー指針、Markdown 許可一覧の利用者レビュー状態 | review report、findings または no findings、disposition、reviewer reuse decision、許可一覧変更時の利用者明示レビュー記録 | review evidence が report に残り disposition 済み。Markdown 許可一覧変更は利用者が実 entries を明示確認済み |
+| `review-enforcer` | task-scoped diff、review scope、workspace context、validation context、session reviewer、適用するレビュー指針、`markdown-word-checker` 結果、Markdown 許可一覧、`prh`、target 除外の利用者レビュー状態 | review report、findings または no findings、disposition、reviewer reuse decision、`markdown-word-checker` 証跡、exact entry変更時の利用者明示レビュー記録 | review evidence が report に残り disposition 済み。Markdown lint gate failure は完了扱いにせず、exact entry変更は利用者が実 entries を明示確認済み |
+| `markdown-word-checker` | target repo root、Markdown file list、caller gate context、repo-local `tools/lint/` 設定、package lint wiring | command evidence、対象files、`skip` / `unsupported` / `failed gate` 分類、lint指摘分類、backtick回避確認、exact entry review要否、sub-agent report path | Markdown check結果がcallerへ返り、repo固有 whitelist / `prh` / target 除外のexact entry変更が利用者reviewなしに適用されていない |
 | `feedback-coding-standards-enforcer` | changed files、API diff、repo standards | standards evidence、violation fixes または rationale | standards-sensitive change の確認と記録が完了 |
 | `feedback-issue-intake-fallback-manager` | issue id/URL、available retrieval paths、partial context | authoritative requirements report、confidence、gaps | requirements と confidence が report に明示済み |
 
