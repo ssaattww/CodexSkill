@@ -141,7 +141,7 @@ review-enforcer [親が実行]
 - sub-agent 用の独立 report を `reports/` 配下へ作成し、呼び出し元 report にはその path と要約を添付する。
 - 呼び出し元の既存 report に sub-agent 証跡欄が事前に用意されている場合だけ、その既存 report を sub-agent report として再利用し、空欄または placeholder だけを埋める。
 
-どちらの場合も、`markdown-word-checker` は report path、lint 実行結果、`skip` / `unsupported` / `failed gate` の判定、backtick 回避チェック結果を呼び出し元へ返す。
+どちらの場合も、`markdown-word-checker` は report path、check scope ごとの lint 実行結果、`skip` / `unsupported` / `failed gate` / `needs user review` の判定、aggregate gate state、backtick 回避チェック結果を呼び出し元へ返す。
 
 ### Markdown 資料作成 skill からの利用
 
@@ -197,7 +197,8 @@ lint の指摘に従って本文を直してください。
    - 意図的な stricter gate として記録する指摘。
    - `skip` / `unsupported` / `failed gate` として記録する検査状態。
 8. repo 固有設定の変更が必要な場合、利用者に exact entry をレビューしてもらう。
-9. 結果を呼び出し元 skill へ返す。
+9. exact entry review が必要になった場合は gate を停止し、候補、理由、対象ファイル、呼び出し元 report path を呼び出し元へ返す。
+10. 結果を呼び出し元 skill へ返す。
 
 ### 新語ルーティング決定表
 
@@ -219,15 +220,25 @@ lint の指摘に従って本文を直してください。
 
 - 対象リポジトリ root。
 - 対象 Markdown ファイル。
-- 実行した command と exit status。
+- check scope ごとの個別 result。
+  - `focused`: 対象ファイル、実行した command と exit status、`pass` / `skip` / `unsupported` / `failed gate` / `needs user review`、理由、残リスク。
+  - `full`: 対象ファイルまたは target set、実行した command と exit status、`pass` / `skip` / `unsupported` / `failed gate` / `needs user review`、理由、残リスク。
 - 実行しなかった検査の `skip` / `unsupported` 理由。
 - 必須 gate または repo 設定済み検査が失敗した場合の `failed gate` 判定。
+- aggregate gate state。
+  - `failed gate` を最優先する。
+  - 次に `needs user review`、`unsupported`、`skip`、`pass` 相当の順で caller が判断できる材料を返す。
+  - focused と full の両方が対象になった場合、片方の `pass` は片方の `failed gate`、`needs user review`、`unsupported` を上書きしない。
 - lint 指摘の分類結果。
 - backtick 回避チェックの結果。
 - lint 設定見直し要否。
 - repo 固有設定変更が必要な場合の利用者レビュー要否。
-- exact entry review 要否。
+- exact entry review 要否、候補、理由、対象ファイル、呼び出し元 report path。
 - sub-agent に委譲した場合の report path。
+
+`needs user review` は exact entry review 待ちで gate が停止している状態である。利用者承認後は、呼び出し元が適切な実装 owner に repo 固有設定編集を渡し、該当する focused lint または full lint、必要ならその両方を再実行し、同じ呼び出し元 report に更新結果と aggregate gate state を残す。exact entry がレビュー済みになっただけでは gate を閉じない。
+
+`unsupported` は pass ではなく、呼び出し元の disposition が必要な状態である。呼び出し元は、必須 gate か任意 check か、repo が該当 check を設定済みか、normal path を満たすために残リスクとして許容できるかを report に記録して扱う。
 
 ## 利用者レビューが必要な変更
 
@@ -262,7 +273,11 @@ ChikkarPy は同義語候補の grouping に使う。ChikkarPy が返した候�
 
 - Markdown 関連変更は `markdown-word-checker` を呼ぶ。
 - Markdown lint gate が失敗した場合、task 完了扱いにしない。
+- focused / full の個別 result と aggregate gate state を review report に含め、片方の pass で片方の失敗や user review 待ちを消さない。
 - whitelist / prh 変更は利用者の exact entry レビューが必要。
+- exact entry がレビュー済みでも、repo 固有設定編集と該当 lint 再実行が済むまで review gate を閉じない。
+- Markdown lint が task/review gate として必須、または repo が該当 check を設定済みの場合、`unsupported` だけでは完了扱いにしない。
+- Markdown lint 未導入 repo で focused lint も full lint も実行できない場合に限り、unsupported 理由と残リスクを review report に記録し、利用者意図を満たせる normal path なら hold/disposition として扱える。
 - review report には `markdown-word-checker` の結果を証跡として含める。
 
 これにより、review skill が単語検査の細則を持ち続けて肥大化することを防ぐ。
@@ -276,9 +291,11 @@ Markdown 資料を作る skill は、次の共通契約を持つ。
 - 作成または編集した Markdown ファイル一覧を明示ファイルとして `markdown-word-checker` へ渡す。
 - 作成直後は focused lint を既定にし、task 完了または review gate では full lint を別途検討する。
 - `reports/` 配下など通常の full lint 対象外になり得る Markdown でも、明示ファイルとして focused lint 可否と理由を確認し、結果を呼び出し元 report に残す。
+- focused lint と full lint の両方を扱う場合は、scope ごとの個別 result と aggregate gate state を呼び出し元 report に残す。
 - lint 指摘は本文修正か lint 設定見直しとして扱う。
 - lint 設定見直しが必要な場合、利用者レビューなしに repo 固有設定を変更しない。
-- sub-agent を使わず focused lint を実行した場合でも、lint 結果、分類結果、`skip` / `unsupported` / `failed gate`、lint 設定見直し要否、exact entry review 要否を呼び出し元 report に記録する。
+- exact entry review 後は、適切な実装 owner が repo 固有設定を編集し、該当 lint を再実行した結果で呼び出し元 report を更新する。
+- sub-agent を使わず focused lint を実行した場合でも、lint 結果、分類結果、`skip` / `unsupported` / `failed gate` / `needs user review`、aggregate gate state、lint 設定見直し要否、exact entry review 要否を呼び出し元 report に記録する。
 
 既存 skill では、まず `design-executor` と `handover-memo-writer` を対象にする。将来、汎用の `markdown-document-writer` skill を追加する場合も同じ契約に従う。
 

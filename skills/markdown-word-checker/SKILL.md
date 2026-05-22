@@ -50,7 +50,8 @@ Before running this skill, gather:
    - Ordinary prose terms must not be wrapped only to avoid the lint gate.
 7. Classify findings and execution state.
 8. If repo-specific configuration changes are needed, prepare exact entry candidates and stop for user review before editing.
-9. Return the command results, classification, user-review needs, and report paths to the caller.
+9. If exact entry review is required, stop the gate and return the candidates, rationale, target files, and caller report path.
+10. Return per-scope command results, aggregate gate state, classification, user-review needs, and report paths to the caller.
 
 ## Outputs
 
@@ -58,14 +59,18 @@ Return these results to the caller:
 
 - target repository root
 - target Markdown files
-- command path used and exit status
+- per-scope check results
+  - `focused`: target files, command path used, exit status, state, reason, and remaining risk
+  - `full`: target set, command path used, exit status, state, reason, and remaining risk
+- aggregate gate state for the caller
 - skipped checks with `skip` reasons
 - unsupported checks with `unsupported` reasons
 - blocking lint failures with `failed gate` reasons
+- user-review waits with `needs user review` reasons
 - lint findings classified as body fixes, lint-setting review, or intentional stricter gate state
 - backtick or quote evasion findings
 - whether repo-specific lint settings need user review
-- exact entry review requirement for whitelist, `prh`, or target exclusions
+- exact entry review requirement for whitelist, `prh`, or target exclusions, including candidates, rationale, target files, and caller report path
 - sub-agent report path when evidence collection was delegated
 
 ## Completion condition
@@ -74,9 +79,10 @@ This skill is complete only when:
 
 - the target root and target Markdown file set have been classified
 - available repo-local `tools/lint/` configuration has been considered
-- focused or full lint has either run or has a recorded `skip`, `unsupported`, or `failed gate` reason
+- each caller-requested focused or full lint scope has either run or has a recorded `skip`, `unsupported`, `failed gate`, or `needs user review` reason
 - caller-facing results include command evidence and remaining risks
 - repo-specific whitelist, `prh`, or target-exclusion exact entry changes have not been applied without user review
+- any aggregate gate state is derived from the per-scope results without letting one scope's pass overwrite another scope's blocking state
 
 ## Rules
 
@@ -96,6 +102,11 @@ This skill is complete only when:
 | `skip` | No Markdown target exists, or an optional check is not configured. |
 | `unsupported` | The repository or target file set cannot satisfy this skill's lint contract, so the result cannot be treated as pass or fail. |
 | `failed gate` | A caller-required gate or repository-configured check ran and failed. |
+| `needs user review` | Exact repo-specific entries must be reviewed by the user before configuration edits can proceed. |
+
+`unsupported` is not pass. The caller must record a disposition that explains whether the unsupported check blocks the gate, remains on hold, or is acceptable as a documented risk for this caller.
+
+Aggregate gate state is calculated from all caller-requested scopes. `failed gate` has the highest priority, followed by `needs user review`, `unsupported`, `skip`, and pass-equivalent states. When focused lint and full lint are both in scope, a passing result from one scope must not overwrite a `failed gate`, `needs user review`, or `unsupported` result from the other scope.
 
 Typical classification:
 
@@ -122,3 +133,12 @@ Use this table for lint findings and extracted candidates. It is internal to thi
 | missing root, target file, package wiring, targets, whitelist, or `prh` settings | Classify as `skip`, `unsupported`, or `failed gate`, not as a vocabulary candidate. |
 | uncertain candidate or any repo-specific setting addition, deletion, or rewrite | Send exact entry and rationale to user review before editing. |
 | ChikkarPy or SudachiPy output | Use as grouping, frequency, and source evidence only. Do not auto-apply. |
+
+When exact entry review is needed, stop the caller gate and return:
+
+- candidate exact entries
+- rationale for each candidate
+- target files that triggered the candidate
+- caller report path to update after approval
+
+After user approval, the caller assigns repo-specific configuration edits to the appropriate implementation owner, reruns the affected focused lint, full lint, or both, and updates the same caller report with the new per-scope results and aggregate gate state. User approval of an exact entry by itself does not close the gate.
