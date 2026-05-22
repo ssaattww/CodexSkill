@@ -156,6 +156,10 @@ Markdown 資料を作成する skill は、資料作成後に `markdown-word-che
 
 資料作成 skill は、作業者向けに細かい用語ルールを説明しない。作成した Markdown を lint にかけ、指摘があれば通常の修正作業として扱う。
 
+資料作成 skill は、自分が作成または編集した Markdown ファイル一覧を `markdown-word-checker` へ明示ファイルとして渡す。作成直後は、その明示ファイルを対象にした focused lint を既定とする。task 完了時または review gate では、focused lint とは別に full lint を実行または要求するかを検討する。
+
+明示ファイルが `reports/` 配下など通常の full lint 対象外になり得る場合でも、資料作成 skill は focused lint の可否と理由を確認し、その結果を呼び出し元 report に残す。
+
 ```text
 design-executor / handover-memo-writer / markdown-document-writer
 └─ markdown-word-checker [親が実行]
@@ -195,6 +199,20 @@ lint の指摘に従って本文を直してください。
 8. repo 固有設定の変更が必要な場合、利用者に exact entry をレビューしてもらう。
 9. 結果を呼び出し元 skill へ返す。
 
+### 新語ルーティング決定表
+
+`markdown-word-checker` は、lint 指摘や抽出候補に新しい語句が含まれる場合、次の順で分類する。この表は `markdown-word-checker` 内部の判断基準であり、作業者向け表示には展開しない。
+
+| 判断対象 | 寄せ先 |
+| --- | --- |
+| typo、冗長な英単語、文脈不足の語句 | 本文修正。単独語で意味が薄い場合は、文脈が分かる複合語または日本語表現へ直す。 |
+| 新しい概念として今後も資料中で許可する必要がある語句 | `markdown-whitelist.yaml` の意味付き `term` 候補。`description` で概念境界を確認できる形にする。 |
+| 既存または新規の同じ概念として今後も許可する別表記 | `markdown-whitelist.yaml` の `aliases` 候補。意味が違う語句は `aliases` に混ぜない。 |
+| 今後は正式表記へ直したい表記揺れ | `prh.yml` 候補。許可する別名ではなく、直すべき表記として扱う。 |
+| lint 対象、root、`package.json`、`markdown-targets.json`、whitelist、prh など repo 設定の欠落 | 本文や語彙候補ではなく、`skip` / `unsupported` / `failed gate` の設定状態として分類する。 |
+| 判断不能、または repo 固有設定の追加、削除、変更を伴う候補 | exact entry と理由を利用者レビューへ回す。承認前に repo 固有設定を編集しない。 |
+| ChikkarPy / SudachiPy が出した候補 | 自動反映しない。候補整理、頻度、出現元、利用者レビュー材料に留める。 |
+
 ## `markdown-word-checker` の output contract
 
 `markdown-word-checker` は、呼び出し元 skill へ次を返す。
@@ -203,9 +221,12 @@ lint の指摘に従って本文を直してください。
 - 対象 Markdown ファイル。
 - 実行した command と exit status。
 - 実行しなかった検査の `skip` / `unsupported` 理由。
+- 必須 gate または repo 設定済み検査が失敗した場合の `failed gate` 判定。
 - lint 指摘の分類結果。
 - backtick 回避チェックの結果。
+- lint 設定見直し要否。
 - repo 固有設定変更が必要な場合の利用者レビュー要否。
+- exact entry review 要否。
 - sub-agent に委譲した場合の report path。
 
 ## 利用者レビューが必要な変更
@@ -252,8 +273,12 @@ Markdown 資料を作る skill は、次の共通契約を持つ。
 
 - 資料作成者へ細かい語彙規則を説明しない。
 - 作成後に `markdown-word-checker` を呼ぶ。
+- 作成または編集した Markdown ファイル一覧を明示ファイルとして `markdown-word-checker` へ渡す。
+- 作成直後は focused lint を既定にし、task 完了または review gate では full lint を別途検討する。
+- `reports/` 配下など通常の full lint 対象外になり得る Markdown でも、明示ファイルとして focused lint 可否と理由を確認し、結果を呼び出し元 report に残す。
 - lint 指摘は本文修正か lint 設定見直しとして扱う。
 - lint 設定見直しが必要な場合、利用者レビューなしに repo 固有設定を変更しない。
+- sub-agent を使わず focused lint を実行した場合でも、lint 結果、分類結果、`skip` / `unsupported` / `failed gate`、lint 設定見直し要否、exact entry review 要否を呼び出し元 report に記録する。
 
 既存 skill では、まず `design-executor` と `handover-memo-writer` を対象にする。将来、汎用の `markdown-document-writer` skill を追加する場合も同じ契約に従う。
 
