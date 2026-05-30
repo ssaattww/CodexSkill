@@ -43,8 +43,11 @@
 Skill / SKILL.md
   人間・Codex 向けの作業説明を書く
 
-Skill / flow.json
-  hooks が読む機械可読な必須フローを書く
+Repository / workflow.json
+  repository 固有の phase / task 階層を書く
+
+Skill / steps.json
+  hooks が読む機械可読な reusable step 定義を書く
 
 UserPromptSubmit hook
   active flow がある場合だけ現在のユーザー入力を durable state に保存する
@@ -125,8 +128,11 @@ Codex 本体に任せないこと。
 state は Codex を起動したときのプロジェクトディレクトリ内に保持する。
 途中で tool の `cwd` が変わっても、state の保存先は起動時プロジェクトディレクトリから動かさない。
 
-flow 定義は CodexSkill 側に保持する。
-対象プロジェクト側には flow の進捗 state と hook 設定だけを置き、Skill の必須手順定義そのものは複製しない。
+task / phase 定義は起動したプロジェクト側に保持する。
+task / phase は repository ごとの開発単位、粒度、リリース運用に依存するためである。
+
+step 定義は CodexSkill 側に保持する。
+step は「設計する」「実装する」「検証する」「レビューする」「commit する」のように、多くの task で再利用されるためである。
 
 ```text
 started-project/
@@ -141,12 +147,14 @@ started-project/
       flow_state.json
       progress.json
       hook_logs/
+    workflows/
+      release-governance-workflow.json
 
 CodexSkill/
   skills/
     release-governance-manager/
       SKILL.md
-      flow.json
+      steps.json
 ```
 
 責務境界。
@@ -155,11 +163,14 @@ CodexSkill/
 started-project/.codex/state/
   起動したプロジェクト固有の実行 state を保持する
 
-CodexSkill/skills/*/flow.json
-  Skill ごとの必須 flow 定義を保持する
+CodexSkill/skills/*/steps.json
+  Skill ごとの再利用可能な step 定義を保持する
+
+started-project/.codex/workflows/*.json
+  repository ごとの phase / task 階層と、各 task が使う step 参照を保持する
 
 started-project/.codex/config.toml
-  hook の有効化、state root、CodexSkill root、Skill flow root を保持する
+  hook の有効化、state root、workflow root、CodexSkill root、step root を保持する
 ```
 
 ### 4.1 root 解決契約
@@ -174,13 +185,15 @@ hook は tool payload の `cwd` を state root の決定に使わない。
    - CODEX_STARTED_PROJECT_ROOT
    - CODEX_FLOW_STATE_ROOT
    - CODEX_SKILL_ROOT
-   - CODEX_SKILL_FLOW_ROOT
+   - CODEX_REPO_WORKFLOW_ROOT
+   - CODEX_SKILL_STEP_ROOT
 
 2. 環境変数がなければ started-project/.codex/config.toml を読む
    - [flow_enforcement].started_project_root
    - [flow_enforcement].state_root
    - [flow_enforcement].codex_skill_root
-   - [flow_enforcement].flow_root
+   - [flow_enforcement].workflow_root
+   - [flow_enforcement].step_root
 
 3. flow_state.json の roots は検証用として読む
    - hook が解決した root と一致しない場合は state 破損扱いにする
@@ -199,13 +212,16 @@ state_root
 codex_skill_root
   CodexSkill repository root の絶対 path
 
-flow_root
+workflow_root
+  started_project_root/.codex/workflows の絶対 path
+
+step_root
   codex_skill_root/skills の絶対 path
 ```
 
-`flow_root` は `CodexSkill/skills` を指す。
-hook は `flow_state.json` の `current_task.skill` と `version` から
-`{flow_root}/{skill}/flow.json` を読む。
+`workflow_root` は repository-local な phase / task 定義を指す。
+`step_root` は CodexSkill 側の reusable step 定義を指す。
+hook は `flow_state.json` の `current_workflow.workflow_path` から repo-local workflow を読み、各 task の `step_set_ref` から `{step_root}/{skill}/steps.json` を読む。
 
 hook command は相対 `cwd` に依存しない形で起動する。
 相対 command を使う場合でも、wrapper は上記環境変数を必ず渡す。
@@ -216,10 +232,10 @@ hook command は相対 `cwd` に依存しない形で起動する。
 ```text
 started-project/.codex/skills/
   release-governance-manager/
-    flow.json
+    steps.json
 ```
 
-上記のように flow 定義をプロジェクト側へ複製すると、Skill 本体と flow 定義が分岐するため採用しない。
+上記のように reusable step 定義をプロジェクト側へ複製すると、Skill 本体と step 定義が分岐するため採用しない。
 
 ## 5. Skill flow 定義
 
@@ -250,87 +266,20 @@ Release governance を確認し、以下の整合性を取る。
 4. 判断結果をまとめる
 ```
 
-### 5.2 `flow.json`
+### 5.2 repository workflow 定義
 
 hooks は自然文の `SKILL.md` を直接解釈しない。
-同じフローを機械可読な `flow.json` として定義する。
+repository ごとの phase / task 階層は、起動したプロジェクト側の `.codex/workflows/*.json` に機械可読な workflow 定義として置く。
 
-`flow.json` は CodexSkill 側に置く。
-hook は `flow_state.json` の `current_task.skill` と `version` から、CodexSkill 側の対応する `flow.json` を読む。
+phase と task は repository ごとに異なる。
+そのため、CodexSkill 側へ置かず、対象 repository が所有する。
 
 例。
 
 ```json
 {
-  "skill": "release-governance-manager",
+  "workflow_id": "release-governance",
   "version": 1,
-  "steps": [
-    {
-      "id": "read_breaking_changes",
-      "description": "Design/BreakingChanges.md を読む",
-      "required": true,
-      "evidence": [
-        {
-          "tool": "Bash",
-          "command_contains": "Design/BreakingChanges.md"
-        }
-      ]
-    },
-    {
-      "id": "check_workflows",
-      "description": ".github/workflows を確認する",
-      "required": true,
-      "evidence": [
-        {
-          "tool": "Bash",
-          "command_contains": ".github/workflows"
-        }
-      ]
-    },
-    {
-      "id": "check_package_version",
-      "description": "package version source を確認する",
-      "required": true,
-      "evidence": [
-        {
-          "tool": "Bash",
-          "command_contains": "VersionPrefix"
-        },
-        {
-          "tool": "Bash",
-          "command_contains": "Directory.Build.props"
-        }
-      ]
-    },
-    {
-      "id": "summarize_decision",
-      "description": "判断結果をまとめる",
-      "required": true,
-      "evidence": [
-        {
-          "type": "agent_output"
-        }
-      ]
-    }
-  ]
-}
-```
-
-### 5.3 階層 flow model
-
-flow は任意深さの node tree として扱う。
-`phase`、`task`、`lifecycle_step`、`step` は固定階層ではなく node の `kind` である。
-将来 `phase -> task -> implementation -> review -> fix -> commit` より深い階層が必要になっても、同じ構造で表現する。
-
-`steps` は後方互換または簡易記法として扱い、hook 実装では単一階層の leaf node 群に正規化する。
-新しい flow 定義は `nodes` を優先する。
-
-例。
-
-```json
-{
-  "skill": "release-governance-manager",
-  "version": 2,
   "nodes": [
     {
       "id": "implementation_phase",
@@ -343,36 +292,11 @@ flow は任意深さの node tree として扱う。
           "kind": "task",
           "description": "hook state 管理を実装する",
           "required": true,
-          "children": [
-            {
-              "id": "design",
-              "kind": "lifecycle_step",
-              "description": "設計を更新する",
-              "required": true,
-              "evidence": [{"type": "markdown_changed"}]
-            },
-            {
-              "id": "implement",
-              "kind": "lifecycle_step",
-              "description": "実装する",
-              "required": true,
-              "evidence": [{"tool": "apply_patch"}]
-            },
-            {
-              "id": "review",
-              "kind": "lifecycle_step",
-              "description": "レビューを受ける",
-              "required": true,
-              "evidence": [{"type": "review_report"}]
-            },
-            {
-              "id": "commit",
-              "kind": "lifecycle_step",
-              "description": "変更を commit する",
-              "required": true,
-              "evidence": [{"tool": "Bash", "command_contains": "git commit"}]
-            }
-          ]
+          "step_set_ref": {
+            "skill": "development-lifecycle",
+            "version": 1,
+            "set": "design-implementation-review-commit"
+          }
         }
       ]
     }
@@ -380,19 +304,19 @@ flow は任意深さの node tree として扱う。
 }
 ```
 
-node contract。
+repository workflow node contract。
 
 ```text
 id
-  同じ parent 配下で一意な安定 ID。
+  同じ parent 配下で一意な repository-local ID。
 
 kind
-  phase / task / lifecycle_step / step などの分類。
-  hook は既知 kind だけに依存してはいけない。
+  phase / task など、repository workflow 上の分類。
+  初期実装では phase と task を想定するが、hook は未知 kind でも node tree として扱う。
 
 node_path
   root から node までの id を `/` で連結した canonical path。
-  例: implementation_phase/hook_state_task/review
+  例: implementation_phase/hook_state_task
 
 children
   任意深さの子 node。
@@ -400,31 +324,123 @@ children
 required
   parent 完了条件に含めるかどうか。
 
-evidence
-  leaf node の完了候補を検出する条件。
+step_set_ref
+  task node が使う CodexSkill 側 step set への参照。
 
 depends_on
-  同じ tree 内の他 node_path への依存。
+  同じ repository workflow 内の他 node_path への依存。
 ```
+
+### 5.3 CodexSkill step 定義
+
+step は task / phase とは別概念である。
+step は多くの task で共通に使う標準手順であり、基本的には CodexSkill 側に保持する。
+
+例。
+
+```json
+{
+  "skill": "development-lifecycle",
+  "version": 1,
+  "step_sets": [
+    {
+      "id": "design-implementation-review-commit",
+      "steps": [
+        {
+          "id": "design",
+          "description": "設計を更新する",
+          "required": true,
+          "evidence": [{"type": "markdown_changed"}]
+        },
+        {
+          "id": "implement",
+          "description": "実装する",
+          "required": true,
+          "evidence": [{"tool": "apply_patch"}]
+        },
+        {
+          "id": "review",
+          "description": "レビューを受ける",
+          "required": true,
+          "evidence": [{"type": "review_report"}]
+        },
+        {
+          "id": "commit",
+          "description": "変更を commit する",
+          "required": true,
+          "evidence": [{"tool": "Bash", "command_contains": "git commit"}]
+        }
+      ]
+    }
+  ]
+}
+```
+
+CodexSkill step contract。
+
+```text
+step_set
+  複数 task から参照される標準 lifecycle。
+
+step
+  task 内で実行される再利用可能な作業単位。
+  phase / task の所有者ではなく、CodexSkill 側の標準手順である。
+
+step_id
+  step_set 内で一意な安定 ID。
+
+evidence
+  step 完了候補を検出する条件。
+```
+
+### 5.4 workflow と step の合成 model
+
+hook は repository workflow と CodexSkill step set を合成して、実行時の node tree を作る。
+task node に `step_set_ref` がある場合、その task の子として参照先 step set の steps を展開する。
+
+実行時 node path は repository-local task path と CodexSkill step id を合成する。
+
+```text
+implementation_phase/hook_state_task#design
+implementation_phase/hook_state_task#implement
+implementation_phase/hook_state_task#review
+implementation_phase/hook_state_task#commit
+```
+
+区切り規則。
+
+```text
+/
+  repository-local phase / task 階層を表す。
+
+#
+  task node と CodexSkill step を接続する。
+```
+
+この形式により、phase / task の階層が将来さらに深くなっても repository-local path はそのまま伸びる。
+step は task の深さに関係なく CodexSkill 側の同じ step 定義を参照する。
 
 完了判定。
 
 ```text
-leaf node
-  evidence または manual_required の確認で完了する。
+step node
+  CodexSkill 側 step の evidence または manual_required の確認で完了する。
 
-parent node
+task node
+  参照した step_set の required steps がすべて完了したら完了する。
+
+phase node
   required children がすべて完了したら完了する。
 
-optional node
+optional task / phase
   parent 完了条件には含めないが、完了履歴は記録できる。
 
-required node の skip / optional 化
+required task / phase / step の skip / optional 化
   flow_overrides の明示確認済み override がある場合だけ Stop 判定に反映する。
 ```
 
-hook 内部では、`flow.json` を読み込んだ後に tree を走査し、`node_path -> node` の index を作る。
-進捗、現在位置、override、interrupt の戻り先は、step id ではなく `node_path` を基準に記録する。
+hook 内部では、repository workflow と step set を読み込んだ後に tree を走査し、`node_path -> node` の index を作る。
+進捗、現在位置、override、interrupt の戻り先は `node_path` を基準に記録する。
 
 ## 6. state 設計
 
@@ -454,25 +470,37 @@ started-project/.codex/state/
     "started_project_root": "/path/to/started-project",
     "state_root": "/path/to/started-project/.codex/state",
     "codex_skill_root": "/path/to/CodexSkill",
-    "flow_root": "/path/to/CodexSkill/skills"
+    "workflow_root": "/path/to/started-project/.codex/workflows",
+    "step_root": "/path/to/CodexSkill/skills"
+  },
+  "current_workflow": {
+    "workflow_id": "release-governance",
+    "version": 1,
+    "workflow_path": "/path/to/started-project/.codex/workflows/release-governance-workflow.json"
   },
   "current_task": {
-    "skill": "release-governance-manager",
-    "version": 1,
+    "workflow_id": "release-governance",
+    "task_id": "hook_state_task",
+    "task_node_path": "implementation_phase/hook_state_task",
     "status": "active",
     "current_step": "review",
     "next_step": "commit",
-    "current_node_path": "implementation_phase/hook_state_task/review",
-    "next_node_path": "implementation_phase/hook_state_task/commit",
-    "flow_path": "/path/to/CodexSkill/skills/release-governance-manager/flow.json"
+    "current_node_path": "implementation_phase/hook_state_task#review",
+    "next_node_path": "implementation_phase/hook_state_task#commit",
+    "step_set_ref": {
+      "skill": "development-lifecycle",
+      "version": 1,
+      "set": "design-implementation-review-commit"
+    },
+    "steps_path": "/path/to/CodexSkill/skills/development-lifecycle/steps.json"
   },
   "workflow_cursor": {
-    "current_node_path": "implementation_phase/hook_state_task/review",
-    "next_node_path": "implementation_phase/hook_state_task/commit",
+    "current_node_path": "implementation_phase/hook_state_task#review",
+    "next_node_path": "implementation_phase/hook_state_task#commit",
     "active_path_stack": [
       "implementation_phase",
       "implementation_phase/hook_state_task",
-      "implementation_phase/hook_state_task/review"
+      "implementation_phase/hook_state_task#review"
     ]
   },
   "context": [],
@@ -485,7 +513,7 @@ started-project/.codex/state/
 
 `current_task.current_step`、`current_task.next_step`、`current_task.current_node_path`、`current_task.next_node_path`、`current_task.status` は表示と復帰のための derived cache である。
 完了 node の canonical source は `progress.json` とする。
-hook は `flow.json`、`progress.json`、確認済み `flow_overrides` から derived cache を再計算できなければならない。
+hook は repository workflow、CodexSkill step 定義、`progress.json`、確認済み `flow_overrides` から derived cache を再計算できなければならない。
 `workflow_cursor.active_path_stack` は現在 node の祖先を含む表示用 cursor であり、Stop 判定の canonical source ではない。
 
 ### 6.3 mode
@@ -529,12 +557,13 @@ hook は `flow.json`、`progress.json`、確認済み `flow_overrides` から de
     "summary": "README の文言を修正する",
     "status": "active",
     "return_to": {
-      "skill": "release-governance-manager",
+      "workflow_id": "release-governance",
+      "task_node_path": "implementation_phase/hook_state_task",
       "status": "active",
-      "current_step": "check_workflows",
-      "next_step": "check_package_version",
-      "current_node_path": "implementation_phase/hook_state_task/review",
-      "next_node_path": "implementation_phase/hook_state_task/commit"
+      "current_step": "review",
+      "next_step": "commit",
+      "current_node_path": "implementation_phase/hook_state_task#review",
+      "next_node_path": "implementation_phase/hook_state_task#commit"
     }
   }
 ]
@@ -638,14 +667,14 @@ node 完了履歴の canonical source として `progress.json` を保持する�
 ```json
 {
   "schema_version": 1,
-  "flow": {
-    "skill": "release-governance-manager",
+  "workflow": {
+    "workflow_id": "release-governance",
     "version": 1
   },
   "completed_nodes": [
     {
-      "node_path": "implementation_phase/hook_state_task/review",
-      "node_kind": "lifecycle_step",
+      "node_path": "implementation_phase/hook_state_task#review",
+      "node_kind": "step",
       "completed_at": "2026-05-30T10:35:00Z",
       "source": "PostToolUse",
       "evidence": {
@@ -798,7 +827,7 @@ Codex には毎回、以下のような Flow State を返す。
 ```text
 [Flow State]
 本来行っていた作業:
-- release-governance-manager / check_workflows
+- release-governance / implementation_phase/hook_state_task#review
 
 今回実行した作業:
 - Bash: ls .github/workflows
@@ -807,7 +836,7 @@ Codex には毎回、以下のような Flow State を返す。
 - 対象は v2 系のみ
 
 次に行う作業:
-- check_package_version: package version source を確認する
+- implementation_phase/hook_state_task#commit: 変更を commit する
 
 注意:
 - 元の作業は完了していません。
@@ -818,7 +847,7 @@ Codex には毎回、以下のような Flow State を返す。
 ```text
 [Flow State]
 本来行っていた作業:
-- release-governance-manager / check_workflows
+- release-governance / implementation_phase/hook_state_task#review
 
 今回の割り込み作業:
 - README の文言修正
@@ -827,7 +856,7 @@ Codex には毎回、以下のような Flow State を返す。
 - Edit: README.md
 
 割り込み完了後に戻る作業:
-- release-governance-manager / check_package_version
+- release-governance / implementation_phase/hook_state_task#commit
 ```
 
 ## 10. Stop hook
@@ -866,7 +895,7 @@ mode = completed
 ```json
 {
   "decision": "block",
-  "reason": "未完了 node があります。次に implementation_phase/hook_state_task/review を実行してください。"
+  "reason": "未完了 node があります。次に implementation_phase/hook_state_task#review を実行してください。"
 }
 ```
 
@@ -875,7 +904,7 @@ mode = completed
 ```json
 {
   "decision": "block",
-  "reason": "割り込み作業中です。完了した場合は、中断前の作業に戻ってください。戻り先: release-governance-manager / check_package_version"
+  "reason": "割り込み作業中です。完了した場合は、中断前の作業に戻ってください。戻り先: release-governance / implementation_phase/hook_state_task#commit"
 }
 ```
 
@@ -928,18 +957,19 @@ hooks = true
 started_project_root = "/path/to/started-project"
 state_root = "/path/to/started-project/.codex/state"
 codex_skill_root = "/path/to/CodexSkill"
-flow_root = "/path/to/CodexSkill/skills"
+workflow_root = "/path/to/started-project/.codex/workflows"
+step_root = "/path/to/CodexSkill/skills"
 
 [[hooks.UserPromptSubmit]]
-command = "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/user_prompt_flow_state.py"
+command = "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_REPO_WORKFLOW_ROOT=/path/to/started-project/.codex/workflows CODEX_SKILL_STEP_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/user_prompt_flow_state.py"
 timeout = 20
 
 [[hooks.PostToolUse]]
-command = "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/post_tool_flow.py"
+command = "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_REPO_WORKFLOW_ROOT=/path/to/started-project/.codex/workflows CODEX_SKILL_STEP_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/post_tool_flow.py"
 timeout = 20
 
 [[hooks.Stop]]
-command = "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/stop_guard.py"
+command = "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_REPO_WORKFLOW_ROOT=/path/to/started-project/.codex/workflows CODEX_SKILL_STEP_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/stop_guard.py"
 timeout = 20
 ```
 
@@ -956,7 +986,7 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
         "hooks": [
           {
             "type": "command",
-            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/user_prompt_flow_state.py",
+            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_REPO_WORKFLOW_ROOT=/path/to/started-project/.codex/workflows CODEX_SKILL_STEP_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/user_prompt_flow_state.py",
             "timeout": 20,
             "statusMessage": "Updating flow state"
           }
@@ -969,7 +999,7 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
         "hooks": [
           {
             "type": "command",
-            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/post_tool_flow.py",
+            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_REPO_WORKFLOW_ROOT=/path/to/started-project/.codex/workflows CODEX_SKILL_STEP_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/post_tool_flow.py",
             "timeout": 20,
             "statusMessage": "Updating flow progress"
           }
@@ -981,7 +1011,7 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
         "hooks": [
           {
             "type": "command",
-            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/stop_guard.py",
+            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_REPO_WORKFLOW_ROOT=/path/to/started-project/.codex/workflows CODEX_SKILL_STEP_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/stop_guard.py",
             "timeout": 20,
             "statusMessage": "Checking completion gate"
           }
@@ -997,7 +1027,7 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
 ### 13.1 処理
 
 ```text
-1. env / config から started_project_root, state_root, flow_root を解決する
+1. env / config から started_project_root, state_root, workflow_root, step_root を解決する
 2. stdin JSON を読む
 3. ユーザー入力を抽出する
 4. flow_state.json を読む
@@ -1014,7 +1044,7 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
 この hook 自体はユーザー入力を分類しない。
 そのため分類不能は Codex 本体に確認質問を要求する Flow State として扱う。
 
-state root、CodexSkill root、flow root が解決できない場合は `unsupported_state_root` として返す。
+state root、workflow root、CodexSkill root、step root が解決できない場合は `unsupported_state_root` として返す。
 active flow があるのに `input_journal` へ保存できない場合は、分類要求だけを返してはいけない。
 この場合は Stop hook が検出できるよう、block 可能な failure を model-facing message に含める。
 
@@ -1023,18 +1053,19 @@ active flow があるのに `input_journal` へ保存できない場合は、分
 ### 14.1 処理
 
 ```text
-1. env / config から started_project_root, state_root, flow_root を解決する
+1. env / config から started_project_root, state_root, workflow_root, step_root を解決する
 2. stdin JSON を読む
 3. tool_name / tool_input / tool_result を抽出する
 4. flow_state.json と progress.json を読む
-5. current flow を flow_root から読む
-6. flow.json を node_path index に正規化する
-7. leaf node の evidence と照合する
-8. 完了 node を progress.json に記録する
-9. parent node の roll-up 完了を再計算する
-10. 確認済み flow_overrides を適用して next node を算出する
-11. flow_state.json の current node / next node / status を同期する
-12. Flow State を Codex に返す
+5. current workflow を workflow_root から読む
+6. task が参照する step set を step_root から読む
+7. repository workflow と CodexSkill step set を合成し、node_path index に正規化する
+8. step node の evidence と照合する
+9. 完了 node を progress.json に記録する
+10. parent node の roll-up 完了を再計算する
+11. 確認済み flow_overrides を適用して next node を算出する
+12. flow_state.json の current node / next node / status を同期する
+13. Flow State を Codex に返す
 ```
 
 ### 14.2 evidence 判定
@@ -1082,10 +1113,10 @@ LLM の仮採用分類だけで required node を完了扱いまたは任意扱�
 ### 15.1 処理
 
 ```text
-1. env / config から started_project_root, state_root, flow_root を解決する
+1. env / config から started_project_root, state_root, workflow_root, step_root を解決する
 2. flow_state.json を読む
 3. progress.json を読む
-4. current flow を flow_root から読む
+4. current workflow と参照 step set を読み、node_path index を作る
 5. mode を確認する
 6. input_journal の未処理入力を確認する
 7. confirmed override だけを適用して未完了 required node を探す
@@ -1186,7 +1217,7 @@ LLM の仮採用分類だけで required node を完了扱いまたは任意扱�
     "status": "proposed",
     "confirmation": "missing",
     "kind": "skip_required_node",
-    "target_nodes": ["implementation_phase/hook_state_task/check_package_version"],
+    "target_nodes": ["implementation_phase/hook_state_task#review"],
     "scope": "current_task",
     "reason": "ユーザーが今回は package version 確認不要と依頼したため",
     "requested_by": "user",
@@ -1218,7 +1249,7 @@ LLM の仮採用分類だけで required node を完了扱いまたは任意扱�
 }
 ```
 
-`scope` は `current_task`、`current_skill_version`、`current_session` のいずれかとする。
+`scope` は `current_task`、`current_workflow`、`current_session` のいずれかとする。
 初期実装では `current_task` 以外の scope は確認済みでも Stop hook が `unsupported_override_scope` として block してよい。
 
 ## 19. 中止・復帰の扱い
@@ -1275,7 +1306,7 @@ LLM の仮採用分類だけで required node を完了扱いまたは任意扱�
 ```text
 - UserPromptSubmit で保存したユーザー入力
 - Codex 本体が state に記録した分類結果
-- flow.json の evidence
+- repository workflow と CodexSkill step 定義の evidence
 - 実際の tool input / output
 - state に記録された変更履歴
 ```
@@ -1381,7 +1412,9 @@ payload = read_json_stdin()
 roots = resolve_roots_from_env_or_config()
 state = load_flow_state(roots.state_root)
 progress = load_progress(roots.state_root)
-flow = load_current_flow(roots.flow_root, state)
+workflow = load_current_workflow(roots.workflow_root, state)
+step_sets = load_referenced_step_sets(roots.step_root, workflow)
+flow = compose_runtime_flow(workflow, step_sets)
 
 completed_nodes = detect_completed_nodes(payload, flow)
 update_progress(progress, completed_nodes)
@@ -1399,7 +1432,9 @@ print(flow_state_message(state, completed_nodes, next_node))
 roots = resolve_roots_from_env_or_config()
 state = load_flow_state(roots.state_root)
 progress = load_progress(roots.state_root)
-flow = load_current_flow(roots.flow_root, state)
+workflow = load_current_workflow(roots.workflow_root, state)
+step_sets = load_referenced_step_sets(roots.step_root, workflow)
+flow = compose_runtime_flow(workflow, step_sets)
 
 if state.mode == "pending_user_intent":
     block("ユーザー入力の意図を確認してください")
@@ -1471,10 +1506,10 @@ allow()
   SKILL.md
 
 機械判定:
-  flow.json
+  repository workflow JSON + CodexSkill steps.json
 ```
 
 これにより、ユーザーに `/info` や `/interrupt` のようなカスタムコマンドを強制せずに、Codex の Skill 実行フローをある程度矯正できる。
 
 ただし、Codex 本体の自己申告だけで完了判定を通してはいけない。
-Stop / PostToolUse hook は、state、progress、flow.json、実際の tool input / output を使って後追い検査する。
+Stop / PostToolUse hook は、state、progress、repository workflow、CodexSkill step 定義、実際の tool input / output を使って後追い検査する。
