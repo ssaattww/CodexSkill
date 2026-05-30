@@ -56,7 +56,7 @@ UserPromptSubmit hook
 Codex 本体
   ユーザー入力を additional_info / interrupt / flow_change / cancel / resume / ambiguous に分類する
   UserPromptSubmit が保存した入力 ID に分類結果を紐づける
-  flow_state.json の分類更新 interface に従って state 更新に必要な作業を行う
+  state update script の分類更新 interface に payload を渡す
 
 PostToolUse hook
   ツール実行後に進捗を更新し、次の作業を Codex に提示する
@@ -703,7 +703,7 @@ flow_state.json current_task.current_step / next_step / current_node_path / next
 
 flow_state.json current_task.status
   PostToolUse が required nodes 完了時に completed へ更新する。
-  Codex 本体は cancel / resume / interrupt に伴う mode と status 更新だけを行う。
+  Codex 本体は cancel / resume / interrupt の分類 payload を update_input_journal.py に渡すだけで、mode と status は script が更新する。
   Stop hook は completed と書かれていても required nodes が未完了なら block する。
 ```
 
@@ -751,6 +751,145 @@ validate_state.py
 - 可能なら file lock を使う
 - 更新前後の validation を行う
 - 更新結果と変更理由を hook_logs に残す
+```
+
+共通 CLI contract。
+
+```text
+- 全 script は stdin から JSON request を読み、stdout に JSON response を返す
+- stderr は human-readable な診断だけに使い、machine-readable な結果は stdout に集約する
+- request には必ず operation、state_root、workflow_root、step_root、request_id、actor を含める
+- response には必ず ok、operation、request_id、updated_files、warnings、errors、state_summary を含める
+- state_root / workflow_root / step_root は絶対 path に解決してから検証する
+- state 更新系 script は state_root/.flow-state.lock を同じ exclusive lock として使う
+- lock timeout は初期値 10 秒とし、timeout 時は state を変更しない
+- validate_state.py は書き込みを行わず、lock が取得できる環境では shared lock を使う
+- 書き込み前に対象 JSON を schema validation する
+- 書き込みは一時ファイルへ出力し、fsync 後に atomic rename する
+- 書き込み後に validate_state.py 相当の整合性検査を行う
+- 書き込み後検証に失敗した場合は .bak から atomic に復元し、failure を hook_logs に残す
+- hook 側の retry は lock timeout と一時的 I/O 失敗だけを対象に 1 回まで許可する
+- schema 不一致、root 不一致、未確認 flow_change、evidence 不一致は retry せず block 可能な failure とする
+```
+
+exit code contract。
+
+```text
+0  success
+2  invalid_request_schema
+3  root_contract_mismatch
+4  validation_failed
+5  lock_timeout
+6  write_or_rollback_failed
+7  user_confirmation_required
+8  evidence_rejected
+9  unsupported_operation
+```
+
+`update_input_journal.py` request。
+
+```json
+{
+  "operation": "record_user_prompt | classify_input",
+  "request_id": "2026-05-30T10:31:58.123456Z-userprompt-0001",
+  "actor": "UserPromptSubmit | codex-main-agent",
+  "state_root": "/started-project/.codex/state",
+  "workflow_root": "/started-project/.codex/workflows",
+  "step_root": "/home/ibis/AI/CodexSkill/skills",
+  "record_user_prompt": {
+    "text": "対象は v2 系だけです",
+    "source": "UserPromptSubmit"
+  },
+  "classify_input": {
+    "input_id": "2026-05-30T10:31:58.123456Z-userprompt-0001",
+    "classification": {
+      "intent": "additional_info",
+      "confidence": 0.86,
+      "reason": "現在作業への制約追加であり、別作業を要求していない",
+      "summary": "対象を v2 系に限定する"
+    },
+    "adoption": "auto",
+    "state_effect": {
+      "context_added": true,
+      "interrupt_pushed": false,
+      "flow_override_ids": [],
+      "mode_after": "normal"
+    }
+  }
+}
+```
+
+`record_user_prompt` と `classify_input` は同時に指定しない。
+UserPromptSubmit は `record_user_prompt` だけを使い、Codex 本体は分類後に `classify_input` だけを使う。
+
+`update_progress.py` request。
+
+```json
+{
+  "operation": "mark_completed_nodes",
+  "request_id": "2026-05-30T10:35:00.000000Z-posttool-0001",
+  "actor": "PostToolUse",
+  "state_root": "/started-project/.codex/state",
+  "workflow_root": "/started-project/.codex/workflows",
+  "step_root": "/home/ibis/AI/CodexSkill/skills",
+  "completed_nodes": [
+    {
+      "node_id": "review",
+      "node_path": "implementation_phase/hook_state_task#review",
+      "evidence": {
+        "tool_name": "Bash",
+        "summary": "review report created"
+      }
+    }
+  ]
+}
+```
+
+`sync_flow_state.py` request。
+
+```json
+{
+  "operation": "sync_derived_state",
+  "request_id": "2026-05-30T10:35:00.000000Z-posttool-0001-sync",
+  "actor": "PostToolUse",
+  "state_root": "/started-project/.codex/state",
+  "workflow_root": "/started-project/.codex/workflows",
+  "step_root": "/home/ibis/AI/CodexSkill/skills",
+  "confirmed_overrides": []
+}
+```
+
+`validate_state.py` request。
+
+```json
+{
+  "operation": "validate",
+  "request_id": "2026-05-30T10:36:00.000000Z-validate-0001",
+  "actor": "Stop | manual-recovery | PostToolUse",
+  "state_root": "/started-project/.codex/state",
+  "workflow_root": "/started-project/.codex/workflows",
+  "step_root": "/home/ibis/AI/CodexSkill/skills"
+}
+```
+
+共通 response。
+
+```json
+{
+  "ok": true,
+  "operation": "sync_derived_state",
+  "request_id": "2026-05-30T10:35:00.000000Z-posttool-0001-sync",
+  "updated_files": [
+    ".codex/state/flow_state.json"
+  ],
+  "warnings": [],
+  "errors": [],
+  "state_summary": {
+    "mode": "normal",
+    "current_node_path": "implementation_phase/hook_state_task#commit",
+    "next_node_path": "implementation_phase/hook_state_task#push"
+  }
+}
 ```
 
 `progress.json` の直接編集は、通常運用では禁止する。
@@ -857,7 +996,7 @@ Codex 本体に input_id と Flow State を返す
 - 現在の current_task
 - 未完了 required nodes
 - 既存の pending_user_intent
-- Codex 本体が flow_state.json の input_journal に分類結果を記録する必要があること
+- Codex 本体が `update_input_journal.py` の `classify_input` operation に分類結果 payload を渡す必要があること
 - required node を緩める flow_change はユーザー明示確認が必要であること
 ```
 
@@ -1359,7 +1498,7 @@ LLM の仮採用分類だけで required node を完了扱いまたは任意扱�
 
 ```text
 - UserPromptSubmit で保存したユーザー入力
-- Codex 本体が state に記録した分類結果
+- Codex 本体が `update_input_journal.py` 経由で state に記録した分類結果
 - repository workflow と CodexSkill step 定義の evidence
 - 実際の tool input / output
 - state に記録された変更履歴
@@ -1385,10 +1524,14 @@ Codex 本体が分類に迷う場合、または分類結果を state に反映�
 state JSON が壊れていた場合。
 
 ```text
-1. 壊れたファイルを .bak に退避
-2. 初期 state を作る
-3. Codex に state 復旧が必要であることを出す
-4. 必要ならユーザー確認を要求する
+1. validate_state.py で破損対象と root contract を確認する
+2. state_root/.flow-state.lock を取得する
+3. 壊れたファイルを .bak に退避し、hook_logs に復旧開始を記録する
+4. progress.json が読める場合は canonical 履歴として保持する
+5. progress.json が読めない場合は .bak から復元できる範囲を明示し、復元不能ならユーザー確認を要求する
+6. script contract に従って最小 state を再生成する
+7. validate_state.py を再実行し、結果を report に残す
+8. Codex に state 復旧結果と未確認事項を出す
 ```
 
 ## 22. 実装順
@@ -1399,7 +1542,8 @@ state JSON が壊れていた場合。
 1. flow_state.json の形式を決める
 2. progress.json の形式を決める
 3. Stop hook で未完了 node を block する
-4. 手動で state を編集して動作確認する
+4. validate_state.py で初期 state を検証する
+5. update_input_journal.py の record_user_prompt / classify_input を使って state 更新を確認する
 ```
 
 ### Phase 2: PostToolUse
@@ -1407,8 +1551,9 @@ state JSON が壊れていた場合。
 ```text
 1. PostToolUse payload をログ出力する
 2. tool_name / tool_input の shape を確認する
-3. evidence と照合して progress を更新する
-4. Flow State を出力する
+3. evidence と照合して update_progress.py に完了候補を渡す
+4. sync_flow_state.py で derived field を同期する
+5. Flow State を出力する
 ```
 
 ### Phase 3: UserPromptSubmit
@@ -1443,17 +1588,17 @@ validate_roots(roots, state.roots)
 if not state.current_task or state.current_task.status != "active":
     allow_noop()
 
-input_record = append_input_journal(
-    state=state,
+input_result = run_update_input_journal_script(
+    state_root=roots.state_root,
     user_prompt=user_prompt,
-    status="unclassified",
+    operation="record_user_prompt",
 )
 
 message = build_flow_state_message(
     state=state,
-    input_id=input_record.input_id,
+    input_id=input_result.state_summary.input_id,
     user_prompt=user_prompt,
-    required_agent_action="input_id に分類結果を紐づけて flow_state.json を更新してください",
+    required_agent_action="input_id に分類結果を紐づけて update_input_journal.py classify_input を呼び出してください",
 )
 
 print(json_response_for_codex(message))
