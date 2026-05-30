@@ -25,6 +25,7 @@ Before running this skill, make sure the parent has already decided:
 - which design files must change
 - what the intended behavioral or contract change is
 - whether `Design/BreakingChanges.md` must be updated
+- the explicit Markdown file list that this skill creates or edits, for `markdown-word-checker`
 
 ## Use this skill when
 
@@ -38,7 +39,10 @@ Before running this skill, make sure the parent has already decided:
 2. edit only the files needed for the decided design scope
 3. keep terminology and structure aligned with nearby design docs
 4. update `Design/BreakingChanges.md` when the change is breaking and already approved as such
-5. report which files changed and any remaining ambiguity
+5. After creating or editing Markdown, call `markdown-word-checker` with the explicit list of Markdown files changed by this skill.
+6. Use focused lint by default immediately after authoring; at task completion or review gate, have the caller consider whether full lint is also required.
+7. If a changed Markdown file is under `reports/` or another path that may be outside full lint targets, record focused lint feasibility and the reason in the caller report.
+8. report which files changed, the Markdown check result, and any remaining ambiguity
 
 ## Rules
 
@@ -46,6 +50,7 @@ Before running this skill, make sure the parent has already decided:
 - Do not invent new product scope while editing docs.
 - Prefer updating an existing design document over creating a parallel duplicate.
 - Keep edits concrete enough that implementation work can proceed without guessing.
+- Do not add detailed vocabulary rules for workers here; `markdown-word-checker` owns Markdown wording and lint-routing details.
 
 For executor choice, follow the switchable implementation thresholds defined in `codex-delegation-executor`.
 
@@ -65,4 +70,5 @@ This skill is complete only when:
 
 - required design files have been edited
 - breaking-change logging is updated when applicable
+- when Markdown was created or edited, the `markdown-word-checker` result has been recorded
 - remaining ambiguity is reported back to the parent

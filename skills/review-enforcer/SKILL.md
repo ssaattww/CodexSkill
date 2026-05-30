@@ -28,30 +28,33 @@ Before running this skill, gather:
 - current task identifier and review scope
 - active session reviewer assignment, if one already exists
 - task-specific review criteria that were established earlier in the same session, such as audit decisions, design rules, naming rules, or comment standards
-- when Markdown whitelist work is in scope, the proposed whitelist entries and the user's explicit review state for each entry
+- when Markdown-related work is in scope, the `markdown-word-checker` result and any proposed exact whitelist, `prh`, or target-exclusion entries with the user's explicit review state
 
 ## Required flow
 
 1. Prepare a task-scoped diff or changed-file set, but keep broader workspace context available for direct inspection by the reviewer.
 2. When the review touches source layout, naming, partial types, XML documentation, or test comments, read [references/session-review-shape-policy.md](references/session-review-shape-policy.md) before drafting the review request.
-3. When the task changes Markdown, markdown lint configuration, reports, task tracking, design documents, or review-facing text, run the repository Markdown lint gate before completion. Prefer `npm run lint:md` when the target repository provides it. If the repository uses the standard review-enforcer scripts, the shared implementation lives under [scripts/](scripts/) and the repository owns only its `tools/lint/markdown-whitelist.yaml`, `tools/lint/markdown-targets.json`, package wiring, and local setup memo.
-4. Treat Markdown lint failure as a blocking review gate unless the current task is explicitly to introduce a failing stricter gate and the failure is recorded as the intended current state in the implementation report and tracking.
-5. When the task creates, rebuilds, or changes a Markdown whitelist, verify that the user explicitly reviewed the exact whitelist entries before the task is treated as complete.
-6. Reuse the same review `sub-agent` for the session when one is already assigned and still available; otherwise select one reviewer and record that assignment in the report or parent progress note.
-7. Include task-specific review criteria from earlier audit/design decisions in the review request, and require the reviewer to evaluate the diff against those criteria.
-8. Run review for that task only as a `sub-agent` task through `sub-agent-task-manager`.
-9. Instruct the review `sub-agent` to use the built-in review behavior: findings first, severity-ordered, with file/line references when available.
-10. Use `gpt-5.5` with `high` reasoning effort as the first-choice review `sub-agent` unless the user explicitly overrides the reviewer model for the current run. If `gpt-5.5` is unavailable, use `gpt-5.4` with `high` reasoning effort as the next choice.
-11. Materialize the built-in review result into the pre-created report file under `reports/` while preserving the existing template format and filling only the intended blank sections.
-12. Prefer having the review `sub-agent` write the report file directly; treat parent-side report materialization as fallback only.
-13. If the review `sub-agent` does not write the report file directly, have the parent write it immediately from the returned review findings.
-14. Once review has been dispatched, keep waiting or re-polling until the review `sub-agent` finishes unless the user explicitly tells you to stop.
-15. Treat report structure as parent-owned. The reviewer may fill only blank sections or placeholder values and must not repair, reorder, rename, or reformat the template.
-16. Address findings that break the intended normal path.
-17. If a finding means the user still cannot do what they intend even with careful use, stop and confirm with the user before deciding whether to expand scope.
-18. If a finding is avoidable by careful use and the user can still achieve the intended goal, record it in the report and leave it on hold until a concrete problem appears or the user explicitly promotes it.
-19. Re-run review if required, using the same session reviewer unless the reference policy allows a change.
-20. Only then allow progress sync and Git submission.
+3. When the task changes Markdown, Markdown lint configuration, reports, task tracking, design documents, or review-facing text, call `markdown-word-checker` before completion and include its result in the review report.
+4. Treat a `markdown-word-checker` `failed gate` result as a blocking review gate unless the current task is explicitly to introduce a failing stricter gate and the failure is recorded as the intended current state in the implementation report and tracking.
+5. Treat a `markdown-word-checker` `needs user review` result as a stopped gate. Exact entry review approval alone is not enough; the appropriate implementation owner must apply the approved repo-specific setting change, rerun the affected focused or full lint, and update the same report before the review gate can close.
+6. Treat a `markdown-word-checker` `unsupported` result as requiring caller disposition, not as pass. If Markdown lint is mandatory for the task/review gate, or the target repository has the relevant check configured, unsupported alone cannot complete the review gate.
+7. In a repository without Markdown lint setup, if neither focused lint nor full lint can run immediately after Markdown creation, record the unsupported reason and remaining risk in the review report. Only treat it as a held disposition when the documented normal path still satisfies the user's intent.
+8. When the task creates, rebuilds, or changes Markdown whitelist, `prh`, or target-exclusion entries, verify that the user explicitly reviewed the exact entries before the task is treated as complete.
+9. Reuse the same review `sub-agent` for the session when one is already assigned and still available; otherwise select one reviewer and record that assignment in the report or parent progress note.
+10. Include task-specific review criteria from earlier audit/design decisions in the review request, and require the reviewer to evaluate the diff against those criteria.
+11. Run review for that task only as a `sub-agent` task through `sub-agent-task-manager`.
+12. Instruct the review `sub-agent` to use the built-in review behavior: findings first, severity-ordered, with file/line references when available.
+13. Use `gpt-5.5` with `high` reasoning effort as the first-choice review `sub-agent` unless the user explicitly overrides the reviewer model for the current run. If `gpt-5.5` is unavailable, use `gpt-5.4` with `high` reasoning effort as the next choice.
+14. Materialize the built-in review result into the pre-created report file under `reports/` while preserving the existing template format and filling only the intended blank sections.
+15. Prefer having the review `sub-agent` write the report file directly; treat parent-side report materialization as fallback only.
+16. If the review `sub-agent` does not write the report file directly, have the parent write it immediately from the returned review findings.
+17. Once review has been dispatched, keep waiting or re-polling until the review `sub-agent` finishes unless the user explicitly tells you to stop.
+18. Treat report structure as parent-owned. The reviewer may fill only blank sections or placeholder values and must not repair, reorder, rename, or reformat the template.
+19. Address findings that break the intended normal path.
+20. If a finding means the user still cannot do what they intend even with careful use, stop and confirm with the user before deciding whether to expand scope.
+21. If a finding is avoidable by careful use and the user can still achieve the intended goal, record it in the report and leave it on hold until a concrete problem appears or the user explicitly promotes it.
+22. Re-run review if required, using the same session reviewer unless the reference policy allows a change.
+23. Only then allow progress sync and Git submission.
 
 If mandatory review `sub-agent` dispatch cannot be executed because the current run lacks explicit user permission for delegation, stop and ask the user before continuing. Do not silently replace mandatory `sub-agent` review with parent review.
 
@@ -74,17 +77,12 @@ When creating a new review report file, call `report-output-manager`.
 - Review requests should tell the `sub-agent` to read the pre-created report first and preserve its headings, order, spacing, and any prefilled text.
 - Review requests should explicitly allow and require the reviewer to fill the pre-created report file directly.
 - Report template ownership stays with the parent; the reviewer is not allowed to fix formatting, headings, spacing, or other report structure.
-- Markdown text quality is part of the review gate. When a repository has Markdown lint wiring, do not treat Markdown changes as review-complete until that lint gate is either passing or explicitly documented as an intentionally failing stricter gate for the current task.
-- Repository-specific whitelist data must stay in the target repository. Do not put project terms into this skill; the shared scripts should read `tools/lint/markdown-whitelist.yaml` from the current repository.
-- Changes to `tools/lint/markdown-whitelist.yaml` require explicit user review before the task can be treated as complete. Do not add, remove, or rewrite whitelist entries and then close the task only through agent review; the user must explicitly review the whitelist content because it defines accepted terminology and meanings.
-- When fixing whitelist failures, prefer registering the concrete compound term or phrase that carries the intended meaning. Registering a single generic word is a last resort because it broadens accepted vocabulary beyond the reviewed concept.
-- Use whitelist `aliases` only for alternate forms that remain intentionally valid. Put spellings that should be corrected to a canonical term in `tools/lint/prh.yml` instead.
-- Do not add generated batches of whitelist entries to make lint pass. Present small concept groups to the user and edit only entries the user explicitly approves.
-- The standard Markdown lint scripts support explicit file review. `scripts/list-markdown-targets.js --files <path...>` lists only those Markdown files after repository ignore rules are applied. Pipe that output to `textlint` or `scripts/run-cspell-markdown.js` when focused validation is needed. `scripts/check-markdown-whitelist.js --files <path...>` checks only those Markdown files plus whitelist descriptions. Use explicit file mode for focused review evidence when full-scope lint is intentionally failing because the stricter gate is being introduced.
-- For repositories that need Japanese vocabulary inspection, use `scripts/extract-markdown-vocabulary-sudachi.py` for SudachiPy-based `.md`/`.txt` extraction and `scripts/check-markdown-whitelist-sudachi.py` for the matching whitelist gate. These scripts still read repository-owned `tools/lint/markdown-targets.json` and `tools/lint/markdown-whitelist.yaml`.
-- When `scripts/extract-markdown-vocabulary-sudachi.py` emits ChikkarPy synonym candidates, treat them only as candidate-grouping evidence. Do not automatically convert synonym candidates into whitelist `aliases` or `prh` rules without explicit user review.
-- Markdown link addresses are not prose and should be excluded from spelling / whitelist checks. The shared scripts should ignore the address part of inline links and reference links while leaving visible link text subject to lint.
-- When Markdown lint excludes inline code or quoted identifiers, the reviewer must also check for lint evasion. Do not accept prose changes that merely wrap ordinary English words, katakana words, or unexplained terms in backticks or quotation marks to avoid the whitelist gate; backticks should be used only for real code, identifiers, commands, file paths, UI labels, or explicitly itemized terms.
+- Markdown text quality is part of the review gate. Do not treat Markdown-related changes as review-complete until `markdown-word-checker` reports per-scope results and an aggregate gate state that the caller can disposition, or an intentionally failing stricter gate is explicitly documented for the current task.
+- If Markdown lint is mandatory for the current task/review gate, or the repository has the relevant Markdown check configured, `unsupported` alone cannot complete the gate.
+- In a repository without Markdown lint setup, when focused lint and full lint are both unavailable, `unsupported` may be held only with a report entry that records the reason, remaining risk, and why the user's intended normal path is still satisfied.
+- Repository-specific whitelist data must stay in the target repository. Do not put project terms into this skill; `markdown-word-checker` owns the detailed Markdown lint routing and reads repo-local `tools/lint/` configuration.
+- Changes to `tools/lint/markdown-whitelist.yaml`, `tools/lint/prh.yml`, or target exclusions require explicit user review before the repo-specific setting edit can proceed. Do not treat exact entry review alone as completion; rerun the affected focused or full lint and update the report before closing the review gate.
+- The review report must include the `markdown-word-checker` result, including command evidence, focused/full per-scope results, aggregate gate state, `skip` / `unsupported` / `failed gate` / `needs user review` classification, exact-entry review requirement, and any unresolved risk.
 - Prefer shipping a working normal path over delaying for a speculative full hardening pass.
 - If a review concern is real but avoidable by careful use, and the user can still achieve the intended goal, record it in the report and mark it as held rather than blocking release immediately.
 - If a review concern means the user cannot achieve the intended goal, stop and confirm with the user unless the intended normal path is already broken and should simply be fixed.

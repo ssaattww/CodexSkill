@@ -29,6 +29,7 @@ Before running this skill, gather:
 - important repository state, branch state, report state, and verification state when relevant
 - resolved decisions, rejected alternatives, and still-open items
 - the user's requested output format, if one was provided
+- the explicit handover Markdown report path that this skill creates, for `markdown-word-checker`
 
 ## Required flow
 
@@ -50,6 +51,9 @@ Before running this skill, gather:
 8. Write the full handover body so a new chat can continue without additional clarification where practical.
 9. Call `report-output-manager` for placement and naming before creating the handover report.
 10. Create the handover report under `reports/`.
+11. After creating the Markdown handover report, call `markdown-word-checker` with the explicit report file path.
+12. Use focused lint by default immediately after writing the handover. At task completion or review gate, have the caller consider whether full lint is also required.
+13. Because handover reports under `reports/` may be outside full lint targets, record focused lint feasibility and the reason in the caller report.
 
 ## Rules
 
@@ -66,6 +70,7 @@ Before running this skill, gather:
 - The handover must be understandable on its own; do not assume the next chat can read this one.
 - When the user provides a target template, do not rewrite the template into a different structure.
 - Do not satisfy this task with chat text alone; always leave a handover report under `reports/`.
+- Do not add detailed vocabulary rules for memo authors here; `markdown-word-checker` owns Markdown wording and lint-routing details.
 
 ## Outputs
 
@@ -78,4 +83,4 @@ After this skill runs, there should be:
 
 ## Completion condition
 
-This skill is complete only when the produced handover is detailed enough that a new chat can continue with the same working assumptions without having to reconstruct the missing context from the old session.
+This skill is complete only when the produced handover is detailed enough that a new chat can continue with the same working assumptions without having to reconstruct the missing context from the old session, and the `markdown-word-checker` result for the produced handover Markdown report has been recorded.
