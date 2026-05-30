@@ -119,8 +119,14 @@ Codex 本体に任せないこと。
 
 推奨構成は以下である。
 
+state は Codex を起動したときのプロジェクトディレクトリ内に保持する。
+途中で tool の `cwd` が変わっても、state の保存先は起動時プロジェクトディレクトリから動かさない。
+
+flow 定義は CodexSkill 側に保持する。
+対象プロジェクト側には flow の進捗 state と hook 設定だけを置き、Skill の必須手順定義そのものは複製しない。
+
 ```text
-repo/
+started-project/
   .codex/
     config.toml
     hooks/
@@ -132,17 +138,43 @@ repo/
       flow_state.json
       progress.json
       hook_logs/
-    skills/
-      release-governance-manager/
-        SKILL.md
-        flow.json
+
+CodexSkill/
+  skills/
+    release-governance-manager/
+      SKILL.md
+      flow.json
 ```
+
+責務境界。
+
+```text
+started-project/.codex/state/
+  起動したプロジェクト固有の実行 state を保持する
+
+CodexSkill/skills/*/flow.json
+  Skill ごとの必須 flow 定義を保持する
+
+started-project/.codex/config.toml
+  hook の有効化と、参照する Skill flow の識別子を保持する
+```
+
+避ける構成。
+
+```text
+started-project/.codex/skills/
+  release-governance-manager/
+    flow.json
+```
+
+上記のように flow 定義をプロジェクト側へ複製すると、Skill 本体と flow 定義が分岐するため採用しない。
 
 ## 5. Skill flow 定義
 
 ### 5.1 `SKILL.md`
 
 `SKILL.md` には、Codex と人間が読むための説明を書く。
+このファイルは CodexSkill 側の Skill ディレクトリに置く。
 
 例。
 
@@ -168,8 +200,11 @@ Release governance を確認し、以下の整合性を取る。
 
 ### 5.2 `flow.json`
 
-hooks は自然文の `SKILL.md` を直接解釈しない。  
+hooks は自然文の `SKILL.md` を直接解釈しない。
 同じフローを機械可読な `flow.json` として定義する。
+
+`flow.json` は CodexSkill 側に置く。
+hook は `flow_state.json` の `current_task.skill` と `version` から、CodexSkill 側の対応する `flow.json` を読む。
 
 例。
 
@@ -231,15 +266,31 @@ hooks は自然文の `SKILL.md` を直接解釈しない。
 
 ## 6. state 設計
 
-### 6.1 `flow_state.json`
+### 6.1 state の配置
+
+state は起動時プロジェクトディレクトリの `.codex/state/` に保持する。
+
+```text
+started-project/.codex/state/
+  flow_state.json
+  progress.json
+  hook_logs/
+```
+
+この state は対象プロジェクトごとの実行状態であり、CodexSkill 側には置かない。
+同じ Skill flow を複数プロジェクトで使う場合も、各プロジェクトがそれぞれ自分の state を持つ。
+
+### 6.2 `flow_state.json`
 
 現在の作業状態を保持する。
 
 ```json
 {
   "mode": "normal",
+  "project_root": "/path/to/started-project",
   "current_task": {
     "skill": "release-governance-manager",
+    "version": 1,
     "status": "active",
     "current_step": "check_workflows",
     "next_step": "check_package_version"
@@ -250,7 +301,7 @@ hooks は自然文の `SKILL.md` を直接解釈しない。
 }
 ```
 
-### 6.2 mode
+### 6.3 mode
 
 `mode` は以下を取る。
 
@@ -263,7 +314,7 @@ hooks は自然文の `SKILL.md` を直接解釈しない。
 | `cancelled` | 現在作業が中止された |
 | `completed` | 現在作業が完了した |
 
-### 6.3 context
+### 6.4 context
 
 追加情報や方針変更を蓄積する。
 
@@ -280,7 +331,7 @@ hooks は自然文の `SKILL.md` を直接解釈しない。
 ]
 ```
 
-### 6.4 interrupt_stack
+### 6.5 interrupt_stack
 
 割り込み作業を stack として保持する。
 
@@ -300,7 +351,7 @@ hooks は自然文の `SKILL.md` を直接解釈しない。
 ]
 ```
 
-### 6.5 pending_user_intent
+### 6.6 pending_user_intent
 
 分類不能な入力を保持する。
 
