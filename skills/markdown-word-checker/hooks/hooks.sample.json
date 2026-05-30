@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/ibis/AI/CodexSkill/skills/markdown-word-checker/hooks/post_tool_use_markdown_lint.py"
+          }
+        ]
+      }
+    ]
+  }
+}

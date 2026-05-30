@@ -1,4 +1,4 @@
 interface:
   display_name: "Markdown Word Checker"
-  short_description: "Check Markdown wording with repo-local lint rules"
-  default_prompt: "Use $markdown-word-checker to check Markdown wording with repo-local lint rules."
+  short_description: "Check Markdown wording and hook feedback with repo-local lint rules"
+  default_prompt: "Use $markdown-word-checker to check Markdown wording with repo-local lint rules and classify any Codex PostToolUse hook feedback without replacing the review gate."

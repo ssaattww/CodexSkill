@@ -32,6 +32,7 @@ Before running this skill, gather:
 - available repo-local lint configuration under `tools/lint/`, especially `tools/lint/README.md`, `tools/lint/markdown-targets.json`, `tools/lint/markdown-whitelist.yaml`, and `tools/lint/prh.yml`
 - available package wiring such as `package.json` and `lint:md`
 - whether the caller already has a report where lint evidence must be summarized
+- for Codex hook use, the `PostToolUse` JSON payload from stdin, including `cwd`, `hook_event_name`, `tool_name`, `tool_input`, and `tool_response`
 
 ## Required flow
 
@@ -53,6 +54,55 @@ Before running this skill, gather:
 9. If exact entry review is required, stop the gate and return the candidates, rationale, target files, and caller report path.
 10. Return per-scope command results, aggregate gate state, classification, user-review needs, and report paths to the caller.
 
+### Codex PostToolUse hook helper
+
+The optional hook helper is an early feedback path. It must not replace the authoring skill call to `markdown-word-checker`, the review-enforcer gate, or the caller's report disposition.
+
+Initial hook scope:
+
+- Use `PostToolUse` only.
+- Match `apply_patch` and `Edit|Write` style tools.
+- Do not introduce `PreToolUse`.
+- Treat `Stop` hook coverage as a future hardening option, not as part of the initial contract.
+
+Hook input contract:
+
+- Read hook JSON from stdin.
+- Use `cwd` to resolve the target repository root.
+- Use `tool_name` to identify supported tools.
+- For `apply_patch`, parse `*** Add File:`, `*** Update File:`, and `*** Move to:` as created, updated, or moved-to paths.
+- For `apply_patch`, parse `*** Delete File:` as deleted paths and exclude them.
+- For `Edit|Write`, extract file path fields from `tool_input`.
+- Keep only existing `.md` files inside the target repository.
+- Exclude deleted files, missing files, non-Markdown files, and repo-external paths.
+
+Hook output contract:
+
+- Return JSON.
+- Put short model-facing feedback in `systemMessage`.
+- Put structured check context under `hookSpecificOutput.additionalContext`.
+- Return `decision: block` only as feedback to the model when the state is `unsupported`, `failed gate`, or `needs user review`.
+- Do not describe `decision: block` as undoing the edit; `PostToolUse` runs after side effects and cannot revert them.
+
+Hook classification:
+
+| Condition | State |
+| --- | --- |
+| No repo-local Markdown target was edited | `skip` |
+| Hook payload or path extraction cannot identify target files | `unsupported` |
+| Target repo lacks required focused-lint wiring | `unsupported` |
+| Focused lint command exits non-zero | `failed gate` |
+| Exact repo-specific whitelist, `prh`, or target-exclusion entries need user approval | `needs user review` |
+| Focused lint succeeds | `pass` |
+
+Hook limitations:
+
+- Codex hooks are not Git hooks or editor hooks.
+- Some shell, unified exec, and MCP edit paths may not be intercepted.
+- Hook success is not a task-completion gate by itself.
+- Hook output is immediate model feedback; durable evidence belongs in the caller report or review report.
+- The helper uses the target repository's lint configuration. Do not add `package.json`, `tools/lint/`, whitelist, or `prh` data to CodexSkill just to make this helper run locally.
+
 ## Outputs
 
 Return these results to the caller:
@@ -72,6 +122,7 @@ Return these results to the caller:
 - whether repo-specific lint settings need user review
 - exact entry review requirement for whitelist, `prh`, or target exclusions, including candidates, rationale, target files, and caller report path
 - sub-agent report path when evidence collection was delegated
+- hook feedback state, target files, command evidence, and remaining interception risk when the Codex PostToolUse helper was used
 
 ## Completion condition
 
@@ -118,6 +169,7 @@ Typical classification:
 | `tools/lint/markdown-targets.json` | full lint is `unsupported`; explicit-file focused lint may continue. |
 | `tools/lint/markdown-whitelist.yaml` | whitelist check is `unsupported`; other independent checks may continue. |
 | `tools/lint/prh.yml` | `prh` check is `skip` unless repository wiring requires it and command failure makes it `failed gate`. |
+| `cspell.config.jsonc` | cspell check is `skip` when no config exists; when config exists but cspell cannot run, record `unsupported` unless an executed command failure makes it `failed gate`. |
 | `tools/lint/README.md` | record missing local instructions as a risk, but do not fail a runnable lint gate only for this. |
 
 ### New-term routing

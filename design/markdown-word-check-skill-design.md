@@ -73,7 +73,7 @@ package.json
 | `tools/lint/markdown-targets.json` | full lint の対象集合を決められないため full lint は `unsupported`。明示ファイルがある focused lint では、その明示ファイルだけで続行できる。repo の `lint:md` がこのファイルを必須として失敗した場合は `failed gate`。 |
 | `tools/lint/markdown-whitelist.yaml` | whitelist 検査は `unsupported`。cspell や prh など他の検査が独立して実行できる場合は続行する。repo が whitelist 検査を有効にしていて command が失敗した場合は `failed gate`。 |
 | `tools/lint/prh.yml` | prh 検査は `skip`。repo が prh 検査を必須として command が失敗した場合は `failed gate`。 |
-| `cspell.config.jsonc` | cspell 検査は `skip`。repo が cspell 検査を必須として command が失敗した場合は `failed gate`。 |
+| `cspell.config.jsonc` | 不足時は cspell 検査を `skip`。存在するが cspell を実行できない場合は `unsupported`。repo が cspell 検査を必須として command が失敗した場合は `failed gate`。 |
 | `tools/lint/README.md` | 実行方法の説明がないリスクとして記録するが、検査可能な command が見つかる場合は gate 失敗にしない。 |
 
 `skip` は対象がない、または任意検査が設定されていない状態を示す。`unsupported` は対象 repo がまだ `markdown-word-checker` の実行契約を満たしておらず、検査結果を合否として扱えない状態を示す。`failed gate` は、呼び出し元が必須 gate とした検査、または repo が設定済みとして宣言している検査が失敗した状態を示す。
@@ -164,6 +164,27 @@ Markdown 資料を作成する skill は、資料作成後に `markdown-word-che
 design-executor / handover-memo-writer / markdown-document-writer
 └─ markdown-word-checker [親が実行]
 ```
+
+### Codex PostToolUse hook による早期 feedback
+
+Codex hook は、資料作成 skill や `review-enforcer` の gate を置き換えない。Markdown 編集直後に focused lint の結果を model へ返し、本文修正や lint 設定見直しの必要性を早く知らせる補助経路として使う。
+
+初期範囲は `PostToolUse` hook に限定し、matcher は `apply_patch` と `Edit|Write` 系を対象にする。`PreToolUse` は編集前なので Markdown 編集後 lint には使わない。`Stop` hook は shell / MCP / unified exec 経由の編集漏れを補う将来の hardening 候補として扱い、初期実装には入れない。
+
+hook command は Codex から JSON を標準入力で受け取る。共通 field は `cwd` と `hook_event_name`、`PostToolUse` では `tool_name`、`tool_input`、`tool_response` を使える。hook helper は `tool_input` から作成、更新、移動後の Markdown path を抽出し、次の条件で focused lint 対象へ正規化する。
+
+- 対象 repo root の内側にある path だけを残す。
+- suffix が `.md` の file だけを残す。
+- 削除済み file、存在しない file、非 Markdown、repo 外 path は除外する。
+- `apply_patch` の `*** Add File:`、`*** Update File:`、`*** Move to:` を作成、更新、移動後 path として扱う。
+- `*** Delete File:` は削除済み path として除外する。
+- `Edit|Write` 系では file path field を抽出し、同じ正規化を適用する。
+
+抽出できた Markdown file list は、`markdown-word-checker` の明示ファイル focused lint と同じ入力として扱う。対象 file がない場合は `skip` とする。hook input から path を抽出できない場合、repo root を解決できない場合、または repo-local lint 設定不足で focused lint を実行できない場合は pass 扱いにせず、`unsupported` として model feedback と caller report に残す。lint command が失敗した場合は `failed gate`、repo 固有 whitelist / `prh` / target 除外の exact entry 変更が必要な場合は `needs user review` に寄せる。
+
+hook helper の出力は JSON とし、model への即時 feedback には `systemMessage` と `hookSpecificOutput.additionalContext` を使う。`unsupported`、`failed gate`、`needs user review` のように model が編集済み状態から対応すべき場合は、必要に応じて `decision: block` を返す。ただし `PostToolUse` hook は tool の副作用を undo できないため、この `block` は「編集を取り消す gate」ではなく、元 tool result を hook feedback に置き換えて model に修正継続させる feedback gate である。
+
+hook は Codex hook であり、Git hook や editor hook ではない。shell / unified exec / 一部 MCP tool 経由の編集は捕捉が不完全なので、hook の成功だけで task 完了や review gate 完了とはしない。資料作成 skill からの明示 `markdown-word-checker` 呼び出しと、`review-enforcer` の完了前 gate を最終 safety net として維持する。hook 結果の恒久証跡は hook helper が独自 report を作らず、既存 caller report または review report に集約する。
 
 ## 作業者向け表示
 
@@ -307,6 +328,8 @@ Markdown 資料を作る skill は、次の共通契約を持つ。
 - `markdown-word-checker` が repo 固有 `tools/lint/` 設定を読むことを明記している。
 - `review-enforcer` が Markdown lint 詳細を直接持たず、`markdown-word-checker` を呼ぶ構造になっている。
 - Markdown 資料作成 skill が、作成後に `markdown-word-checker` を使う契約を持っている。
+- Codex PostToolUse hook が既存 gate を置き換えない早期 feedback 経路として文書化されている。
+- hook helper が repo 内 Markdown file 抽出、削除済み / repo 外 path 除外、JSON feedback、`skip` / `unsupported` / `failed gate` / `needs user review` 分類を扱う。
 - repo 固有 whitelist / prh 変更には利用者の exact entry レビューが必要であることが残っている。
 - shared script の移動有無が明示され、初期実装では script を移動しない。
 - skill hierarchy design を更新し、新 skill と呼び出し関係を反映している。
