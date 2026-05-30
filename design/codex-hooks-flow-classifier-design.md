@@ -221,7 +221,7 @@ step_root
 
 `workflow_root` は repository-local な phase / task 定義を指す。
 `step_root` は CodexSkill 側の reusable step 定義を指す。
-hook は `flow_state.json` の `current_workflow.workflow_path` から repo-local workflow を読み、各 task の `step_set_ref` から `{step_root}/{skill}/steps.json` を読む。
+hook は `flow_state.json` の `current_workflow.workflow_path` から repo-local workflow を読み、各 task の `step_set_refs` から `{step_root}/{skill}/steps.json` を読む。
 
 hook command は相対 `cwd` に依存しない形で起動する。
 相対 command を使う場合でも、wrapper は上記環境変数を必ず渡す。
@@ -290,13 +290,16 @@ phase と task は repository ごとに異なる。
         {
           "id": "hook_state_task",
           "kind": "task",
+          "task_type": "implementation",
           "description": "hook state 管理を実装する",
           "required": true,
-          "step_set_ref": {
-            "skill": "development-lifecycle",
-            "version": 1,
-            "set": "design-implementation-review-commit"
-          }
+          "step_set_refs": [
+            {
+              "skill": "development-lifecycle",
+              "version": 1,
+              "set": "implementation-task"
+            }
+          ]
         }
       ]
     }
@@ -314,6 +317,11 @@ kind
   phase / task など、repository workflow 上の分類。
   初期実装では phase と task を想定するが、hook は未知 kind でも node tree として扱う。
 
+task_type
+  task の性質を表す repository-local な分類。
+  例: design / implementation / investigation / review-fix。
+  hook は task_type だけで step を推測せず、実行に使う step は step_set_refs を canonical source とする。
+
 node_path
   root から node までの id を `/` で連結した canonical path。
   例: implementation_phase/hook_state_task
@@ -324,11 +332,19 @@ children
 required
   parent 完了条件に含めるかどうか。
 
+step_set_refs
+  task node が使う CodexSkill 側 step set 参照の配列。
+  設計 task、実装 task、調査 task のような種類ごとに、異なる step set を紐付ける。
+  初期実装では 1 task につき 1 step set を推奨するが、複数指定できる schema とする。
+
 step_set_ref
-  task node が使う CodexSkill 側 step set への参照。
+  単一 step set だけを指定する旧式 shorthand。
+  読み込み時に step_set_refs 配列へ正規化する。
+  step_set_ref と step_set_refs が同時指定された場合は invalid_request_schema として拒否する。
 
 depends_on
-  同じ repository workflow 内の他 node_path への依存。
+  同じ repository workflow 内の他 node_path、または合成後 runtime node_path への依存。
+  step への依存を表す場合は `task_path#step_set_id/step_id` を使う。
 ```
 
 ### 5.3 CodexSkill step 定義
@@ -344,13 +360,38 @@ step は多くの task で共通に使う標準手順であり、基本的には
   "version": 1,
   "step_sets": [
     {
-      "id": "design-implementation-review-commit",
+      "id": "design-task",
+      "task_type": "design",
       "steps": [
         {
-          "id": "design",
+          "id": "gather_requirements",
+          "description": "設計要件を整理する",
+          "required": true,
+          "evidence": [{"type": "design_context"}]
+        },
+        {
+          "id": "update_design",
           "description": "設計を更新する",
           "required": true,
           "evidence": [{"type": "markdown_changed"}]
+        },
+        {
+          "id": "review_design",
+          "description": "設計レビューを受ける",
+          "required": true,
+          "evidence": [{"type": "review_report"}]
+        }
+      ]
+    },
+    {
+      "id": "implementation-task",
+      "task_type": "implementation",
+      "steps": [
+        {
+          "id": "sync_design",
+          "description": "設計との差分を確認する",
+          "required": true,
+          "evidence": [{"type": "design_reference_checked"}]
         },
         {
           "id": "implement",
@@ -360,7 +401,7 @@ step は多くの task で共通に使う標準手順であり、基本的には
         },
         {
           "id": "review",
-          "description": "レビューを受ける",
+          "description": "コードレビューを受ける",
           "required": true,
           "evidence": [{"type": "review_report"}]
         },
@@ -369,6 +410,48 @@ step は多くの task で共通に使う標準手順であり、基本的には
           "description": "変更を commit する",
           "required": true,
           "evidence": [{"tool": "Bash", "command_contains": "git commit"}]
+        }
+      ]
+    },
+    {
+      "id": "investigation-task",
+      "task_type": "investigation",
+      "steps": [
+        {
+          "id": "inspect_context",
+          "description": "対象範囲を調査する",
+          "required": true,
+          "evidence": [{"type": "investigation_notes"}]
+        },
+        {
+          "id": "record_findings",
+          "description": "調査結果を report に記録する",
+          "required": true,
+          "evidence": [{"type": "report"}]
+        }
+      ]
+    },
+    {
+      "id": "review-fix-task",
+      "task_type": "review-fix",
+      "steps": [
+        {
+          "id": "classify_findings",
+          "description": "レビュー指摘を分類する",
+          "required": true,
+          "evidence": [{"type": "review_disposition"}]
+        },
+        {
+          "id": "apply_fix",
+          "description": "必要な修正を行う",
+          "required": true,
+          "evidence": [{"tool": "apply_patch"}]
+        },
+        {
+          "id": "re_review",
+          "description": "再レビューを受ける",
+          "required": true,
+          "evidence": [{"type": "review_report"}]
         }
       ]
     }
@@ -381,6 +464,11 @@ CodexSkill step contract。
 ```text
 step_set
   複数 task から参照される標準 lifecycle。
+  設計、実装、調査、レビュー修正のように、task の性質ごとに複数定義できる。
+
+step_set.task_type
+  repository workflow の task_type と対応できる補助情報。
+  hook は task_type の一致を警告材料にできるが、実行対象は repository workflow の step_set_refs で明示された set とする。
 
 step
   task 内で実行される再利用可能な作業単位。
@@ -393,10 +481,58 @@ evidence
   step 完了候補を検出する条件。
 ```
 
-### 5.4 workflow と step の合成 model
+### 5.4 task と step set の紐付け規則
+
+task は repository-local な作業単位であり、step set は CodexSkill 側の再利用可能な作業手順である。
+両者の紐付けは repository workflow の task node が明示的に持つ。
+
+紐付け規則。
+
+```text
+- task node は task_type を持つことができる
+- task node は step_set_refs を持つことができる
+- step_set_refs がある場合、hook はその順序で step set を展開する
+- step_set_ref と step_set_refs の同時指定は invalid_request_schema として拒否する
+- task_type は既定 step set を推測するための補助情報であり、canonical source ではない
+- task_type と step_set.task_type が矛盾する場合は unsupported_step_set_binding として block 可能にする
+- step_set_refs が空の task は manual_required task として扱う
+- 1 task に複数 step set を指定する場合、同じ step_set id を重複指定してはいけない
+- 複数 step set の required steps は、すべて task 完了条件に含める
+```
+
+例。
+
+```json
+{
+  "id": "api_investigation_task",
+  "kind": "task",
+  "task_type": "investigation",
+  "required": true,
+  "step_set_refs": [
+    {"skill": "development-lifecycle", "version": 1, "set": "investigation-task"}
+  ]
+}
+```
+
+```json
+{
+  "id": "feature_implementation_task",
+  "kind": "task",
+  "task_type": "implementation",
+  "required": true,
+  "step_set_refs": [
+    {"skill": "development-lifecycle", "version": 1, "set": "implementation-task"}
+  ]
+}
+```
+
+設計修正だけを行う task は `design-task` を参照し、実装 task の中で設計修正が必要になった場合は、
+実装 task の step を直接増やすのではなく、workflow mutation によって design task または review-fix task を追加する。
+
+### 5.5 workflow と step の合成 model
 
 hook は repository workflow と CodexSkill step set を合成して、実行時の node tree を作る。
-task node に `step_set_ref` がある場合、その task の子として参照先 step set の steps を展開する。
+task node に `step_set_refs` がある場合、その task の子として参照先 step set の steps を展開する。
 
 実行時 node path は repository-local task path と CodexSkill step id を合成する。
 
@@ -407,6 +543,18 @@ implementation_phase/hook_state_task#review
 implementation_phase/hook_state_task#commit
 ```
 
+複数 step set を持つ task では、step id の衝突を避けるため step set id を含めた path を canonical とする。
+
+```text
+implementation_phase/hook_state_task#implementation-task/sync_design
+implementation_phase/hook_state_task#implementation-task/implement
+implementation_phase/hook_state_task#implementation-task/review
+implementation_phase/hook_state_task#implementation-task/commit
+```
+
+単一 step set の task では `task_path#step_id` を shorthand として表示してよい。
+state と progress に保存する canonical node_path は、初期実装から `task_path#step_set_id/step_id` を推奨する。
+
 区切り規則。
 
 ```text
@@ -415,6 +563,7 @@ implementation_phase/hook_state_task#commit
 
 #
   task node と CodexSkill step を接続する。
+  `#` 以降の `/` は CodexSkill step set id と step id の階層を表す。
 ```
 
 この形式により、phase / task の階層が将来さらに深くなっても repository-local path はそのまま伸びる。
@@ -482,36 +631,44 @@ started-project/.codex/state/
     "workflow_id": "release-governance",
     "task_id": "hook_state_task",
     "task_node_path": "implementation_phase/hook_state_task",
+    "task_type": "implementation",
     "status": "active",
+    "current_step_set": "implementation-task",
     "current_step": "review",
+    "next_step_set": "implementation-task",
     "next_step": "commit",
-    "current_node_path": "implementation_phase/hook_state_task#review",
-    "next_node_path": "implementation_phase/hook_state_task#commit",
-    "step_set_ref": {
-      "skill": "development-lifecycle",
-      "version": 1,
-      "set": "design-implementation-review-commit"
-    },
-    "steps_path": "/path/to/CodexSkill/skills/development-lifecycle/steps.json"
+    "current_node_path": "implementation_phase/hook_state_task#implementation-task/review",
+    "next_node_path": "implementation_phase/hook_state_task#implementation-task/commit",
+    "step_set_refs": [
+      {
+        "skill": "development-lifecycle",
+        "version": 1,
+        "set": "implementation-task"
+      }
+    ],
+    "step_set_paths": [
+      "/path/to/CodexSkill/skills/development-lifecycle/steps.json"
+    ]
   },
   "workflow_cursor": {
-    "current_node_path": "implementation_phase/hook_state_task#review",
-    "next_node_path": "implementation_phase/hook_state_task#commit",
+    "current_node_path": "implementation_phase/hook_state_task#implementation-task/review",
+    "next_node_path": "implementation_phase/hook_state_task#implementation-task/commit",
     "active_path_stack": [
       "implementation_phase",
       "implementation_phase/hook_state_task",
-      "implementation_phase/hook_state_task#review"
+      "implementation_phase/hook_state_task#implementation-task/review"
     ]
   },
   "context": [],
   "interrupt_stack": [],
   "input_journal": [],
   "flow_overrides": [],
+  "workflow_mutations": [],
   "pending_user_intent": null
 }
 ```
 
-`current_task.current_step`、`current_task.next_step`、`current_task.current_node_path`、`current_task.next_node_path`、`current_task.status` は表示と復帰のための derived cache である。
+`current_task.current_step_set`、`current_task.current_step`、`current_task.next_step_set`、`current_task.next_step`、`current_task.current_node_path`、`current_task.next_node_path`、`current_task.status` は表示と復帰のための derived cache である。
 完了 node の canonical source は `progress.json` とする。
 hook は repository workflow、CodexSkill step 定義、`progress.json`、確認済み `flow_overrides` から derived cache を再計算できなければならない。
 `workflow_cursor.active_path_stack` は現在 node の祖先を含む表示用 cursor であり、Stop 判定の canonical source ではない。
@@ -525,6 +682,7 @@ hook は repository workflow、CodexSkill step 定義、`progress.json`、確認
 | `normal` | 通常の Skill フロー進行中 |
 | `interrupted` | ユーザー割り込み作業中 |
 | `pending_user_intent` | ユーザー入力の分類が曖昧で確認待ち |
+| `pending_workflow_mutation` | workflow mutation の確認または適用待ち |
 | `resuming` | 割り込みから元作業へ復帰中 |
 | `cancelled` | 現在作業が中止された |
 | `completed` | 現在作業が完了した |
@@ -560,10 +718,12 @@ hook は repository workflow、CodexSkill step 定義、`progress.json`、確認
       "workflow_id": "release-governance",
       "task_node_path": "implementation_phase/hook_state_task",
       "status": "active",
+      "current_step_set": "implementation-task",
       "current_step": "review",
+      "next_step_set": "implementation-task",
       "next_step": "commit",
-      "current_node_path": "implementation_phase/hook_state_task#review",
-      "next_node_path": "implementation_phase/hook_state_task#commit"
+      "current_node_path": "implementation_phase/hook_state_task#implementation-task/review",
+      "next_node_path": "implementation_phase/hook_state_task#implementation-task/commit"
     }
   }
 ]
@@ -676,7 +836,7 @@ node 完了履歴の canonical source として `progress.json` を保持する�
   },
   "completed_nodes": [
     {
-      "node_path": "implementation_phase/hook_state_task#review",
+      "node_path": "implementation_phase/hook_state_task#implementation-task/review",
       "node_kind": "step",
       "completed_at": "2026-05-30T10:35:00Z",
       "source": "PostToolUse",
@@ -697,12 +857,12 @@ progress.json
   Codex 本体は直接 completed_nodes を追加しない。
   手動完了や再計算が必要な場合も、Codex 本体は script を呼ぶだけで JSON を直接編集しない。
 
-flow_state.json current_task.current_step / next_step / current_node_path / next_node_path
+flow_state.json current_task.current_step_set / current_step / next_step_set / next_step / current_node_path / next_node_path
   PostToolUse が progress 更新 script の結果を使って同期する derived field。
   UserPromptSubmit は読み取りと input_journal 追記だけを行い、node を進めない。
 
 flow_state.json current_task.status
-  PostToolUse が required nodes 完了時に completed へ更新する。
+  PostToolUse が sync_flow_state.py 経由で required nodes 完了時に completed へ更新する。
   Codex 本体は cancel / resume / interrupt の分類 payload を update_input_journal.py に渡すだけで、mode と status は script が更新する。
   Stop hook は completed と書かれていても required nodes が未完了なら block する。
 ```
@@ -720,6 +880,7 @@ CodexSkill/
     flow-enforcement/
       scripts/
         update_input_journal.py
+        update_workflow.py
         update_progress.py
         sync_flow_state.py
         validate_state.py
@@ -730,6 +891,9 @@ script contract。
 ```text
 update_input_journal.py
   UserPromptSubmit の入力受付記録と、Codex 本体の分類結果反映を担当する。
+
+update_workflow.py
+  workflow mutation の提案保存と、repository workflow への task / phase 追加、依存追加、step set 紐付け変更を担当する。
 
 update_progress.py
   completed_nodes の追加、重複排除、evidence 検証、parent roll-up 再計算を担当する。
@@ -745,7 +909,7 @@ validate_state.py
 
 ```text
 - JSON schema を検証してから書く
-- state_root 外への書き込みを拒否する
+- state_root / workflow_root 外への書き込みを拒否する
 - workflow_root / step_root との不一致を拒否する
 - atomic write を使う
 - 可能なら file lock を使う
@@ -762,6 +926,7 @@ validate_state.py
 - response には必ず ok、operation、request_id、updated_files、warnings、errors、state_summary を含める
 - state_root / workflow_root / step_root は絶対 path に解決してから検証する
 - state 更新系 script は state_root/.flow-state.lock を同じ exclusive lock として使う
+- workflow 更新系 script も同じ lock を使い、workflow と state の同時変更を直列化する
 - lock timeout は初期値 10 秒とし、timeout 時は state を変更しない
 - validate_state.py は書き込みを行わず、lock が取得できる環境では shared lock を使う
 - 書き込み前に対象 JSON を schema validation する
@@ -769,7 +934,7 @@ validate_state.py
 - 書き込み後に validate_state.py 相当の整合性検査を行う
 - 書き込み後検証に失敗した場合は .bak から atomic に復元し、failure を hook_logs に残す
 - hook 側の retry は lock timeout と一時的 I/O 失敗だけを対象に 1 回まで許可する
-- schema 不一致、root 不一致、未確認 flow_change、evidence 不一致は retry せず block 可能な failure とする
+- schema 不一致、root 不一致、未確認 flow_change、未確認 workflow mutation、evidence 不一致は retry せず block 可能な failure とする
 ```
 
 exit code contract。
@@ -835,12 +1000,134 @@ UserPromptSubmit は `record_user_prompt` だけを使い、Codex 本体は分�
   "completed_nodes": [
     {
       "node_id": "review",
-      "node_path": "implementation_phase/hook_state_task#review",
+      "node_path": "implementation_phase/hook_state_task#implementation-task/review",
       "evidence": {
         "tool_name": "Bash",
         "summary": "review report created"
       }
     }
+  ]
+}
+```
+
+`update_workflow.py` propose request。
+
+Codex 本体が review report や調査結果から workflow 変更が必要と判断した場合、
+ユーザー確認へ進む前に `propose_workflow_mutation` を呼び出して durable state に提案を保存する。
+Codex 本体が `flow_state.json` を直接編集して `workflow_mutations` を追加してはいけない。
+
+```json
+{
+  "operation": "propose_workflow_mutation",
+  "request_id": "2026-05-30T10:39:00.000000Z-workflow-mutation-propose-0001",
+  "actor": "codex-main-agent",
+  "state_root": "/started-project/.codex/state",
+  "workflow_root": "/started-project/.codex/workflows",
+  "step_root": "/home/ibis/AI/CodexSkill/skills",
+  "mutation": {
+    "mutation_id": "mutation-20260530-0001",
+    "input_id": "2026-05-30T11:20:00.000000Z-userprompt-0003",
+    "reason": "コードレビューで設計修正が必要と判明したため",
+    "requested_by": "review",
+    "operations": [
+      {
+        "op": "add_node",
+        "parent_node_path": "implementation_phase",
+        "node": {
+          "id": "design_revision_task",
+          "kind": "task",
+          "task_type": "design",
+          "required": true,
+          "description": "コードレビュー指摘に基づき設計を修正する",
+          "step_set_refs": [
+            {"skill": "development-lifecycle", "version": 1, "set": "design-task"}
+          ]
+        }
+      },
+      {
+        "op": "add_dependency",
+        "target_node_path": "implementation_phase/hook_state_task#implementation-task/review",
+        "depends_on": ["implementation_phase/design_revision_task"]
+      }
+    ]
+  }
+}
+```
+
+`propose_workflow_mutation` は同じ lock 内で以下を行う。
+
+```text
+- flow_state.json の workflow_mutations に status = proposed の entry を追加する
+- confirmation = missing を設定する
+- mode = pending_workflow_mutation にする
+- workflow_root はまだ変更しない
+- 追加予定 node は runtime node tree に存在しないため current / next node には設定しない
+- Codex に mutation 内容のユーザー確認を要求する Flow State を返す
+```
+
+`update_workflow.py` apply request。
+
+```json
+{
+  "operation": "apply_workflow_mutation",
+  "request_id": "2026-05-30T10:40:00.000000Z-workflow-mutation-0001",
+  "actor": "codex-main-agent",
+  "state_root": "/started-project/.codex/state",
+  "workflow_root": "/started-project/.codex/workflows",
+  "step_root": "/home/ibis/AI/CodexSkill/skills",
+  "mutation_id": "mutation-20260530-0001",
+  "confirmation": "explicit_user_confirmed",
+  "operations": [
+    {
+      "op": "add_node",
+      "parent_node_path": "implementation_phase",
+      "node": {
+        "id": "design_revision_task",
+        "kind": "task",
+        "task_type": "design",
+        "required": true,
+        "description": "コードレビュー指摘に基づき設計を修正する",
+        "step_set_refs": [
+          {"skill": "development-lifecycle", "version": 1, "set": "design-task"}
+        ]
+      }
+    },
+    {
+      "op": "add_dependency",
+      "target_node_path": "implementation_phase/hook_state_task#implementation-task/review",
+      "depends_on": ["implementation_phase/design_revision_task"]
+    }
+  ]
+}
+```
+
+`update_workflow.py` は mutation 適用に成功した場合、同じ lock 内で以下を行う。
+
+```text
+- workflow_root の対象 workflow JSON を atomic write する
+- flow_state.json の workflow_mutations[].status を active にする
+- flow_state.json の workflow_mutations[].confirmation を explicit_user_confirmed にする
+- workflow_mutations[].applied_at を設定する
+- workflow_mutations[].applied_operations に実際に適用した operation を記録する
+- runtime node tree を再合成し、追加 node が参照する step_set_refs を検証する
+- 未解決の workflow mutation が残っていなければ mode を normal に戻す
+- 未解決の workflow mutation が残る場合は mode = pending_workflow_mutation を維持する
+- sync_flow_state.py 相当の処理で current / next node を再計算する
+- 追加された required task が次に実行可能なら、その canonical node_path を next_node_path に設定する
+```
+
+適用後の mutation state 例。
+
+```json
+{
+  "mutation_id": "mutation-20260530-0001",
+  "status": "active",
+  "confirmation": "explicit_user_confirmed",
+  "confirmed_by_input_id": "2026-05-30T10:39:55.000000Z-userprompt-0004",
+  "applied_at": "2026-05-30T10:40:03Z",
+  "applied_operations": [
+    "add_node",
+    "add_dependency"
   ]
 }
 ```
@@ -886,9 +1173,43 @@ UserPromptSubmit は `record_user_prompt` だけを使い、Codex 本体は分�
   "errors": [],
   "state_summary": {
     "mode": "normal",
-    "current_node_path": "implementation_phase/hook_state_task#commit",
-    "next_node_path": "implementation_phase/hook_state_task#push"
+    "current_node_path": "implementation_phase/hook_state_task#implementation-task/commit",
+    "next_node_path": null
   }
+}
+```
+
+review が workflow mutation を要求した場合、`update_progress.py` は review step を completed にしない。
+この時点では追加予定 node はまだ workflow_root に存在しないため、`next_node_path` に未作成 node を入れてはいけない。
+この場合の response は以下の追加 field を持ち、Codex 本体には通常作業へ進む前に
+`update_workflow.py propose_workflow_mutation` を呼び出すよう要求する。
+
+```json
+{
+  "ok": false,
+  "operation": "mark_completed_nodes",
+  "request_id": "2026-05-30T10:35:00.000000Z-posttool-0001",
+  "updated_files": [],
+  "warnings": [],
+  "errors": [
+    {
+      "code": "workflow_mutation_required",
+      "node_path": "implementation_phase/hook_state_task#implementation-task/review",
+      "reason": "review report requires design revision before review can complete"
+    }
+  ],
+  "state_summary": {
+    "mode": "normal",
+    "current_node_path": "implementation_phase/hook_state_task#implementation-task/review",
+    "next_node_path": null
+  },
+  "required_agent_action": "propose_workflow_mutation を update_workflow.py に渡し、ユーザー確認待ち state を作ってください",
+  "blocked_nodes": [
+    "implementation_phase/hook_state_task#implementation-task/review"
+  ],
+  "required_workflow_mutations": [
+    "mutation-20260530-0001"
+  ]
 }
 ```
 
@@ -1019,7 +1340,7 @@ Codex には毎回、以下のような Flow State を返す。
 ```text
 [Flow State]
 本来行っていた作業:
-- release-governance / implementation_phase/hook_state_task#review
+- release-governance / implementation_phase/hook_state_task#implementation-task/review
 
 今回実行した作業:
 - Bash: ls .github/workflows
@@ -1028,7 +1349,7 @@ Codex には毎回、以下のような Flow State を返す。
 - 対象は v2 系のみ
 
 次に行う作業:
-- implementation_phase/hook_state_task#commit: 変更を commit する
+- implementation_phase/hook_state_task#implementation-task/commit: 変更を commit する
 
 注意:
 - 元の作業は完了していません。
@@ -1039,7 +1360,7 @@ Codex には毎回、以下のような Flow State を返す。
 ```text
 [Flow State]
 本来行っていた作業:
-- release-governance / implementation_phase/hook_state_task#review
+- release-governance / implementation_phase/hook_state_task#implementation-task/review
 
 今回の割り込み作業:
 - README の文言修正
@@ -1048,7 +1369,7 @@ Codex には毎回、以下のような Flow State を返す。
 - Edit: README.md
 
 割り込み完了後に戻る作業:
-- release-governance / implementation_phase/hook_state_task#commit
+- release-governance / implementation_phase/hook_state_task#implementation-task/commit
 ```
 
 ## 10. Stop hook
@@ -1064,9 +1385,13 @@ Codex には毎回、以下のような Flow State を返す。
 mode = normal
   required node が未完了なら block
   unclassified / classified の user input が残っていれば block
+  proposed / failed の workflow mutation が残っていれば block
 
 mode = pending_user_intent
   ユーザー意図確認をしていなければ block
+
+mode = pending_workflow_mutation
+  workflow mutation の確認または適用が終わっていなければ block
 
 mode = interrupted
   割り込み作業完了後に戻り先へ復帰していなければ block
@@ -1087,7 +1412,7 @@ mode = completed
 ```json
 {
   "decision": "block",
-  "reason": "未完了 node があります。次に implementation_phase/hook_state_task#review を実行してください。"
+  "reason": "未完了 node があります。次に implementation_phase/hook_state_task#implementation-task/review を実行してください。"
 }
 ```
 
@@ -1096,7 +1421,7 @@ mode = completed
 ```json
 {
   "decision": "block",
-  "reason": "割り込み作業中です。完了した場合は、中断前の作業に戻ってください。戻り先: release-governance / implementation_phase/hook_state_task#commit"
+  "reason": "割り込み作業中です。完了した場合は、中断前の作業に戻ってください。戻り先: release-governance / implementation_phase/hook_state_task#implementation-task/commit"
 }
 ```
 
@@ -1289,7 +1614,9 @@ parent roll-up と `flow_state.json` の derived field は script が更新す�
 同期対象は以下である。
 
 ```text
+- current_task.current_step_set
 - current_task.current_step
+- current_task.next_step_set
 - current_task.next_step
 - current_task.current_node_path
 - current_task.next_node_path
@@ -1324,6 +1651,7 @@ LLM の仮採用分類だけで required node を完了扱いまたは任意扱�
 ```text
 - pending_user_intent がない
 - input_journal に unclassified / classified / needs_confirmation の未処理入力がない
+- workflow_mutations に proposed / failed の未解決 mutation がない
 - active な interrupt がない、または明示的に cancel / complete 済み
 - progress.json 上で current_task の required nodes が完了している
 - current_task.status が completed または cancelled で、progress.json と矛盾しない
@@ -1410,7 +1738,7 @@ LLM の仮採用分類だけで required node を完了扱いまたは任意扱�
     "status": "proposed",
     "confirmation": "missing",
     "kind": "skip_required_node",
-    "target_nodes": ["implementation_phase/hook_state_task#review"],
+    "target_nodes": ["implementation_phase/hook_state_task#implementation-task/review"],
     "scope": "current_task",
     "reason": "ユーザーが今回は package version 確認不要と依頼したため",
     "requested_by": "user",
@@ -1444,6 +1772,115 @@ LLM の仮採用分類だけで required node を完了扱いまたは任意扱�
 
 `scope` は `current_task`、`current_workflow`、`current_session` のいずれかとする。
 初期実装では `current_task` 以外の scope は確認済みでも Stop hook が `unsupported_override_scope` として block してよい。
+
+### 18.2 workflow mutation contract
+
+`flow_change` が task / phase の追加、依存関係追加、step set 紐付け変更、task の親子関係変更を必要とする場合は、
+`flow_overrides` ではなく `workflow_mutations` として扱う。
+`flow_overrides` は既存 flow の判定を緩めるための state 変更であり、workflow mutation は repository workflow 定義そのものを変更するためである。
+
+workflow mutation が必要になる例。
+
+```text
+- implementation-task の code review 中に、設計修正が必要だと判明した
+- 調査 task の結果、実装前に別の設計 task を追加する必要が出た
+- 既存 task の step set が implementation-task ではなく investigation-task であるべきだと判明した
+- 上位 phase 配下に sibling task または child task を追加する必要が出た
+```
+
+原則。
+
+```text
+- Codex 本体は .codex/workflows/*.json を直接編集しない
+- Codex 本体は workflow mutation proposal を作り、update_workflow.py に渡す
+- task / phase 追加、reparent、required 変更、dependency 変更はユーザー明示確認を必須とする
+- mutation 適用前に workflow_root と step_root を検証する
+- mutation 適用後に runtime node tree を再合成し、progress.json と flow_state.json を sync する
+- mutation によって追加された required task は、親 node の完了条件に含める
+- mutation 適用後も既存 completed_nodes は canonical 履歴として保持する
+- 削除や node_id 変更は初期実装では禁止し、必要なら add_node + dependency で表現する
+```
+
+`workflow_mutations` state。
+
+```json
+[
+  {
+    "mutation_id": "mutation-20260530-0001",
+    "input_id": "2026-05-30T11:20:00.000000Z-userprompt-0003",
+    "status": "proposed",
+    "confirmation": "missing",
+    "reason": "コードレビューで設計修正が必要と判明したため",
+    "requested_by": "review",
+    "classified_by": "codex_body",
+    "operations": [
+      {
+        "op": "add_node",
+        "parent_node_path": "implementation_phase",
+        "node": {
+          "id": "design_revision_task",
+          "kind": "task",
+          "task_type": "design",
+          "required": true,
+          "description": "コードレビュー指摘に基づき設計を修正する",
+          "step_set_refs": [
+            {"skill": "development-lifecycle", "version": 1, "set": "design-task"}
+          ]
+        }
+      },
+      {
+        "op": "add_dependency",
+        "target_node_path": "implementation_phase/hook_state_task#implementation-task/review",
+        "depends_on": ["implementation_phase/design_revision_task"]
+      }
+    ],
+    "applied_at": null
+  }
+]
+```
+
+`status` は以下を取る。
+
+| status | 意味 |
+|---|---|
+| `proposed` | Codex 本体が提案したが workflow_root には未適用 |
+| `active` | ユーザー明示確認済みで workflow_root に適用済み |
+| `rejected` | ユーザーが否定した |
+| `failed` | 適用 script が失敗した |
+| `superseded` | 後続 mutation で置き換えられた |
+
+operation。
+
+| op | 意味 |
+|---|---|
+| `add_node` | parent_node_path 配下に task / phase node を追加する |
+| `insert_before` | target_node_path と同じ parent 配下に node を追加し、target が追加 node に依存する |
+| `insert_after` | target_node_path と同じ parent 配下に node を追加し、追加 node が target に依存する |
+| `add_dependency` | target_node_path に depends_on を追加する |
+| `change_step_set_refs` | task node の step_set_refs を変更する |
+| `reparent` | node を別 parent に移動する |
+
+初期実装で許可する operation は `add_node` と `add_dependency` のみとする。
+`insert_before`、`insert_after`、`change_step_set_refs`、`reparent` は schema に予約するが、
+実装が対応するまでは `unsupported_operation` として block 可能にする。
+
+code review 中に設計修正が必要になった場合の扱い。
+
+```text
+1. review report に design_required / workflow_mutation_required を記録する
+2. update_progress.py は review step を completed にせず、blocked_by_workflow_mutation として返す
+3. Codex 本体は workflow mutation proposal を作る
+4. Codex 本体は update_workflow.py propose_workflow_mutation を呼び、proposed mutation と pending_workflow_mutation mode を durable state に保存する
+5. Codex 本体はユーザーに追加 task の内容と位置を確認する
+6. ユーザー明示確認後、update_workflow.py apply_workflow_mutation が design-task を上位 phase 配下へ追加する
+7. update_workflow.py が review step へ design-task dependency を追加し、mutation status を active にする
+8. sync_flow_state.py が next node を追加された design-task へ移す
+9. design-task 完了後、元の implementation-task#implementation-task/review に戻る
+10. 再レビューが no-findings になるまで review step は completed にならない
+```
+
+この扱いにより、レビュー中に設計修正が必要になっても、実装 task の step 定義をその場で壊さず、
+repository-local workflow に上位または sibling task を追加して履歴と完了条件を明示できる。
 
 ## 19. 中止・復帰の扱い
 
@@ -1646,8 +2083,14 @@ flow = compose_runtime_flow(workflow, step_sets)
 if state.mode == "pending_user_intent":
     block("ユーザー入力の意図を確認してください")
 
+if state.mode == "pending_workflow_mutation":
+    block("workflow mutation の確認または適用が未完了です")
+
 if has_unprocessed_input(state.input_journal):
     block("未処理のユーザー入力分類があります")
+
+if has_unresolved_workflow_mutations(state.workflow_mutations):
+    block("未解決の workflow mutation があります")
 
 if state.mode == "interrupted":
     block("割り込み作業中です。完了後に戻り先へ復帰してください")
