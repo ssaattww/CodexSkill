@@ -622,9 +622,9 @@ Codex 本体は、UserPromptSubmit が返した `input_id` に対して分類結
 
 ### 6.8 Codex 本体の分類更新 interface
 
-Codex 本体は自然文分類を行った後、通常作業へ進む前に `flow_state.json` を以下の contract で更新する。
-この更新は Codex 本体が利用できる通常の file edit 手段で行う。
-hook は分類者ではなく、更新済み state の検査者である。
+Codex 本体は自然文分類を行った後、通常作業へ進む前に state update script へ以下の payload を渡す。
+Codex 本体が `flow_state.json` を直接編集することは原則禁止する。
+hook は分類者ではなく、script が更新した state の検査者である。
 
 ```json
 {
@@ -655,6 +655,9 @@ hook は分類者ではなく、更新済み state の検査者である。
 - state_effect は実際に変更した state field を要約する
 - input_journal の status は state 反映後に applied または needs_confirmation にする
 ```
+
+分類更新 script は、payload schema、`input_id` の存在、現在 mode、required node を緩める override の確認状態を検証してから atomic write する。
+script が失敗した場合、Codex 本体は通常作業へ進まず、失敗理由を Flow State として扱う。
 
 Stop hook は `input_journal` に `unclassified` または `classified` の最新入力が残っていれば block する。
 `needs_confirmation` が残っている場合は、確認質問または確認結果の反映が終わるまで block する。
@@ -690,11 +693,12 @@ node 完了履歴の canonical source として `progress.json` を保持する�
 
 ```text
 progress.json
-  PostToolUse が更新する canonical source。
+  PostToolUse が専用 script 経由で更新する canonical source。
   Codex 本体は直接 completed_nodes を追加しない。
+  手動完了や再計算が必要な場合も、Codex 本体は script を呼ぶだけで JSON を直接編集しない。
 
 flow_state.json current_task.current_step / next_step / current_node_path / next_node_path
-  PostToolUse が progress 更新後に同期する derived field。
+  PostToolUse が progress 更新 script の結果を使って同期する derived field。
   UserPromptSubmit は読み取りと input_journal 追記だけを行い、node を進めない。
 
 flow_state.json current_task.status
@@ -702,6 +706,55 @@ flow_state.json current_task.status
   Codex 本体は cancel / resume / interrupt に伴う mode と status 更新だけを行う。
   Stop hook は completed と書かれていても required nodes が未完了なら block する。
 ```
+
+### 6.10 state update scripts
+
+state の破損を避けるため、`progress.json` と derived state の更新は専用 script を通す。
+Codex 本体、hook、手動復旧作業のいずれも、可能な限り同じ script を使う。
+
+推奨配置。
+
+```text
+CodexSkill/
+  skills/
+    flow-enforcement/
+      scripts/
+        update_input_journal.py
+        update_progress.py
+        sync_flow_state.py
+        validate_state.py
+```
+
+script contract。
+
+```text
+update_input_journal.py
+  UserPromptSubmit の入力受付記録と、Codex 本体の分類結果反映を担当する。
+
+update_progress.py
+  completed_nodes の追加、重複排除、evidence 検証、parent roll-up 再計算を担当する。
+
+sync_flow_state.py
+  progress と confirmed override から current node / next node / status を再計算する。
+
+validate_state.py
+  flow_state.json、progress.json、repository workflow、CodexSkill step 定義の整合性を検査する。
+```
+
+必須性質。
+
+```text
+- JSON schema を検証してから書く
+- state_root 外への書き込みを拒否する
+- workflow_root / step_root との不一致を拒否する
+- atomic write を使う
+- 可能なら file lock を使う
+- 更新前後の validation を行う
+- 更新結果と変更理由を hook_logs に残す
+```
+
+`progress.json` の直接編集は、通常運用では禁止する。
+直接編集が許されるのは state 破損時の明示的な復旧作業だけであり、その場合も `validate_state.py` の結果を report に残す。
 
 ## 7. ユーザー入力分類
 
@@ -815,8 +868,8 @@ Codex 本体に input_id と Flow State を返す
 `PostToolUse` hook は、ツール実行後に以下を行う。
 
 - 実行した tool / input / output をもとに leaf node 完了を判定する
-- `progress.json` を更新する
-- `progress.json` をもとに `flow_state.json` の derived field を同期する
+- update script 経由で `progress.json` を更新する
+- update script 経由で `flow_state.json` の derived field を同期する
 - 現在の作業状態を Codex に提示する
 - 次に行う作業を Codex に提示する
 
@@ -1035,7 +1088,7 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
 6. active flow がなければ no-op を返す
 7. active flow があれば input_journal に unclassified の入力記録を追記する
 8. 現在の Flow State を作る
-9. Codex 本体に input_id、分類値、state 更新 contract を提示する
+9. Codex 本体に input_id、分類値、state update script の呼び出し contract を提示する
 10. pending_user_intent があれば確認優先の指示を返す
 ```
 
@@ -1061,10 +1114,10 @@ active flow があるのに `input_journal` へ保存できない場合は、分
 6. task が参照する step set を step_root から読む
 7. repository workflow と CodexSkill step set を合成し、node_path index に正規化する
 8. step node の evidence と照合する
-9. 完了 node を progress.json に記録する
-10. parent node の roll-up 完了を再計算する
-11. 確認済み flow_overrides を適用して next node を算出する
-12. flow_state.json の current node / next node / status を同期する
+9. update_progress.py に完了候補 node と evidence を渡す
+10. update_progress.py が progress.json 更新と parent roll-up 完了を再計算する
+11. sync_flow_state.py が確認済み flow_overrides を適用して next node を算出する
+12. sync_flow_state.py が flow_state.json の current node / next node / status を同期する
 13. Flow State を Codex に返す
 ```
 
@@ -1092,7 +1145,8 @@ tool_name == Edit / Write / apply_patch
 
 ### 14.3 同期責務
 
-`PostToolUse` は `progress.json` を更新した直後に、同じ hook 実行内で parent roll-up と `flow_state.json` の derived field を更新する。
+`PostToolUse` は `update_progress.py` を呼んだ直後に、同じ hook 実行内で `sync_flow_state.py` を呼ぶ。
+parent roll-up と `flow_state.json` の derived field は script が更新する。
 同期対象は以下である。
 
 ```text
@@ -1417,13 +1471,21 @@ step_sets = load_referenced_step_sets(roots.step_root, workflow)
 flow = compose_runtime_flow(workflow, step_sets)
 
 completed_nodes = detect_completed_nodes(payload, flow)
-update_progress(progress, completed_nodes)
+progress_result = run_update_progress_script(
+    state_root=roots.state_root,
+    completed_nodes=completed_nodes,
+    evidence_source="PostToolUse",
+)
 
 confirmed_overrides = confirmed_flow_overrides(state)
-next_node = calculate_next_node(flow, progress, confirmed_overrides)
-sync_flow_state_from_progress(state, progress, flow, confirmed_overrides)
+sync_result = run_sync_flow_state_script(
+    state_root=roots.state_root,
+    workflow=workflow,
+    step_sets=step_sets,
+    confirmed_overrides=confirmed_overrides,
+)
 
-print(flow_state_message(state, completed_nodes, next_node))
+print(flow_state_message(sync_result.state, progress_result.completed_nodes, sync_result.next_node))
 ```
 
 ### 23.3 Stop
