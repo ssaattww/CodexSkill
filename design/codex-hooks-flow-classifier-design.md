@@ -11,7 +11,7 @@
 - 完了前に未完了ステップがあれば Stop hook で終了を止める
 - ユーザーの追加情報・割り込み依頼・方針変更・中止・復帰を扱う
 - 自然文分類は原則として本体エージェントに行わせる
-- hook は分類結果の明示、state 更新、未完了 step の検査を担当する
+- hook は分類結果の明示、state 更新、未完了 node の検査を担当する
 - 設計段階で排除した分類方式は排除理由として一箇所にだけ記録する
 
 ## 2. 前提
@@ -47,11 +47,13 @@ Skill / flow.json
   hooks が読む機械可読な必須フローを書く
 
 UserPromptSubmit hook
-  active flow がある場合だけ Flow State と分類要求を Codex 本体に提示する
+  active flow がある場合だけ現在のユーザー入力を durable state に保存する
+  保存した入力 ID、Flow State、分類要求を Codex 本体に提示する
 
 Codex 本体
   ユーザー入力を additional_info / interrupt / flow_change / cancel / resume / ambiguous に分類する
-  分類結果に基づいて state 更新に必要な作業を行う
+  UserPromptSubmit が保存した入力 ID に分類結果を紐づける
+  flow_state.json の分類更新 interface に従って state 更新に必要な作業を行う
 
 PostToolUse hook
   ツール実行後に進捗を更新し、次の作業を Codex に提示する
@@ -82,8 +84,9 @@ hook が担当すること。
 ```text
 - state の保存
 - state の更新
+- ユーザー入力受付記録の durable state 化
 - flow の進捗管理
-- 未完了 step の検出
+- 未完了 node の検出
 - Stop 時の block
 - 次作業の提示
 - 再帰防止
@@ -95,7 +98,7 @@ Codex 本体に任せないこと。
 ```text
 - 自分自身の作業がフロー違反かどうかの最終判定
 - hook block を回避する弁明
-- 未完了 step の勝手な完了扱い
+- 未完了 node の勝手な完了扱い
 ```
 
 ### 3.3 排除した設計案
@@ -156,8 +159,57 @@ CodexSkill/skills/*/flow.json
   Skill ごとの必須 flow 定義を保持する
 
 started-project/.codex/config.toml
-  hook の有効化と、参照する Skill flow の識別子を保持する
+  hook の有効化、state root、CodexSkill root、Skill flow root を保持する
 ```
+
+### 4.1 root 解決契約
+
+hook は tool payload の `cwd` を state root の決定に使わない。
+`cwd` は実行された tool の作業ディレクトリであり、途中で別ディレクトリに変わる可能性があるためである。
+
+初期実装では、root 解決は以下の順で行う。
+
+```text
+1. 環境変数を優先する
+   - CODEX_STARTED_PROJECT_ROOT
+   - CODEX_FLOW_STATE_ROOT
+   - CODEX_SKILL_ROOT
+   - CODEX_SKILL_FLOW_ROOT
+
+2. 環境変数がなければ started-project/.codex/config.toml を読む
+   - [flow_enforcement].started_project_root
+   - [flow_enforcement].state_root
+   - [flow_enforcement].codex_skill_root
+   - [flow_enforcement].flow_root
+
+3. flow_state.json の roots は検証用として読む
+   - hook が解決した root と一致しない場合は state 破損扱いにする
+   - flow_state.json だけを root discovery の起点にはしない
+```
+
+必須契約。
+
+```text
+started_project_root
+  Codex を起動したプロジェクト root の絶対 path
+
+state_root
+  started_project_root/.codex/state の絶対 path
+
+codex_skill_root
+  CodexSkill repository root の絶対 path
+
+flow_root
+  codex_skill_root/skills の絶対 path
+```
+
+`flow_root` は `CodexSkill/skills` を指す。
+hook は `flow_state.json` の `current_task.skill` と `version` から
+`{flow_root}/{skill}/flow.json` を読む。
+
+hook command は相対 `cwd` に依存しない形で起動する。
+相対 command を使う場合でも、wrapper は上記環境変数を必ず渡す。
+後続実装では、root が未設定、相対 path、repo 外、または相互不一致の場合は no-op ではなく block 可能な `unsupported_state_root` として扱う。
 
 避ける構成。
 
@@ -264,6 +316,116 @@ hook は `flow_state.json` の `current_task.skill` と `version` から、Codex
 }
 ```
 
+### 5.3 階層 flow model
+
+flow は任意深さの node tree として扱う。
+`phase`、`task`、`lifecycle_step`、`step` は固定階層ではなく node の `kind` である。
+将来 `phase -> task -> implementation -> review -> fix -> commit` より深い階層が必要になっても、同じ構造で表現する。
+
+`steps` は後方互換または簡易記法として扱い、hook 実装では単一階層の leaf node 群に正規化する。
+新しい flow 定義は `nodes` を優先する。
+
+例。
+
+```json
+{
+  "skill": "release-governance-manager",
+  "version": 2,
+  "nodes": [
+    {
+      "id": "implementation_phase",
+      "kind": "phase",
+      "description": "実装 phase",
+      "required": true,
+      "children": [
+        {
+          "id": "hook_state_task",
+          "kind": "task",
+          "description": "hook state 管理を実装する",
+          "required": true,
+          "children": [
+            {
+              "id": "design",
+              "kind": "lifecycle_step",
+              "description": "設計を更新する",
+              "required": true,
+              "evidence": [{"type": "markdown_changed"}]
+            },
+            {
+              "id": "implement",
+              "kind": "lifecycle_step",
+              "description": "実装する",
+              "required": true,
+              "evidence": [{"tool": "apply_patch"}]
+            },
+            {
+              "id": "review",
+              "kind": "lifecycle_step",
+              "description": "レビューを受ける",
+              "required": true,
+              "evidence": [{"type": "review_report"}]
+            },
+            {
+              "id": "commit",
+              "kind": "lifecycle_step",
+              "description": "変更を commit する",
+              "required": true,
+              "evidence": [{"tool": "Bash", "command_contains": "git commit"}]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+node contract。
+
+```text
+id
+  同じ parent 配下で一意な安定 ID。
+
+kind
+  phase / task / lifecycle_step / step などの分類。
+  hook は既知 kind だけに依存してはいけない。
+
+node_path
+  root から node までの id を `/` で連結した canonical path。
+  例: implementation_phase/hook_state_task/review
+
+children
+  任意深さの子 node。
+
+required
+  parent 完了条件に含めるかどうか。
+
+evidence
+  leaf node の完了候補を検出する条件。
+
+depends_on
+  同じ tree 内の他 node_path への依存。
+```
+
+完了判定。
+
+```text
+leaf node
+  evidence または manual_required の確認で完了する。
+
+parent node
+  required children がすべて完了したら完了する。
+
+optional node
+  parent 完了条件には含めないが、完了履歴は記録できる。
+
+required node の skip / optional 化
+  flow_overrides の明示確認済み override がある場合だけ Stop 判定に反映する。
+```
+
+hook 内部では、`flow.json` を読み込んだ後に tree を走査し、`node_path -> node` の index を作る。
+進捗、現在位置、override、interrupt の戻り先は、step id ではなく `node_path` を基準に記録する。
+
 ## 6. state 設計
 
 ### 6.1 state の配置
@@ -286,20 +448,45 @@ started-project/.codex/state/
 
 ```json
 {
+  "schema_version": 1,
   "mode": "normal",
-  "project_root": "/path/to/started-project",
+  "roots": {
+    "started_project_root": "/path/to/started-project",
+    "state_root": "/path/to/started-project/.codex/state",
+    "codex_skill_root": "/path/to/CodexSkill",
+    "flow_root": "/path/to/CodexSkill/skills"
+  },
   "current_task": {
     "skill": "release-governance-manager",
     "version": 1,
     "status": "active",
-    "current_step": "check_workflows",
-    "next_step": "check_package_version"
+    "current_step": "review",
+    "next_step": "commit",
+    "current_node_path": "implementation_phase/hook_state_task/review",
+    "next_node_path": "implementation_phase/hook_state_task/commit",
+    "flow_path": "/path/to/CodexSkill/skills/release-governance-manager/flow.json"
+  },
+  "workflow_cursor": {
+    "current_node_path": "implementation_phase/hook_state_task/review",
+    "next_node_path": "implementation_phase/hook_state_task/commit",
+    "active_path_stack": [
+      "implementation_phase",
+      "implementation_phase/hook_state_task",
+      "implementation_phase/hook_state_task/review"
+    ]
   },
   "context": [],
   "interrupt_stack": [],
+  "input_journal": [],
+  "flow_overrides": [],
   "pending_user_intent": null
 }
 ```
+
+`current_task.current_step`、`current_task.next_step`、`current_task.current_node_path`、`current_task.next_node_path`、`current_task.status` は表示と復帰のための derived cache である。
+完了 node の canonical source は `progress.json` とする。
+hook は `flow.json`、`progress.json`、確認済み `flow_overrides` から derived cache を再計算できなければならない。
+`workflow_cursor.active_path_stack` は現在 node の祖先を含む表示用 cursor であり、Stop 判定の canonical source ではない。
 
 ### 6.3 mode
 
@@ -345,7 +532,9 @@ started-project/.codex/state/
       "skill": "release-governance-manager",
       "status": "active",
       "current_step": "check_workflows",
-      "next_step": "check_package_version"
+      "next_step": "check_package_version",
+      "current_node_path": "implementation_phase/hook_state_task/review",
+      "next_node_path": "implementation_phase/hook_state_task/commit"
     }
   }
 ]
@@ -357,6 +546,7 @@ started-project/.codex/state/
 
 ```json
 {
+  "input_id": "2026-05-30T10:31:58.123456Z-userprompt-0001",
   "text": "それ先にやって",
   "classification": {
     "intent": "ambiguous",
@@ -365,6 +555,123 @@ started-project/.codex/state/
   },
   "required_agent_action": "これは割り込み作業か、現在フローの変更かをユーザーに確認する"
 }
+```
+
+### 6.7 input_journal
+
+`UserPromptSubmit` が受け取ったユーザー入力を durable state として保持する。
+active flow がある場合、hook は Codex 本体へ分類要求を返す前に必ず `input_journal` へ追記する。
+
+```json
+[
+  {
+    "input_id": "2026-05-30T10:31:58.123456Z-userprompt-0001",
+    "event": "UserPromptSubmit",
+    "received_at": "2026-05-30T10:31:58.123456Z",
+    "text": "対象は v2 系だけです",
+    "status": "unclassified",
+    "classification": null,
+    "adoption": null,
+    "applied_state_updates": [],
+    "superseded_by": null
+  }
+]
+```
+
+`status` は以下を取る。
+
+| status | 意味 |
+|---|---|
+| `unclassified` | UserPromptSubmit が保存しただけで、Codex 本体の分類が未記録 |
+| `classified` | Codex 本体が分類結果を記録したが、state 反映が未完了 |
+| `applied` | 分類結果に基づく state 反映が完了 |
+| `needs_confirmation` | ユーザー確認待ち |
+| `superseded` | 後続入力で置き換えられた |
+
+Codex 本体は、UserPromptSubmit が返した `input_id` に対して分類結果を記録する。
+`input_id` が一致しない分類結果、または未保存入力への分類結果は採用しない。
+
+### 6.8 Codex 本体の分類更新 interface
+
+Codex 本体は自然文分類を行った後、通常作業へ進む前に `flow_state.json` を以下の contract で更新する。
+この更新は Codex 本体が利用できる通常の file edit 手段で行う。
+hook は分類者ではなく、更新済み state の検査者である。
+
+```json
+{
+  "input_id": "2026-05-30T10:31:58.123456Z-userprompt-0001",
+  "classification": {
+    "intent": "additional_info",
+    "confidence": 0.86,
+    "reason": "現在作業への制約追加であり、別作業を要求していない",
+    "summary": "対象を v2 系に限定する"
+  },
+  "adoption": "auto",
+  "state_effect": {
+    "context_added": true,
+    "interrupt_pushed": false,
+    "flow_override_ids": [],
+    "mode_after": "normal"
+  }
+}
+```
+
+更新規則。
+
+```text
+- confidence >= 0.8 は adoption = auto として採用できる
+- 0.5 <= confidence < 0.8 は adoption = provisional として記録する
+- confidence < 0.5 は pending_user_intent を作り、adoption = needs_confirmation にする
+- flow_change で required node を skip / optional 化する場合は confidence に関係なく明示確認が必要
+- state_effect は実際に変更した state field を要約する
+- input_journal の status は state 反映後に applied または needs_confirmation にする
+```
+
+Stop hook は `input_journal` に `unclassified` または `classified` の最新入力が残っていれば block する。
+`needs_confirmation` が残っている場合は、確認質問または確認結果の反映が終わるまで block する。
+
+### 6.9 `progress.json`
+
+node 完了履歴の canonical source として `progress.json` を保持する。
+単一階層の `steps` は leaf node に正規化されるため、同じ `completed_nodes` で扱う。
+
+```json
+{
+  "schema_version": 1,
+  "flow": {
+    "skill": "release-governance-manager",
+    "version": 1
+  },
+  "completed_nodes": [
+    {
+      "node_path": "implementation_phase/hook_state_task/review",
+      "node_kind": "lifecycle_step",
+      "completed_at": "2026-05-30T10:35:00Z",
+      "source": "PostToolUse",
+      "evidence": {
+        "tool_name": "apply_patch",
+        "tool_input_excerpt": "reports/codex-hooks-flow-classifier-design-review-20260530102421.md"
+      }
+    }
+  ]
+}
+```
+
+所有者。
+
+```text
+progress.json
+  PostToolUse が更新する canonical source。
+  Codex 本体は直接 completed_nodes を追加しない。
+
+flow_state.json current_task.current_step / next_step / current_node_path / next_node_path
+  PostToolUse が progress 更新後に同期する derived field。
+  UserPromptSubmit は読み取りと input_journal 追記だけを行い、node を進めない。
+
+flow_state.json current_task.status
+  PostToolUse が required nodes 完了時に completed へ更新する。
+  Codex 本体は cancel / resume / interrupt に伴う mode と status 更新だけを行う。
+  Stop hook は completed と書かれていても required nodes が未完了なら block する。
 ```
 
 ## 7. ユーザー入力分類
@@ -407,6 +714,9 @@ state に保存する分類結果は、以下の JSON 形状を基本とする�
 }
 ```
 
+この JSON は単独で信頼しない。
+必ず `input_journal[].input_id` と紐づけ、`adoption` と `state_effect` を同じ入力記録に残す。
+
 ### 7.3 confidence の扱い
 
 ```text
@@ -420,6 +730,9 @@ confidence < 0.5
   pending_user_intent にして確認を強制する
 ```
 
+ただし、`flow_change` が required node の skip、optional 化、完了条件の緩和を含む場合は例外とする。
+この場合は LLM 分類の confidence が 0.8 以上でも、確認済み override になるまでは Stop hook の required node 判定を緩めない。
+
 ## 8. UserPromptSubmit hook
 
 ### 8.1 目的
@@ -428,8 +741,9 @@ confidence < 0.5
 ここでは以下を行う。
 
 - active flow がない場合は no-op にする
+- active flow がある場合は現在のユーザー入力を `input_journal` に保存する
 - active flow がある場合は現在の Flow State を Codex 本体に提示する
-- Codex 本体にユーザー入力の分類と state 更新を明示的に要求する
+- Codex 本体に `input_id` 付きでユーザー入力の分類と state 更新を明示的に要求する
 - 直前に曖昧な入力が残っている場合は確認を優先させる
 
 ### 8.2 処理フロー
@@ -447,9 +761,22 @@ active flow の有無を確認する
   ↓
 active flow がなければ no-op
   ↓
+現在のユーザー入力を input_journal に unclassified として保存する
+  ↓
 active flow があれば分類要求を含む Flow State を生成する
   ↓
-Codex 本体に Flow State を返す
+Codex 本体に input_id と Flow State を返す
+```
+
+`UserPromptSubmit` が返す model-facing message には以下を必ず含める。
+
+```text
+- input_id
+- 現在の current_task
+- 未完了 required nodes
+- 既存の pending_user_intent
+- Codex 本体が flow_state.json の input_journal に分類結果を記録する必要があること
+- required node を緩める flow_change はユーザー明示確認が必要であること
 ```
 
 ## 9. PostToolUse hook
@@ -458,8 +785,9 @@ Codex 本体に Flow State を返す
 
 `PostToolUse` hook は、ツール実行後に以下を行う。
 
-- 実行した tool / input / output をもとに step 完了を判定する
+- 実行した tool / input / output をもとに leaf node 完了を判定する
 - `progress.json` を更新する
+- `progress.json` をもとに `flow_state.json` の derived field を同期する
 - 現在の作業状態を Codex に提示する
 - 次に行う作業を Codex に提示する
 
@@ -506,14 +834,15 @@ Codex には毎回、以下のような Flow State を返す。
 
 ### 10.1 目的
 
-`Stop` hook は、Codex が応答を終了しようとしたときに動く。  
+`Stop` hook は、Codex が応答を終了しようとしたときに動く。
 未完了フロー、曖昧なユーザー入力、割り込みからの未復帰があれば終了を block する。
 
 ### 10.2 判定
 
 ```text
 mode = normal
-  required step が未完了なら block
+  required node が未完了なら block
+  unclassified / classified の user input が残っていれば block
 
 mode = pending_user_intent
   ユーザー意図確認をしていなければ block
@@ -522,13 +851,14 @@ mode = interrupted
   割り込み作業完了後に戻り先へ復帰していなければ block
 
 mode = resuming
-  元作業の next_step に戻っていなければ block
+  元作業の next node に戻っていなければ block
 
 mode = cancelled
   元作業への復帰は要求しない
 
 mode = completed
-  allow
+  progress.json 上の required nodes が完了していれば allow
+  flow_state.json の derived status だけで completed なら block
 ```
 
 ### 10.3 block 例
@@ -536,7 +866,7 @@ mode = completed
 ```json
 {
   "decision": "block",
-  "reason": "未完了 step があります。次に check_package_version を実行してください。"
+  "reason": "未完了 node があります。次に implementation_phase/hook_state_task/review を実行してください。"
 }
 ```
 
@@ -562,17 +892,17 @@ mode = completed
 
 ### 11.1 目的
 
-`PreToolUse` hook は必須ではない。  
+`PreToolUse` hook は必須ではない。
 ただし、以下を強制したい場合に使用する。
 
 - 危険コマンドを止める
 - 明らかな順序違反を止める
-- 現在 step で許可されない編集を止める
+- 現在 node で許可されない編集を止める
 - ユーザー承認が必要な操作を止める
 
 ### 11.2 注意点
 
-`PreToolUse` を強くしすぎると、ユーザー割り込みを阻害する。  
+`PreToolUse` を強くしすぎると、ユーザー割り込みを阻害する。
 そのため、`mode = interrupted` の場合は判定を緩める。
 
 ```text
@@ -594,20 +924,26 @@ mode = pending_user_intent
 [features]
 hooks = true
 
+[flow_enforcement]
+started_project_root = "/path/to/started-project"
+state_root = "/path/to/started-project/.codex/state"
+codex_skill_root = "/path/to/CodexSkill"
+flow_root = "/path/to/CodexSkill/skills"
+
 [[hooks.UserPromptSubmit]]
-command = "python3 .codex/hooks/user_prompt_flow_state.py"
+command = "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/user_prompt_flow_state.py"
 timeout = 20
 
 [[hooks.PostToolUse]]
-command = "python3 .codex/hooks/post_tool_flow.py"
+command = "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/post_tool_flow.py"
 timeout = 20
 
 [[hooks.Stop]]
-command = "python3 .codex/hooks/stop_guard.py"
+command = "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/stop_guard.py"
 timeout = 20
 ```
 
-feature flag 名は Codex のバージョンにより異なる可能性がある。  
+feature flag 名は Codex のバージョンにより異なる可能性がある。
 `features.hooks` と `features.codex_hooks` のどちらが有効かは手元で確認する。
 
 ### 12.2 hooks.json 例
@@ -620,7 +956,7 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .codex/hooks/user_prompt_flow_state.py",
+            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/user_prompt_flow_state.py",
             "timeout": 20,
             "statusMessage": "Updating flow state"
           }
@@ -633,7 +969,7 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .codex/hooks/post_tool_flow.py",
+            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/post_tool_flow.py",
             "timeout": 20,
             "statusMessage": "Updating flow progress"
           }
@@ -645,7 +981,7 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .codex/hooks/stop_guard.py",
+            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/started-project CODEX_FLOW_STATE_ROOT=/path/to/started-project/.codex/state CODEX_SKILL_ROOT=/path/to/CodexSkill CODEX_SKILL_FLOW_ROOT=/path/to/CodexSkill/skills python3 /path/to/started-project/.codex/hooks/stop_guard.py",
             "timeout": 20,
             "statusMessage": "Checking completion gate"
           }
@@ -661,13 +997,16 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
 ### 13.1 処理
 
 ```text
-1. stdin JSON を読む
-2. ユーザー入力を抽出する
-3. flow_state.json を読む
-4. active flow がなければ no-op を返す
-5. active flow があれば現在の Flow State を作る
-6. Codex 本体に分類値と state 更新の要求を提示する
-7. pending_user_intent があれば確認優先の指示を返す
+1. env / config から started_project_root, state_root, flow_root を解決する
+2. stdin JSON を読む
+3. ユーザー入力を抽出する
+4. flow_state.json を読む
+5. root contract と state 内 roots の一致を検査する
+6. active flow がなければ no-op を返す
+7. active flow があれば input_journal に unclassified の入力記録を追記する
+8. 現在の Flow State を作る
+9. Codex 本体に input_id、分類値、state 更新 contract を提示する
+10. pending_user_intent があれば確認優先の指示を返す
 ```
 
 ### 13.2 失敗時
@@ -675,18 +1014,27 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
 この hook 自体はユーザー入力を分類しない。
 そのため分類不能は Codex 本体に確認質問を要求する Flow State として扱う。
 
+state root、CodexSkill root、flow root が解決できない場合は `unsupported_state_root` として返す。
+active flow があるのに `input_journal` へ保存できない場合は、分類要求だけを返してはいけない。
+この場合は Stop hook が検出できるよう、block 可能な failure を model-facing message に含める。
+
 ## 14. post_tool_flow.py 設計
 
 ### 14.1 処理
 
 ```text
-1. stdin JSON を読む
-2. tool_name / tool_input / tool_result を抽出する
-3. current flow を読む
-4. flow.json の evidence と照合する
-5. 完了 step を progress.json に記録する
-6. next_step を算出する
-7. Flow State を Codex に返す
+1. env / config から started_project_root, state_root, flow_root を解決する
+2. stdin JSON を読む
+3. tool_name / tool_input / tool_result を抽出する
+4. flow_state.json と progress.json を読む
+5. current flow を flow_root から読む
+6. flow.json を node_path index に正規化する
+7. leaf node の evidence と照合する
+8. 完了 node を progress.json に記録する
+9. parent node の roll-up 完了を再計算する
+10. 確認済み flow_overrides を適用して next node を算出する
+11. flow_state.json の current node / next node / status を同期する
+12. Flow State を Codex に返す
 ```
 
 ### 14.2 evidence 判定
@@ -709,36 +1057,59 @@ tool_name == Edit / Write / apply_patch
   → update_design_doc 完了候補
 ```
 
-誤判定を避けたい step は `manual_required` とする。
+誤判定を避けたい node は `manual_required` とする。
+
+### 14.3 同期責務
+
+`PostToolUse` は `progress.json` を更新した直後に、同じ hook 実行内で parent roll-up と `flow_state.json` の derived field を更新する。
+同期対象は以下である。
+
+```text
+- current_task.current_step
+- current_task.next_step
+- current_task.current_node_path
+- current_task.next_node_path
+- workflow_cursor.active_path_stack
+- current_task.status
+```
+
+全 required nodes が完了した場合、`current_task.status = completed` と `mode = completed` へ更新する所有者は `PostToolUse` である。
+`flow_change` による required node の除外は、`flow_overrides.status = active` かつ `confirmation = explicit_user_confirmed` のものだけを適用する。
+LLM の仮採用分類だけで required node を完了扱いまたは任意扱いにしてはいけない。
 
 ## 15. stop_guard.py 設計
 
 ### 15.1 処理
 
 ```text
-1. flow_state.json を読む
-2. progress.json を読む
-3. mode を確認する
-4. 未完了 required step を探す
-5. pending_user_intent を確認する
-6. interrupt_stack を確認する
-7. 必要に応じて block を返す
+1. env / config から started_project_root, state_root, flow_root を解決する
+2. flow_state.json を読む
+3. progress.json を読む
+4. current flow を flow_root から読む
+5. mode を確認する
+6. input_journal の未処理入力を確認する
+7. confirmed override だけを適用して未完了 required node を探す
+8. pending_user_intent を確認する
+9. interrupt_stack を確認する
+10. flow_state.json の derived field が progress と矛盾していないか確認する
+11. 必要に応じて block を返す
 ```
 
 ### 15.2 終了許可条件
 
 ```text
 - pending_user_intent がない
+- input_journal に unclassified / classified / needs_confirmation の未処理入力がない
 - active な interrupt がない、または明示的に cancel / complete 済み
-- current_task の required steps が完了している
-- current_task.status が completed または cancelled
+- progress.json 上で current_task の required nodes が完了している
+- current_task.status が completed または cancelled で、progress.json と矛盾しない
 ```
 
 ## 16. ユーザー割り込みの扱い
 
 ### 16.1 原則
 
-ユーザー入力は最上位命令である。  
+ユーザー入力は最上位命令である。
 そのため、割り込みを即フロー違反として潰してはいけない。
 
 ### 16.2 割り込み時の動作
@@ -753,12 +1124,12 @@ tool_name == Edit / Write / apply_patch
 
 ### 16.3 割り込み完了
 
-割り込み完了判定は初期実装では自動化しすぎない。  
+割り込み完了判定は初期実装では自動化しすぎない。
 以下のいずれかで完了扱いにする。
 
 - Codex が明示的に割り込み作業完了を出力する
 - ユーザーが「それでOK」「戻って」と言う
-- Stop hook が復帰を要求し、Codex が戻り先 step を実行する
+- Stop hook が復帰を要求し、Codex が戻り先 node を実行する
 
 ## 17. 追加情報の扱い
 
@@ -776,8 +1147,8 @@ tool_name == Edit / Write / apply_patch
 ```text
 1. context に追加する
 2. current_task は維持する
-3. current_step も維持する
-4. next_step は必要なら条件付きで更新する
+3. current node も維持する
+4. next node は必要なら条件付きで更新する
 5. Codex に追加情報を反映して続行させる
 ```
 
@@ -795,11 +1166,60 @@ tool_name == Edit / Write / apply_patch
 動作。
 
 ```text
-1. context に flow_change として記録
-2. required step の一部を skip / optional に変更する
-3. 変更理由を state に残す
-4. Stop hook は変更後の flow を基準に判定する
+1. input_journal に flow_change 分類を記録する
+2. context に flow_change として記録する
+3. required node の一部を skip / optional にする提案を flow_overrides に proposed として記録する
+4. required node を緩める場合は、対象 node、変更理由、適用範囲をユーザーに確認する
+5. ユーザーの明示確認後に flow_overrides を active / explicit_user_confirmed に更新する
+6. Stop hook は確認済み override を適用した後の flow を基準に判定する
 ```
+
+### 18.1 override contract
+
+`flow_change` による required node の skip、optional 化、完了条件緩和は durable state に残す。
+
+```json
+[
+  {
+    "override_id": "override-20260530-0001",
+    "input_id": "2026-05-30T10:31:58.123456Z-userprompt-0001",
+    "status": "proposed",
+    "confirmation": "missing",
+    "kind": "skip_required_node",
+    "target_nodes": ["implementation_phase/hook_state_task/check_package_version"],
+    "scope": "current_task",
+    "reason": "ユーザーが今回は package version 確認不要と依頼したため",
+    "requested_by": "user",
+    "classified_by": "codex_body",
+    "confidence": 0.82,
+    "applied_at": null
+  }
+]
+```
+
+`status` は以下を取る。
+
+| status | 意味 |
+|---|---|
+| `proposed` | Codex 本体が仮採用したが、Stop 判定には未適用 |
+| `active` | ユーザー明示確認済みで Stop 判定へ適用する |
+| `rejected` | ユーザーが否定した |
+| `expired` | task 変更などで適用範囲外になった |
+
+確認済み override は以下の形に更新する。
+
+```json
+{
+  "override_id": "override-20260530-0001",
+  "status": "active",
+  "confirmation": "explicit_user_confirmed",
+  "confirmed_by_input_id": "2026-05-30T10:33:00.000000Z-userprompt-0002",
+  "applied_at": "2026-05-30T10:33:05Z"
+}
+```
+
+`scope` は `current_task`、`current_skill_version`、`current_session` のいずれかとする。
+初期実装では `current_task` 以外の scope は確認済みでも Stop hook が `unsupported_override_scope` として block してよい。
 
 ## 19. 中止・復帰の扱い
 
@@ -817,7 +1237,7 @@ tool_name == Edit / Write / apply_patch
 ```text
 1. current_task.status = cancelled
 2. mode = cancelled
-3. Stop hook は元 task の未完了 step を block 理由にしない
+3. Stop hook は元 task の未完了 node を block 理由にしない
 ```
 
 ### 19.2 復帰
@@ -835,7 +1255,7 @@ tool_name == Edit / Write / apply_patch
 1. interrupt_stack の active task を閉じる
 2. return_to を current_task に戻す
 3. mode = resuming
-4. next_step から再開させる
+4. next node から再開させる
 ```
 
 ## 20. セキュリティ・信頼境界
@@ -893,7 +1313,7 @@ state JSON が壊れていた場合。
 ```text
 1. flow_state.json の形式を決める
 2. progress.json の形式を決める
-3. Stop hook で未完了 step を block する
+3. Stop hook で未完了 node を block する
 4. 手動で state を編集して動作確認する
 ```
 
@@ -931,15 +1351,24 @@ state JSON が壊れていた場合。
 ```python
 payload = read_json_stdin()
 user_prompt = extract_user_prompt(payload)
-state = load_flow_state()
+roots = resolve_roots_from_env_or_config()
+state = load_flow_state(roots.state_root)
+validate_roots(roots, state.roots)
 
 if not state.current_task or state.current_task.status != "active":
     allow_noop()
 
-message = build_flow_state_message(
+input_record = append_input_journal(
     state=state,
     user_prompt=user_prompt,
-    required_agent_action="ユーザー入力を分類し、必要なら state を更新してください",
+    status="unclassified",
+)
+
+message = build_flow_state_message(
+    state=state,
+    input_id=input_record.input_id,
+    user_prompt=user_prompt,
+    required_agent_action="input_id に分類結果を紐づけて flow_state.json を更新してください",
 )
 
 print(json_response_for_codex(message))
@@ -949,31 +1378,45 @@ print(json_response_for_codex(message))
 
 ```python
 payload = read_json_stdin()
-state = load_flow_state()
-flow = load_current_flow(state)
+roots = resolve_roots_from_env_or_config()
+state = load_flow_state(roots.state_root)
+progress = load_progress(roots.state_root)
+flow = load_current_flow(roots.flow_root, state)
 
-completed_steps = detect_completed_steps(payload, flow)
-update_progress(completed_steps)
+completed_nodes = detect_completed_nodes(payload, flow)
+update_progress(progress, completed_nodes)
 
-next_step = calculate_next_step(flow, progress)
+confirmed_overrides = confirmed_flow_overrides(state)
+next_node = calculate_next_node(flow, progress, confirmed_overrides)
+sync_flow_state_from_progress(state, progress, flow, confirmed_overrides)
 
-print(flow_state_message(state, completed_steps, next_step))
+print(flow_state_message(state, completed_nodes, next_node))
 ```
 
 ### 23.3 Stop
 
 ```python
-state = load_flow_state()
-progress = load_progress()
+roots = resolve_roots_from_env_or_config()
+state = load_flow_state(roots.state_root)
+progress = load_progress(roots.state_root)
+flow = load_current_flow(roots.flow_root, state)
 
 if state.mode == "pending_user_intent":
     block("ユーザー入力の意図を確認してください")
 
+if has_unprocessed_input(state.input_journal):
+    block("未処理のユーザー入力分類があります")
+
 if state.mode == "interrupted":
     block("割り込み作業中です。完了後に戻り先へ復帰してください")
 
-if has_uncompleted_required_steps(state, progress):
-    block("未完了 step があります。次の step を実行してください")
+confirmed_overrides = confirmed_flow_overrides(state)
+
+if has_uncompleted_required_nodes(flow, progress, confirmed_overrides):
+    block("未完了 node があります。次の node を実行してください")
+
+if derived_state_conflicts_with_progress(state, progress, flow, confirmed_overrides):
+    block("flow_state.json と progress.json が矛盾しています")
 
 allow()
 ```
