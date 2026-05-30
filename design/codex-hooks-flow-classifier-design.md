@@ -10,8 +10,9 @@
 - ツール実行後に「今行っていたはずの作業」「今回実行した作業」「次に行う作業」を Codex に提示する
 - 完了前に未完了ステップがあれば Stop hook で終了を止める
 - ユーザーの追加情報・割り込み依頼・方針変更・中止・復帰を扱う
-- 自然文分類は rule-based では厳しいため、`UserPromptSubmit` hook から分類専用 `codex exec` を起動する
-- ただし `codex exec` は分類器としてのみ使い、hook の強制判定そのものは state machine で行う
+- 自然文分類は原則として本体エージェントに行わせる
+- hook は分類結果の明示、state 更新、未完了 step の検査を担当する
+- 分類専用 `codex exec` は検討案として残すが、初期方針の対象外とする
 
 ## 2. 前提
 
@@ -46,10 +47,11 @@ Skill / flow.json
   hooks が読む機械可読な必須フローを書く
 
 UserPromptSubmit hook
-  ユーザー入力を分類し、state を更新する
+  active flow がある場合だけ Flow State と分類要求を Codex 本体に提示する
 
-codex exec classifier
+Codex 本体
   ユーザー入力を additional_info / interrupt / flow_change / cancel / resume / ambiguous に分類する
+  分類結果に基づいて state 更新に必要な作業を行う
 
 PostToolUse hook
   ツール実行後に進捗を更新し、次の作業を Codex に提示する
@@ -59,6 +61,10 @@ Stop hook
 
 PreToolUse hook
   必要に応じて、明らかな順序違反や禁止操作を止める
+
+codex exec classifier
+  初期方針では使用しない
+  hook 内で自然文分類まで完結させたい場合の検討案として扱う
 ```
 
 ### 3.2 LLM と hook の責務分離
@@ -72,6 +78,9 @@ LLM に任せること。
 - 割り込み作業の要約
 - 曖昧な場合の確認質問案
 ```
+
+ここでの LLM は、原則として会話コンテキストを持つ Codex 本体を指す。
+分類専用 `codex exec` は、本体に分類させられない構成を採る場合の代替案である。
 
 hook が担当すること。
 
@@ -93,6 +102,21 @@ Codex 本体に任せないこと。
 - hook block を回避する弁明
 - 未完了 step の勝手な完了扱い
 ```
+
+### 3.3 方針更新履歴
+
+初期案では、`UserPromptSubmit` hook から分類専用 `codex exec` を起動し、ユーザー入力を hook 側で分類する方針としていた。
+
+その後の検討で、以下の理由から本体エージェント分類を初期方針に変更する。
+
+```text
+- 本体エージェントは会話コンテキスト、現在作業、直前の割り込みを保持している
+- hook から毎回 codex exec を起動すると遅延、再帰防止、失敗点が増える
+- skill 化して hook が常時起動する場合、active flow がない入力まで分類器を動かすべきではない
+- hook は分類者ではなく、分類の明示と state machine による検査役に寄せる方が単純である
+```
+
+`codex exec classifier` は削除せず、強制度を上げたい場合や本体エージェントに分類を委ねられない場合の検討済み選択肢として残す。
 
 ## 4. ディレクトリ構成
 
@@ -297,9 +321,13 @@ hooks は自然文の `SKILL.md` を直接解釈しない。
 
 ## 7. ユーザー入力分類
 
+この分類は、初期方針では Codex 本体エージェントが行う。
+
+hook は分類結果を state に反映できているか、曖昧な入力を確認待ちにしているか、未完了の flow を勝手に完了扱いしていないかを検査する。
+
 ### 7.1 分類値
 
-分類器は以下のいずれかを返す。
+エージェントはユーザー入力を以下のいずれかとして扱う。
 
 | intent | 意味 |
 |---|---|
@@ -312,7 +340,9 @@ hooks は自然文の `SKILL.md` を直接解釈しない。
 
 ### 7.2 分類 JSON
 
-分類器は必ず JSON のみを返す。
+state に保存する分類結果は、以下の JSON 形状を基本とする。
+
+分類専用 `codex exec` を採用する場合は、この JSON のみを返すようにする。
 
 ```json
 {
@@ -349,7 +379,14 @@ confidence < 0.5
 ### 8.1 目的
 
 `UserPromptSubmit` hook は、ユーザー入力を受け取った直後に動く。  
-ここでユーザー入力を分類し、`flow_state.json` を更新する。
+初期方針では、ここで分類専用 `codex exec` は起動しない。
+
+代わりに以下を行う。
+
+- active flow がない場合は no-op にする
+- active flow がある場合は現在の Flow State を Codex 本体に提示する
+- Codex 本体にユーザー入力の分類と state 更新を明示的に要求する
+- 直前に曖昧な入力が残っている場合は確認を優先させる
 
 ### 8.2 処理フロー
 
@@ -362,16 +399,24 @@ stdin JSON を読む
   ↓
 flow_state.json を読む
   ↓
-codex exec classifier に渡す prompt を生成
+active flow の有無を確認する
   ↓
-分類結果 JSON を受け取る
+active flow がなければ no-op
   ↓
-confidence に応じて state を更新
+active flow があれば分類要求を含む Flow State を生成する
   ↓
 Codex 本体に Flow State を返す
 ```
 
-### 8.3 codex exec classifier の起動方針
+### 8.3 codex exec classifier の扱い
+
+`codex exec classifier` は初期実装の対象外とする。
+
+これは、hook が本体エージェントより先に自然文分類を完了させたい場合の検討済み選択肢である。
+採用する場合でも、全入力で常時起動してはいけない。
+active flow がある場合に限って使う。
+
+### 8.4 codex exec classifier の起動方針
 
 hook 内で `codex exec` を使う場合は、再帰防止が必須である。
 
@@ -403,7 +448,7 @@ codex exec --help
 codex --version
 ```
 
-### 8.4 再帰防止
+### 8.5 再帰防止
 
 同じ `CODEX_HOME` を使うと、以下の再帰が起きる可能性がある。
 
@@ -634,7 +679,24 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
 
 ## 13. user_prompt_classifier.py 設計
 
+この hook 名は初期案の名残である。
+本体エージェント分類を初期方針にする場合、実体は分類器ではなく `user_prompt_flow_state.py` のような Flow State 提示 hook として実装する方がよい。
+
 ### 13.1 処理
+
+初期方針の処理。
+
+```text
+1. stdin JSON を読む
+2. ユーザー入力を抽出する
+3. flow_state.json を読む
+4. active flow がなければ no-op を返す
+5. active flow があれば現在の Flow State を作る
+6. Codex 本体に分類値と state 更新の要求を提示する
+7. pending_user_intent があれば確認優先の指示を返す
+```
+
+`codex exec classifier` を採用する場合の検討案。
 
 ```text
 1. stdin JSON を読む
@@ -650,7 +712,10 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
 
 ### 13.2 失敗時
 
-以下の場合はすべて `ambiguous` とする。
+初期方針では、hook 自体がユーザー入力を分類しない。
+そのため分類不能は Codex 本体に確認質問を要求する Flow State として扱う。
+
+`codex exec classifier` を採用する場合は、以下の場合をすべて `ambiguous` とする。
 
 - `codex exec` が timeout
 - `codex exec` が非 0 終了
@@ -659,6 +724,9 @@ feature flag 名は Codex のバージョンにより異なる可能性がある
 - confidence が数値でない
 
 ### 13.3 分類 prompt
+
+以下は、分類専用 `codex exec` を採用する場合の検討用 prompt である。
+初期方針では、この prompt を hook から起動しない。
 
 ```text
 あなたは Codex hook 用の分類器です。
@@ -842,6 +910,8 @@ tool_name == Edit / Write / apply_patch
 
 ### 20.1 codex exec classifier の制限
 
+この項目は、検討案として `codex exec classifier` を採用する場合にだけ適用する。
+
 分類器は以下をしてはいけない。
 
 ```text
@@ -868,6 +938,7 @@ tool_name == Edit / Write / apply_patch
 
 ```text
 - UserPromptSubmit で保存したユーザー入力
+- Codex 本体が state に記録した分類結果
 - flow.json の evidence
 - 実際の tool input / output
 - state に記録された変更履歴
@@ -877,7 +948,9 @@ tool_name == Edit / Write / apply_patch
 
 ### 21.1 分類失敗
 
-分類器が失敗したら `ambiguous` にする。
+Codex 本体が分類に迷う場合、または分類結果を state に反映できない場合は `ambiguous` にする。
+
+`codex exec classifier` を採用する場合は、分類器の失敗も同じく `ambiguous` にする。
 
 ```json
 {
@@ -900,6 +973,8 @@ state JSON が壊れていた場合。
 ```
 
 ### 21.3 codex exec timeout
+
+この項目は、検討案として `codex exec classifier` を採用する場合にだけ適用する。
 
 timeout は分類失敗扱いにする。  
 hook 全体の timeout は短めにする。
@@ -938,13 +1013,15 @@ Stop hook timeout: 10秒
 ```text
 1. UserPromptSubmit payload をログ出力する
 2. ユーザー入力抽出を実装する
-3. codex exec なしで固定分類を返す
-4. state 更新を確認する
+3. active flow がなければ no-op を返す
+4. active flow があれば Flow State と分類要求を返す
+5. Codex 本体が分類結果を state に反映できることを確認する
 ```
 
-### Phase 4: codex exec classifier
+### Phase 4: codex exec classifier の検討
 
 ```text
+0. 初期実装では対象外とする
 1. 別 CODEX_HOME を作る
 2. hooks 無効化を確認する
 3. read-only sandbox で codex exec を起動する
@@ -969,19 +1046,16 @@ payload = read_json_stdin()
 user_prompt = extract_user_prompt(payload)
 state = load_flow_state()
 
-classification = run_codex_exec_classifier(
-    user_prompt=user_prompt,
+if not state.current_task or state.current_task.status != "active":
+    allow_noop()
+
+message = build_flow_state_message(
     state=state,
+    user_prompt=user_prompt,
+    required_agent_action="ユーザー入力を分類し、必要なら state を更新してください",
 )
 
-if classification.failed:
-    classification = ambiguous()
-
-state = apply_classification(state, classification)
-
-save_flow_state(state)
-
-print(json_response_for_codex(state, classification))
+print(json_response_for_codex(message))
 ```
 
 ### 23.2 PostToolUse
@@ -1022,13 +1096,12 @@ allow()
 この設計には以下の制約がある。
 
 ```text
-- hook から codex exec を呼ぶため遅延が増える
 - LLM 分類は非決定的である
-- codex exec の CLI オプションはバージョン差がある
 - hooks の event payload shape は実環境で確認が必要
 - PostToolUse の evidence 判定は完全ではない
 - agent が行った意味的な作業完了を完全には機械判定できない
 - ユーザーの曖昧な自然文は最終的に確認が必要になる
+- codex exec classifier を採用する場合は、追加遅延、再帰防止、CLI オプション差分が制約になる
 ```
 
 ## 25. 採用判断
@@ -1040,7 +1113,15 @@ allow()
 - 作業の戻り先を失いたくない
 - ユーザー割り込みを許容したい
 - ユーザーにカスタムコマンドを強制したくない
-- 多少の hook 遅延を許容できる
+- hook は常時起動するが、active flow がないときは no-op にしたい
+```
+
+codex exec classifier を追加採用してよいケース。
+
+```text
+- 本体エージェントに分類を委ねられない
+- hook 側で応答前に分類 state を確定したい
+- 追加起動コストと再帰防止の複雑さを許容できる
 ```
 
 採用しない方がよいケース。
@@ -1048,7 +1129,6 @@ allow()
 ```text
 - hook は完全に deterministic である必要がある
 - LLM の分類揺れを許容できない
-- codex exec の追加起動コストを許容できない
 - 短時間の単純作業が中心
 ```
 
@@ -1058,7 +1138,7 @@ allow()
 
 ```text
 自然文理解:
-  codex exec classifier
+  Codex 本体エージェント
 
 状態管理:
   flow_state.json / progress.json
@@ -1071,9 +1151,15 @@ allow()
 
 機械判定:
   flow.json
+
+検討済み代替案:
+  codex exec classifier
 ```
 
 これにより、ユーザーに `/info` や `/interrupt` のようなカスタムコマンドを強制せずに、Codex の Skill 実行フローをある程度矯正できる。
 
-ただし、`codex exec` を hook block 回避の弁明役にしてはいけない。  
-`codex exec` はあくまで `UserPromptSubmit` 時点の分類器としてのみ使う。
+ただし、Codex 本体の自己申告だけで完了判定を通してはいけない。
+Stop / PostToolUse hook は、state、progress、flow.json、実際の tool input / output を使って後追い検査する。
+
+`codex exec classifier` は、今回の初期方針の対象外である。
+採用する場合でも、hook block 回避の弁明役ではなく、`UserPromptSubmit` 時点の分類補助としてのみ使う。
