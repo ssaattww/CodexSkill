@@ -8,6 +8,7 @@
 - 親 agent から見た呼び出し関係
 - 親が実行する skill と、親が呼び出して sub-agent が実行する skill の区別
 - 標準開発フローにおける責務分担
+- 1 task ごとの永続 routine と hook による実行漏れ防止
 
 運用中のレポートよりも、この設計書を正本として扱う。
 
@@ -25,11 +26,12 @@
 
 - `親が実行` の skill でも、内部の一部工程を `sub-agent-task-manager` 経由で sub-agent に委譲する場合がある。
 - その場合でも skill 全体の責務と完了判定は親が持つ。
+- `development-orchestrator` の `scripts/task_routine.py`、state helper、hook helper は独立 skill ではなく、同 skill が所有する内部 tool とする。
 
 ## 標準開発フローの呼び出しツリー
 
 ```text
-development-orchestrator [親が実行]
+development-orchestrator [親が実行, task routine owner]
 ├─ restart-handover-manager [親が実行, 再開時のみ]
 ├─ task-consistency-manager [親が実行]
 ├─ design-doc-maintainer [親が実行]
@@ -49,6 +51,8 @@ development-orchestrator [親が実行]
 │  ├─ markdown-word-checker [親が実行, Markdown関連変更時]
 │  ├─ sub-agent-task-manager [親が実行, reviewerは常にsub-agent]
 │  └─ report-output-manager [親が実行]
+├─ feedback-points-manager [親が実行, durable tracking]
+│  └─ feedback-points-sanitizer [親が呼び出し、sub-agent が実行]
 ├─ progress-sync-manager [親が実行]
 ├─ git-workflow-manager [親が実行]
 │  ├─ git-branch-starter [親が実行]
@@ -59,9 +63,17 @@ development-orchestrator [親が実行]
 │     ├─ codex-delegation-executor [親が実行]
 │     │  └─ implementation-executor [親が実行, 実作業は切替対象]
 │     └─ report-output-manager [親が実行]
-├─ feedback-points-manager [親が実行]
-│  └─ feedback-points-sanitizer [親が呼び出し、sub-agent が実行]
-└─ skill-authoring-wrapper [親が実行, issue完了時の親判断でlocal skill作成/更新が必要な場合]
+└─ skill-authoring-wrapper [親が実行, 既存skill更新または新規skill提案の採用時]
+```
+
+`development-orchestrator` は上記 skill 呼び出しに加え、内部 tool として次を所有する。
+
+```text
+skills/development-orchestrator/scripts/task_routine.py
+skills/development-orchestrator/scripts/task_routine_state.py
+skills/development-orchestrator/scripts/task_routine_hooks.py
+skills/development-orchestrator/tests/test_task_routine.py
+hooks/hooks.json
 ```
 
 ## 補助フローの呼び出し関係
@@ -116,6 +128,8 @@ development-orchestrator [親が実行]
    └─ `skills/design/skill-hierarchy-design.md` と `design/skill-hierarchy-design.md` を同期更新する
 ```
 
+既存 skill の責務内に収まる内部的、可逆、低リスクな更新は、task routine の `skill_reflection=update-existing` と証跡を残して自動実施できる。新規 skill は利用者へ提案してから作成する。
+
 ## Markdown資料チェックフローの呼び出しツリー
 
 ```text
@@ -138,20 +152,27 @@ handover-memo-writer [親が実行]
 通常の task は、親が次の順番で進める。
 
 1. workflow 冒頭で `/home/ibis/AI/CodexSkill` が最新か確認し、安全に更新できるなら最新取得してから先へ進む。
-2. 再開セッションなら `restart-handover-manager` を呼び、再開文脈を復元してから同じ workflow に戻る。
-3. 新規着手で今回の作業対象がまだ曖昧なら、`development-orchestrator` がユーザーに何の作業をするか確認してから task 選定へ進む。
-4. `development-orchestrator` が現在状態を確認し、次の task を 1 つ選ぶ。
-5. `task-consistency-manager` で task と phase の追跡状態を整える。
-6. 設計影響がある場合は `design-doc-maintainer` を呼ぶ。
-7. 設計文書の実編集が必要なら、`codex-delegation-executor` を通して `design-executor` に流す。
-8. `tdd-executor` で最小の testable behavior と failing test 方針を定める。
-9. テスト作成やコード作成が必要なら、`codex-delegation-executor` を通して `implementation-executor` に流す。
-10. build、test、environment verification のような証拠作業が必要なら、`codex-delegation-executor` から `sub-agent-task-manager` を使って sub-agent に流す。
-11. 実装が一段落したら `review-enforcer` を呼び、セッション内で原則固定したレビュー専用 sub-agent を実行する。セッション内で監査・設計・ユーザー指示により決まったレビュー指針がある場合は、その指針を review request に含める。
-12. 指摘があれば `git-review-followup-manager` または通常の実装フローに戻して修正する。
-13. `progress-sync-manager` で report と tracking を同期する。
-14. `git-workflow-manager` で branch、commit、PR まで進める。
-15. issue または task が完了したら、親が skill 化判断を行い、必要に応じて `feedback-points-manager` を呼び、commit 時点で skill 改善 loop を issue へ引き継ぐ。
+2. repo root `AGENTS.md` と `development-orchestrator` を確認する。
+3. `task_routine.py status` で active routine と次 step を確認する。
+4. 再開セッションなら `restart-handover-manager` を呼び、復元結果を active routine と照合する。
+5. 新規着手で今回の作業対象がまだ曖昧なら、利用者に作業対象を確認する。
+6. active routine がなければ 1 task だけを開始し、`intake`、`skill_scan`、`task_definition`、`plan` の証跡を順番に記録する。
+7. `task-consistency-manager` で task と phase の追跡状態を整える。
+8. 設計影響がある場合は `design-doc-maintainer` を呼ぶ。
+9. 設計文書の実編集が必要なら、`codex-delegation-executor` を通して `design-executor` に流す。
+10. `tdd-executor` で最小の testable behavior と failing test 方針を定める。
+11. テスト作成やコード作成が必要なら、`codex-delegation-executor` を通して `implementation-executor` に流す。
+12. build、test、environment verification のような証拠作業が必要なら、`codex-delegation-executor` から `sub-agent-task-manager` を使って sub-agent に流す。
+13. 実装が一段落したら `review-enforcer` を呼び、セッション内で原則固定したレビュー専用 sub-agent を実行する。セッション内で監査・設計・ユーザー指示により決まったレビュー指針がある場合は、その指針を review request に含める。
+14. 指摘があれば `git-review-followup-manager` または通常の実装フローに戻し、`implementation` 以降の routine step を reopen して修正する。
+15. 親が `skill_reflection` を行い、`none`、`update-existing`、`propose-new` のいずれかと証跡を記録する。
+16. 既存 skill の責務内に収まる内部的、可逆、低リスクな更新は `skill-authoring-wrapper` 経由でその task 内に反映する。新規 skill は利用者へ提案する。
+17. 親が `tool_reflection` を行い、`none`、`update-existing`、`create-internal`、`propose-external` のいずれかと証跡を記録する。
+18. agent が繰り返し直接生成、変換、検証している決定的出力は、既存 skill 内の internal helper として安全に閉じる場合に自動化する。standalone external tool は利用者へ提案する。
+19. reusable process feedback、重複、残作業がある場合は `feedback-points-manager` を呼び、`feedback_tracking` の disposition を記録する。
+20. `progress-sync-manager` で report と tracking を同期し、`progress_sync` の証跡を記録する。
+21. review、両 reflection、feedback disposition、progress sync が完了した後だけ `git-workflow-manager` で branch、commit、PR まで進める。
+22. Git 提出の証跡を記録して routine を完了・archive し、次の task 確認へ戻る。
 
 大きい task では、`task-breakdown-planner`、`task-consistency-manager`、`design-doc-maintainer`、`restart-handover-manager`、`git-pr-submitter` の内部作業の一部を `sub-agent-task-manager` 経由で draft/audit/scan へ切り出してよい。ただし最終判断と反映は親が持つ。
 
@@ -168,7 +189,35 @@ handover-memo-writer [親が実行]
 - `tdd-executor` の test authoring 部分: 追加・更新する test 3 件以上、test file 3 本以上、または事前確認が必要な既存 test file 4 本以上
 - `git-review-followup-manager`: 対応 finding 3 件以上、対象 file 4 本以上、対象 behavior area 2 つ以上
 
-### 2. sub-agent を使うときの内部順
+### 2. task routine と hook
+
+`development-orchestrator` は対象 repository ごとに routine state を Git directory 内へ保存する。
+
+```text
+<git-dir>/codex-task-routine/state.json
+<git-dir>/codex-task-routine/history/*.json
+```
+
+routine の必須 step は次のとおりである。
+
+1. `intake`
+2. `skill_scan`
+3. `task_definition`
+4. `plan`
+5. `implementation`
+6. `verification`
+7. `review`
+8. `skill_reflection`
+9. `tool_reflection`
+10. `feedback_tracking`
+11. `progress_sync`
+12. `git_submission`
+
+`SessionStart` と `UserPromptSubmit` は active task と次 step を model context へ再注入する。`PreToolUse` は active task や前提 step がない編集と、完了前の Git 提出を拒否する。`Stop` は active task が未完了なら具体的な次 step を continuation prompt として返す。
+
+GitHub Issue と feedback point は履歴、重複、follow-up の正本として使う。実行中の次工程は local routine state と hook を正本とし、Issue を見たこと自体を実行条件にしない。
+
+### 3. sub-agent を使うときの内部順
 
 sub-agent を使う作業は、親が必ず次の順番で準備してから実行する。
 
@@ -181,7 +230,7 @@ sub-agent を使う作業は、親が必ず次の順番で準備してから実�
 7. sub-agent が作業し、既存 report の見出し順、空行、既存記述を保持したまま結果を書く。
 8. 親が report を確認し、完了条件を満たしているか判定する。
 
-### 3. レビュー差し戻し時の再入フロー
+### 4. レビュー差し戻し時の再入フロー
 
 レビューで指摘が出た場合は、次の順番で元の実装フローへ戻す。
 
@@ -189,24 +238,27 @@ sub-agent を使う作業は、親が必ず次の順番で準備してから実�
 2. `git-review-followup-manager` が、その指摘を現 task で直すか、新 task に切るかを決める。
 3. tracking 変更が必要なら `task-consistency-manager` を呼ぶ。
 4. 修正作業は `codex-delegation-executor` を通し、必要に応じて `implementation-executor` に流す。
-5. 修正後は再度 `review-enforcer` に戻し、再レビューを通す。
-6. 問題がなければ `progress-sync-manager` と `git-workflow-manager` に進む。
+5. active routine の `implementation` 以降を reopen する。
+6. 修正後は再度 `review-enforcer` に戻し、再レビューを通す。
+7. 問題がなければ reflection、feedback、progress、Git 提出へ進む。
 
-### 4. skill 作成・更新フロー
+### 5. skill 作成・更新フロー
 
 local skill を新規作成または実質更新するときは、親が次の順番で進める。
 
-1. `development-orchestrator` が end-of-issue の親判断として local skill 作成または更新が必要だと決め、`skill-authoring-wrapper` を呼ぶ。
-2. `skill-authoring-wrapper` を入口にして、対象 skill の目的、配置先、new/update 区分を定める。
-3. built-in `skill-creator` を読み、初期化に使う部分と、repo 標準へ補正する部分を切り分ける。
-4. 新規 skill の場合は built-in `skill-creator` の初期化フローを使って skill directory を作る。
-5. 既存 skill の更新の場合は、既存 `SKILL.md` の意図を残すべき部分と、repo 標準へ正規化すべき部分を分ける。
-6. `skill-authoring-wrapper` が `SKILL.md` を repo 標準の section と契約粒度へ揃える。
-7. 実行委譲や switchable な実装系があるなら、`codex-delegation-executor` 前提の書き方と暫定数値基準を入れる。
-8. canonical file の更新経路制約が必要なら、その skill からしか触らないことを `SKILL.md` に明記する。
-9. 実在する canonical skill inventory または registry file がある場合だけ、それを最終的な skill 意図に合わせて更新する。
-10. skill inventory、呼び出しツリー、役割、契約一覧のどれかが変わるなら `skills/design/skill-hierarchy-design.md` と `design/skill-hierarchy-design.md` を同期更新する。
-11. skill 設計が repo 標準に揃ったら、その skill を採用対象として扱う。
+1. `development-orchestrator` が task routine の skill reflection として local skill 作成または更新要否を決める。
+2. 既存 skill 更新なら、内部的、可逆、低リスクで既存責務内かを確認し、該当する場合は `skill-authoring-wrapper` を呼ぶ。
+3. 新規 skill 候補なら、既存 skill では責務を置けない理由と owner scope を利用者へ提案し、採用後に `skill-authoring-wrapper` を呼ぶ。
+4. `skill-authoring-wrapper` を入口にして、対象 skill の目的、配置先、new/update 区分を定める。
+5. built-in `skill-creator` を読み、初期化に使う部分と、repo 標準へ補正する部分を切り分ける。
+6. 新規 skill の場合は built-in `skill-creator` の初期化フローを使って skill directory を作る。
+7. 既存 skill の更新の場合は、既存 `SKILL.md` の意図を残すべき部分と、repo 標準へ正規化すべき部分を分ける。
+8. `skill-authoring-wrapper` が `SKILL.md` を repo 標準の section と契約粒度へ揃える。
+9. 実行委譲や switchable な実装系があるなら、`codex-delegation-executor` 前提の書き方と暫定数値基準を入れる。
+10. canonical file の更新経路制約が必要なら、その skill からしか触らないことを `SKILL.md` に明記する。
+11. 実在する canonical skill inventory または registry file がある場合だけ、それを最終的な skill 意図に合わせて更新する。
+12. skill inventory、呼び出しツリー、役割、契約一覧のどれかが変わるなら `skills/design/skill-hierarchy-design.md` と `design/skill-hierarchy-design.md` を同期更新する。
+13. skill 設計が repo 標準に揃ったら、task routine に更新証跡を記録する。
 
 ## skillと役割
 
@@ -216,7 +268,7 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 | Skill名 | 役割 | 実行方式 |
 | --- | --- | --- |
-| `development-orchestrator` | 全体フローの入口として、task 選定から設計、TDD、委譲、レビュー、進捗同期、Git、issue 完了時の振り返りまでを統括する。 | `親が実行` |
+| `development-orchestrator` | 全体フローの入口として、永続 task routine、task 選定、設計、TDD、委譲、レビュー、skill/tool reflection、feedback disposition、進捗同期、Git 提出までを統括する。 | `親が実行` |
 | `codex-delegation-executor` | 実装・検証・調査を誰が実行するかを決め、sub-agent 必須カテゴリを正しく委譲する。 | `親が実行` |
 | `sub-agent-task-manager` | sub-agent へ渡す task の範囲、読むべき skill、report path、report template 保持ルール、完了条件を固定する。 | `親が実行` |
 | `execution-cost-stabilizer` | 無駄な再実行や過剰並列を抑え、委譲実行のコストと不安定さを下げる。 | `親が実行` |
@@ -256,11 +308,11 @@ local skill を新規作成または実質更新するときは、親が次の�
 | `feedback-coding-standards-enforcer` | API ドキュメント、命名、解析ルールなどのコーディング規約を review/commit 前に強制する。 | `親が実行` |
 | `feedback-issue-intake-fallback-manager` | issue 要件の取得が失敗したときに、代替経路で authoritative な要件を確保する。 | `親が実行` |
 
-### Feedback ガバナンスと skill 化
+### Feedback ガバナンスと skill/tool 化
 
 | Skill名 | 役割 | 実行方式 |
 | --- | --- | --- |
-| `feedback-points-manager` | 再利用可能な workflow lesson を `feedback-points.md` で管理し、skill 化するかどうかを判断する。 | `親が実行` |
+| `feedback-points-manager` | 再利用可能な workflow lesson と tool automation finding を管理し、重複、再発、commit-backed closure、follow-up issue を記録する。runtime の次 step は task routine が所有する。 | `親が実行` |
 | `feedback-points-sanitizer` | noisy な feedback points を独立した立場で整理し、親が判断しやすい状態に整える。 | `親が呼び出し、sub-agent が実行` |
 
 ### Git 提出フロー
@@ -281,13 +333,13 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 ## skill契約一覧
 
-この章では、各 skill の入力、出力、完了条件を設計レベルで要約する。
+この章では、各 skill について入力、出力、完了条件を設計レベルで要約する。
 
 ### 入口と全体統括
 
 | Skill名 | 入力 | 出力 | 完了条件 |
 | --- | --- | --- | --- |
-| `development-orchestrator` | tasks/phases、recent reports、feedback-points、repo state | 現在 task と次の実行経路 | 1 task 分の標準サイクル完了または明確な blocking 状態 |
+| `development-orchestrator` | task routine state、tasks/phases、recent reports、feedback-points、repo state | active task、次 step、各 step の証跡、skill/tool decision、Git 提出経路 | routine の全 step が証跡付きで完了・archive、または明確な paused/aborted/blocking 状態 |
 | `codex-delegation-executor` | 実行対象の work item、scope、evidence 要件 | executor 決定、委譲結果、report evidence | executor 決定と結果記録が完了 |
 | `sub-agent-task-manager` | task purpose、scope、読むべき skill、report path 要件、workspace context 方針 | dispatch 済み sub-agent task、pre-created report、review 済み evidence | report 作成と review 済み evidence の確認完了 |
 | `execution-cost-stabilizer` | delegated task plan、retry pressure、parallelism 候補 | 安定化された実行計画 | 次アクションが無駄なく scoped されている |
@@ -301,7 +353,7 @@ local skill を新規作成または実質更新するときは、親が次の�
 | `task-breakdown-planner` | issue/request scope、constraints、existing tasks/phases | tasks、phases、dependencies、exit criteria | 次 task を他 agent が推測なしで実行できる。大きい分解では sub-agent draft を parent が採用する |
 | `task-consistency-manager` | current work item、tasks/phases、new scope | 更新済み tracking、明確な next step | tracking が実 scope と一致。大きい監査では sub-agent audit を parent が確認する |
 | `progress-sync-manager` | 最新の task/review/verification/git 結果、reports | 同期済み tracking と references | canonical tracking が実状態と一致 |
-| `restart-handover-manager` | feedback-points、tasks/phases、recent reports | current position、next task、open deps | 再開時の次アクションが明示されている。大きい文脈では sub-agent summary を parent が採用する |
+| `restart-handover-manager` | feedback-points、tasks/phases、recent reports | current position、next task、open deps | 再開位置が active routine と照合され、次アクションが明示されている。大きい文脈では sub-agent summary を parent が採用する |
 | `handover-memo-writer` | current chat history、agreed constraints、repo/report/git state、user format request、作成Markdown report path | next-chat ready handover memo、handover report、`markdown-word-checker` focused lint結果 | 新しい chat が旧会話なしでも再開可能な handover と report が完成し、作成Markdownのcheck結果が記録されている |
 
 ### 設計
@@ -327,18 +379,18 @@ local skill を新規作成または実質更新するときは、親が次の�
 | `feedback-coding-standards-enforcer` | changed files、API diff、repo standards | standards evidence、violation fixes または rationale | standards-sensitive change の確認と記録が完了 |
 | `feedback-issue-intake-fallback-manager` | issue id/URL、available retrieval paths、partial context | authoritative requirements report、confidence、gaps | requirements と confidence が report に明示済み |
 
-### Feedback ガバナンスと skill 化
+### Feedback ガバナンスと skill/tool 化
 
 | Skill名 | 入力 | 出力 | 完了条件 |
 | --- | --- | --- | --- |
-| `feedback-points-manager` | candidate process lesson、active FP ledger、duplicate context | FP add/merge/skip 判断、skillization status、次アクション対応 | FP 判断と rationale が ledger か report に残る |
+| `feedback-points-manager` | candidate process/tool lesson、task-routine decision、active FP ledger、duplicate context | FP add/merge/skip、skill/tool status、commit-backed closure または follow-up issue | durable tracking と rationale が残り、commit-ready point が active ledger に残っていない |
 | `feedback-points-sanitizer` | active FP set、cleanup scope、duplicate references | cleanup report、classification result、candidate groups | parent review 用の cleanup evidence が report に残る |
 
 ### Git 提出フロー
 
 | Skill名 | 入力 | 出力 | 完了条件 |
 | --- | --- | --- | --- |
-| `git-workflow-manager` | branch/commit/PR state、task readiness | selected Git actions、submission path、commit shape decision | branch/commit/PR の必要アクション完了と、その task の commit 形が決定済み |
+| `git-workflow-manager` | branch/commit/PR state、task readiness、routine prerequisites | selected Git actions、submission path、commit shape decision | review、reflection、feedback、progress の証跡後に branch/commit/PR の必要アクションが完了 |
 | `git-branch-starter` | task or issue scope、branch state、naming basis | active branch context | 適切な branch に作業が隔離されている |
 | `git-commit-manager` | scoped changes、review/validation state、commit convention | coherent commit(s)、formatted commit message | task に対応した commit 作成完了 |
 | `git-pr-submitter` | branch、task scope、review/validation evidence、report refs | reviewable PR | 必要コンテキスト付きの PR 作成完了。大きい PR 文脈では sub-agent draft を parent が確定する |
@@ -353,6 +405,11 @@ local skill を新規作成または実質更新するときは、親が次の�
 ## 主要な設計判断
 
 - workflow 入口は `development-orchestrator` の一箇所に固定し、再開時も `restart-handover-manager` から直接始めず `development-orchestrator` へ戻して続行する。
+- `development-orchestrator` は 1 task ごとの永続 routine と hook gate を所有し、active task と次 step を agent の記憶ではなく local state から再提示する。
+- GitHub Issue と feedback point は履歴、重複、follow-up の正本とし、runtime の次 step を思い出す唯一の trigger にはしない。
+- task 完了前に skill reflection と tool reflection を必須化し、該当なしの場合も理由を証跡として残す。
+- 既存 skill の責務内に収まる内部的、可逆、低リスクな改善と internal helper は、発生回数を hard gate にせず task 内で自動実施できる。
+- 新規 skill、standalone external tool、外部公開契約、破壊的変更、credential・法務・組織承認が必要な変更は利用者確認境界を維持する。
 - `restart-handover-manager` は recorded state から再開位置を復元する skill とし、会話内容そのものを次チャットへ移送する handover 文面の作成は `handover-memo-writer` に分離する。
 - レビューは親がゲートを持つが、レビュワー実行は必ず sub-agent とする。1 セッションでは基本的に同じ reviewer sub-agent を継続し、セッション内で決まったレビュー指針を後続 review に引き継ぐ。
 - 設計文書編集とコード/テスト作成は、判断系 skill から分離し、`design-executor` と `implementation-executor` に寄せる。
@@ -364,11 +421,13 @@ local skill を新規作成または実質更新するときは、親が次の�
 - `skill-authoring-wrapper` の既定 caller は `development-orchestrator` とし、宙ぶらりんな local skill authoring を作らない。
 - 判断責務を上位 skill に寄せるのは、その判断が固定 caller を持つサブツリー内部で閉じる場合に限る。`1対多` 構造や単独利用されうる下位 skill では、上位に寄せすぎず、下位は参照先を明示して従う形を基本とする。
 - local skill 群の最新維持責任は workflow 入口の `development-orchestrator` が持ち、作業着手前に `/home/ibis/AI/CodexSkill` の鮮度確認を行う。
-- skill 改善ループの継続確認は active FP ではなく issue を正本とし、issue 作成後の FP は active ledger から外す。
-- commit 時点では active `feedback-points.md` が再び空になる運用を既定とし、skill 改善ループは issue 側へ引き継いでから commit を通す。
+- skill/tool 改善ループの継続確認は active FP ではなく issue を正本とし、issue 作成後の FP は active ledger から外す。
+- commit 時点では active `feedback-points.md` が再び空になる運用を既定とし、残作業は issue 側へ引き継いでから commit を通す。
 
 ## 保守ルール
 
 - 新しい skill を追加したら、この設計書のツリーと一覧を更新する。
+- task routine の step、hook event、skill/tool reflection contract が変わったら、この設計書と `design/task-routine-hook-design.md` を同期更新する。
 - 呼び出し関係が変わったら、まずこの設計書を更新してから関連 report を更新する。
+- `skills/design/skill-hierarchy-design.md` と `design/skill-hierarchy-design.md` は同一内容を維持する。
 - 実行方式の表現は `親が実行` と `親が呼び出し、sub-agent が実行` に統一する。
