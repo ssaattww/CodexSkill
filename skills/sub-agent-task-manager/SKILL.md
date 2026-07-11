@@ -26,6 +26,8 @@ Before running this skill, identify:
 - relevant skill files the `sub-agent` must read
 - whether the `sub-agent` should inspect the repository directly beyond the parent-prepared diff or summary
 - write boundaries and validation expectations
+- dispatch model, reasoning effort, and fork policy
+- confirmation source for an implementation `sub-agent` model when implementation work is delegated
 
 ## Run this skill
 
@@ -40,14 +42,16 @@ Run this skill whenever:
 
 1. define the exact task type and why a `sub-agent` is being used
 2. define the scope, non-goals, and expected outputs
-3. identify which skill files the `sub-agent` must read
-4. define write ownership and file boundaries when edits are allowed
-5. call `report-output-manager` and decide the report path before dispatch
-6. create the report file before dispatch using the standard template
-7. tell the `sub-agent` to read the specified skill files before executing
-8. tell the `sub-agent` to read that exact report file first and fill only the intended blank sections or placeholder values
-9. require commands run, changed files, outcome, and unresolved risks in the report
-10. do not treat the delegated task as complete until the report exists and has been reviewed
+3. receive the caller-selected dispatch model, reasoning effort, and fork policy before drafting the request; for implementation work, require the `development-orchestrator` user-confirmed model
+4. when selecting or applying a model or reasoning override, read [references/spawn-agent-model-overrides.md](references/spawn-agent-model-overrides.md)
+5. identify which skill files the `sub-agent` must read
+6. define write ownership and file boundaries when edits are allowed
+7. call `report-output-manager` and decide the report path before dispatch
+8. create the report file before dispatch using the standard template
+9. tell the `sub-agent` to read the specified skill files before executing
+10. tell the `sub-agent` to read that exact report file first and fill only the intended blank sections or placeholder values
+11. require commands run, changed files, outcome, and unresolved risks in the report
+12. do not treat the delegated task as complete until the report exists and has been reviewed
 
 Read the template from `report-output-manager` when creating the file:
 
@@ -62,6 +66,8 @@ Every sub-agent request must include:
 - explicit non-goals
 - explicit instruction not to run `codex exec`, nested Codex, or equivalent agent-spawning inside the sub-agent task
 - explicit instruction not to re-enter `development-orchestrator` or any other parent-owned workflow unless the parent explicitly named that workflow as part of the delegated task
+- the selected model and reasoning effort only as tool-call parameters, never as a prompt-only request
+- an explicit fork policy; a fresh override spawn must set `fork_turns: "none"`
 - skill names and file paths that must be read first
 - validation commands or evidence expectations
 - report path
@@ -71,7 +77,7 @@ Every sub-agent request must include:
 
 For review tasks also include:
 
-- instruction to use `gpt-5.4` with `high` reasoning effort by default unless the user explicitly overrides the reviewer model
+- the reviewer profile selected by `review-enforcer`: the parent agent's current model and `high` reasoning effort unless the user overrides the effort; apply it through actual spawn arguments rather than prompt text
 - explicit instruction to perform a code review using the built-in review behavior
 - instruction to return findings first, ordered by severity
 - instruction to include file/line references when available
@@ -145,6 +151,7 @@ After this skill runs, there should be:
 
 - a dispatched sub-agent task with explicit scope
 - a pre-created report path under `reports/`
+- a dispatch configuration applied through the actual spawn call
 - report-backed evidence for the delegated work
 
 ## Completion condition
@@ -167,6 +174,10 @@ This skill is complete only when:
 - For investigation and review tasks, prefer letting the `sub-agent` read the relevant workspace directly instead of over-constraining it to parent-curated excerpts.
 - For review tasks, prefer the model's native review behavior over inventing a custom review rubric in the prompt.
 - When a task depends on an existing skill, prefer making the `sub-agent` read that skill over duplicating its workflow in the prompt.
+- Do not treat a model or reasoning mention in `message` as an override. Pass the selected values in the `spawn_agent` call itself.
+- Do not infer an implementation sub-agent model. Apply only the user-confirmed model supplied by `development-orchestrator` through `codex-delegation-executor`.
+- Do not combine a model or reasoning override with omitted `fork_turns` or `fork_turns: "all"`; those full-history forks inherit the parent execution profile. Use `fork_turns: "none"` for a fresh specialist, or an explicit positive partial fork only when the needed context is bounded.
+- If the runtime rejects a hidden override argument, keep fallback execution parent-owned: use `codex exec --model <model> -c model_reasoning_effort="<effort>"`. Do not ask the delegated sub-agent to run it.
 
 ## Cross-cutting rule
 

@@ -26,6 +26,8 @@ Before running this skill, identify:
 - whether the work is implementation, review, verification, or investigation
 - scope boundaries, target files, and non-goals when known
 - validation or evidence expectations
+- when a `sub-agent` is selected, the intended model, reasoning effort, and fork policy
+- for implementation `sub-agent` work, the model confirmed by `development-orchestrator` with the user
 
 ## Delegate these work types
 
@@ -55,7 +57,7 @@ The following work must be executed by a `sub-agent` now, not merely preferred:
 - standards detection or standards validation
 
 Use `sub-agent-task-manager` for these categories and require a report in `reports/`.
-Use `gpt-5.4` with `high` reasoning effort as the default reviewer configuration for review tasks unless the user explicitly overrides it for the current run.
+For review tasks, receive the parent-model plus reasoning-effort profile selected by `review-enforcer` and pass it to `sub-agent-task-manager`; do not define a reviewer default here.
 
 ## Executor selection
 
@@ -84,12 +86,13 @@ For each delegated task:
 1. classify the work as fixed-sub-agent vs implementation-side delegation
 2. if fixed-sub-agent, call `sub-agent-task-manager`
 3. otherwise choose executor and record why that executor was chosen
-4. define the exact scope
-5. identify any skill files the executor must read
-6. define expected outputs
-7. define validation commands or evidence
-8. run the delegated work
-9. capture results in `reports/`
+4. when choosing a `sub-agent`, pass the selected model, reasoning effort, and fork policy to `sub-agent-task-manager`; for implementation, accept only the user-confirmed model from `development-orchestrator`; that skill owns the spawn-call contract
+5. define the exact scope
+6. identify any skill files the executor must read
+7. define expected outputs
+8. define validation commands or evidence
+9. run the delegated work
+10. capture results in `reports/`
 
 ## Rules
 
@@ -113,6 +116,8 @@ For each delegated task:
 - For review and investigation tasks, prefer workspace-direct inspection over parent-written excerpts when repository access is available.
 - For review tasks, do not accept chat-only review output; require the findings to be written into the report file.
 - When a delegated task depends on an existing skill, instruct the executor to read that skill file explicitly.
+- Do not encode model or reasoning selection only in a task prompt. Let `sub-agent-task-manager` apply the selected profile as actual spawn arguments and its central fallback rule when the runtime rejects an override.
+- Do not infer an implementation sub-agent model or dispatch implementation work without the user confirmation that `development-orchestrator` owns.
 
 ## Strong rule
 
