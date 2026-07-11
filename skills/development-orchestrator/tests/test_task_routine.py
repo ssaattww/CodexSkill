@@ -147,8 +147,8 @@ class TaskRoutineTest(unittest.TestCase):
             {
                 "hook_event_name": "PreToolUse",
                 "cwd": str(self.root),
-                "tool_name": "GitHub.update_file",
-                "tool_input": {"path": "README.md"},
+                "tool_name": "apply_patch",
+                "tool_input": {"patch": "*** Begin Patch"},
             }
         )
         submit_result = hooks.handle_hook(
@@ -164,6 +164,52 @@ class TaskRoutineTest(unittest.TestCase):
         self.assertEqual(submit_result["hookSpecificOutput"]["permissionDecision"], "deny")
         self.assertIn("implementation", submit_result["hookSpecificOutput"]["permissionDecisionReason"])
 
+    def test_contents_api_writes_use_submission_gate(self) -> None:
+        routine = self.start()
+        for name in state.EARLY:
+            routine = state.mark(self.root, routine, name, "done", f"{name} evidence")
+
+        for tool_name in (
+            "GitHub.create_file",
+            "GitHub.update_file",
+            "GitHub.delete_file",
+        ):
+            with self.subTest(tool_name=tool_name):
+                result = hooks.handle_hook(
+                    {
+                        "hook_event_name": "PreToolUse",
+                        "cwd": str(self.root),
+                        "tool_name": tool_name,
+                        "tool_input": {"path": "README.md"},
+                    }
+                )
+                self.assertEqual(
+                    result["hookSpecificOutput"]["permissionDecision"],
+                    "deny",
+                )
+                self.assertIn(
+                    "implementation",
+                    result["hookSpecificOutput"]["permissionDecisionReason"],
+                )
+
+    def test_issue_tracking_tools_do_not_require_active_routine(self) -> None:
+        for tool_name in (
+            "GitHub.create_issue",
+            "GitHub.update_issue",
+            "GitHub.add_comment_to_issue",
+            "GitHub.add_review_to_pr",
+        ):
+            with self.subTest(tool_name=tool_name):
+                result = hooks.handle_hook(
+                    {
+                        "hook_event_name": "PreToolUse",
+                        "cwd": str(self.root),
+                        "tool_name": tool_name,
+                        "tool_input": {},
+                    }
+                )
+                self.assertIsNone(result)
+
     def test_shell_classification_distinguishes_read_edit_and_submission(self) -> None:
         self.assertEqual(hooks.classify_shell_command("git status --short"), "other")
         self.assertEqual(hooks.classify_shell_command("printf x > result.txt"), "edit")
@@ -177,7 +223,11 @@ class TaskRoutineTest(unittest.TestCase):
             {"hook_event_name": "SessionStart", "cwd": str(self.root)}
         )
         stop_result = hooks.handle_hook(
-            {"hook_event_name": "Stop", "cwd": str(self.root)}
+            {
+                "hook_event_name": "Stop",
+                "cwd": str(self.root),
+                "stop_hook_active": False,
+            }
         )
 
         self.assertIn(
@@ -186,6 +236,19 @@ class TaskRoutineTest(unittest.TestCase):
         )
         self.assertEqual(stop_result["decision"], "block")
         self.assertIn("intake", stop_result["reason"])
+
+    def test_stop_hook_reentry_does_not_loop(self) -> None:
+        self.start()
+
+        result = hooks.handle_hook(
+            {
+                "hook_event_name": "Stop",
+                "cwd": str(self.root),
+                "stop_hook_active": True,
+            }
+        )
+
+        self.assertIsNone(result)
 
     def test_paused_task_does_not_force_stop_continuation(self) -> None:
         routine = state.pause(self.root, self.start(), "利用者判断待ち")

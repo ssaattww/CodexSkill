@@ -11,6 +11,15 @@ from typing import Any, Mapping
 
 from task_routine_state import *
 
+CONTENTS_API_COMMIT_TOOLS = {"create_file", "update_file", "delete_file"}
+TRACKING_TOOLS = {
+    "create_issue",
+    "update_issue",
+    "add_comment_to_issue",
+    "add_review_to_pr",
+}
+
+
 def tool_token(name: Any) -> str:
     return str(name or "").split(".")[-1].lower().replace("-", "_")
 
@@ -35,8 +44,10 @@ def classify_shell_command(command: str) -> str:
 
 def mutation(event: Mapping[str, Any]) -> str | None:
     token = tool_token(event.get("tool_name"))
-    if token in SUBMIT_TOOLS:
+    if token in CONTENTS_API_COMMIT_TOOLS or token in SUBMIT_TOOLS:
         return "submission"
+    if token in TRACKING_TOOLS:
+        return None
     if token in EDIT_TOOLS:
         return "edit"
     if token not in SHELL_TOOLS:
@@ -50,8 +61,10 @@ def context(root: Path, state: Mapping[str, Any] | None) -> str:
     if state is None:
         return "TASK ROUTINE: active taskなし。repositoryを変更する前に task_routine.py start を実行すること。"
     task, nxt = state["task"], next_step(state)
+    if task["status"] == "paused":
+        return f"TASK ROUTINE: task {task['id']} は paused。変更前にresumeが必要。"
     if task["status"] != "active":
-        return f"TASK ROUTINE: task {task['id']} は {task['status']}。変更前にresumeまたは新task開始が必要。"
+        return f"TASK ROUTINE: task {task['id']} は {task['status']}。変更前に新しいtaskの開始が必要。"
     return f"TASK ROUTINE: {task['id']} / {task['summary']}。next required step: {nxt or 'none'}。skill/tool/feedback判定を省略しないこと。state={state_path(root)}"
 
 
@@ -93,6 +106,10 @@ def handle_hook(event_data: Mapping[str, Any]) -> dict[str, Any] | None:
             reason = f"submission前stepが未完了です: {', '.join(missing)}"
         if reason:
             return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": reason}}
+        return None
+    if event_name == "Stop" and bool(event_data.get("stop_hook_active")):
+        if state_error:
+            return {"systemMessage": f"task routine state error remains after continuation: {state_error}"}
         return None
     if event_name == "Stop" and state_error:
         return {"decision": "block", "reason": f"task routine stateが壊れています: {state_error}. stateを修復してください。"}
@@ -178,5 +195,3 @@ def require_state(root: Path) -> dict[str, Any]:
     if state is None:
         raise RoutineError("active task routine stateがありません")
     return state
-
-
