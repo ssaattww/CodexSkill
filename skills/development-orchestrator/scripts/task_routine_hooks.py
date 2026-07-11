@@ -29,7 +29,12 @@ PR_BODY_PLACEHOLDERS = {"", "-", "n/a", "none", "tbd", "todo", "未記入", "未
 
 
 def tool_token(name: Any) -> str:
-    return str(name or "").split(".")[-1].lower().replace("-", "_")
+    token = str(name or "")
+    for separator in (".", "/", ":"):
+        token = token.split(separator)[-1]
+    if "__" in token:
+        token = token.rsplit("__", 1)[-1]
+    return token.lower().replace("-", "_")
 
 
 def strings(value: Any) -> list[str]:
