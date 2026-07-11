@@ -1,0 +1,53 @@
+{
+  "description": "Persist and enforce the development-orchestrator one-task routine.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$PLUGIN_ROOT/skills/development-orchestrator/scripts/task_routine.py\" hook",
+            "timeout": 10,
+            "statusMessage": "task routineを復元しています"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$PLUGIN_ROOT/skills/development-orchestrator/scripts/task_routine.py\" hook",
+            "timeout": 10,
+            "statusMessage": "task routineを確認しています"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$PLUGIN_ROOT/skills/development-orchestrator/scripts/task_routine.py\" hook",
+            "timeout": 10,
+            "statusMessage": "task routine gateを確認しています"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$PLUGIN_ROOT/skills/development-orchestrator/scripts/task_routine.py\" hook",
+            "timeout": 10,
+            "statusMessage": "task routine完了状態を確認しています"
+          }
+        ]
+      }
+    ]
+  }
+}

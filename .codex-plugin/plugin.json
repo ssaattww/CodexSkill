@@ -1,0 +1,24 @@
+{
+  "name": "codexskill",
+  "version": "0.1.0",
+  "description": "Development workflow skills with a persistent one-task routine gate",
+  "keywords": [
+    "development-workflow",
+    "task-routine",
+    "hooks",
+    "skills"
+  ],
+  "skills": "./skills",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "CodexSkill",
+    "shortDescription": "Run development through persistent task routines and reusable skills",
+    "developerName": "ssaattww",
+    "category": "developer-tools",
+    "capabilities": [
+      "skills",
+      "hooks"
+    ],
+    "defaultPrompt": "Use the development-orchestrator and its task routine before changing a Git repository."
+  }
+}
