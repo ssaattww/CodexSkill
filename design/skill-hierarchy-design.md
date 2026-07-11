@@ -139,7 +139,7 @@ handover-memo-writer [親が実行]
 
 1. workflow 冒頭で `/home/ibis/AI/CodexSkill` が最新か確認し、安全に更新できるなら最新取得してから先へ進む。
 2. 再開セッションなら `restart-handover-manager` を呼び、再開文脈を復元してから同じ workflow に戻る。
-3. 新規着手で今回の作業対象がまだ曖昧なら、`development-orchestrator` がユーザーに何の作業をするか確認してから task 選定へ進む。
+3. 新規着手の最初のユーザー確認で、`development-orchestrator` が実装sub-agent用modelを確認する。今回の作業対象も曖昧なら、何の作業をするかも確認してから task 選定へ進む。未確認のmodelを推測して実装sub-agentをdispatchしない。
 4. `development-orchestrator` が現在状態を確認し、次の task を 1 つ選ぶ。
 5. `task-consistency-manager` で task と phase の追跡状態を整える。
 6. 設計影響がある場合は `design-doc-maintainer` を呼ぶ。
@@ -173,10 +173,10 @@ handover-memo-writer [親が実行]
 sub-agent を使う作業は、親が必ず次の順番で準備してから実行する。
 
 1. `codex-delegation-executor` または呼び出し元 skill が、sub-agent を使うべき作業だと判断する。
-2. `sub-agent-task-manager` が task purpose、scope、non-goals、読むべき skill を定義する。
+2. `sub-agent-task-manager` が task purpose、scope、non-goals、読むべき skill、model/reasoning/fork方針を定義する。
 3. `report-output-manager` を呼び、`reports/` 配下の report path を決める。
 4. 親が標準テンプレートで report file を先に作る。
-5. 親が sub-agent に、読むべき `SKILL.md`、report path、既存 report を先に読んで空欄または placeholder だけ埋めること、format を変えないことを明示して dispatch する。
+5. 親が sub-agent に、読むべき `SKILL.md`、report path、既存 report を先に読んで空欄または placeholder だけ埋めること、format を変えないことを明示し、選択した実行profileを実spawn引数で渡して dispatch する。
 6. review や investigation では、sub-agent は parent が切った diff だけに閉じず、必要な周辺コードを workspace から直接読む。
 7. sub-agent が作業し、既存 report の見出し順、空行、既存記述を保持したまま結果を書く。
 8. 親が report を確認し、完了条件を満たしているか判定する。
@@ -216,9 +216,9 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 | Skill名 | 役割 | 実行方式 |
 | --- | --- | --- |
-| `development-orchestrator` | 全体フローの入口として、task 選定から設計、TDD、委譲、レビュー、進捗同期、Git、issue 完了時の振り返りまでを統括する。 | `親が実行` |
-| `codex-delegation-executor` | 実装・検証・調査を誰が実行するかを決め、sub-agent 必須カテゴリを正しく委譲する。 | `親が実行` |
-| `sub-agent-task-manager` | sub-agent へ渡す task の範囲、読むべき skill、report path、report template 保持ルール、完了条件を固定する。 | `親が実行` |
+| `development-orchestrator` | 全体フローの入口として、task 選定から設計、TDD、委譲、レビュー、進捗同期、Git、issue 完了時の振り返りまでを統括し、実装sub-agent用modelのユーザー確認を開始時に所有する。 | `親が実行` |
+| `codex-delegation-executor` | 実装・検証・調査を誰が実行するかを決め、sub-agent 必須カテゴリと実行profileを `sub-agent-task-manager` へ正しく委譲する。 | `親が実行` |
+| `sub-agent-task-manager` | sub-agent へ渡す task の範囲、読むべき skill、model/reasoning/fork実行profile、report path、report template 保持ルール、完了条件を固定する。 | `親が実行` |
 | `execution-cost-stabilizer` | 無駄な再実行や過剰並列を抑え、委譲実行のコストと不安定さを下げる。 | `親が実行` |
 | `feedback-autonomy-boundary-manager` | 自律実行してよい範囲と、ユーザー確認で止まるべき境界を決める。 | `親が実行` |
 | `skill-authoring-wrapper` | built-in `skill-creator` をラップし、この repo 標準の粒度で local skill を作成・更新する。 | `親が実行` |
@@ -251,7 +251,7 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 | Skill名 | 役割 | 実行方式 |
 | --- | --- | --- |
-| `review-enforcer` | task 完了前に必ずレビューを通し、セッション内で原則同じ reviewer sub-agent を使い、review report が残るまで完了扱いにしない。Markdown 関連変更では `markdown-word-checker` の結果を review report に含め、許可一覧、`prh`、target 除外変更では利用者が実 entry を明示確認したことも完了条件に含める。 | `親が実行` |
+| `review-enforcer` | task 完了前に必ずレビューを通し、親agentと同じmodelと`high` reasoningを既定reviewer profileとして所有し、セッション内で原則同じ reviewer sub-agent を使い、選択したprofileを実spawn引数へ適用してreview report が残るまで完了扱いにしない。reasoning effortは利用者がoverrideできる。Markdown 関連変更では `markdown-word-checker` の結果を review report に含め、許可一覧、`prh`、target 除外変更では利用者が実 entry を明示確認したことも完了条件に含める。 | `親が実行` |
 | `markdown-word-checker` | 対象repoの `tools/lint/` 設定を読み、Markdown用語、表記揺れ、backtick回避、`skip` / `unsupported` / `failed gate` を分類して呼び出し元へ返す。 | `親が実行` |
 | `feedback-coding-standards-enforcer` | API ドキュメント、命名、解析ルールなどのコーディング規約を review/commit 前に強制する。 | `親が実行` |
 | `feedback-issue-intake-fallback-manager` | issue 要件の取得が失敗したときに、代替経路で authoritative な要件を確保する。 | `親が実行` |
@@ -287,9 +287,9 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 | Skill名 | 入力 | 出力 | 完了条件 |
 | --- | --- | --- | --- |
-| `development-orchestrator` | tasks/phases、recent reports、feedback-points、repo state | 現在 task と次の実行経路 | 1 task 分の標準サイクル完了または明確な blocking 状態 |
-| `codex-delegation-executor` | 実行対象の work item、scope、evidence 要件 | executor 決定、委譲結果、report evidence | executor 決定と結果記録が完了 |
-| `sub-agent-task-manager` | task purpose、scope、読むべき skill、report path 要件、workspace context 方針 | dispatch 済み sub-agent task、pre-created report、review 済み evidence | report 作成と review 済み evidence の確認完了 |
+| `development-orchestrator` | tasks/phases、recent reports、feedback-points、repo state、実装sub-agent用modelのユーザー確認 | 現在 task と次の実行経路、確認済みimplementation model | 1 task 分の標準サイクル完了または明確な blocking 状態 |
+| `codex-delegation-executor` | 実行対象の work item、scope、evidence 要件、確認済みimplementation modelまたはreview-enforcer選択profile | executor 決定、委譲結果、report evidence | executor 決定と結果記録が完了 |
+| `sub-agent-task-manager` | task purpose、scope、読むべき skill、caller選択のmodel/reasoning/fork方針、report path 要件、workspace context 方針 | 実spawn引数でprofileを適用したdispatch済み sub-agent task、pre-created report、review 済み evidence | report 作成と review 済み evidence の確認完了 |
 | `execution-cost-stabilizer` | delegated task plan、retry pressure、parallelism 候補 | 安定化された実行計画 | 次アクションが無駄なく scoped されている |
 | `feedback-autonomy-boundary-manager` | 次の planned action、assumption、approval risk | continue または stop の明示判断 | continue/stop 判断が理由付きで明確 |
 | `skill-authoring-wrapper` | skill purpose、target location、new/update distinction、repo standards | repo-standard local skill、updated hierarchy design documents、必要なら実在 inventory の更新 | built-in `skill-creator` 出力が repo 標準に補正されている |
@@ -322,7 +322,7 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 | Skill名 | 入力 | 出力 | 完了条件 |
 | --- | --- | --- | --- |
-| `review-enforcer` | task-scoped diff、review scope、workspace context、validation context、session reviewer、適用するレビュー指針、`markdown-word-checker` 結果、Markdown 許可一覧、`prh`、target 除外の利用者レビュー状態 | review report、findings または no findings、disposition、reviewer reuse decision、`markdown-word-checker` 証跡、exact entry変更時の利用者明示レビュー記録 | review evidence が report に残り disposition 済み。Markdown lint gate failure は完了扱いにせず、exact entry変更は利用者が実 entries を明示確認済み |
+| `review-enforcer` | task-scoped diff、review scope、workspace context、validation context、session reviewer、親agentのcurrent model、利用者override済みならreasoning effort、適用するレビュー指針、`markdown-word-checker` 結果、Markdown 許可一覧、`prh`、target 除外の利用者レビュー状態 | review report、親modelと`high`を既定値ownerとして選択し実spawn引数で適用したreviewer profile、findings または no findings、disposition、reviewer reuse decision、`markdown-word-checker` 証跡、exact entry変更時の利用者明示レビュー記録 | review evidence が report に残り disposition 済み。Markdown lint gate failure は完了扱いにせず、exact entry変更は利用者が実 entries を明示確認済み |
 | `markdown-word-checker` | target repo root、Markdown file list、caller gate context、repo-local `tools/lint/` 設定、package lint wiring | command evidence、対象files、`skip` / `unsupported` / `failed gate` 分類、lint指摘分類、backtick回避確認、exact entry review要否、sub-agent report path | Markdown check結果がcallerへ返り、repo固有 whitelist / `prh` / target 除外のexact entry変更が利用者reviewなしに適用されていない |
 | `feedback-coding-standards-enforcer` | changed files、API diff、repo standards | standards evidence、violation fixes または rationale | standards-sensitive change の確認と記録が完了 |
 | `feedback-issue-intake-fallback-manager` | issue id/URL、available retrieval paths、partial context | authoritative requirements report、confidence、gaps | requirements と confidence が report に明示済み |

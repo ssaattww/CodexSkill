@@ -33,6 +33,7 @@ Before running this skill, confirm:
   - always confirm whether a relevant skill already exists while working
   - when unsure, suspect skill insufficiency before improvising
 - the user's intended work for this run when it is not already explicit from the request or restart context
+- the user-confirmed model for implementation `sub-agent` work, when implementation may be delegated
 - current `tasks-status.md` and `phases-status.md`
 - recent `reports/` relevant to the active issue or task
 - active `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`
@@ -47,7 +48,7 @@ Follow this sequence:
 3. If the local skill repo is clean and behind its intended source, update it before continuing the workflow.
 4. If the local skill repo is dirty, diverged, or otherwise unsafe to auto-update, stop and resolve that explicitly before trusting the workflow.
 5. When entering from a resumed or restarted session, call `restart-handover-manager` to reconstruct the current position before selecting the next task.
-6. When the intended work for this run is not already explicit, read [references/start-intake-policy.md](references/start-intake-policy.md) and confirm with the user what work should be done before selecting a task.
+6. At the first user confirmation for this run, confirm the model to use for implementation `sub-agent` work. When the intended work is not already explicit, also read [references/start-intake-policy.md](references/start-intake-policy.md) and confirm what work should be done before selecting a task.
 7. Confirm current state from `tasks-status.md`, `phases-status.md`, recent `reports/`, and `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`.
 8. Select exactly one next task.
 9. Call `task-consistency-manager`.
@@ -74,6 +75,7 @@ Follow this sequence:
 - Do not skip parent-owned end-of-issue skill-gap reflection when an issue reaches done.
 - Do not leave local skill creation or substantial local skill updates floating without an explicit caller; use `development-orchestrator` as the default caller when the need is discovered through normal task completion.
 - Do not decide `main agent` vs `sub-agent` for implementation outside `codex-delegation-executor`.
+- Own implementation `sub-agent` model confirmation at workflow start. Do not let `codex-delegation-executor` infer an unconfirmed model or dispatch implementation sub-agent work until the user has confirmed it.
 - Treat design-document editing as switchable implementation work under `codex-delegation-executor` with `design-executor`.
 - Treat test authoring and code authoring as switchable implementation work under `codex-delegation-executor` with `implementation-executor`.
 - Do not downgrade skills that require mandatory `sub-agent` execution.
