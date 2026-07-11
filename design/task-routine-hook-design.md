@@ -32,6 +32,7 @@ skills/development-orchestrator/scripts/task_routine.py
 skills/development-orchestrator/scripts/task_routine_state.py
 skills/development-orchestrator/scripts/task_routine_hooks.py
 skills/development-orchestrator/tests/test_task_routine.py
+skills/development-orchestrator/tests/test_task_routine_pr_body.py
 hooks/hooks.json
 .codex-plugin/plugin.json
 ```
@@ -130,15 +131,30 @@ session の startup、resume、clear、compact 後に local state を読み、ac
 - active task がない状態での file/repository mutation
 - `intake`、`skill_scan`、`task_definition`、`plan` より前の実編集
 - `verification`、`review`、両 reflection、feedback tracking、progress sync より前の commit、push、PR 作成
+- task routine、skill action、tool action の証拠が本文にない PR 作成
 - 壊れた routine state のままの mutation
 
 read-only command と task routine CLI 自身は許可する。
 
 shell command の mutation 判定は、Git/GitHub submission command、既知の file mutation command、output redirection を対象にする。任意 script の内部副作用を完全には判定できないため、これは最終 security sandbox ではなく workflow omission gate とする。
 
+PR 作成時は本文に次の見出しと非placeholderの証拠を要求する。
+
+```markdown
+## Task routine evidence
+
+## Skill action
+
+## Tool action
+```
+
+`none` を選ぶ場合も、単語だけで済ませず、その判断理由を記録する。
+
 ### `Stop`
 
 active task に未完了 step がある場合、`decision: block` と具体的な continuation prompt を返す。
+
+Codex が continuation 後に `stop_hook_active: true` で同じ Stop hook を再実行した場合は、無限再入を避けるため再度 block しない。最初の continuation で次工程を実行できない場合は、`pause` または `abort` を明示的に記録する。
 
 外部依存や利用者判断待ちで終了する必要がある場合は、silent bypass ではなく次のいずれかを状態へ残す。
 
@@ -210,7 +226,8 @@ python3 skills/development-orchestrator/scripts/task_routine.py \
 - step の順序違反が拒否される。
 - active task なしの mutation が拒否される。
 - review と reflection 未完了の Git submission が拒否される。
-- incomplete task の `Stop` が continuation を返す。
+- 必須のroutine/skill/tool証跡がないPR作成が拒否される。
+- incomplete task の `Stop` が continuation を返し、再入時は無限loopを起こさない。
 - restart/compact 後に next step が再注入される。
 - 既存 hooks 設定を保持して install/uninstall できる。
 - unit test が状態遷移、gate、hook output、installer の主要経路を検証する。

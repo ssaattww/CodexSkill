@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shlex
 import tempfile
 from pathlib import Path
@@ -18,6 +19,13 @@ TRACKING_TOOLS = {
     "add_comment_to_issue",
     "add_review_to_pr",
 }
+PR_CREATE_TOOLS = {"create_pull_request", "open_pull_request"}
+PR_BODY_REQUIRED_SECTIONS = {
+    "task routine": "## Task routine evidence",
+    "skill action": "## Skill action",
+    "tool action": "## Tool action",
+}
+PR_BODY_PLACEHOLDERS = {"", "-", "n/a", "none", "tbd", "todo", "未記入", "未定"}
 
 
 def tool_token(name: Any) -> str:
@@ -55,6 +63,30 @@ def mutation(event: Mapping[str, Any]) -> str | None:
     command = "\n".join(strings(event.get("tool_input", {})))
     classified = classify_shell_command(command)
     return None if classified == "other" else classified
+
+
+def pr_body_missing_sections(event: Mapping[str, Any]) -> list[str]:
+    if tool_token(event.get("tool_name")) not in PR_CREATE_TOOLS:
+        return []
+    tool_input = event.get("tool_input")
+    if not isinstance(tool_input, Mapping):
+        return list(PR_BODY_REQUIRED_SECTIONS)
+    body = tool_input.get("body")
+    if not isinstance(body, str):
+        return list(PR_BODY_REQUIRED_SECTIONS)
+
+    missing: list[str] = []
+    for label, heading in PR_BODY_REQUIRED_SECTIONS.items():
+        match = re.search(rf"(?mi)^\s*{re.escape(heading)}\s*$", body)
+        if match is None:
+            missing.append(label)
+            continue
+        remainder = body[match.end():]
+        next_heading = re.search(r"(?m)^\s*##\s+", remainder)
+        evidence = remainder[: next_heading.start() if next_heading else None].strip()
+        if evidence.casefold() in PR_BODY_PLACEHOLDERS:
+            missing.append(label)
+    return missing
 
 
 def context(root: Path, state: Mapping[str, Any] | None) -> str:
@@ -104,6 +136,15 @@ def handle_hook(event_data: Mapping[str, Any]) -> dict[str, Any] | None:
         elif kind == "submission" and any(not complete(state, name) for name in SUBMISSION_PREREQUISITES):
             missing = [name for name in SUBMISSION_PREREQUISITES if not complete(state, name)]
             reason = f"submission前stepが未完了です: {', '.join(missing)}"
+        elif tool_token(event_data.get("tool_name")) in PR_CREATE_TOOLS:
+            missing_sections = pr_body_missing_sections(event_data)
+            if missing_sections:
+                reason = (
+                    "PR本文の必須証跡が不足しています: "
+                    f"{', '.join(missing_sections)}。"
+                    "## Task routine evidence / ## Skill action / ## Tool action "
+                    "を記入してください。"
+                )
         if reason:
             return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": reason}}
         return None
