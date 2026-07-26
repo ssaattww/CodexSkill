@@ -1,14 +1,27 @@
-name: Release ChatGPT worker skills
+name: Validate and release ChatGPT worker skills
 
 on:
+  pull_request:
+    paths:
+      - "skills/chat-*/**"
+      - "shared/workflow/**"
+      - "shared/chat-worker/**"
+      - "scripts/build_chatgpt_worker_skills.py"
+      - "design/chat-worker-skill-design.md"
+      - "design/skill-hierarchy-design.md"
+      - "skills/design/skill-hierarchy-design.md"
+      - ".github/workflows/release-chatgpt-worker-skills.yml"
   push:
     branches:
       - main
     paths:
-      - "skills/chat-implementation-worker/**"
-      - "skills/chat-review-worker/**"
-      - "skills/chat-report-writer/**"
-      - "shared/chat-worker/handoff-contract.md"
+      - "skills/chat-*/**"
+      - "shared/workflow/**"
+      - "shared/chat-worker/**"
+      - "scripts/build_chatgpt_worker_skills.py"
+      - "design/chat-worker-skill-design.md"
+      - "design/skill-hierarchy-design.md"
+      - "skills/design/skill-hierarchy-design.md"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
   workflow_dispatch:
 
@@ -16,49 +29,36 @@ permissions:
   contents: write
 
 concurrency:
-  group: release-chatgpt-worker-skills
+  group: chatgpt-worker-skills-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  package-and-release:
+  build-and-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout merged main HEAD
+      - name: Checkout target HEAD
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
-      - name: Verify package contracts
+      - name: Build and verify complete ChatGPT Skill ZIP
         shell: bash
         run: |
           set -euo pipefail
-          canonical="shared/chat-worker/handoff-contract.md"
-          for skill in chat-implementation-worker chat-review-worker chat-report-writer; do
-            test -f "skills/${skill}/SKILL.md"
-            test -f "skills/${skill}/references/handoff-contract.md"
-            cmp "${canonical}" "skills/${skill}/references/handoff-contract.md"
-          done
+          python3 scripts/build_chatgpt_worker_skills.py \
+            --output chatgpt-worker-skills.zip
+          python3 -m zipfile -l chatgpt-worker-skills.zip
 
-      - name: Build one multi-skill ZIP
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf dist chatgpt-worker-skills.zip
-          mkdir -p dist
-          for skill in chat-implementation-worker chat-review-worker chat-report-writer; do
-            cp -R "skills/${skill}" "dist/${skill}"
-          done
-          (
-            cd dist
-            zip -r ../chatgpt-worker-skills.zip \
-              chat-implementation-worker \
-              chat-review-worker \
-              chat-report-writer
-          )
-          unzip -l chatgpt-worker-skills.zip
+      - name: Upload validation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatgpt-worker-skills-${{ github.sha }}
+          path: chatgpt-worker-skills.zip
+          if-no-files-found: error
 
-      - name: Publish rolling GitHub Release
+      - name: Publish rolling GitHub Release after main update
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: chatgpt-worker-skills-latest
@@ -68,15 +68,17 @@ jobs:
           git tag -f "${TAG}" "${GITHUB_SHA}"
           git push --force origin "refs/tags/${TAG}"
 
+          notes="Upload chatgpt-worker-skills.zip to ChatGPT Skills. The archive contains every repository Skill matching skills/chat-*/SKILL.md and all referenced shared runtime dependencies. Source commit: ${GITHUB_SHA}."
+
           if gh release view "${TAG}" >/dev/null 2>&1; then
             gh release edit "${TAG}" \
               --title "ChatGPT Worker Skills" \
-              --notes "Upload chatgpt-worker-skills.zip to ChatGPT Skills. The ZIP contains three Skills: implementation, review, and report writer. Source commit: ${GITHUB_SHA}." \
+              --notes "${notes}" \
               --latest
           else
             gh release create "${TAG}" \
               --title "ChatGPT Worker Skills" \
-              --notes "Upload chatgpt-worker-skills.zip to ChatGPT Skills. The ZIP contains three Skills: implementation, review, and report writer. Source commit: ${GITHUB_SHA}." \
+              --notes "${notes}" \
               --latest
           fi
 
