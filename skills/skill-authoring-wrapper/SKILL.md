@@ -1,63 +1,63 @@
 ---
 name: skill-authoring-wrapper
-description: Create or update local skills in `/home/ibis/AI/CodexSkill/skills` by using the built-in `skill-creator` and then conforming the result to this repository's skill standards. Use when a new repo-local skill is needed, when an existing local skill must be restructured to match repo conventions, or when built-in `skill-creator` output must be wrapped with local execution-owner, contract, delegation, and design-document rules.
+description: Create or update local skills in `/home/ibis/AI/CodexSkill/skills` by using the built-in `skill-creator` and then conforming the result to this repository's skill standards. Use when a new repo-local skill is needed, when an existing local skill must be restructured to match repo conventions, or when built-in `skill-creator` output must be wrapped with local execution-owner, shared-contract, delegation, and design-document rules.
 ---
 
 # Skill Authoring Wrapper
 
-Create repo-standard skills without modifying the built-in `skill-creator`.
-
 ## Goal
 
-Use the built-in `skill-creator` as the initializer, then normalize the resulting skill to this repository's standard structure and governance rules.
-Use the same route for both new skill creation and substantial local skill updates whenever practical.
+Use the built-in `skill-creator` as the initializer, then normalize the result to this repository's standards without duplicating cross-runtime workflow semantics.
+
+Use the same route for both new Skill creation and substantial local Skill updates whenever practical.
 
 ## Execution owner
 
-Run this skill as: `parent`
+Run this Skill as: `parent`.
 
-- Parent owns local skill design, repository placement, and final adoption.
+- Parent owns local Skill design, repository placement, shared-contract placement, and final adoption.
 - Do not modify the built-in `skill-creator`; wrap it.
 
 ## Inputs
 
-Before running this skill, gather:
+Before running this Skill, gather:
 
-- the requested new or updated skill's purpose
-- the target location under `/home/ibis/AI/CodexSkill/skills`
-- whether this is a new skill or an update to an existing local skill
-- which repo-local standards must be applied
-- whether the change affects the skill inventory, call graph, ownership model, or contract summary in the duplicated hierarchy design docs under `skills/design/` and `design/`
+- the requested new or updated Skill's purpose,
+- the target location under `/home/ibis/AI/CodexSkill/skills`,
+- whether this is a new Skill or an update,
+- which repository standards apply,
+- whether the same semantics are required by both Codex and ChatGPT,
+- whether the change affects the Skill inventory, call graph, ownership model, shared contracts, release packaging, or contract summary in the hierarchy design documents.
 
 ## Typical caller
 
-Use `development-orchestrator` as the default caller when a task or issue completion reveals that a local skill must be created or substantially updated.
+Use `development-orchestrator` as the default caller when task completion reveals that a local Skill must be created or substantially updated.
 
-If the user explicitly asks for local skill creation or restructuring outside normal implementation flow, the parent may call this skill directly, but do not leave the caller implicit.
+If the user explicitly asks for Skill creation or restructuring outside normal implementation flow, the parent may call this Skill directly, but the caller must remain explicit.
 
 ## Required flow
 
 1. Read the built-in `skill-creator` at `/home/ibis/.codex/skills/.system/skill-creator/SKILL.md`.
-2. Decide the local skill name, scope, and whether `scripts/`, `references/`, or `assets/` are actually needed.
-3. When responsibility placement, caller placement, or parent/child decision ownership is being created or changed, read [references/responsibility-placement-policy.md](references/responsibility-placement-policy.md).
-4. If creating a new skill, initialize it by using the built-in `skill-creator` workflow and its `init_skill.py`.
-5. If updating an existing local skill, read the current `SKILL.md`, keep the existing intent that should survive, and normalize the result through this same wrapper flow instead of editing ad hoc.
-6. Replace any generic scaffold sections with this repository's standard section structure.
-7. Ensure the resulting `SKILL.md` includes:
-   - `## Goal`
-   - `## Execution owner`
-   - `## Inputs`
-   - `## Outputs`
-   - `## Completion condition`
-8. If the skill can hand off executable work, route that policy through `codex-delegation-executor` instead of inventing an isolated policy.
-9. If the skill has switchable parent/sub-agent execution, add explicit provisional numeric thresholds only when the decision is truly internal to that skill tree.
-10. If the skill creates or updates governed files, state which skill paths are allowed to modify those files.
-11. If this repository has a real canonical skill inventory or registry file, update that actual file; do not reference or require nonexistent files such as `agents/openai.yaml`.
-12. While both hierarchy design files exist, update `/home/ibis/AI/CodexSkill/skills/design/skill-hierarchy-design.md` and `/home/ibis/AI/CodexSkill/design/skill-hierarchy-design.md` together whenever the new or updated skill changes the local skill inventory, call graph, execution方式, role summary, or contract summary.
+2. Decide the Skill name, scope, and whether `scripts/`, `references/`, or `assets/` are actually needed.
+3. Determine whether the requested semantics already exist under `shared/workflow/` or another canonical shared contract.
+4. When Codex and ChatGPT need the same semantics, create or update one runtime-neutral contract under `shared/workflow/` before editing runtime adapters.
+5. Keep Codex and ChatGPT Skill files limited to execution-owner, dispatch, permission, persistence, and runtime-specific boundary rules.
+6. When responsibility placement, caller placement, or parent/child decision ownership changes, read [responsibility placement policy](references/responsibility-placement-policy.md).
+7. If creating a new Skill, initialize it through the built-in `skill-creator` workflow and `init_skill.py`.
+8. If updating an existing Skill, read its current `SKILL.md`, preserve surviving intent, and normalize it through this wrapper instead of editing ad hoc.
+9. Replace generic scaffold sections with the repository's standard section structure.
+10. Ensure the resulting `SKILL.md` includes `## Goal`, `## Execution owner`, `## Inputs`, `## Outputs`, and `## Completion condition`.
+11. If the Skill can hand off executable work, route that policy through `codex-delegation-executor` instead of creating an isolated policy.
+12. If the Skill has switchable parent/sub-agent execution, add numeric thresholds only when the decision is truly internal to that Skill tree.
+13. If the Skill creates or updates governed files, state which Skill paths may modify those files.
+14. If the repository has a real canonical inventory or registry, update it; do not require nonexistent files such as `agents/openai.yaml`.
+15. Update `skills/design/skill-hierarchy-design.md` and `design/skill-hierarchy-design.md` together when architecture, ownership, call graph, shared contracts, or contract-level understanding changes.
+16. For ChatGPT adapters under `skills/chat-*`, use repository-relative links to canonical shared files. Do not commit copied shared contracts inside each ChatGPT Skill.
+17. Run the ChatGPT release builder when a `skills/chat-*` adapter or referenced shared contract changes.
 
 ## Local standard sections
 
-Use these as the default contract for repo-local skills:
+Use these as the default contract for repository-local Skills:
 
 - `## Goal`
 - `## Execution owner`
@@ -67,35 +67,43 @@ Use these as the default contract for repo-local skills:
 
 Add these when they apply:
 
+- `## Shared contracts`
 - `## Required flow`
 - `## Rules`
 - `## Large-scope delegation`
 - `## Cross-cutting rule`
 
-## Repo-specific rules
+## Cross-runtime contract rules
 
-- Do not leave the built-in `skill-creator` scaffold text or TODO sections in a finished local skill.
-- Do not bypass this wrapper for substantial local skill creation or restructuring when the result should conform to repo standards.
-- Do not create a local skill that bypasses `codex-delegation-executor` for executable work unless that new skill is itself the policy owner.
-- Do not move decision responsibility upward just because an upper skill exists; follow `references/responsibility-placement-policy.md`.
-- Do not leave execution-owner ambiguity in a finished local skill.
-- Do not forget to describe governed-file update restrictions when the skill owns canonical files.
-- Do not forget to reflect local skill changes in the hierarchy design when they change local architecture or contract-level understanding.
+- Put runtime-neutral implementation, review, reporting, validation, evidence, and lifecycle semantics under `shared/workflow/`.
+- Keep Codex adapters responsible for parent/sub-agent execution, dispatch, local tooling, and Codex completion gates.
+- Keep ChatGPT adapters responsible for user-parent coordination, direct-chat execution, permission boundaries, report persistence, and cross-chat handoff.
+- Do not maintain hand-copied common contract files under `skills/chat-*/references/`.
+- ChatGPT Release packaging must discover every `skills/chat-*` Skill and include its referenced shared dependencies.
+- A shared reference is not an installable fourth Skill.
+
+## Repository-specific rules
+
+- Do not leave built-in scaffold text or TODO sections in a finished Skill.
+- Do not bypass this wrapper for substantial Skill creation or restructuring.
+- Do not create a Skill that bypasses `codex-delegation-executor` for executable Codex work unless that new Skill is itself the policy owner.
+- Do not move decision responsibility upward merely because an upper Skill exists; follow the responsibility placement policy.
+- Do not leave execution-owner ambiguity.
+- Do not forget governed-file update restrictions.
+- Do not forget hierarchy design updates when local architecture or shared contracts change.
+- Do not reintroduce duplicated ChatGPT/Codex workflow rules after a shared contract exists.
 
 ## Outputs
 
-After this skill runs, there should be:
+After this Skill runs, there should be:
 
-- a repo-local skill folder with a completed `SKILL.md`
-- local skill wording that matches this repository's standards
-- updated hierarchy design documents when the local skill inventory, call graph, ownership model, or contract summary changed
+- a completed repository-local Skill or runtime adapter,
+- a canonical shared contract when semantics cross runtimes,
+- wording that matches repository standards,
+- explicit delegation, governance, and release expectations,
+- updated hierarchy design documents when architecture changed,
+- a validated ChatGPT bundle when a ChatGPT adapter or dependency changed.
 
 ## Completion condition
 
-This skill is complete only when:
-
-- the built-in `skill-creator` output has been normalized to repo standards
-- substantial local skill updates have also been normalized through this wrapper path
-- the resulting local skill has the required contract sections
-- delegation, governance, and design-update expectations are explicit
-- any affected local design documentation has been updated
+This Skill is complete only when the built-in output or existing Skill has been normalized, shared semantics have one canonical owner, runtime adapters contain only runtime-specific rules, required contract sections exist, governance and design updates are explicit, and affected ChatGPT packaging has been validated without applying TDD to the CodexSkill repository.
