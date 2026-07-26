@@ -2,11 +2,55 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-07-11
+- Updated: 2026-07-26
 
 ## In Progress
 
-なし
+- T-002: Codex／ChatGPT Skillを共通契約化し、ChatGPT runtime依存物を単一ZIPへ自動収集する
+  - Status: 実装・通常検証完了、独立最終レビュー待ち
+  - Phase: Phase 6
+  - Estimate: L
+  - Depends on: なし
+  - Exit Criteria:
+    - runtime非依存の作業・実装・レビュー・レポート契約が`shared/workflow/`で一元管理されている
+    - Codex側とChatGPT側が共通契約を参照するruntime adapterになっている
+    - ChatGPT Skill内に共通契約の手動copyが残っていない
+    - 全`skills/chat-*/SKILL.md`と各Skill内fileが自動的に単一ZIPへ含まれる
+    - 参照されるshared dependencyと全`shared/chat-worker/` runtime fileがZIPへ含まれ、漏れがあればbuildが失敗する
+    - PR buildがread-onlyかつPRの実HEAD SHAをcheckoutし、main反映後のrelease jobだけがwrite権限を持つ
+    - CodexSkill repository自身へTDDを適用しない方針がroot instructionと実行入口に反映されている
+    - hierarchy design 2件とChatGPT worker designが実装と同期している
+    - 最終current HEAD固有のbundle workflowとartifact検証が成功する
+    - 独立したfresh reviewerによる最終レビューが成功する
+    - commit、push、Draft PR更新が完了し、mergeを行わない
+  - Output:
+    - `shared/workflow/common-work-contract.md`
+    - `shared/workflow/implementation-contract.md`
+    - `shared/workflow/review-contract.md`
+    - `shared/workflow/report-contract.md`
+    - `shared/chat-worker/handoff-contract.md`
+    - `shared/chat-worker/project-instruction-example.md`
+    - `scripts/build_chatgpt_worker_skills.py`
+    - `.github/workflows/release-chatgpt-worker-skills.yml`
+    - `skills/chat-implementation-worker/SKILL.md`
+    - `skills/chat-review-worker/SKILL.md`
+    - `skills/chat-report-writer/SKILL.md`
+    - `skills/implementation-executor/SKILL.md`
+    - `skills/review-enforcer/SKILL.md`
+    - `skills/report-output-manager/SKILL.md`
+    - `skills/development-orchestrator/SKILL.md`
+    - `skills/tdd-executor/SKILL.md`
+    - `skills/skill-authoring-wrapper/SKILL.md`
+    - `design/chat-worker-skill-design.md`
+    - `design/skill-hierarchy-design.md`
+    - `skills/design/skill-hierarchy-design.md`
+    - `reports/issue-53-shared-workflow-contracts-20260726154744.md`
+  - Verification:
+    - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
+    - PR HEAD `cbe0004d133ec71570c76bdcb47122fab963d86a`のworkflow run `30191605925`が成功
+    - artifact `chatgpt-worker-skills-cbe0004d133ec71570c76bdcb47122fab963d86a`を展開し、3 Skill、必要なshared contract、Project Instruction例、handoff contract、ZIP integrity、repository相対link解消を確認
+    - tracking・report・設計整合commit後の最終current HEAD workflowは再確認する
+    - 独立最終レビューは未実施
 
 ## Backlog
 
