@@ -27,6 +27,16 @@ ChatGPT chat同士は自動的にsub-agentとして連携しない。利用者�
 
 既存Codex向けhierarchyは親agentがsub-agentを起動する。ChatGPT chat worker flowでは利用者が親であるため、Codex向けorchestratorやdelegation managerを流用しない。
 
+## Codex実行とのreview契約の違い
+
+ChatGPT chat worker flowの`cold final review`と、既存Codex flowのreviewは同じ契約ではない。
+
+- ChatGPTの`cold final review`は、PRまたはreview fixを実装していない新規chatで実施する。
+- Codexの標準flowは`review-enforcer`が専用reviewer sub-agentを起動し、同一セッションでは原則として同じreviewer sub-agentをinitial reviewと再reviewで継続利用する。
+- Codexの標準flowは、新規ChatGPT chatを立ち上げることも、毎回別reviewerへ切り替えることも要求しない。
+- Codex実行でfreshな独立最終reviewを追加する場合は、Codex側のProject Instructionまたはreview要件へ明示する。ChatGPT向け`cold final review`契約はCodexへ自動適用しない。
+- Codexでfresh reviewを要求する場合も、実行単位は新規ChatGPT chatではなく、履歴継承を制限した新しいreviewer sub-agentなど、Codex側の実行方式で定義する。
+
 ## 切り出すSkill
 
 | Skill | 責務 | 必須成果物 | 禁止事項 |
@@ -34,6 +44,32 @@ ChatGPT chat同士は自動的にsub-agentとして連携しない。利用者�
 | `chat-implementation-worker` | 初回実装、review follow-up、validation | implementation report、handoff packet、PR簡易コメント | 独立review判定、scope拡張、merge |
 | `chat-review-worker` | initial review、fix verification、cold final review | review report、handoff packet、PR簡易コメント | product code/test修正、finding対応実装、merge |
 | `chat-report-writer` | report統合、再整形、最終report作成 | 指定report、handoff packet、PR簡易コメント | technical findingの発明、code/test修正、merge |
+
+## ChatGPTへのSkill登録構成
+
+ChatGPTへ登録するSkillは次の3つである。
+
+- `chat-implementation-worker`
+- `chat-review-worker`
+- `chat-report-writer`
+
+`chat-worker-shared`は4つ目のSkillとして登録しない。`skills/chat-worker-shared/references/handoff-contract.md`をcanonical sourceとし、各Skill packageへ`references/handoff-contract.md`として同梱するsupporting resourceである。
+
+各Skill packageは、少なくとも次を含む。
+
+```text
+<skill-name>/
+├─ SKILL.md
+└─ references/
+   └─ handoff-contract.md
+```
+
+- ChatGPTへ登録する数は3 Skillでよい。
+- 3つの`SKILL.md`だけを取り出して登録する構成では、相対参照先のhandoff contractが欠けるため不十分である。
+- 各package内の`references/handoff-contract.md`はcanonical sourceとbyte-identicalに保つ。
+- Project InstructionはSkillとは別に対象Projectへ設定する。
+- `design/chat-worker-skill-design.md`と`reports/`配下のreportはruntime登録対象ではない。
+- ChatGPTとCodexのSkill登録状態は別管理とし、使用する実行面へそれぞれ登録する。
 
 ## 全workerの成果物要件
 
@@ -127,12 +163,12 @@ Project Instructionにあるrepository URL、branch、HEAD、handoff path、repo
 
 ```text
 利用者 [親]
-├─ Chat A: implementation worker [新規]
-├─ Chat B: initial review [新規]
-├─ Chat A: review follow-up [継続]
-├─ Chat C: fix verification [新規、またはChat B継続]
-├─ Chat D: cold final review [必ず新規]
-└─ Report chat [統合reportが必要な場合のみ]
+├─ Chat A: chat-implementation-worker [新規、initial implementation]
+├─ Chat B: chat-review-worker [新規、initial review]
+├─ Chat A: chat-implementation-worker [継続、review follow-up]
+├─ Chat C: chat-review-worker [原則新規、fix verification]
+├─ Chat D: chat-review-worker [必ず新規かつ非実装chat、cold final review]
+└─ Report chat: chat-report-writer [統合reportが必要な場合のみ]
 ```
 
 ## 利用者向け実行例
@@ -255,7 +291,7 @@ handoff packetは自動共有memoryではない。
 
 1. `initial review`: planned coverageを最後まで確認する。
 2. `fix verification`: previous findingsとfix impactを確認する。
-3. `cold final review`: fresh chatでcurrent PR HEADを独立確認する。
+3. `cold final review`: ChatGPT chat worker flowでのみ、新規かつ非実装chatからcurrent PR HEADを独立確認する。
 
 別系統のBlocking/Highが繰り返し見つかる場合は`unstable`とし、設計見直しまたはPR分割へ戻す。
 
@@ -271,7 +307,10 @@ handoff packetは自動共有memoryではない。
 
 ## 完了条件
 
-- 3 worker Skillが独立して利用できる
+- 3 worker Skill packageが独立して利用できる
+- 各Skill packageに`SKILL.md`と`references/handoff-contract.md`が同梱されている
+- `chat-worker-shared`を4つ目のSkillとして登録しない
+- Codex標準reviewとChatGPTのcold final reviewの違いが明記されている
 - 全workerがreportを必須成果物とする
 - Issue番号またはPR番号だけで通常flowを開始できる
 - workerがHEAD、handoff、report、CIを自分で解決する
