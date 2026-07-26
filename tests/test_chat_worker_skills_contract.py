@@ -7,26 +7,22 @@ import re
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SHARED_CONTRACT = ROOT / "skills" / "chat-worker-shared" / "references" / "handoff-contract.md"
 DESIGN_FILES = (
     ROOT / "design" / "chat-worker-skill-design.md",
     ROOT / "skills" / "design" / "chat-worker-skill-design.md",
 )
-
 SKILLS = {
     "chat-implementation-worker": ROOT / "skills" / "chat-implementation-worker" / "SKILL.md",
     "chat-review-worker": ROOT / "skills" / "chat-review-worker" / "SKILL.md",
     "chat-report-writer": ROOT / "skills" / "chat-report-writer" / "SKILL.md",
 }
-
 FORBIDDEN_ORCHESTRATION_DEPENDENCIES = (
     "sub-agent-task-manager",
     "codex-delegation-executor",
     "spawn_agent",
 )
-
 COMMON_REQUIRED_MARKERS = (
     "## Execution model",
     "The user is the parent",
@@ -38,21 +34,22 @@ COMMON_REQUIRED_MARKERS = (
     "write_handoff",
     "reports/handoffs/",
 )
-
 SKILL_SPECIFIC_MARKERS = {
     "chat-implementation-worker": (
         "initial implementation",
         "review follow-up",
         "test-first",
-        "must not issue the final review verdict",
         "must create an implementation report",
-        "reports/",
+        "resolve discoverable repository state",
+        "must not issue the final review verdict",
         "must not merge",
     ),
     "chat-review-worker": (
         "initial review",
         "fix verification",
         "cold final review",
+        "resolve discoverable review state",
+        "must create a review report",
         "unstable",
         "must not modify product code",
     ),
@@ -64,51 +61,27 @@ SKILL_SPECIFIC_MARKERS = {
         "must not modify code or tests",
     ),
 }
-
 HANDOFF_REQUIRED_MARKERS = (
-    "task_id",
-    "repository",
-    "branch",
-    "base_ref",
-    "head_sha",
-    "authorized_actions",
-    "write_handoff",
-    "write_boundary",
-    "scope",
-    "non_goals",
-    "authoritative_requirements",
-    "files",
-    "commands",
-    "tests",
-    "ci",
-    "implementation",
-    "review",
-    "report",
-    "findings",
-    "held",
-    "unexplored",
-    "remaining_risks",
-    "handoff_transport",
-    "packet_path",
-    "reports/handoffs/",
-    "next_action",
-    "next_chat_input",
-    "requested_authorized_actions",
-    "requested_write_boundary",
+    "task_id", "repository", "branch", "base_ref", "head_sha",
+    "authorized_actions", "write_handoff", "write_boundary", "scope",
+    "non_goals", "authoritative_requirements", "files", "commands", "tests",
+    "ci", "implementation", "review", "report", "findings", "held",
+    "unexplored", "remaining_risks", "handoff_transport", "packet_path",
+    "reports/handoffs/", "next_action", "next_chat_input",
+    "requested_authorized_actions", "requested_write_boundary",
 )
-
 DESIGN_WORKFLOW_MARKERS = (
     "## 利用者向け実行例",
     "## Project Instructionへ置く固定情報",
     "## Chat promptに書く情報",
+    "## Workerが自分で解決する情報",
+    "PR番号だけで開始できる",
+    "Issue番号だけで開始できる",
     "Chat A: 初回実装",
     "Chat B: 初回レビュー",
     "Chat Aを継続: レビュー対応",
     "Chat C: 修正確認",
     "Chat D: 独立最終レビュー",
-    "新規chatへ送るprompt",
-    "既存chatへ送るprompt",
-    "handoff path",
     "全workerは成果物としてレポートを出力する",
     "プロジェクトInstructionを再掲しない",
 )
@@ -136,11 +109,7 @@ class ChatWorkerSkillContractTests(unittest.TestCase):
                 for marker in SKILL_SPECIFIC_MARKERS[skill_name]:
                     self.assertIn(marker, text, f"{skill_name} is missing marker: {marker}")
                 for forbidden in FORBIDDEN_ORCHESTRATION_DEPENDENCIES:
-                    self.assertNotIn(
-                        forbidden,
-                        text,
-                        f"{skill_name} must not depend on agent orchestration: {forbidden}",
-                    )
+                    self.assertNotIn(forbidden, text, f"{skill_name} must not depend on agent orchestration: {forbidden}")
 
     def test_shared_handoff_contract_is_complete(self) -> None:
         text = self.read_required(SHARED_CONTRACT)
