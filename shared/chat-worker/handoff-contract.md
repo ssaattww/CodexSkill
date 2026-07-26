@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This contract defines the payload exchanged between independent ChatGPT worker chats. The release bundle contains three installable Skills. Each Skill includes an identical copy of this contract under `references/handoff-contract.md`.
+This contract defines the payload exchanged between independent ChatGPT worker chats.
 
-The repository copy at `shared/chat-worker/handoff-contract.md` is a maintenance source only. It is not an installable Skill and is not included as a fourth Skill in the ChatGPT bundle.
+Use it together with the [Common Work Contract](../workflow/common-work-contract.md). The repository copy is the maintenance source. The ChatGPT release builder places referenced shared contracts inside each installable Skill; this file is not an additional Skill.
 
 ## Transport model
 
@@ -15,7 +15,7 @@ When a repository-backed packet is uniquely discoverable from the target Issue o
 ## Core rules
 
 - The user is the parent and decides the next worker, scope, permissions, and merge action.
-- Workers must not start another worker.
+- A ChatGPT worker must not start another worker.
 - A packet must be sufficient to continue without the previous conversation.
 - Unknown facts must be recorded and must not be guessed.
 - CI evidence must belong to the packet's `head_sha`.
@@ -26,9 +26,9 @@ When a repository-backed packet is uniquely discoverable from the target Issue o
 ## Required identity
 
 ```yaml
-schema_version: 1
+schema_version: 2
 producer:
-  skill: chat-implementation-worker | chat-review-worker | chat-report-writer
+  skill: string
   mode: string
   generated_at: ISO-8601
 
@@ -39,6 +39,8 @@ branch: string
 base_ref: string | null
 head_sha: full commit SHA | unknown
 ```
+
+`producer.skill` must be the installed ChatGPT Skill name that produced the packet. It is not limited to a hard-coded list.
 
 ## Authorization and write boundary
 
@@ -117,6 +119,8 @@ ci:
       purpose: string
 ```
 
+Do not populate Red/Green phases unless the target project required that process and the evidence was actually observed.
+
 ## Outcomes
 
 ```yaml
@@ -129,7 +133,7 @@ implementation:
     - string
 
 review:
-  review_mode: initial_review | fix_verification | cold_final_review | not_applicable
+  review_mode: initial_review | fix_verification | independent_final_review | not_applicable
   verdict: pass | pass_with_held | fail | incomplete | unstable | not_applicable
   required_coverage:
     - criterion: string
@@ -149,6 +153,8 @@ report:
   summary:
     - string
 ```
+
+A ChatGPT prompt or UI may describe `independent_final_review` as a cold final review. The packet uses the canonical value.
 
 ## Findings and uncertainty
 
@@ -192,7 +198,7 @@ next_action:
   summary: string
 
 next_chat_input:
-  target_skill: chat-implementation-worker | chat-review-worker | chat-report-writer | none
+  target_skill: string | none
   mode: string | null
   instructions:
     - string
@@ -201,6 +207,8 @@ next_chat_input:
   requested_authorized_actions:
     - read_repository | edit_code | edit_tests | edit_documentation | edit_configuration | edit_workflows | write_handoff | write_report | create_branch | commit | push | create_issue | update_issue | create_pr | update_pr | comment_pr
 ```
+
+`next_chat_input.target_skill` names the intended installed ChatGPT Skill. It is not limited to the currently known worker set.
 
 ## Permission semantics
 
