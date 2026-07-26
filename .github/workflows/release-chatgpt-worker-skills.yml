@@ -1,0 +1,83 @@
+name: Release ChatGPT worker skills
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "skills/chat-implementation-worker/**"
+      - "skills/chat-review-worker/**"
+      - "skills/chat-report-writer/**"
+      - "shared/chat-worker/handoff-contract.md"
+      - ".github/workflows/release-chatgpt-worker-skills.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-chatgpt-worker-skills
+  cancel-in-progress: false
+
+jobs:
+  package-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout merged main HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Verify package contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          canonical="shared/chat-worker/handoff-contract.md"
+          for skill in chat-implementation-worker chat-review-worker chat-report-writer; do
+            test -f "skills/${skill}/SKILL.md"
+            test -f "skills/${skill}/references/handoff-contract.md"
+            cmp "${canonical}" "skills/${skill}/references/handoff-contract.md"
+          done
+
+      - name: Build one multi-skill ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf dist chatgpt-worker-skills.zip
+          mkdir -p dist
+          for skill in chat-implementation-worker chat-review-worker chat-report-writer; do
+            cp -R "skills/${skill}" "dist/${skill}"
+          done
+          (
+            cd dist
+            zip -r ../chatgpt-worker-skills.zip \
+              chat-implementation-worker \
+              chat-review-worker \
+              chat-report-writer
+          )
+          unzip -l chatgpt-worker-skills.zip
+
+      - name: Publish rolling GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: chatgpt-worker-skills-latest
+        shell: bash
+        run: |
+          set -euo pipefail
+          git tag -f "${TAG}" "${GITHUB_SHA}"
+          git push --force origin "refs/tags/${TAG}"
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release edit "${TAG}" \
+              --title "ChatGPT Worker Skills" \
+              --notes "Upload chatgpt-worker-skills.zip to ChatGPT Skills. The ZIP contains three Skills: implementation, review, and report writer. Source commit: ${GITHUB_SHA}." \
+              --latest
+          else
+            gh release create "${TAG}" \
+              --title "ChatGPT Worker Skills" \
+              --notes "Upload chatgpt-worker-skills.zip to ChatGPT Skills. The ZIP contains three Skills: implementation, review, and report writer. Source commit: ${GITHUB_SHA}." \
+              --latest
+          fi
+
+          gh release upload "${TAG}" chatgpt-worker-skills.zip --clobber
