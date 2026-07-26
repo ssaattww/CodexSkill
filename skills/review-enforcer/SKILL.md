@@ -1,153 +1,129 @@
 ---
 name: review-enforcer
-description: Require a dedicated review step for every task before the task is treated as complete. Use when implementation appears done, before final progress updates, before commit/PR closure, or whenever a review result must be captured and addressed task by task.
+description: Run the Codex review lifecycle as a parent-side gate. Build a risk-based ReviewRequest, dispatch review-core for a structured ReviewResult, enforce bounded initial/fix/final stages, and then hand the result to rendering and artifact adapters. Use before progress sync, commit, or PR completion. Do not perform the review itself or make report prose the workflow state.
 ---
 
 # Review Enforcer
 
-Prevent completion without review.
+Run a bounded Codex review cycle and gate task completion on a structured result.
 
 ## Goal
 
-Make task completion impossible until review has run and its outcome is recorded.
+Obtain a valid `ReviewResult`, apply explicit stop conditions, and keep review judgment separate from presentation and repository artifacts.
 
 ## Execution owner
 
 Run this skill as: `parent`
 
-- Parent owns completion gating and finding disposition.
-- The actual review work inside this skill remains mandatory sub-agent work.
+- Parent owns lifecycle orchestration, reviewer assignment, and task completion gating.
+- `review-core` owns the actual review judgment.
+- `review-policy` owns risk selection, lifecycle scope, merge-candidate conditions, and unstable conditions.
+- `review-result-renderer` owns presentation.
+- `report-output-manager` owns repository report artifact placement.
 
 ## Inputs
 
 Before running this skill, gather:
 
-- task-scoped diff or changed-file set
-- surrounding repository context the reviewer may need to inspect directly
-- relevant validation context and reports
-- current task identifier and review scope
-- active session reviewer assignment, if one already exists
-- the parent agent's current model and any user override of reviewer reasoning effort
-- task-specific review criteria that were established earlier in the same session, such as audit decisions, design rules, naming rules, or comment standards
-- authoritative task exit criteria, design documents, repository instructions, and explicit scope boundaries
-- changed-file dependencies, consumers, persistence adapters, validators, and other contract boundaries that may require direct inspection
-- when Markdown-related work is in scope, the `markdown-word-checker` result and any proposed exact whitelist, `prh`, or target-exclusion entries with the user's explicit review state
+- task, Issue, PR, branch, commit, or diff identifier
+- authoritative requirements, design, repository instructions, scope, and non-goals
+- changed targets and direct dependency boundaries
+- available test, command, CI, artifact, and immutable HEAD-SHA evidence
+- previous structured findings and current lifecycle stage
+- active reviewer assignment, if any
+- parent model and user override of reviewer reasoning effort
+- whether repository report and PR comment artifacts are required
 
 ## Required flow
 
-1. Prepare a task-scoped diff or changed-file set, but keep broader workspace context available for direct inspection by the reviewer.
-2. Read [references/code-review-coverage-checklist.md](references/code-review-coverage-checklist.md) and prepare a coverage matrix covering every checklist section. A section may be marked `not applicable`, `held`, or `unexplored` only with a concrete reason.
-3. Call `report-output-manager` and initialize the pre-created report from the dedicated [review report template](../report-output-manager/references/review-report-template.md). Preserve its confirmation-item table and headings.
-4. When the review touches source layout, naming, partial types, XML documentation, or test comments, read [references/session-review-shape-policy.md](references/session-review-shape-policy.md) before drafting the review request.
-5. When the task changes Markdown, Markdown lint configuration, reports, task tracking, design documents, or review-facing text, call `markdown-word-checker` before completion and include its result in the review report.
-6. Treat a `markdown-word-checker` `failed gate` result as a blocking review gate unless the current task is explicitly to introduce a failing stricter gate and the failure is recorded as the intended current state in the implementation report and tracking.
-7. Treat a `markdown-word-checker` `needs user review` result as a stopped gate. Exact entry review approval alone is not enough; the appropriate implementation owner must apply the approved repo-specific setting change, rerun the affected focused or full lint, and update the same report before the review gate can close.
-8. Treat a `markdown-word-checker` `unsupported` result as requiring caller disposition, not as pass. If Markdown lint is mandatory for the task/review gate, or the target repository has the relevant check configured, unsupported alone cannot complete the review gate.
-9. In a repository without Markdown lint setup, if neither focused lint nor full lint can run immediately after Markdown creation, record the unsupported reason and remaining risk in the review report. Only treat it as a held disposition when the documented normal path still satisfies the user's intent.
-10. When the task creates, rebuilds, or changes Markdown whitelist, `prh`, or target-exclusion entries, verify that the user explicitly reviewed the exact entries before the task is treated as complete.
-11. Reuse the same review `sub-agent` for the session when one is already assigned and still available; otherwise select one reviewer and record that assignment in the report or parent progress note.
-12. Include task-specific review criteria from earlier audit/design decisions and the complete code review coverage checklist in the review request. Require the reviewer to evaluate both the changed files and dependent code paths against those criteria.
-13. Run review for that task only as a `sub-agent` task through `sub-agent-task-manager`.
-14. Instruct the review `sub-agent` to use the built-in review behavior: findings first, severity-ordered, with file/line references when available.
-15. Instruct the reviewer to inspect every changed file, relevant dependent files, malformed and boundary input, state and identity invariants, atomicity, regression retention, performance, documentation, scope protection, and branch-HEAD-specific CI evidence. Do not ask only whether the patch fixes the latest comment.
-16. Select the parent agent's current model for the reviewer and use `high` reasoning effort unless the user overrides it. Pass that profile through `sub-agent-task-manager` into the actual spawn arguments; for a fresh reviewer spawn, use `fork_turns: "none"`, or an explicit positive partial fork only when bounded context is required.
-17. Materialize the built-in review result into the pre-created report file under `reports/` while preserving the review template format and filling only the intended blank sections.
-18. Prefer having the review `sub-agent` write the report file directly; treat parent-side report materialization as fallback only.
-19. If the review `sub-agent` does not write the report file directly, have the parent write it immediately from the returned review findings.
-20. Once review has been dispatched, keep waiting or re-polling until the review `sub-agent` finishes unless the user explicitly tells you to stop.
-21. Treat report structure as parent-owned. The reviewer may fill only blank sections or placeholder values and must not repair, reorder, rename, remove confirmation items, or reformat the template.
-22. Record the coverage matrix, changed and dependent files inspected, tests and commands examined, unexplored areas, held findings, and exact branch HEAD SHA and CI run used for the verdict.
-23. Address findings that break the intended normal path.
-24. If a finding means the user still cannot do what they intend even with careful use, stop and confirm with the user before deciding whether to expand scope.
-25. If a finding is avoidable by careful use and the user can still achieve the intended goal, record it in the report and leave it on hold until a concrete problem appears or the user explicitly promotes it.
-26. Re-run review if required, using the same session reviewer unless the reference policy allows a change.
-27. During re-review, first verify previous findings, then inspect previously unreviewed code, sibling defect patterns, dependent contracts, removed or weakened regression tests, performance, documentation, and failure behavior. Record the expanded areas explicitly.
-28. Only then allow progress sync and Git submission.
+1. Call `review-policy` to classify `low | medium | high`, select risk modules, select stable criterion IDs, and choose `initial | fix_verification | cold_final`.
+2. Build a `ReviewRequest` using `review-core/references/review-contract.md`.
+3. When Markdown-related evidence applies, call `markdown-word-checker` and add its structured evidence to the request. Do not make the Markdown report itself the review input contract.
+4. Select the reviewer profile:
+   - initial and fix verification: reuse the same reviewer when available
+   - cold final: use a fresh reviewer or `fresh_no_history`
+   - model: parent model
+   - reasoning: `high` unless the user overrides it
+5. Call `sub-agent-task-manager` in `structured_result` evidence mode and dispatch a reviewer that reads and executes `review-core`.
+6. Require the reviewer to return one `ReviewResult`; do not ask it to choose a report path, edit a template, or write a repository file.
+7. Validate the returned contract and call `review-policy` for verdict, follow-up, stop reason, merge-candidate, and whether another stage is permitted.
+8. Follow the bounded lifecycle:
+   - initial: finish the full planned coverage even after findings
+   - fix verification: check previous findings, fixes, direct impact, and sibling cases only
+   - cold final: medium/high risk only, one fresh pass on final HEAD
+9. If policy returns `unstable`, stop ordinary review rounds and route to design rework or PR split. Do not request another incremental re-review.
+10. After the structured result is final for the stage, optionally call `review-result-renderer` for Markdown, chat, or concise PR-comment text.
+11. When repository artifacts are required, pass already-rendered text to `report-output-manager`; repository write failure does not change the `ReviewResult`.
+12. Use the structured result, not report wording, to decide whether progress sync and Git submission may continue.
 
-If mandatory review `sub-agent` dispatch cannot be executed because the current run lacks explicit user permission for delegation, stop and ask the user before continuing. Do not silently replace mandatory `sub-agent` review with parent review.
+If mandatory reviewer dispatch is unavailable in the current Codex mode, stop and report that the Codex runner cannot execute. Direct or ChatGPT use should invoke `review-core` through the separate standalone flow tracked by Issue #51 rather than silently replacing this runner.
 
-When creating a new review report file, call `report-output-manager` and use its dedicated review report template.
+## Lifecycle rules
+
+- One stable scope has one initial comprehensive review.
+- Fix verification must stay focused and may run at most twice for the same initial finding set.
+- Medium/high risk has one cold final review.
+- Scope or risk change ends the current stage and starts a new initial cycle with a new review ID.
+- A new independent Blocking/High in cold final, repeated coverage miss, or a third required fix-verification produces `unstable`.
+- Resolved GitHub comments alone do not prove review completion.
+- Fix verification does not expand into arbitrary unrelated unexplored areas.
 
 ## Rules
 
-- Review one task at a time.
-- Do not batch multiple unrelated tasks into one review.
-- Do not mark a task complete without recorded review evidence.
-- Distinguish between “no findings” and “review not run”.
-- Review is mandatory sub-agent work.
-- Reviewer assignment is never switchable to the parent.
-- A single session should normally use one reviewer `sub-agent` for initial review and re-review so review standards remain consistent.
-- If the reviewer must change because the original reviewer is unavailable, conflicted, or explicitly replaced by the user, record the reason in the review report.
-- When a session has established concrete review criteria, such as naming, placement, XML comment, test-comment, or design-consistency rules, later reviews in that session must apply those criteria unless the user supersedes them.
-- The reviewer model is the parent agent's current model. Default reviewer reasoning effort is `high`; the user may override that effort for the current run.
-- Apply the selected reviewer model and reasoning effort through the central `sub-agent-task-manager` spawn contract, not as prompt text. Do not use a full-history fork with that override.
-- If mandatory `sub-agent` review is blocked by permission or execution-mode constraints, ask the user explicitly instead of improvising a parent-side substitute.
-- Review requests should explicitly ask for a code review, not a generic diff summary.
-- Review requests should tell the `sub-agent` to read the pre-created report first and preserve its headings, order, spacing, confirmation-item rows, and any prefilled text.
-- Review requests should explicitly allow and require the reviewer to fill the pre-created report file directly.
-- Report template ownership stays with the parent; the reviewer is not allowed to fix formatting, headings, spacing, confirmation items, or other report structure.
-- Every review must use the complete coverage checklist. Silent omission of a checklist section is not a valid `no findings` result.
-- `not applicable`, `held`, and `unexplored` coverage states require a concrete reason and remaining-risk statement.
-- Inspect dependent code and repository context when a changed contract can affect callers, consumers, persistence, parsing, validation, UI, or later tasks.
-- Runtime boundaries must not rely only on static type correctness; malformed, stale, partial, duplicate, contradictory, and unknown values require explicit disposition.
-- Tests used as review evidence must represent inputs the real protocol, parser, API, or tool can produce.
-- Re-review must preserve prior regression tests and expand beyond the last fix. Resolved comments alone do not prove adequate re-review.
-- Final CI evidence must be associated with the reviewed branch HEAD SHA, not the repository's latest run or another branch.
-- Markdown text quality is part of the review gate. Do not treat Markdown-related changes as review-complete until `markdown-word-checker` reports per-scope results and an aggregate gate state that the caller can disposition, or an intentionally failing stricter gate is explicitly documented for the current task.
-- If Markdown lint is mandatory for the current task/review gate, or the repository has the relevant Markdown check configured, `unsupported` alone cannot complete the gate.
-- In a repository without Markdown lint setup, when focused lint and full lint are both unavailable, `unsupported` may be held only with a report entry that records the reason, remaining risk, and why the user's intended normal path is still satisfied.
-- Repository-specific whitelist data must stay in the target repository. Do not put project terms into this skill; `markdown-word-checker` owns the detailed Markdown lint routing and reads repo-local `tools/lint/` configuration.
-- Changes to `tools/lint/markdown-whitelist.yaml`, `tools/lint/prh.yml`, or target exclusions require explicit user review before the repo-specific setting edit can proceed. Do not treat exact entry review alone as completion; rerun the affected focused or full lint and update the report before closing the review gate.
-- The review report must include the `markdown-word-checker` result, including command evidence, focused/full per-scope results, aggregate gate state, `skip` / `unsupported` / `failed gate` / `needs user review` classification, exact-entry review requirement, and any unresolved risk.
-- Prefer shipping a working normal path over delaying for a speculative full hardening pass.
-- If a review concern is real but avoidable by careful use, and the user can still achieve the intended goal, record it in the report and mark it as held rather than blocking release immediately.
-- If a review concern means the user cannot achieve the intended goal, stop and confirm with the user unless the intended normal path is already broken and should simply be fixed.
-- Do not cancel, replace, or abandon an in-flight review `sub-agent` only because it is slow or a wait timed out; keep waiting until it completes unless the user explicitly says to stop.
-- Do not constrain the reviewer to a parent-authored diff summary when surrounding workspace context matters.
-- Built-in review output alone is not sufficient; it must also exist in the report file.
+- Review one coherent task or PR scope at a time.
+- Do not perform product-code edits from this skill.
+- Do not embed detailed criterion text; read it from `review-policy`.
+- Do not select a Markdown template or prescribe headings to the reviewer.
+- Do not require the reviewer to edit a file.
+- Do not derive verdict, follow-up, or merge-candidate from prose.
+- Do not select every risk module by default.
+- Do not ignore direct dependencies that are part of the selected plan.
+- Do not stop initial review at the first finding.
+- Do not widen fix verification beyond the bounded policy.
+- Do not continue review after `unstable` without material design or scope change.
+- Do not use another branch's or repository-latest CI run when immutable HEAD evidence exists.
+- Do not merge a PR.
 
-## Required report contents
+## Artifact boundary
 
-Include:
+The review decision and artifact pipeline are separate:
 
-- task identifier
-- scope reviewed
-- reviewer or sub-agent used
-- reviewer reuse decision or reviewer-change reason
-- established review criteria used for this review, if any
-- coverage matrix for every section in the code review coverage checklist
-- changed files and dependent files inspected
-- tests, fixtures, commands, and CI evidence examined or run
-- findings summary
-- file/line references for findings when available
-- explicit `no findings` statement when applicable
-- disposition of findings
-- explicit hold/disposition for non-blocking concerns when they are deferred
-- unexplored areas, their blockers, and remaining risk
-- exact reviewed branch HEAD SHA and workflow run used for the verdict
-- for re-review, the areas inspected beyond verification of previous findings
-- final outcome
+```text
+review-policy
+  -> ReviewRequest
+  -> review-core
+  -> ReviewResult
+  -> review-result-renderer
+  -> rendered text
+  -> report-output-manager / GitHub adapter
+```
+
+- Review completion is represented by `ReviewResult`.
+- Repository workflow completion may additionally require a persisted report and concise PR comment.
+- Renderer or artifact failure is reported separately and never rewrites review findings.
 
 ## Outputs
 
-After this skill runs, there should be:
+Return:
 
-- a review report in `reports/` created from the dedicated review report template
-- explicit findings or explicit `no findings`
-- a completed coverage matrix with no silently omitted required section
-- a clear disposition for whether follow-up work is required
+- review plan
+- reviewer assignment and context
+- structured `ReviewResult`
+- policy decision and allowed next stage
+- rendered artifact references when requested
+- explicit stop or follow-up route
 
 ## Completion condition
 
-This skill is complete only when:
+The review gate is complete only when:
 
-- review has run for the current task
-- findings are materialized in the report file
-- every coverage checklist section has an explicit state and reason where required
-- required follow-up has been addressed or explicitly left open
-- any unexplored areas are explicitly recorded and do not invalidate the claimed final outcome
-- the final CI verdict is tied to the reviewed branch HEAD SHA when CI exists for the target repository
+- a valid `ReviewResult` exists
+- every planned criterion has one disposition
+- lifecycle and stop conditions have been applied
+- Blocking/High, unexplored high-risk areas, and validation evidence are reflected in the structured verdict
+- repository artifacts required by the surrounding Codex workflow have been produced or their separate artifact failure is explicit
+- progress and Git submission proceed only when policy permits them
 
 ## Cross-cutting rule
 
-If a repeated review-related instruction appears, call `feedback-points-manager`.
+If repeated review-process failures appear, call `feedback-points-manager`.
