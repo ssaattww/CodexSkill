@@ -17,7 +17,7 @@ Review a specified PR in one ChatGPT chat, create a durable review report, post 
 - Do not require the user to provide repository URL, branch, base, target HEAD SHA, report path, handoff path, changed files, or CI run when the PR makes them unambiguous.
 - This worker must not modify product code or tests.
 - This worker must create a review report. A concise PR comment is also required when a PR exists; post it when commenting is available, otherwise return the complete comment body.
-- Follow the [shared handoff contract](../chat-worker-shared/references/handoff-contract.md).
+- Follow the [shared handoff contract](references/handoff-contract.md).
 - A handoff is not automatically visible to another chat. When `write_handoff` is authorized, store it under `reports/handoffs/`; otherwise return the complete packet for user copy and paste.
 
 ## Inputs
