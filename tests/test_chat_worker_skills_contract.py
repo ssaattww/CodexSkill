@@ -131,7 +131,7 @@ class ChatWorkerSkillContractTests(unittest.TestCase):
             self.assertIn(marker, text, f"handoff contract is missing field: {marker}")
         self.assertIn("The packet is not automatically visible", text)
         self.assertIn("copy and paste", text)
-        self.assertIn("repository-backed transport", text)
+        self.assertIn("Repository-backed transport", text)
         self.assertIn("unknown", text)
         self.assertIn("not_applicable", text)
         self.assertIn("must not inherit", text)
