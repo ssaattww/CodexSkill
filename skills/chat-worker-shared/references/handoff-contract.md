@@ -10,7 +10,7 @@ A handoff packet is data, not an automatic cross-chat memory mechanism. The pack
 
 ### Repository-backed transport
 
-Repository-backed transport is the canonical durable method when repository writes are authorized.
+The repository-backed transport is the canonical durable method when repository writes are authorized.
 
 - Store the complete packet under `reports/handoffs/`.
 - Use a stable name such as `<task-id>-<producer>-<mode>-<head-short>-<timestamp>.md`.
