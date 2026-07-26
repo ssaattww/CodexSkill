@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import re
 import unittest
 from pathlib import Path
 
@@ -28,12 +29,14 @@ FORBIDDEN_ORCHESTRATION_DEPENDENCIES = (
 
 COMMON_REQUIRED_MARKERS = (
     "## Execution model",
-    "利用者が親",
-    "別workerを起動しない",
+    "The user is the parent",
+    "must not start another worker",
     "../chat-worker-shared/references/handoff-contract.md",
     "## Inputs",
     "## Outputs",
     "## Completion condition",
+    "write_handoff",
+    "reports/handoffs/",
 )
 
 SKILL_SPECIFIC_MARKERS = {
@@ -41,23 +44,23 @@ SKILL_SPECIFIC_MARKERS = {
         "initial implementation",
         "review follow-up",
         "test-first",
-        "最終review判定を行わない",
-        "narrative reportを作成しない",
-        "mergeしない",
+        "must not issue the final review verdict",
+        "must not create a narrative report",
+        "must not merge",
     ),
     "chat-review-worker": (
         "initial review",
         "fix verification",
         "cold final review",
         "unstable",
-        "product codeを変更しない",
+        "must not modify product code",
     ),
     "chat-report-writer": (
         "implementation report",
         "review report",
         "verification report",
-        "事実を発明しない",
-        "codeまたはtestを変更しない",
+        "must not invent facts",
+        "must not modify code or tests",
     ),
 }
 
@@ -68,6 +71,7 @@ HANDOFF_REQUIRED_MARKERS = (
     "base_ref",
     "head_sha",
     "authorized_actions",
+    "write_handoff",
     "write_boundary",
     "scope",
     "non_goals",
@@ -83,6 +87,9 @@ HANDOFF_REQUIRED_MARKERS = (
     "held",
     "unexplored",
     "remaining_risks",
+    "handoff_transport",
+    "packet_path",
+    "reports/handoffs/",
     "next_action",
     "next_chat_input",
     "requested_authorized_actions",
@@ -103,6 +110,10 @@ class ChatWorkerSkillContractTests(unittest.TestCase):
                 self.assertGreaterEqual(len(frontmatter), 3, f"{skill_name} requires YAML frontmatter")
                 self.assertIn(f"name: {skill_name}", frontmatter[1])
                 self.assertIn("description:", frontmatter[1])
+                self.assertIsNone(
+                    re.search(r"[\u3040-\u30ff\u3400-\u9fff]", text),
+                    f"{skill_name}/SKILL.md must be written in English",
+                )
                 for marker in COMMON_REQUIRED_MARKERS:
                     self.assertIn(marker, text, f"{skill_name} is missing marker: {marker}")
                 for marker in SKILL_SPECIFIC_MARKERS[skill_name]:
@@ -118,11 +129,12 @@ class ChatWorkerSkillContractTests(unittest.TestCase):
         text = self.read_required(SHARED_CONTRACT)
         for marker in HANDOFF_REQUIRED_MARKERS:
             self.assertIn(marker, text, f"handoff contract is missing field: {marker}")
-        self.assertIn("利用者", text)
-        self.assertIn("次のchat", text)
+        self.assertIn("The packet is not automatically visible", text)
+        self.assertIn("copy and paste", text)
+        self.assertIn("repository-backed transport", text)
         self.assertIn("unknown", text)
         self.assertIn("not_applicable", text)
-        self.assertIn("次のchatへ自動継承しない", text)
+        self.assertIn("must not inherit", text)
 
     def test_chat_worker_designs_are_identical_and_register_workers(self) -> None:
         primary = self.read_required(DESIGN_FILES[0])
@@ -130,6 +142,8 @@ class ChatWorkerSkillContractTests(unittest.TestCase):
         self.assertEqual(primary, mirrored, "the two chat worker design files must be byte-identical")
         self.assertIn("利用者が親となるChatGPT chat worker flow", primary)
         self.assertIn("既存Codex向けskill hierarchyとは分離", primary)
+        self.assertIn("自動的には参照できない", primary)
+        self.assertIn("reports/handoffs/", primary)
         for skill_name in SKILLS:
             self.assertIn(skill_name, primary)
 
