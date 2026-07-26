@@ -18,7 +18,7 @@ Implement a decided task or review follow-up in one ChatGPT chat, validate it ac
 - Follow the target project's implementation and testing policy. Do not impose a repository-development method that the project instructions do not require.
 - This worker must create an implementation report but must not issue the final review verdict.
 - When a PR exists, a concise PR comment is a required work product. Post it when PR commenting is available; otherwise return the complete comment body and record why it was not posted.
-- Follow the [shared handoff contract](../chat-worker-shared/references/handoff-contract.md).
+- Follow the [shared handoff contract](references/handoff-contract.md).
 - A handoff is not automatically visible to another chat. When `write_handoff` is authorized, store it under `reports/handoffs/`; otherwise return the complete packet for user copy and paste.
 
 ## Inputs
