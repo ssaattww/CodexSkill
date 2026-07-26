@@ -7,226 +7,136 @@
 - Pull Request: #52
 - Branch: `agent/issue-51-chat-worker-skills`
 - Base: `main`
-- 実装確認HEAD: `b626eab469bd46e5350991b69c5790c41e9b4edc`
+- Report対象HEAD: `8fd4f58456720d8a75fef02c39b67fdf4e315629`
+- Merge: 実施しない
 
-## 背景
+## 概要
 
-ChatGPTの通常chatでは、1つのchatが別のsub-agentを起動する構成を前提にできない。一方で、利用者は複数chatを明示的に起動でき、各chatはrepositoryへMarkdown reportを配置できる。
+利用者が親として複数のChatGPT chatを起動する運用向けに、別workerを自動起動しないstandalone worker Skillを追加した。
 
-このため、利用者自身が親としてchatの順序とhandoffを管理し、各chatが単一workerとして直接作業する構成を追加した。
+追加したworkerは次の3つである。
 
-## Scope
+- `chat-implementation-worker`
+- `chat-review-worker`
+- `chat-report-writer`
 
-- ChatGPT chat向けstandalone worker Skillを3つ追加する
-- chat間で共有するhandoff contractを追加する
-- ChatGPT向け構成を既存Codex hierarchyと分離して設計する
-- contract testをtest-firstで追加する
-- failure時に原因調査用artifactを保存するGitHub Actions workflowを追加する
-- workflowが対象branch HEAD SHAそのものを検証するようにする
+Issue番号またはPR番号から取得できるrepository状態はworker自身がGitHub connectorで解決し、利用者へrepository URL、branch、HEAD SHA、report path、handoff pathを原則として再入力させない構成とした。
 
-## Non-goals
-
-- ChatGPT chatから別agentを起動する仕組み
-- 自動chat orchestration
-- 既存Codex向けSkillの置換または実行契約変更
-- 自動merge
-- 独立verification worker、task planner、design worker、Git workflow managerの追加
-
-## 切り出したSkill
+## 実装内容
 
 ### `chat-implementation-worker`
 
-決定済みtaskをtest-firstで実装するworkerである。
-
-- `initial implementation`と`review follow-up`を扱う
-- code、test、validation evidenceを所有する
-- `authorized_actions`と`write_boundary`内だけを変更する
-- narrative reportを作成しない
-- 独立review判定を行わない
-- mergeしない
+- 初回実装とreview follow-upを扱う
+- 対象projectのProject Instructionに定義されたtesting policyへ従う
+- 対象projectがTDDを要求しない場合、TDDを持ち込まない
+- implementation reportとhandoffを別成果物として作成する
+- PRを作成または更新し、簡易PR commentを投稿する
+- review verdictを出さず、mergeしない
 
 ### `chat-review-worker`
 
-指定HEADを直接reviewするworkerである。
-
-- `initial review`
-- `fix verification`
-- `cold final review`
-- riskに応じたcoverage選択
-- `pass`、`pass_with_held`、`fail`、`incomplete`、`unstable`の判定
+- initial review、fix verification、cold final reviewを区別する
+- current PR HEAD、linked Issue、changed files、過去report、handoff、review comment、HEAD固有CIを自己解決する
 - product codeとtestを変更しない
-- 許可されたreview reportまたはPR commentだけを配置する
-- mergeしない
+- review reportとhandoffを別成果物として作成する
+- 簡易PR commentを投稿し、mergeしない
 
 ### `chat-report-writer`
 
-確定済みhandoffをMarkdown reportまたは簡易PR commentへ変換するworkerである。
+- PRまたはIssueからsource reportとhandoffを自己解決する
+- implementation、review、verification、統合reportを扱う
+- technical finding、test結果、CI結論を発明しない
+- code/testを変更しない
+- 指定report、handoff、簡易PR commentを出力し、mergeしない
 
-- implementation、review、verification reportを扱う
-- 入力にないfinding、severity、test結果、CI結論を作らない
-- codeまたはtestを変更しない
-- `authorized_actions`に従ってreportとPR commentだけを配置する
-- mergeしない
+### Shared handoff contract
 
-## 切り出さなかったSkill
+`skills/chat-worker-shared/references/handoff-contract.md`を3 worker共通のsource of truthとした。
 
-### Chat orchestrator
+主な規則は次のとおりである。
 
-利用者が親としてchatを起動し、順序、停止、scope変更、mergeを管理するため追加しなかった。
+- handoffはchat間の状態移送用であり、詳細reportの代替ではない
+- repositoryへ保存できる場合は`reports/handoffs/`へ保存する
+- PRまたはIssueから一意に特定できるpacketは、次workerがconnectorで自己解決する
+- 利用者へpathまたはpacket本文を求めるのは、複数候補、repository外、またはrepository discovery不可の場合だけとする
+- 前workerの権限を次chatへ自動継承しない
+- testing orderとdevelopment methodは対象projectのProject Instructionから取得し、worker側からTDDを強制しない
+- implementation workerとreview workerも、それぞれ必須reportを作成して`report` fieldへ記録する
 
-### Delegation manager
+## Project Instruction例
 
-workerは別workerへ委譲せず、受け取った作業を直接実行するため追加しなかった。
+`design/chat-worker-skill-design.md`へ、RevMemでそのまま設定できるProject Instruction例を追加した。
 
-### Verification worker
+含めた固定情報と運用規則は次のとおりである。
 
-初期構成では、implementation validationを`chat-implementation-worker`、review evidence確認を`chat-review-worker`が担当する。独立verificationが反復して必要になった場合だけ後続Issueで検討する。
+- 対象repository: `https://github.com/ssaattww/RevMem`
+- task list: `tasks/tasks-status.md`
+- Codex用Skill参照先: `https://github.com/ssaattww/CodexSkill`
+- repository、Issue、PR、PR commentの操作にGitHub connectorを使用する
+- RevMemのtest failure時に、テスト結果、標準出力、標準エラー、原因調査ログをartifactへ保存するworkflowを確認し、存在しなければ追加する
+- RevMem実装ではTDDを基本とする
+- 変更をレビュー可能な小さな論理単位でcommit/pushする
+- 詳細reportとは別に簡易reportをPR commentへ投稿する
+- PR作成または更新まで行い、mergeは利用者が行う
+- current PR HEAD SHAと一致するworkflow runだけをCI確認へ使用する
+- 一致するrunがない場合はCI未実施として扱い、別SHAのrunを代用しない
 
-### Task planner、design worker、Git workflow manager
+RevMem向けTDDと診断artifact workflowの方針はRevMemの実装にのみ適用し、参照先のCodexSkill repositoryには適用しないことを明記した。
 
-利用者がscopeとauthoritative requirementsを決定し、全体Git flowを管理する前提であるため、今回の必須workerには含めなかった。
+## CodexSkill repositoryの非TDD方針
 
-## Shared handoff contract
+利用者指示に従い、CodexSkill repository自身にはTDDを適用していない。
 
-`skills/chat-worker-shared/references/handoff-contract.md`を3 Skill共通の唯一のcontractとして追加した。
-
-主なfieldは次のとおり。
-
-- task、Issue、PR identifier
-- repository、branch、base ref、HEAD SHA
-- `authorized_actions`
-- `write_boundary`
-- scope、non-goals、authoritative requirements
-- changedまたはinspected files
-- commands、tests、CI、artifacts
-- implementation outcome
-- review mode、coverage、verdict
-- report type、source packets、path、PR comment、outcome
-- findings、held、unexplored、remaining risks
-- unknown、not applicable
-- next action、next chat input
-
-値を確認できない場合は推測せず`unknown`、非該当の場合は理由付き`not_applicable`を使用する。
+- Red/Greenを作る目的のtestを先行追加していない
+- この変更専用のcontract testを最終差分へ含めていない
+- TDD用の専用workflowを最終差分へ含めていない
+- 旧TDD方針を前提としたhandoff 2件、改訂実装report 5件、改訂review report 1件を最終差分から削除した
+- Issue #51の実装方針と完了条件も、CodexSkill非TDD方針へ更新した
+- 有効な自動検証がないため、設計書、3 Skill、handoff contract、Issue、PR説明の整合性reviewを検証方法とする
 
 ## 設計書
 
-ChatGPT向け構成は既存Codex向けhierarchyへ混在させず、次の2ファイルを正本としてbyte-identicalに管理する。
+日本語設計書の正本は次の1ファイルへ集約した。
 
 - `design/chat-worker-skill-design.md`
-- `skills/design/chat-worker-skill-design.md`
 
-既存の次のファイルは変更していない。
+削除済みの重複設計書を同期対象とする旧記述も除去した。
 
-- `design/skill-hierarchy-design.md`
-- `skills/design/skill-hierarchy-design.md`
-- `skills/development-orchestrator/SKILL.md`
-- `skills/sub-agent-task-manager/SKILL.md`
-- `skills/codex-delegation-executor/SKILL.md`
-- `skills/implementation-executor/SKILL.md`
-- `skills/review-enforcer/SKILL.md`
-- `skills/report-output-manager/SKILL.md`
+## 最終差分の構成
 
-## TDD証跡
+Report対象HEAD時点のPR changed filesは7件である。
 
-### 初回Red
-
-- Test commit: `f344d2a77ca72ed5936093510547a4c81a2d0b98`
-- Workflow追加後HEAD: `f5b2107dfdce2e9c66944f1bf5d313c0ea9e341d`
-- Workflow Run: `30185865727`
-- Result: failure
-- Failure reason: 3つのworker Skill、shared handoff contract、設計書が未作成
-- Diagnostic artifact:
-  - ID: `8626998950`
-  - Name: `chat-worker-skill-contract-diagnostics-30185865727-1`
-
-### 初回Green
-
-- HEAD: `1a189b243fe215eaa0ddc3259a4c6ec599464ba1`
-- Workflow Run: `30186081623`
-- Result: success
-
-初回Green後のreviewで、次の契約不足を確認した。
-
-- PR eventでmerge refをcheckoutしており、branch HEADそのものを検証していなかった
-- workflowのpath filterとfailure artifactが旧design fileを参照していた
-- implementation workerがnarrative reportを兼務できる表現で、実装専任という分離が不十分だった
-- handoffにworkerの許可操作とwrite boundaryがなかった
-- report writerの出力を表す構造化fieldがなかった
-
-### Review強化Red
-
-上記責務境界をcontract testへ先行追加した。
-
-- Test commit: `32e55938644acf7530cdfd4365ed7e2a9d6695e0`
-- Workflow Run: `30186176348`
-- Result: failure
-- Failure reason:
-  - implementation workerに`narrative reportを作成しない`契約が未反映
-  - shared handoffに`authorized_actions`、`write_boundary`、`report`等が未反映
-- Diagnostic artifact:
-  - ID: `8627103321`
-  - Name: `chat-worker-skill-contract-diagnostics-30186176348-1`
-
-### Review強化Green
-
-次を修正した。
-
-- implementation workerを実装、test、validation evidence、handoffだけへ限定
-- review workerのreportとPR commentを明示許可制に変更
-- report writerへsource packet、path、comment、outcomeを持つ`report` fieldを追加
-- 3 workerへ`authorized_actions`と`write_boundary`を追加
-- workflowでPRのbranch HEAD SHAをcheckoutし、actual SHAとの一致を検査
-- failure artifactへ対象Skill、ChatGPT向け設計、HEAD情報を保存
-- Issue #51 report commitもworkflow対象に追加
-
-実装確認HEAD:
-
-- HEAD: `b626eab469bd46e5350991b69c5790c41e9b4edc`
-- Workflow Run: `30186397394`
-- Result: success
-- Job: `contract` success
-
-このreport追加後の最終HEADに紐づくRunは、PR本文またはPR commentへ別途記録する。
-
-## 変更ファイル
-
-- `.github/workflows/chat-worker-skill-contract.yml`
 - `design/chat-worker-skill-design.md`
+- `reports/issue-51-chat-worker-skills-implementation-20260726123510.md`
+- `reports/issue-51-chat-worker-skills-review-20260726124000.md`
 - `skills/chat-implementation-worker/SKILL.md`
 - `skills/chat-report-writer/SKILL.md`
 - `skills/chat-review-worker/SKILL.md`
 - `skills/chat-worker-shared/references/handoff-contract.md`
-- `skills/design/chat-worker-skill-design.md`
-- `tests/test_chat_worker_skills_contract.py`
 
-## CI failure diagnostics
+既存Codex向けorchestrator、delegation、sub-agent Skillは変更していない。
 
-workflow failure時は次をartifactへ保存する。
+## 検証
 
-- test stdout
-- test stderr
-- runner、Python、Git、event、ref、target HEAD、actual HEAD
-- contract test source
-- 3 worker Skillとshared contract
-- 2つのChatGPT向け設計書
-- Issue #51 report
-- `git diff --check`
-- `git status`
-- HEAD commit summary
+GitHub connectorでIssue、PR metadata、changed files、設計書、3 Skill、handoff contractを取得し、次を確認した。
 
-## Scope保護
+- 3 workerが別workerを起動しない
+- 3 workerが各自の必須reportとhandoffを分離して出力する
+- implementation workerが対象projectのtesting policyへ従い、TDDを強制しない
+- PRまたはIssueから一意に特定できるhandoffはworker自身が取得する
+- RevMem向けTDD方針とCodexSkill非TDD方針が分離されている
+- 設計書が1ファイルを正本としている
+- merge禁止が全workerと設計書で一致している
 
-- 既存Codex向けSkillを変更していない
-- PR #50のbranchまたは変更内容を取り込んでいない
-- Issue #51専用のworker、shared contract、design、test、workflowだけを変更した
-- mergeは実施していない
+Report対象HEAD `8fd4f58456720d8a75fef02c39b67fdf4e315629`について、GitHub connectorが返したworkflow runは0件、commit statusも0件であった。したがってCI successとは判定せず、CIは`not available`として扱う。
 
-## Remaining risks
+CodexSkill用のtestまたはworkflowは追加・実行していない。
 
-- 実際に別々のChatGPT chatへSkill bundleを配置し、handoffだけで一連の実装、review、reportを完走するoperational trialは未実施である
-- handoffはMarkdown上のcontractであり、JSON Schemaによる型検証は今回のscope外である
-- 独立verification worker、task planner、design workerの必要性は実運用で反復が確認された場合に後続Issueで判断する
+## 未実施
 
-## 結果
+- 本report更新後のcurrent PR HEADを対象とする独立review
+- 実際の複数ChatGPT chatを用いたend-to-end operational trial
 
-Issue #51で定義した3つのstandalone worker、shared handoff contract、専用設計、contract test、failure diagnostics workflowを実装した。
+## マージ
+
+マージは実施しない。
