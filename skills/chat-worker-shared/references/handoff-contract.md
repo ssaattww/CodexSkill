@@ -4,7 +4,7 @@
 
 This contract defines the payload exchanged between independent ChatGPT chats when the user acts as the parent and starts each worker chat manually.
 
-A handoff packet is data, not an automatic cross-chat memory mechanism. The packet is not automatically visible to another chat merely because the producing chat printed it. The user must transport it by one of the supported methods below.
+A handoff packet is data, not an automatic cross-chat memory mechanism. Printing a packet in one chat does not make that chat's conversation state visible to another chat. The packet must be persisted in the repository or supplied in full. When a repository-backed packet is uniquely discoverable from the target Issue or PR, the next worker resolves it through the repository connector without requiring the user to repeat its path.
 
 ## Transport model
 
@@ -16,18 +16,19 @@ The repository-backed transport is the canonical durable method when repository 
 - Use a stable name such as `<task-id>-<producer>-<mode>-<head-short>-<timestamp>.md`.
 - Put the canonical YAML packet in a fenced block inside the Markdown file.
 - Record the created path in `handoff_transport.packet_path`.
-- The user passes the repository path or GitHub URL to the next chat.
-- The next chat reads that exact file through the repository connector and must not guess from conversation history.
+- Associate the packet with its task, Issue or PR, producer role, mode, branch, and `head_sha`.
+- The next worker discovers the applicable packet through the target Issue or PR and the repository connector when those fields identify one packet unambiguously.
+- Ask the user for a path or URL only when multiple applicable packets remain, the packet is outside the repository, or repository discovery is unavailable.
 
 A handoff file is structured execution evidence, not a narrative implementation or review report. An implementation worker may therefore write a handoff file without taking ownership of report writing.
 
 ### Copy and paste transport
 
-When `write_handoff` is not authorized, return the complete packet in the final response. The user must copy and paste the packet into the next chat. A summary alone is insufficient.
+When `write_handoff` is not authorized or repository storage is unavailable, return the complete packet in the final response. The user must copy and paste the packet into the next chat. A summary alone is insufficient.
 
 ### Unsupported assumption
 
-Workers must never assume that another chat can discover the previous chat, its final response, or its private conversation state automatically.
+Workers must never assume that another chat can read the previous conversation, its final response, or its private state automatically. Repository discovery applies only to persisted files and authoritative repository data.
 
 ## Core rules
 
@@ -231,12 +232,13 @@ Require source packet identities, newly granted report permissions, report type 
 
 ## User-mediated transfer
 
-1. The user gives a worker the task packet and current permissions.
-2. The worker performs the assigned role and creates a complete handoff packet.
-3. If `write_handoff` is authorized, the worker stores it under `reports/handoffs/`; otherwise it returns the complete packet for copy and paste.
-4. The user reviews `head_sha`, scope, findings, unknowns, and requested next permissions.
-5. The user starts the next chat and supplies the packet path or pastes the packet.
-6. The next chat reads only the supplied packet and authoritative repository sources; it does not infer the previous conversation.
+1. The user starts a worker with the target Issue or PR and the current permissions.
+2. The worker resolves authoritative repository state and any uniquely applicable persisted packet.
+3. The worker performs the assigned role and creates a complete handoff packet.
+4. If `write_handoff` is authorized, the worker stores the packet under `reports/handoffs/`; otherwise it returns the complete packet for copy and paste.
+5. The user reviews `head_sha`, scope, findings, unknowns, and requested next permissions, then starts the next chat.
+6. The next worker resolves the stored packet from the Issue or PR when unambiguous. The user supplies a path, URL, or packet body only when discovery cannot select one packet safely.
+7. The next worker uses the packet and authoritative repository sources; it does not infer the previous conversation.
 
 ## Incomplete packets
 
