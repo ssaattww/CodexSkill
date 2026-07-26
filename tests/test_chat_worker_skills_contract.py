@@ -99,6 +99,8 @@ HANDOFF_REQUIRED_MARKERS = (
 
 DESIGN_WORKFLOW_MARKERS = (
     "## 利用者向け実行例",
+    "## Project Instructionへ置く固定情報",
+    "## Chat promptに書く情報",
     "Chat A: 初回実装",
     "Chat B: 初回レビュー",
     "Chat Aを継続: レビュー対応",
@@ -108,6 +110,7 @@ DESIGN_WORKFLOW_MARKERS = (
     "既存chatへ送るprompt",
     "handoff path",
     "全workerは成果物としてレポートを出力する",
+    "プロジェクトInstructionを再掲しない",
 )
 
 
