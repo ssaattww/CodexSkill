@@ -23,6 +23,14 @@ When a repository-backed packet is uniquely discoverable from the target Issue o
 - Testing order and development method come from the target project's instructions.
 - A handoff does not replace the worker's detailed report.
 
+## Compatibility
+
+- Writers emit `schema_version: 2`.
+- Readers must continue to accept `schema_version: 1` packets produced by the previous three-Skill bundle.
+- When reading version 1, normalize `review.review_mode: cold_final_review` to `independent_final_review` before applying the current review contract.
+- Preserve the original schema version in source metadata when a version 1 packet contributes to a report or consolidated handoff.
+- An unsupported future schema version is `unknown`; do not guess field semantics. Mark the consuming operation blocked or incomplete and identify the required migration.
+
 ## Required identity
 
 ```yaml
