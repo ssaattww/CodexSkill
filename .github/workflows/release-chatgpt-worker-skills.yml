@@ -39,6 +39,7 @@ jobs:
       - name: Checkout target HEAD without write credentials
         uses: actions/checkout@v4
         with:
+          # pull_request github.sha is a synthetic merge ref; validate the actual PR HEAD.
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
