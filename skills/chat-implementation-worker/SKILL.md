@@ -1,6 +1,6 @@
 ---
 name: chat-implementation-worker
-description: Execute a bounded initial implementation or review follow-up directly in one ChatGPT chat when the user coordinates the workflow as the parent. Use for test-first code and test changes without review ownership or nested worker dispatch.
+description: Execute a bounded initial implementation or review follow-up directly in one ChatGPT chat when the user coordinates the workflow as the parent. Use for test-first code and test changes without review ownership, narrative report ownership, or nested worker dispatch.
 ---
 
 # Chat Implementation Worker
@@ -14,8 +14,8 @@ description: Execute a bounded initial implementation or review follow-up direct
 - 利用者が親として、対象repository、task packet、作業順序、次に起動するchatを管理する。
 - このchatはimplementation workerとして直接作業し、別workerを起動しない。
 - 前のchat履歴を前提にせず、task packetとrepository内のauthoritativeな情報だけを使用する。
-- Markdown reportの作成を利用者から明示的に割り当てられていない場合、narrative reportではなく構造化handoffを返す。
-- report専用chatへ渡す場合は、[shared handoff contract](../chat-worker-shared/references/handoff-contract.md)に従う。
+- このworkerはnarrative reportを作成しない。実装事実は構造化handoffへ記録し、report作成は利用者がreport専用chatへ割り当てる。
+- report専用chatへ渡す結果は、[shared handoff contract](../chat-worker-shared/references/handoff-contract.md)に従う。
 
 ## Inputs
 
@@ -31,7 +31,7 @@ description: Execute a bounded initial implementation or review follow-up direct
 - test-firstで証明するbehavior
 - focused validationとfull validationの期待値
 - `review follow-up`では前回finding、対象commit、要求される回帰test
-- commit、push、PR更新、report配置のうち、このchatへ許可された操作
+- commit、push、PR更新のうち、このchatへ許可された操作
 
 安全に実装するための必須情報が不足している場合は推測せず、handoffの`unknown`へ不足内容を記録して停止する。
 
@@ -71,7 +71,8 @@ description: Execute a bounded initial implementation or review follow-up direct
 
 - 実行可能なbehavior変更では、原則としてtest-firstにする。
 - 既存testがすでに正確に失敗条件を固定している場合は、その証拠をRedとして使用してよい。
-- documentation-only、単純なreport配置、実行不能なexternal状態などでtest-firstが不適切な場合は、`not_applicable`へ具体的な理由を記録する。
+- documentation-onlyまたは実行不能なexternal状態でtest-firstが不適切な場合は、`not_applicable`へ具体的な理由を記録する。
+- report-only作業はこのSkillの対象外とし、report専用chatへ戻す。
 - testを実装へ合わせて弱めない。
 - successやthrowだけでなく、必要な値、状態、identity、side effectを具体的にassertする。
 - fixtureが実protocol、parser、API、toolで成立する入力か確認する。
@@ -82,17 +83,18 @@ description: Execute a bounded initial implementation or review follow-up direct
 - 他task、他PR、他workerの所有範囲を勝手に変更しない。
 - unrelated fileをrevertしない。
 - repositoryの現在状態とtask packetが矛盾する場合は、authoritative sourceを列挙して利用者判断へ戻す。
-- secret、credential、private tokenをreportやhandoffへ含めない。
+- secret、credential、private tokenをhandoffへ含めない。
 - 自分の実装を独立review済みとは扱わず、最終review判定を行わない。
 - PRまたはbranchを更新してもmergeしない。
 
 ## Report boundary
 
-このSkillの主責務は実装である。
+このSkillの責務は実装とvalidation evidenceの収集に限定する。
 
 - 実装結果の事実、commands、tests、files、commit、riskをhandoffへ記録する。
-- narrativeなimplementation reportが必要な場合は、利用者がこのchatへ明示的に割り当てるか、handoffを`chat-report-writer`へ渡す。
-- review finding、review verdict、merge可否をreportへ追加しない。
+- narrative reportを作成しない。
+- 利用者は完成したhandoffを`chat-report-writer`へ渡す。
+- review finding、review verdict、merge可否をhandoffへ追加しない。
 
 ## Outputs
 
@@ -116,5 +118,6 @@ description: Execute a bounded initial implementation or review follow-up direct
 - focused validationと必要なfull validationの結果が記録されている
 - failureが残る場合は原因、影響、artifact、次actionが明示されている
 - changed files、commit、最終HEAD SHA、remaining risksが記録されている
+- narrative reportを作成しない
 - 最終review判定を行わないまま、利用者が次のchatへ渡せるhandoffが完成している
 - mergeしない
