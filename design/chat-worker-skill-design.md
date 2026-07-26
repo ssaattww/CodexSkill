@@ -4,28 +4,27 @@
 
 この設計書は、利用者が親として複数のChatGPT chatを起動し、各chatへ独立したworker Skillを割り当てる構成を定義する。
 
-ChatGPTの通常chatでは、あるchatが別chatをsub-agentとして自動起動することを前提にできない。そのため、利用者がchatの起動順序、handoff、scope、権限、merge判断を管理する。
+ChatGPT chat同士は自動的にsub-agentとして連携しないため、利用者がchatの起動順序だけを管理する。一方、repository、Issue、PR、HEAD、report、handoff、CIなど、connectorで取得できる情報はworker自身が解決し、利用者へ入力を要求しない。
 
 ## 言語方針
 
-- `SKILL.md`は原則として英語で記述する。
-- Skillが直接参照する実行contractも英語で記述する。
-- 日本人利用者向けの設計書は日本語で記述する。
-- 実行規則はSkill、構成理由と運用例は設計書へ置く。
+- `SKILL.md`と実行contractは英語で記述する。
+- 日本人利用者向け設計書は日本語で記述する。
+- 実行規則はSkill、構成理由と利用例は設計書へ置く。
 
 ## 設計上の前提
 
 ### 利用者が親となるChatGPT chat worker flow
 
-- 利用者がrepository、branch、task順序、次chat、scope変更、mergeを決める。
-- 各chatは1つのworker roleだけを担当する。
+- 利用者はtask選択、chatの新規作成・継続、scope変更、merge判断を行う。
 - workerは別workerを起動しない。
-- 各workerは前chatの会話履歴を参照できるとは仮定しない。
-- handoff packetは利用者が次chatへ明示的に渡す。
+- workerはconnectorとrepositoryから取得できる情報を自分で探す。
+- 各workerは成果物としてreportとhandoffを出力する。
+- handoffは別chatへ自動共有されないが、PRやIssueから一意に辿れる場合は利用者がpathを指定する必要はない。
 
 ### 既存Codex向けskill hierarchyとは分離
 
-既存のCodex向けhierarchyは親agentがsub-agentを起動する。ChatGPT chat worker flowでは利用者が親であるため、Codex向けorchestratorやdelegation managerを流用しない。
+既存Codex向けhierarchyは親agentがsub-agentを起動する。ChatGPT chat worker flowでは利用者が親であるため、Codex向けorchestratorやdelegation managerを流用しない。
 
 本設計書と`skills/design/chat-worker-skill-design.md`はbyte-identicalに管理する。
 
@@ -33,11 +32,9 @@ ChatGPTの通常chatでは、あるchatが別chatをsub-agentとして自動起�
 
 | Skill | 責務 | 必須成果物 | 禁止事項 |
 | --- | --- | --- | --- |
-| `chat-implementation-worker` | test-first実装、review follow-up、validation | implementation report、handoff packet | 独立review判定、scope拡張、merge |
-| `chat-review-worker` | initial review、fix verification、cold final review | review report、handoff packet、簡易PR comment | product code/test修正、finding対応実装、merge |
-| `chat-report-writer` | 複数handoffの統合、再整形、最終report作成 | report、handoff packet、簡易PR comment | technical findingの発明、code/test修正、merge |
-
-3 Skillは`skills/chat-worker-shared/references/handoff-contract.md`を共通contractとして使用する。
+| `chat-implementation-worker` | 初回実装、review follow-up、validation | implementation report、handoff packet、PR簡易コメント | 独立review判定、scope拡張、merge |
+| `chat-review-worker` | initial review、fix verification、cold final review | review report、handoff packet、PR簡易コメント | product code/test修正、finding対応実装、merge |
+| `chat-report-writer` | report統合、再整形、最終report作成 | report、handoff packet、PR簡易コメント | technical findingの発明、code/test修正、merge |
 
 ## 全workerの成果物要件
 
@@ -46,59 +43,65 @@ ChatGPTの通常chatでは、あるchatが別chatをsub-agentとして自動起�
 - implementation workerはimplementation reportを出力する。
 - review workerはreview reportを出力する。
 - report writerは指定されたreportを出力する。
-- handoff packetはchat間移送用であり、レポートの代替ではない。
-- repositoryへwriteできる場合は`reports/`へ保存する。
+- handoff packetはchat間の状態移送用であり、reportの代替ではない。
+- repositoryへwriteできる場合はreportを`reports/`、handoffを`reports/handoffs/`へ保存する。
 - writeできない場合は完成したMarkdown本文を返す。
-- 失敗またはblockedの場合も、原因、未確認事項、次actionを含むreportを出力する。
-
-## Handoff packetの意味
-
-handoff packetはchat間で渡すpayloadであり、自動共有memoryではない。
-
-前chatがpacketを出力しただけでは、別chatから自動的には参照できない。利用者は次のいずれかで渡す。
-
-1. `reports/handoffs/`へ保存し、pathまたはGitHub URLを次chatへ渡す
-2. packet全文をcopy and pasteする
-
-要約だけはhandoffとして扱わない。
+- failure、blocked、incompleteの場合もreportを省略しない。
 
 ## Project Instructionへ置く固定情報
 
-次のような全task共通の方針はプロジェクトInstructionへ置く。
+全taskで共通する情報はProject Instructionへ置き、各chat promptでは再掲しない。
 
-- repository URL
-- task一覧や設計書の配置場所
-- GitHub connectorを使うこと
-- TDDを基本とすること
-- test failure時に診断artifactを保存すること
-- 小さくcommit/pushすること
-- reportを`reports/`へ保存すること
-- handoffを`reports/handoffs/`へ保存すること
-- PRへ簡易コメントを残すこと
-- CIは自branchのHEAD SHAに紐づくrunだけを見ること
-- mergeしないこと
-- `SKILL.md`は英語、設計書は日本語とすること
-- scope外変更を行わないこと
+RevMemでは、利用者が提示した次の情報を固定前提とする。
 
-各chat promptでは、プロジェクトInstructionを再掲しない。
+- repository: `https://github.com/ssaattww/RevMem`
+- task list: `tasks/tasks-status.md`
+- reference Skill repository: `https://github.com/ssaattww/CodexSkill`
+- repository accessはconnectorを使用する
+- IssueとPRの作成・更新もconnectorで行う
+- test failure時の診断artifact workflowを作業開始時に確認する
+- Project InstructionでTDDが指定されているため、RevMem実装ではtestを先に作る
+- 小さくcommit/pushする
+- reportとは別にPRへ簡易コメントを残す
+- PR作成・更新まで行い、mergeしない
+- CIは自分のbranch HEAD SHAに紐づくworkflow runだけを見る
+
+これらを毎回のpromptへ書かない。
+
+CodexSkill repository自身のSkill Markdown変更には、TDD用contract testや専用workflowを導入しない。Markdown lintや有効な検証基盤がない状態で形式的なtestを追加しない。Skill変更は設計、差分確認、reviewで検証する。
+
+## Workerが自分で解決する情報
+
+workerはIssue番号またはPR番号から、次を自分で取得する。
+
+- repositoryとProject Instruction
+- task list上の対象task
+- linked Issue、PR、branch、base
+- current PR HEAD SHA
+- changed filesと依存先
+- applicable design
+- applicable implementation/review reports
+- applicable handoff packets
+- review commentsと未解決finding
+- current HEAD SHAに紐づくCI runとartifact
+- report/handoffの保存先と命名規則
+
+選択は単なる更新日時ではなく、task、PR、branch、mode、producer、対象HEAD、commit関係で行う。
+
+PR番号だけで開始できることを標準とする。Issue番号だけで開始できることを標準とする。
+
+利用者へHEAD SHAやhandoff pathを聞くのは、複数候補がありrepository情報だけでは一意に決められない場合だけとする。
 
 ## Chat promptに書く情報
 
-chat promptには、そのchatだけで変化する情報だけを書く。
+通常、利用者が書くのは次の2点だけでよい。
 
-- worker Skill名またはmode
-- IssueまたはPR番号
-- 対象branchまたはHEAD SHA
-- handoff path
-- 今回だけ追加するscope、制約、重点確認点
+- 対象IssueまたはPR
+- 実施する作業またはreview mode
 
-repository URL、TDD、artifact、report、connector、merge禁止など、Project Instructionにある情報は原則として繰り返さない。
+task固有の追加scope、通常方針と異なる制約、重点確認点がある場合だけ追記する。
 
-例外は次の場合だけである。
-
-- 今回だけ通常方針と異なる権限またはscopeを与える
-- Project Instructionとtask固有条件が衝突する
-- 対象HEAD SHAやhandoff pathなど、今回固有の識別子が必要
+プロジェクトInstructionを再掲しない。repository URL、branch、HEAD、handoff path、report path、connector、TDD、artifact、CI方針、merge禁止はworkerが自分で解決する。
 
 ## 標準flow
 
@@ -109,193 +112,148 @@ repository URL、TDD、artifact、report、connector、merge禁止など、Proje
 ├─ Chat A: review follow-up [継続]
 ├─ Chat C: fix verification [新規、またはChat B継続]
 ├─ Chat D: cold final review [必ず新規]
-└─ Report chat [必要時のみ新規]
+└─ Report chat [統合reportが必要な場合のみ]
 ```
 
 ## 利用者向け実行例
 
-### Chatの使い分け
-
-| Chat | 用途 | 新規・継続 |
-| --- | --- | --- |
-| Chat A | 初回実装とレビュー対応 | 初回実装時に新規作成し、レビュー対応でも継続 |
-| Chat B | 初回レビュー | 新規作成 |
-| Chat C | 修正確認 | 原則新規作成。Chat B継続も許容 |
-| Chat D | 独立最終レビュー | 必ず新規作成 |
-| Report chat | 複数handoff統合または再整形 | 必要な場合だけ新規作成 |
-
-### 1. Chat A: 初回実装
+### Chat A: 初回実装
 
 新規chatへ送るprompt:
 
 ```text
-chat-implementation-workerとしてIssue #<issue-number>を実装してください。
-Branch: <working-branch>
-Mode: initial implementation
+Issue #<issue-number>を開始してください。
 ```
 
-必要な場合だけ追記する。
+task一覧から開始する場合:
 
 ```text
-今回の追加scope: <task固有scope>
-今回だけの制約: <task固有constraint>
+T<task-number>を開始してください。
 ```
 
-完了時に確認するもの:
+workerはIssue、task list、branch、open PR、design、現在状態を自分で確認する。利用者はbranch名、HEAD、report path、handoff pathを入力しない。
 
-- implementation report path
-- implementation handoff path
-- PR番号
-- final HEAD SHA
-- HEAD SHAに紐づくCI run
+完了時、workerはimplementation report、handoff、PR、HEAD SHA、CI結果を返す。
 
-### 2. Chat B: 初回レビュー
+### Chat B: 初回レビュー
 
 新規chatへ送るprompt:
 
 ```text
-chat-review-workerとしてPR #<pr-number>のinitial reviewを実施してください。
-Review target HEAD: <implementation-head-sha>
-Implementation handoff: <reports/handoffs/...>
+PR #<pr-number>を初回レビューしてください。
 ```
 
-必要な場合だけ重点項目を追加する。
+workerはcurrent PR HEAD、linked Issue、design、implementation report、handoff、changed files、CIを自分で取得する。
+
+### Chat Aを継続: レビュー対応
+
+初回実装chatへ戻り、次だけ送る。
 
 ```text
-重点確認: <state / parser / identity / atomicity / performance など>
+レビュー結果に対応してください。
 ```
 
-完了時に確認するもの:
+workerは現在のPR、最新の適用可能なreview report、handoff、未解決findingを自分で特定する。
 
-- review report path
-- review handoff path
-- verdict
-- findings
-- unexplored
-
-### 3. Chat Aを継続: レビュー対応
-
-既存chatへ送るprompt:
+別のreview roundを明示する必要がある場合だけ次のように指定する。
 
 ```text
-レビュー結果へ対応してください。
-Mode: review follow-up
-Review handoff: <reports/handoffs/...>
-Review report: <reports/...review...md>
+PR #<pr-number>の<review roundまたはcomment>に対応してください。
 ```
 
-Chat Aは既にProject Instruction、Issue、branch、実装contextを持つため、それらを再掲しない。
-
-完了時に確認するもの:
-
-- review follow-up implementation report path
-- new implementation handoff path
-- new HEAD SHA
-- new HEAD SHAに紐づくCI run
-
-### 4. Chat C: 修正確認
+### Chat C: 修正確認
 
 原則として新規chatへ送るprompt:
 
 ```text
-chat-review-workerとしてPR #<pr-number>のfix verificationを実施してください。
-Previous review handoff: <reports/handoffs/...initial-review...>
-Fix implementation handoff: <reports/handoffs/...review-follow-up...>
-Current fix HEAD: <new-head-sha>
+PR #<pr-number>の修正確認をしてください。
 ```
 
-確認範囲はSkill側で、previous findings、修正diff、直接影響、同種欠陥、regression保持へ限定される。promptで毎回説明しない。
+workerはprevious reviewed HEAD、fix commits、review report、implementation follow-up report、handoffを自分で解決する。
 
-### 5. Chat D: 独立最終レビュー
+Chat Bを継続する場合は次だけでよい。
+
+```text
+修正確認をしてください。
+```
+
+### Chat D: 独立最終レビュー
 
 必ず新規chatへ送るprompt:
 
 ```text
-chat-review-workerとしてPR #<pr-number>のcold final reviewを実施してください。
-Final target HEAD: <final-head-sha>
-Final implementation handoff: <reports/handoffs/...>
-Fix verification handoff: <reports/handoffs/...>
+PR #<pr-number>を独立レビューしてください。
 ```
 
-独立性を守るため、過去review chatは継続しない。
+workerはcurrent PR HEADを対象とし、過去reviewの結論を前提にせず確認する。必要な過去findingとregression evidenceは独立確認後に自分で取得する。
 
-### 6. Report chatを使う場合
+### Report chat
 
-各workerが自分のreportを出力するため、通常は不要である。複数reportの統合、最終report作成、repository固有templateへの再整形が必要な場合だけ使う。
-
-新規chatへ送るprompt:
+各workerがreportを出力するため通常は不要である。統合reportが必要な場合だけ新規chatを作成する。
 
 ```text
-chat-report-writerとしてPR #<pr-number>の最終reportを作成してください。
-Source handoffs:
-- <implementation handoff>
-- <initial review handoff>
-- <fix verification handoff>
-- <cold final review handoff>
+PR #<pr-number>の最終レポートを作成してください。
 ```
+
+report writerはPRからsource reportsとhandoffsを自分で解決する。
+
+## Handoff transport
+
+handoff packetは自動共有memoryではない。
+
+ただし、PR番号から一意に該当handoffを特定できる場合、利用者がpathを転記する必要はない。次chatのworkerがconnectorで探す。
+
+利用者がhandoff pathまたはpacket本文を渡す必要があるのは次の場合だけである。
+
+- repositoryへ保存できなかった
+- 同一PRに同mode・同HEAD候補が複数あり一意に決められない
+- repository外のhandoffを使用する
+- 利用者が特定roundを明示的に選ぶ
 
 ## Worker境界
 
 ### Implementation worker
 
-- code/testをtest-firstで変更する。
-- validationを実施する。
-- implementation reportを必ず作成する。
-- handoff packetを作成する。
+- Project Instructionに従って実装・test・validationを行う。
+- implementation report、handoff、PR簡易コメントを出力する。
 - review verdictは出さない。
 
 ### Review worker
 
 - product code/testを変更しない。
-- review modeに応じたcoverageを実施する。
-- review reportを必ず作成する。
-- PRへ簡易コメントを投稿する。
-- handoff packetを作成する。
+- modeに応じたcoverageを実施する。
+- review report、handoff、PR簡易コメントを出力する。
 
 ### Report writer
 
-- source packetとsource reportを忠実に統合する。
-- 新しいtechnical findingを作らない。
-- code/testを変更しない。
-- 指定reportと簡易PR commentを作成する。
+- source reportsとhandoffsを忠実に統合する。
+-新しいtechnical findingを作らない。
+- report、handoff、PR簡易コメントを出力する。
 
 ## Review lifecycle
 
 1. `initial review`: planned coverageを最後まで確認する。
-2. `fix verification`: previous findingsと修正影響だけを確認する。
-3. `cold final review`: fresh chatで最終HEADを独立確認する。
+2. `fix verification`: previous findingsとfix impactを確認する。
+3. `cold final review`: fresh chatでcurrent PR HEADを独立確認する。
 
 別系統のBlocking/Highが繰り返し見つかる場合は`unstable`とし、設計見直しまたはPR分割へ戻す。
 
-## Failure handling
+## 検証方針
 
-- implementation failureでもimplementation reportを出力する。
-- review incompleteでもreview reportを出力する。
-- report生成blockedでもblocked reportを返す。
-- test failure時は原因調査に必要なartifactを保存する。
-- CIは対象HEAD SHAに紐づくrunだけを使用する。
+CodexSkill内のMarkdown Skill変更に形式的なTDDを持ち込まない。
 
-## Validation contract
-
-CIで次を検証する。
-
-- 3つのworker `SKILL.md`が英語である
-- 2つの設計書が日本語でbyte-identicalである
-- 全workerがreportを必須成果物とする
-- implementation workerがimplementation reportを作成する
-- handoff packetがreportの代替ではない
-- Project Instructionへ固定情報を置く
-- chat promptがtask固有情報だけを含む
-- 新規chatと既存chatの使い分けが明記される
-- review停止条件が定義される
+- 専用contract testを追加しない。
+- 専用workflowを追加しない。
+- Markdown lintが有効化されていない場合、lint成功を検証根拠にしない。
+- 設計書、Skill、handoff contract、利用例の整合性をreviewで確認する。
+- 将来、repository全体でMarkdown lintやSkill schema検証が正式導入された場合は、その既存基盤へ統合する。
 
 ## 完了条件
 
-- 3 worker Skillとshared contractが存在する
-- 全workerが成果物reportを出力する
-- repository-backed transportとcopy/paste transportが定義される
-- 利用者が新規chatと継続chatの使い分けを判断できる
-- prompt例がProject Instructionを重複して再掲しない
-- contract testがGreenである
-- failure diagnostics workflowが存在する
+- 3 worker Skillが独立して利用できる
+- 全workerがreportを必須成果物とする
+- Issue番号またはPR番号だけで通常flowを開始できる
+- workerがHEAD、handoff、report、CIを自分で解決する
+- 利用者promptがtask固有情報だけに限定される
+- CodexSkillへ形式的なTDD workflowを追加しない
 - mergeは利用者が行う
