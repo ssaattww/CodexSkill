@@ -1,0 +1,67 @@
+name: Review skill validation
+
+on:
+  push:
+    paths:
+      - ".github/workflows/review-skill-validation.yml"
+      - "skills/review-enforcer/**"
+      - "tests/test_review_enforcer_contract.py"
+      - "reports/review-coverage-analysis-revmem-pr15-pr24-pr25-20260726.md"
+  pull_request:
+    paths:
+      - ".github/workflows/review-skill-validation.yml"
+      - "skills/review-enforcer/**"
+      - "tests/test_review_enforcer_contract.py"
+      - "reports/review-coverage-analysis-revmem-pr15-pr24-pr25-20260726.md"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-review-skill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Capture environment
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          git rev-parse HEAD > artifacts/head-sha.txt
+          git status --short > artifacts/git-status.txt
+          python --version > artifacts/python-version.txt 2>&1
+
+      - name: Validate review skill contract
+        shell: bash
+        run: |
+          if [[ ! -f tests/test_review_enforcer_contract.py ]]; then
+            echo "contract test not added yet" > artifacts/test.stdout.txt
+            : > artifacts/test.stderr.txt
+            exit 0
+          fi
+
+          set +e
+          python tests/test_review_enforcer_contract.py \
+            > artifacts/test.stdout.txt \
+            2> artifacts/test.stderr.txt
+          status=$?
+          set -e
+          cat artifacts/test.stdout.txt
+          cat artifacts/test.stderr.txt >&2
+          exit "$status"
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-skill-failure-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          path: |
+            artifacts/
+            skills/review-enforcer/
+            tests/test_review_enforcer_contract.py
+            reports/review-coverage-analysis-revmem-pr15-pr24-pr25-20260726.md
