@@ -1,6 +1,6 @@
 ---
 name: sub-agent-task-manager
-description: Create and dispatch bounded sub-agent tasks with explicit scope, ownership, and mandatory report output. Use whenever investigation, implementation, review, verification, or evidence work is handed to a sub-agent.
+description: Create and dispatch bounded sub-agent tasks with explicit scope, ownership, execution profile, and one declared evidence mode. Use whenever investigation, implementation, review, verification, or evidence work is handed to a sub-agent. Supports artifact-backed tasks and structured-result review tasks without forcing reviewers to edit report files.
 ---
 
 # Sub-Agent Task Manager
@@ -9,53 +9,68 @@ Standardize how work is handed to a sub-agent.
 
 ## Goal
 
-Make every sub-agent task bounded, auditable, and report-backed.
+Make every sub-agent task bounded, auditable, and explicit about whether its primary output is a structured result or a repository artifact.
 
 ## Execution owner
 
 Run this skill as: `parent`
 
-- This skill prepares and dispatches sub-agent work; it is not itself a sub-agent worker skill.
+- This skill prepares and dispatches sub-agent work.
+- It is not itself a worker skill.
 
 ## Inputs
 
-Before running this skill, identify:
+Before dispatch, identify:
 
-- delegated task purpose
+- delegated task purpose and type
 - exact scope and non-goals
-- relevant skill files the `sub-agent` must read
-- whether the `sub-agent` should inspect the repository directly beyond the parent-prepared diff or summary
+- relevant worker skill files
+- repository context the worker may inspect directly
 - write boundaries and validation expectations
-- dispatch model, reasoning effort, and fork policy
-- confirmation source for an implementation `sub-agent` model when implementation work is delegated
+- caller-selected model, reasoning effort, and fork policy
+- confirmation source for an implementation model
+- evidence mode
+- required final output contract
 
-## Run this skill
+## Evidence modes
 
-Run this skill whenever:
+Choose exactly one mode before dispatch.
 
-- a skill requires sub-agent execution
-- `codex-delegation-executor` chooses a `sub-agent`
-- independent review or verification is required
-- a bounded implementation or investigation task is handed off
+### `artifact_backed`
+
+Use when the worker is expected to create or update a repository report or another owned artifact as its primary evidence.
+
+- Call `report-output-manager` before dispatch when a fixed report path is required.
+- A pre-created generic report template may be used.
+- The worker may edit only its explicitly owned artifact fields.
+
+### `structured_result`
+
+Use when the worker must return a machine-readable result that another skill will render or persist.
+
+- Do not require a report path before dispatch.
+- Do not require the worker to edit a Markdown file.
+- Require the exact result contract and fixed values in the prompt.
+- The parent validates the result before any renderer or artifact adapter is called.
+- Review work dispatched by `review-enforcer` must use this mode and return `ReviewResult` from `review-core`.
+
+The mode is part of the dispatch contract. Do not mix both as co-primary outputs.
 
 ## Required flow
 
-1. define the exact task type and why a `sub-agent` is being used
-2. define the scope, non-goals, and expected outputs
-3. receive the caller-selected dispatch model, reasoning effort, and fork policy before drafting the request; for implementation work, require the `development-orchestrator` user-confirmed model
-4. when selecting or applying a model or reasoning override, read [references/spawn-agent-model-overrides.md](references/spawn-agent-model-overrides.md)
-5. identify which skill files the `sub-agent` must read
-6. define write ownership and file boundaries when edits are allowed
-7. call `report-output-manager` and decide the report path before dispatch
-8. create the report file before dispatch using the standard template
-9. tell the `sub-agent` to read the specified skill files before executing
-10. tell the `sub-agent` to read that exact report file first and fill only the intended blank sections or placeholder values
-11. require commands run, changed files, outcome, and unresolved risks in the report
-12. do not treat the delegated task as complete until the report exists and has been reviewed
-
-Read the template from `report-output-manager` when creating the file:
-
-- [../report-output-manager/references/sub-agent-report-template.md](../report-output-manager/references/sub-agent-report-template.md)
+1. Define the exact task type and why a sub-agent is used.
+2. Define scope, non-goals, accessible context, and write boundaries.
+3. Select `artifact_backed` or `structured_result`.
+4. Receive model, reasoning effort, and fork policy from the caller.
+5. When an override is used, read [references/spawn-agent-model-overrides.md](references/spawn-agent-model-overrides.md).
+6. Identify the worker skills and references that must be read.
+7. Define the exact final output shape.
+8. For `artifact_backed`, determine and create the owned artifact before dispatch when required.
+9. For `structured_result`, include the schema, enums, invariants, and validation owner; do not create a presentation artifact first.
+10. Dispatch the worker with the selected execution profile in actual spawn arguments.
+11. Keep waiting or re-polling until the task completes unless the user explicitly stops it.
+12. Validate the returned artifact or structured result according to the selected mode.
+13. Return the validated worker output to the caller.
 
 ## Required prompt content
 
@@ -64,121 +79,97 @@ Every sub-agent request must include:
 - task purpose
 - exact scope
 - explicit non-goals
-- explicit instruction not to run `codex exec`, nested Codex, or equivalent agent-spawning inside the sub-agent task
-- explicit instruction not to re-enter `development-orchestrator` or any other parent-owned workflow unless the parent explicitly named that workflow as part of the delegated task
-- the selected model and reasoning effort only as tool-call parameters, never as a prompt-only request
-- an explicit fork policy; a fresh override spawn must set `fork_turns: "none"`
-- skill names and file paths that must be read first
-- validation commands or evidence expectations
-- report path
-- instruction to read the pre-created report file first and preserve its heading order, spacing, and existing filled text
-- instruction to fill only blank sections or placeholder values instead of rewriting the full report
+- instruction not to run nested Codex, `codex exec`, or another agent-spawning workflow
+- instruction not to re-enter `development-orchestrator` or another parent workflow unless explicitly delegated
+- worker skill paths to read first
+- available repository context and whether direct inspection is required
+- validation expectations
+- selected evidence mode
 - required final output shape
+- model and reasoning only through spawn arguments, not as prompt-only text
+- explicit fork policy
 
-For review tasks also include:
+For `artifact_backed`, also include:
 
-- the reviewer profile selected by `review-enforcer`: the parent agent's current model and `high` reasoning effort unless the user overrides the effort; apply it through actual spawn arguments rather than prompt text
-- explicit instruction to perform a code review using the built-in review behavior
-- instruction to return findings first, ordered by severity
-- instruction to include file/line references when available
-- instruction to say explicitly when no findings were found
-- instruction to treat the report template as immutable structure and fill only blank sections or placeholder values
-- instruction to distinguish blocking normal-path problems, user-confirmation-required capability gaps, and non-blocking concerns that should only be recorded and held
-- instruction to inspect the relevant workspace directly when surrounding code context is needed, instead of relying only on a parent-prepared diff summary
-- explicit permission and requirement to write those findings into the pre-created report file without changing the report format
+- artifact path
+- owned editable sections or file boundaries
+- instruction to preserve non-owned content
 
-For investigation tasks also include:
+For `structured_result`, also include:
 
-- instruction to inspect the relevant workspace directly when the answer depends on surrounding code or configuration context
-- instruction not to stop at the parent-prepared excerpt when additional repository files are needed to confirm the result
-- instruction to record the checked files and concrete evidence in the report
+- contract path and version
+- fixed enum values
+- required fields and invariants
+- instruction to return the result to the caller instead of writing a presentation file
 
-For coding tasks also include:
+## Review dispatch
 
-- owned files or modules
-- instruction not to revert unrelated changes
-- instruction to list changed files in the final response
+When `review-enforcer` dispatches review work:
 
-When a relevant skill exists, do not paraphrase it loosely as the only guidance. Tell the `sub-agent` to read the actual `SKILL.md` path and then restate only the most critical task-local constraints.
+- use `structured_result`
+- require the worker to read:
+  - `skills/review-core/SKILL.md`
+  - `skills/review-core/references/review-contract.md`
+  - `skills/review-policy/references/code-review-criteria.md`
+- apply the reviewer profile selected by `review-enforcer`
+- use the parent model and `high` reasoning unless the user overrides reasoning
+- initial and fix verification use the same reviewer when available
+- cold final uses `fork_turns: "none"` or another verified fresh-no-history context
+- require findings first and severity order
+- require file or contract locations when available
+- require explicit no-findings output when applicable
+- require one valid `ReviewResult`
+- do not give the reviewer a report template
+- do not ask the reviewer to choose a report path, write a report file, post a PR comment, or alter product code
 
-## Report rules
+## Implementation, investigation, and verification dispatch
 
-- Every sub-agent task must produce a file under `reports/`.
-- The parent agent should create the report file before dispatch whenever feasible.
-- The report must be created before the parent workflow treats the task as complete.
-- The parent agent should pre-populate the standard headings and placeholders so the `sub-agent` edits a fixed structure instead of rewriting the document.
-- If the `sub-agent` cannot write the report directly, the parent agent must write it immediately from the returned evidence.
-- Do not ask a sub-agent for ad hoc investigation, review, or implementation without a report path.
-- For review tasks, the built-in review result must be materialized into the report file before the task is considered complete.
-- For review tasks, direct report editing by the reviewer is the default path; parent-side transcription is fallback only when direct editing is not possible.
-- For review tasks, a concern that does not break the intended normal path yet should still be written to the report, but may be held instead of blocking release immediately.
-- For review tasks, do not stop or replace an in-flight reviewer just because waiting took too long; keep waiting until completion unless the user explicitly says to stop.
-- Report text should be written in Japanese unless the user explicitly requests another language.
-- The `sub-agent` must preserve the existing report format: no heading renames, no section reordering, no blank-line cleanup, and no whole-file replacement.
-- Existing non-empty parent text in the report is immutable unless the parent explicitly marks it as editable.
+- Existing artifact-backed flows may continue using the generic sub-agent report template.
+- A caller may adopt a separate structured result contract when one exists.
+- Coding tasks must state owned files or modules and prohibit reverting unrelated changes.
+- Investigation tasks must allow direct context inspection when required.
+- Verification tasks must identify exact commands and evidence expectations.
 
-## Standard report sections
+## Execution profile
 
-Use these sections in order:
+- Apply model and reasoning overrides only through spawn arguments.
+- A fresh specialist uses `fork_turns: "none"` unless an explicit bounded partial fork is required.
+- Do not combine override values with `fork_turns: "all"` or omitted full-history behavior.
+- If hidden override arguments are rejected, fallback execution remains parent-owned as documented in the spawn override reference.
+- Never ask the delegated worker to execute the fallback itself.
 
-- `# Sub-agent実行レポート`
-- `## タスク`
-- `## sub-agentを使う理由`
-- `## 対象範囲`
-- `## 対象外`
-- `## 実行コマンド`
-- `## 対象ファイル`
-- `## 指摘事項`
-- `## 結果`
-- `## リスク`
+## Rules
 
-## Minimum report contents
-
-Include:
-
-- task identifier or purpose
-- why a `sub-agent` was used
-- scope handled
-- commands run
-- files changed or checked
-- findings summary or explicit `no findings`
-- outcome
-- unresolved risks or follow-up items
+- Keep tasks bounded and concrete.
+- Do not make report creation mandatory for a structured-result worker.
+- Do not treat rendered prose as the source of machine workflow state.
+- Do not allow a reviewer to edit product code or repository review artifacts.
+- Do not let artifact rendering failure mutate a valid structured result.
+- Do not infer an implementation model; use the user-confirmed value supplied by `development-orchestrator`.
+- Prefer workers reading real skill files over copied paraphrases.
+- Prefer direct repository inspection for review and investigation when context matters.
+- Do not cancel an in-flight task only because one wait interval elapsed.
+- Use `execution-cost-stabilizer` when the plan risks excessive retries or parallel work.
 
 ## Outputs
 
-After this skill runs, there should be:
+Return:
 
-- a dispatched sub-agent task with explicit scope
-- a pre-created report path under `reports/`
-- a dispatch configuration applied through the actual spawn call
-- report-backed evidence for the delegated work
+- dispatch task and execution profile
+- selected evidence mode
+- worker assignment
+- validated structured result or artifact reference
+- unresolved execution or validation failures
 
 ## Completion condition
 
 This skill is complete only when:
 
-- the sub-agent task has been dispatched with the required prompt content
-- the report file exists in the expected location
-- the parent has reviewed the resulting report
-
-## Rules
-
-- Keep sub-agent tasks small and concrete.
-- Prefer one bounded request over one broad speculative request.
-- Reuse existing reports before dispatching duplicate work.
-- Use `execution-cost-stabilizer` if the delegation plan risks wasteful reruns or excessive parallelism.
-- Do not make a sub-agent run `codex exec`, nested Codex, or equivalent agent-spawning workflows inside the delegated task.
-- Do not let a sub-agent re-run `development-orchestrator` or other parent-owned workflow entry skills just because they exist in the repo; the sub-agent should execute only the delegated task and the explicitly named supporting skills.
-- Do not leave report structure up to the `sub-agent`.
-- For investigation and review tasks, prefer letting the `sub-agent` read the relevant workspace directly instead of over-constraining it to parent-curated excerpts.
-- For review tasks, prefer the model's native review behavior over inventing a custom review rubric in the prompt.
-- When a task depends on an existing skill, prefer making the `sub-agent` read that skill over duplicating its workflow in the prompt.
-- Do not treat a model or reasoning mention in `message` as an override. Pass the selected values in the `spawn_agent` call itself.
-- Do not infer an implementation sub-agent model. Apply only the user-confirmed model supplied by `development-orchestrator` through `codex-delegation-executor`.
-- Do not combine a model or reasoning override with omitted `fork_turns` or `fork_turns: "all"`; those full-history forks inherit the parent execution profile. Use `fork_turns: "none"` for a fresh specialist, or an explicit positive partial fork only when the needed context is bounded.
-- If the runtime rejects a hidden override argument, keep fallback execution parent-owned: use `codex exec --model <model> -c model_reasoning_effort="<effort>"`. Do not ask the delegated sub-agent to run it.
+- dispatch scope, profile, and evidence mode were explicit
+- the worker read the required skill contract
+- the primary output satisfies the selected mode
+- the caller received a validated output
 
 ## Cross-cutting rule
 
-If recurring sub-agent dispatch failures or report omissions appear, call `feedback-points-manager`.
+If recurring dispatch or evidence failures appear, call `feedback-points-manager`.
