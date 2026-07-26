@@ -7,7 +7,7 @@ description: Perform an initial review, fix verification, or cold final review d
 
 ## Goal
 
-Review a specified PR in one ChatGPT chat, create a durable review report, and return findings, coverage, evidence, and a verdict to the user.
+Review a specified PR in one ChatGPT chat, create a durable review report, post or render a concise PR comment, and return findings, coverage, evidence, and a verdict to the user.
 
 ## Execution model
 
@@ -16,7 +16,7 @@ Review a specified PR in one ChatGPT chat, create a durable review report, and r
 - Resolve discoverable review state from project instructions, the PR, linked issue, task list, repository files, reports, handoffs, comments, and workflow runs before asking the user.
 - Do not require the user to provide repository URL, branch, base, target HEAD SHA, report path, handoff path, changed files, or CI run when the PR makes them unambiguous.
 - This worker must not modify product code or tests.
-- This worker must create a review report. A concise PR comment is also required when PR commenting is available.
+- This worker must create a review report. A concise PR comment is also required when a PR exists; post it when commenting is available, otherwise return the complete comment body.
 - Follow the [shared handoff contract](../chat-worker-shared/references/handoff-contract.md).
 - A handoff is not automatically visible to another chat. When `write_handoff` is authorized, store it under `reports/handoffs/`; otherwise return the complete packet for user copy and paste.
 
@@ -26,7 +26,7 @@ A PR identifier plus the review mode is normally sufficient.
 
 For `fix verification`, discover the previous applicable review report and handoff, the commits added after that reviewed HEAD, and the corresponding implementation report and handoff.
 
-For `cold final review`, discover the current PR HEAD and applicable implementation and verification evidence, but perform the independent review before relying on earlier conclusions.
+For `cold final review`, use a newly started chat that did not implement the PR or its review fixes. Discover the current PR HEAD and applicable implementation and verification evidence, but perform the independent review before relying on earlier conclusions.
 
 Ask the user only when authoritative sources conflict, multiple unresolved candidate handoffs or review rounds exist, or a scope decision cannot be inferred safely.
 
@@ -41,16 +41,18 @@ Ask the user only when authoritative sources conflict, multiple unresolved candi
 
 ### fix verification
 
-- Verify each applicable previous finding in implementation and tests.
+- Verify each applicable previous finding in implementation and project-required evidence.
 - Inspect the fix diff, direct impact, and sibling cases of the same defect class.
-- Confirm previous regression tests remain present and strong.
+- Confirm previous regression tests or equivalent regression evidence remain present and strong when applicable.
 - Do not expand without limit into unrelated unexplored areas.
 - Classify defects introduced by the fix as `introduced_by_fix`.
 
 ### cold final review
 
+- Run only in a newly started chat that did not implement the PR or its fixes.
 - Review the current PR HEAD once from a fresh perspective using requirements, design, final diff, and risk profile.
 - Compare previous findings only after the independent pass.
+- If the current chat performed implementation or fix work, do not label its review as `cold final review`; use the applicable non-cold mode or ask the user to start a new chat.
 - Pass is possible only when required coverage is complete and no new Blocking or High finding exists.
 - When different Blocking or High defect classes repeatedly appear, return `unstable` and recommend design rework or PR splitting.
 
@@ -58,18 +60,19 @@ Ask the user only when authoritative sources conflict, multiple unresolved candi
 
 1. Resolve discoverable review state from the PR: repository, linked issue, base, current HEAD, scope, requirements, changed files, reports, handoffs, comments, and HEAD-associated CI runs.
 2. Select the review evidence by task, role, mode, branch, reviewed HEAD, and commit relationship; do not select merely by newest timestamp.
-3. Enumerate changed files, dependency boundaries, risk profile, and planned coverage.
-4. Inspect all changed files and relevant dependent files.
-5. Compare implementation behavior with requirements and contracts.
-6. Verify that tests and evidence support the claimed behavior.
-7. Use only CI runs associated with the target `head_sha` when required by the project instructions.
-8. Record findings in severity order with reproducible locations, impact, and required action.
-9. Record held, out-of-scope, and unexplored areas with risks and verdict impact.
-10. Apply the mode-specific stop condition and set the verdict.
-11. Create a review report under the repository report directory, normally `reports/`.
-12. Post a concise PR comment.
-13. Create a complete handoff packet that references the report and PR comment.
-14. If `write_handoff` is authorized, write it to `reports/handoffs/`; otherwise return the complete packet inline.
+3. Confirm that the selected mode is valid for the current chat. A cold final review requires a newly started non-implementing chat.
+4. Enumerate changed files, dependency boundaries, risk profile, and planned coverage.
+5. Inspect all changed files and relevant dependent files.
+6. Compare implementation behavior with requirements and contracts.
+7. Verify that project-required validation and evidence support the claimed behavior.
+8. Use only CI runs associated with the target `head_sha` when required by the project instructions.
+9. Record findings in severity order with reproducible locations, impact, and required action.
+10. Record held, out-of-scope, and unexplored areas with risks and verdict impact.
+11. Apply the mode-specific stop condition and set the verdict.
+12. Create a review report under the repository report directory, normally `reports/`, using repository-specific naming rules.
+13. When a PR exists, post a concise PR comment; if posting is unavailable, return the complete comment body.
+14. Create a complete handoff packet that references the report and PR comment.
+15. If `write_handoff` is authorized, write it to `reports/handoffs/`; otherwise return the complete packet inline.
 
 ## Discovery rules
 
@@ -113,8 +116,8 @@ Ask the user only when authoritative sources conflict, multiple unresolved candi
 
 ## Outputs
 
-Return review mode and target HEAD, inspected files and dependencies, coverage dispositions, findings or explicit no findings, held and unexplored areas, validation evidence, verdict, review report path or complete body, PR comment reference, and handoff path or complete packet.
+Return review mode and target HEAD, inspected files and dependencies, coverage dispositions, findings or explicit no findings, held and unexplored areas, validation evidence, verdict, review report path or complete body, PR comment reference or complete body, and handoff path or complete packet.
 
 ## Completion condition
 
-Complete only when the target HEAD is explicit, mode-required coverage is finished, findings and risks are recorded, the verdict follows the stop rules, a review report has been created or returned in full, product code remains unchanged, and a transportable handoff is available. This worker must not merge.
+Complete only when the target HEAD is explicit, the selected mode is valid for the current chat, mode-required coverage is finished, findings and risks are recorded, the verdict follows the stop rules, a review report has been created or returned in full, the concise PR comment is posted or rendered when a PR exists, product code remains unchanged, and a transportable handoff is available. This worker must not merge.
