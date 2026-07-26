@@ -92,19 +92,17 @@ Red commit:
 
 ## 検証
 
-設計書更新後HEAD:
+最終HEAD:
 
-- `61d9ef59d94579a244374b501617da41f346efb9`
+- `bbcde2c0b2a862601ea92e48d4babb9b04946019`
 
 同HEADに紐づくWorkflow Run:
 
 - Workflow: `Chat worker skill contract`
-- Run ID: `30187029412`
+- Run ID: `30187095415`
 - Conclusion: `success`
 
-レポートとhandoff追加後の最終HEADについても、同じcontract workflowを再実行して確認する。
-
-別branchまたは別SHAのrunを判定に使用しない。
+別branchまたは別SHAのrunを判定に使用していない。
 
 ## 残存事項
 
