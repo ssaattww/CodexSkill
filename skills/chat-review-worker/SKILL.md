@@ -7,183 +7,101 @@ description: Perform an initial review, fix verification, or cold final review d
 
 ## Goal
 
-指定されたPR、branch、commitまたはdiffを単一のChatGPT chatで直接reviewし、finding、coverage、evidence、verdictを利用者へ返す。
+Review a specified PR, branch, commit, or diff in one ChatGPT chat and return findings, coverage, evidence, and a verdict to the user.
 
 ## Execution model
 
-- 利用者が親としてreview対象、review mode、前回handoff、次に起動するchatを管理する。
-- このchatはreview workerとして直接repositoryを確認し、別workerを起動しない。
-- 前のchat履歴を前提にせず、review packet、repository、Issue、設計書、対象HEADを正として扱う。
-- product codeを変更しない。review reportの配置とPR review commentの投稿だけは、利用者から明示的に割り当てられた場合に行える。
-- 次のimplementationまたはreport chatへ渡す結果は、[shared handoff contract](../chat-worker-shared/references/handoff-contract.md)に従う。
+- The user is the parent and controls the review target, mode, permissions, next chat, and merge decision.
+- This worker must not start another worker.
+- Use the supplied packet, repository, issue, design, and exact target HEAD; do not rely on previous conversation history.
+- This worker must not modify product code or tests.
+- Review reports and PR comments are allowed only when explicitly authorized.
+- Follow the [shared handoff contract](../chat-worker-shared/references/handoff-contract.md).
+- A handoff is not automatically visible to another chat. When `write_handoff` is authorized, store it under `reports/handoffs/`; otherwise return the complete packet for user copy and paste.
 
 ## Inputs
 
-作業開始前に次を確認する。
+Require repository, PR or branch, base reference, target HEAD SHA, review mode, task exit criteria, authoritative requirements, scope, non-goals, current permissions, changed files, dependency boundaries, risk profile, required coverage, validation evidence, and previous findings for fix verification.
 
-- review対象のrepository、PR、branch、base ref、HEAD SHA
-- review mode: `initial review`、`fix verification`、`cold final review`
-- taskまたはIssueの終了条件
-- authoritative requirements、設計書、repository指示
-- scopeとnon-goals
-- `authorized_actions`と`write_boundary`
-- changed filesと、変更contractのcaller、consumer、validator、persistence、UI、external boundary
-- risk profileとrequired coverage
-- test、build、lint、integration、CI、artifactのevidence
-- `fix verification`では前回finding、修正commit、追加されたregression test
-- report pathまたはPR comment投稿の要否
-
-対象HEAD、要求仕様、変更範囲のいずれかを確定できない場合はreviewを完了扱いにせず、verdictを`incomplete`として不足情報を返す。
+If the target HEAD, requirements, or scope cannot be resolved, return `incomplete` rather than guessing.
 
 ## Review modes
 
 ### initial review
 
-最初の網羅reviewを行う。
-
-- review開始時にplanned coverageを定める。
-- BlockingまたはHigh findingを1件見つけても、その場でreviewを終了しない。
-- planned coverageを最後まで確認してからfindingsを一括報告する。
-- 全変更fileと、変更contractに直接依存する境界を確認する。
-- normal pathだけでなく、selected riskに応じてmalformed、partial、stale、duplicate、contradictory、failure pathを確認する。
+- Define planned coverage before reviewing.
+- Inspect every changed file and direct contract dependencies.
+- Continue planned coverage after finding a Blocking or High issue; report findings together after coverage is complete.
+- Include relevant malformed, partial, stale, duplicate, contradictory, and failure paths selected by the risk profile.
 
 ### fix verification
 
-前回findingへの修正を確認する。
-
-- 前回findingがcodeとtestの両方で解消されたか確認する。
-- 修正diff、直接影響範囲、同じ欠陥patternのsibling caseを確認する。
-- 過去のregression testが保持され、弱体化されていないか確認する。
-- 前回と無関係な未探索領域へ無制限にreview範囲を拡張しない。
-- 修正によって別のBlockingまたはHighを導入した場合は`introduced_by_fix`として分類する。
+- Verify each previous finding in both implementation and tests.
+- Inspect the fix diff, direct impact, and sibling cases of the same defect class.
+- Confirm previous regression tests remain present and strong.
+- Do not expand without limit into unrelated unexplored areas.
+- Classify defects introduced by the fix as `introduced_by_fix`.
 
 ### cold final review
 
-最終HEADをfreshな視点で1回確認する。
-
-- 前回reviewの結論に引きずられず、Issue、設計、final diff、risk profileから確認を開始する。
-- 過去findingの詳細は、独立確認後にregression保持の照合へ使用する。
-- required coverageに未確認がなく、新規BlockingまたはHighがない場合だけpass候補とする。
-- 別系統の新規BlockingまたはHighが繰り返し見つかる場合は、review追加ではなく`unstable`とし、設計見直しまたはPR分割を利用者へ返す。
+- Review the final HEAD once from a fresh perspective using requirements, design, final diff, and risk profile.
+- Compare previous findings only after the independent pass to confirm regression retention.
+- Pass is possible only when required coverage is complete and no new Blocking or High finding exists.
+- When different Blocking or High defect classes repeatedly appear, return `unstable` and recommend design rework or PR splitting instead of another broad review.
 
 ## Coverage selection
 
-すべての変更へ同じ深さのreviewを強制しない。最初にrisk profileを作成する。
+Universal coverage includes requirements, scope, all changed files, contracts, test validity and wiring, unrelated-change protection, and validation tied to the target HEAD.
 
-### Universal coverage
+Select deeper coverage only where applicable: state and persistence; parser and untrusted input; concurrency and atomicity; identity, canonicalization, revision, and cache freshness; external processes, filesystem, network, Git, and APIs; performance and large inputs; documentation, workflows, and configuration.
 
-すべてのreviewで確認する。
-
-- requirementと終了条件
-- scope、non-goals、全変更file
-- publicまたはinternal contract
-- testの妥当性と通常commandへの接続
-- unrelated changeと他taskのscope保護
-- target HEAD SHAに紐づくvalidation evidence
-
-### Selectable risk coverage
-
-該当するmoduleだけをrequiredにする。
-
-- state、identity、persistence、migration
-- parser、serialization、untrusted input
-- concurrency、atomicity、retry、partial failure
-- canonicalization、path、revision、cache freshness
-- external process、filesystem、network、Git、GitHub API
-- performance、operation count、large input、UI responsiveness
-- documentation、workflow、configuration-only change
-
-非該当moduleは個別項目を形式的に埋めず、module単位で理由付き`not_applicable`にできる。
+Use reasoned `not_applicable` dispositions at the module level rather than forcing every item onto every change.
 
 ## Required flow
 
-1. repository、base、HEAD、review mode、authoritative requirementsを確定する。
-2. `authorized_actions`と`write_boundary`を確認し、review reportまたはPR commentのwrite可否を確定する。
-3. changed files、dependency boundary、risk profile、planned coverageを列挙する。
-4. 全変更fileを直接確認し、必要なdependent fileを読む。
-5. requirementsとimplementation contractを照合する。
-6. testsが実際に成立するfixture、exact result、failure conditionを確認しているか調べる。
-7. selected risk coverageに従い、boundary、state、identity、atomicity、performance、documentationを確認する。
-8. CIを使う場合は、repositoryの最新runではなく対象`head_sha`に紐づくrunだけを確認する。
-9. findingをseverity順で整理し、fileとline、impact、required actionを記録する。
-10. held、out-of-scope、unexploredには理由、owner、remaining risk、verdict impactを記録する。
-11. review modeごとのstop conditionを適用し、verdictを決める。
-12. `write_report`が許可されている場合だけreview reportをrepositoryへ配置する。
-13. `comment_pr`が許可されている場合だけPR review commentを投稿する。
-14. reportを作成した場合はhandoffの`report` fieldへtype、outcome、path、comment targetを記録する。
-15. [shared handoff contract](../chat-worker-shared/references/handoff-contract.md)準拠のpacketを返す。
+1. Resolve repository, base, target HEAD, mode, requirements, permissions, and write boundary.
+2. Enumerate changed files, dependency boundaries, risk profile, and planned coverage.
+3. Inspect all changed files and relevant dependent files.
+4. Compare implementation behavior with requirements and contracts.
+5. Verify that tests use realistic fixtures and assert exact outcomes and failures.
+6. Apply selected boundary, state, identity, atomicity, performance, and documentation coverage.
+7. Use only CI runs associated with the target `head_sha`.
+8. Record findings in severity order with reproducible locations, impact, and required action.
+9. Record held, out-of-scope, and unexplored areas with owners, risks, and verdict impact.
+10. Apply the mode-specific stop condition and set the verdict.
+11. Write a review report or PR comment only when authorized.
+12. Create a complete handoff packet.
+13. If `write_handoff` is authorized, write it to `reports/handoffs/`; otherwise return the complete packet inline.
 
 ## Finding rules
 
-- findings firstで、Blocking、High、Medium、Lowの順に書く。
-- 一般論ではなく、現在のcode pathで成立する具体的なfailureを示す。
-- file、line、symbol、input、state transitionなど再現可能なlocationを付ける。
-- CI成功だけを理由にfindingなしとしない。
-- scope外の既存問題は、現在の変更を壊す場合を除き勝手に修正要求へ含めず、`out_of_scope`またはheldとして記録する。
-- findingがない場合も、checked coverageと明示的な`no findings`を残す。
+- Findings first: Blocking, High, Medium, then Low.
+- Describe a concrete failure path, not generic advice.
+- Include file, line, symbol, input, or state transition when available.
+- CI success alone is not evidence of no findings.
+- Do not turn unrelated pre-existing issues into required changes unless they invalidate this change.
+- When no findings exist, record explicit no-findings evidence and checked coverage.
 
 ## Verdict and stop conditions
 
-### `pass`
-
-- BlockingとHighが0件
-- required coverageがすべてdisposition済み
-- verdictを無効化する`unexplored`がない
-- 対象HEAD SHAの必要なvalidation evidenceがある
-- `cold final review`が必要なriskでは、そのreviewで新規BlockingまたはHighがない
-
-### `pass_with_held`
-
-- `pass`の条件を満たす
-- normal pathを壊さないheld concernが残り、ownerとremaining riskが明示されている
-
-### `fail`
-
-- BlockingまたはHighがある
-- required behaviorを満たさないMedium findingがある
-- testまたはevidenceがclaimを裏付けていない
-
-### `incomplete`
-
-- target HEAD、requirements、scope、repository access、required evidenceが不足し、安全な判定ができない
-
-### `unstable`
-
-- `fix verification`または`cold final review`で、前回と別系統のBlockingまたはHighが繰り返し見つかる
-- 不変条件や責務境界が未定義で、個別fixとreviewの反復では収束しない
-- 次actionは追加reviewではなく`design_rework`または`split_pr`とする
+- `pass`: no Blocking or High findings, all required coverage dispositioned, no verdict-invalidating unexplored area, and required target-HEAD evidence exists.
+- `pass_with_held`: all pass conditions hold and only explicitly owned non-blocking concerns remain.
+- `fail`: a Blocking or High finding exists, required behavior is missing, or evidence does not support the claims.
+- `incomplete`: target, requirements, access, scope, or required evidence is insufficient.
+- `unstable`: repeated reviews reveal different Blocking or High defect classes or undefined invariants that will not converge through individual fixes.
 
 ## Write boundary
 
-- product codeを変更しない。
-- test、fixture、workflow、設定をreview中に修正しない。
-- findingへの対応実装を同じchatで開始しない。
-- review report、review handoff、PR review commentだけを明示されたwrite対象とする。
-- `authorized_actions`にないwriteやPR操作を行わない。
-- mergeしない。
+- This worker must not modify product code, tests, fixtures, workflows, or configuration.
+- It must not implement its own findings.
+- Only authorized review reports, handoff files, and PR review comments may be written.
+- It must not perform unauthorized operations.
+- It must not merge.
 
 ## Outputs
 
-次を返す。
-
-- review modeと対象HEAD SHA
-- changed filesとdependent filesの確認一覧
-- selected risk coverageとdisposition
-- findingsまたは明示的なno findings
-- held、unexplored、remaining risks
-- commands、tests、CI run、artifact evidence
-- verdict: `pass`、`pass_with_held`、`fail`、`incomplete`、`unstable`
-- reportを作成した場合は`report` field
-- 次のimplementation、report、design rework、PR split向け`next_chat_input`
-- [shared handoff contract](../chat-worker-shared/references/handoff-contract.md)準拠のpacket
+Return review mode and target HEAD, inspected files and dependencies, coverage dispositions, findings or explicit no findings, held and unexplored areas, validation evidence, verdict, report metadata when applicable, `next_chat_input`, and either a `reports/handoffs/` packet path or the complete inline packet.
 
 ## Completion condition
 
-このSkillは次をすべて満たしたときだけ完了する。
-
-- review対象とHEAD SHAが明示されている
-- review modeに必要なcoverageが最後まで確認されている
-- findings、held、unexplored、evidence、verdictが記録されている
-- reportを書いた場合は対象HEAD、許可されたpath、handoffの内容が一致している
-- product codeを変更しないまま、利用者が次のchatへ渡せるhandoffが完成している
-- mergeしない
+Complete only when the target HEAD is explicit, mode-required coverage is finished, findings and risks are recorded, the verdict follows the stop rules, product code remains unchanged, and a transportable handoff is available. This worker must not merge.
