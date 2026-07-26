@@ -1,71 +1,92 @@
 ---
 name: report-output-manager
-description: Standardize report file placement and filenames under the target repository's reports directory. Use when creating a new report file or deciding how to name and place evidence, review, intake, or analysis reports.
+description: Apply the shared report contract and standardize report file placement and filenames under the target repository's reports directory. Use when reserving, rendering, creating, or updating implementation, review, verification, evidence, intake, or analysis reports.
 ---
 
 # Report Output Manager
 
-Keep report files predictable across skills and repositories.
-
 ## Goal
 
-Create report files in a consistent location with stable, reusable naming.
+Apply shared evidence-fidelity rules while keeping report paths, filenames, and persisted output predictable through the Codex runtime.
+
+## Shared contracts
+
+Follow:
+
+- [Common Work Contract](../../shared/workflow/common-work-contract.md)
+- [Report Contract](../../shared/workflow/report-contract.md)
+
+These files are the canonical report semantics shared with ChatGPT workers. This Skill owns only the Codex path, rendering, and persistence adapter.
 
 ## Execution owner
 
-Run this skill as: `parent`
+Run this Skill as: `parent`.
 
-- Report path selection is part of parent-owned workflow control.
-- Parent should decide filenames and create report paths before delegating work.
+- Parent owns report mode, source selection, path reservation, template choice, and final persistence.
+- Parent should determine report paths before delegating report section work.
+- A delegated writer may populate only the intended sections and must not change source evidence or parent-owned structure.
 
 ## Inputs
 
-Before running this skill, identify:
+Before running this Skill, identify:
 
-- target repository root
-- report purpose or item name
-- issue, task, or topic prefix information
-- whether an existing report should be reused
+- target repository root,
+- report mode and purpose,
+- authoritative source identities,
+- Issue, task, PR, branch, and target HEAD,
+- whether an existing report should be reused or revised,
+- repository-specific language and template rules,
+- allowed write path.
 
-## Run this skill
+## Required flow
 
-Run this skill when:
+1. Select authoritative sources according to the shared Report Contract.
+2. Choose or reserve the report path under `<repo-root>/reports/`.
+3. Apply the repository-specific filename, language, and template rules.
+4. Render evidence without changing meaning, verdict, severity, validation result, or uncertainty.
+5. Persist the report or return the complete body when writing is unavailable.
+6. Surface the final path and source identities to the caller.
+7. Leave PR commenting and handoff transport to the calling runtime unless explicitly delegated.
 
-- creating a new file under `reports/`
-- deciding a report filename
-- trying to keep issue-scoped report prefixes consistent
-
-## Core rules
+## Path and filename rules
 
 - Place reports in `<repo-root>/reports/`.
-- For new filenames, use:
-  - `<issue-prefix>-<item-name>-<yyyymmddhhmmss>.md`
-- When the same logical report needs another revision, keep the same prefix and item name, then insert `-r<revision>` before the timestamp:
-  - `<issue-prefix>-<item-name>-r<revision>-<yyyymmddhhmmss>.md`
-- Prefer canonical issue-based prefixes over freeform labels.
+- For new filenames, use `<issue-prefix>-<item-name>-<yyyymmddhhmmss>.md`.
+- For a revision, keep the prefix and item name, then insert `-r<revision>` before the timestamp: `<issue-prefix>-<item-name>-r<revision>-<yyyymmddhhmmss>.md`.
+- Prefer canonical Issue-based prefixes over freeform labels.
 - Write report body text in Japanese unless the user explicitly requests another language.
 - Do not rename legacy reports unless explicitly requested.
 
-## Read only what you need
+## References and helper
 
-- For naming, prefix selection, and examples:
-  - [references/report-filename-policy.md](references/report-filename-policy.md)
-- For Japanese sub-agent execution report structure:
-  - [references/sub-agent-report-template.md](references/sub-agent-report-template.md)
+- [Report filename policy](references/report-filename-policy.md)
+- [Sub-agent report template](references/sub-agent-report-template.md)
+- [Deterministic path helper](scripts/build_report_path.sh)
 
-Use the script when you want a deterministic path:
+Current helper limitation:
 
-- [scripts/build_report_path.sh](scripts/build_report_path.sh)
+- `build_report_path.sh` generates only the base filename form.
+- Choose a revisioned path manually unless the helper has been extended.
 
-Current limitation:
+## Codex adapter rules
 
-- `build_report_path.sh` generates the base `<issue-prefix>-<item-name>-<timestamp>.md` form.
-- When you need a revisioned filename with `-r<revision>-`, choose the final path manually unless the script has been extended for that case.
+- Do not invent evidence to fill a template.
+- Do not convert missing current-HEAD CI into success.
+- Do not let a concise PR comment replace the detailed report.
+- Do not modify code, tests, workflows, or design merely to improve the report.
+- Do not merge.
 
 ## Outputs
 
-When this skill runs, make the chosen report path explicit in chat, command output, or the created file itself.
+Return:
+
+- report mode,
+- authoritative source identities,
+- concrete report path,
+- created or updated outcome,
+- preserved unknowns and remaining risks,
+- any persistence limitation.
 
 ## Completion condition
 
-This skill is complete only when a concrete report path and filename have been determined and surfaced to the caller.
+This Skill is complete only when the shared Common Work and Report contracts are satisfied for the selected report, a concrete path and complete body are available, evidence meaning and uncertainty are preserved, the caller can identify the authoritative sources, and no merge was performed.
