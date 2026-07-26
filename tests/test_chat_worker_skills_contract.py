@@ -42,6 +42,7 @@ SKILL_SPECIFIC_MARKERS = {
         "review follow-up",
         "test-first",
         "最終review判定を行わない",
+        "narrative reportを作成しない",
         "mergeしない",
     ),
     "chat-review-worker": (
@@ -66,6 +67,8 @@ HANDOFF_REQUIRED_MARKERS = (
     "branch",
     "base_ref",
     "head_sha",
+    "authorized_actions",
+    "write_boundary",
     "scope",
     "non_goals",
     "authoritative_requirements",
@@ -73,6 +76,9 @@ HANDOFF_REQUIRED_MARKERS = (
     "commands",
     "tests",
     "ci",
+    "implementation",
+    "review",
+    "report",
     "findings",
     "held",
     "unexplored",
@@ -91,7 +97,10 @@ class ChatWorkerSkillContractTests(unittest.TestCase):
         for skill_name, path in SKILLS.items():
             with self.subTest(skill=skill_name):
                 text = self.read_required(path)
-                self.assertIn(f"name: {skill_name}", text)
+                frontmatter = text.split("---", maxsplit=2)
+                self.assertGreaterEqual(len(frontmatter), 3, f"{skill_name} requires YAML frontmatter")
+                self.assertIn(f"name: {skill_name}", frontmatter[1])
+                self.assertIn("description:", frontmatter[1])
                 for marker in COMMON_REQUIRED_MARKERS:
                     self.assertIn(marker, text, f"{skill_name} is missing marker: {marker}")
                 for marker in SKILL_SPECIFIC_MARKERS[skill_name]:
