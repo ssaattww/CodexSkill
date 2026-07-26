@@ -147,7 +147,7 @@ handover-memo-writer [親が実行]
 8. `tdd-executor` で最小の testable behavior と failing test 方針を定める。
 9. テスト作成やコード作成が必要なら、`codex-delegation-executor` を通して `implementation-executor` に流す。
 10. build、test、environment verification のような証拠作業が必要なら、`codex-delegation-executor` から `sub-agent-task-manager` を使って sub-agent に流す。
-11. 実装が一段落したら `review-enforcer` を呼び、セッション内で原則固定したレビュー専用 sub-agent を実行する。セッション内で監査・設計・ユーザー指示により決まったレビュー指針がある場合は、その指針を review request に含める。
+11. 実装が一段落したら `review-enforcer` を呼ぶ。`references/code-review-coverage-checklist.md` の全区分を coverage matrix で明示し、変更ファイルだけでなく依存先、契約境界、異常系、状態不変条件、テスト、性能、文書、scope、対象branch HEAD SHAのCI証跡まで確認する。セッション内で原則固定したレビュー専用 sub-agent を使い、再レビューでは前回修正箇所以外の未探索領域へも確認範囲を広げる。
 12. 指摘があれば `git-review-followup-manager` または通常の実装フローに戻して修正する。
 13. `progress-sync-manager` で report と tracking を同期する。
 14. `git-workflow-manager` で branch、commit、PR まで進める。
@@ -251,7 +251,7 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 | Skill名 | 役割 | 実行方式 |
 | --- | --- | --- |
-| `review-enforcer` | task 完了前に必ずレビューを通し、親agentと同じmodelと`high` reasoningを既定reviewer profileとして所有し、セッション内で原則同じ reviewer sub-agent を使い、選択したprofileを実spawn引数へ適用してreview report が残るまで完了扱いにしない。reasoning effortは利用者がoverrideできる。Markdown 関連変更では `markdown-word-checker` の結果を review report に含め、許可一覧、`prh`、target 除外変更では利用者が実 entry を明示確認したことも完了条件に含める。 | `親が実行` |
+| `review-enforcer` | task 完了前に必ずレビューを通し、`references/code-review-coverage-checklist.md` の全区分を coverage matrix で明示する。変更ファイルと依存先、契約、状態・identity・persistence、異常系、atomicity、テスト品質と累積回帰、性能、文書、scope、対象branch HEAD SHAのCI証跡を確認し、未探索区分を理由なしに残したまま完了扱いにしない。親agentと同じmodelと`high` reasoningを既定reviewer profileとして所有し、セッション内で原則同じ reviewer sub-agent を使う。再レビューは前回修正の確認だけで終えず、未確認領域と同種欠陥へ範囲を拡張する。Markdown 関連変更では `markdown-word-checker` の結果を review report に含める。 | `親が実行` |
 | `markdown-word-checker` | 対象repoの `tools/lint/` 設定を読み、Markdown用語、表記揺れ、backtick回避、`skip` / `unsupported` / `failed gate` を分類して呼び出し元へ返す。 | `親が実行` |
 | `feedback-coding-standards-enforcer` | API ドキュメント、命名、解析ルールなどのコーディング規約を review/commit 前に強制する。 | `親が実行` |
 | `feedback-issue-intake-fallback-manager` | issue 要件の取得が失敗したときに、代替経路で authoritative な要件を確保する。 | `親が実行` |
@@ -322,7 +322,7 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 | Skill名 | 入力 | 出力 | 完了条件 |
 | --- | --- | --- | --- |
-| `review-enforcer` | task-scoped diff、review scope、workspace context、validation context、session reviewer、親agentのcurrent model、利用者override済みならreasoning effort、適用するレビュー指針、`markdown-word-checker` 結果、Markdown 許可一覧、`prh`、target 除外の利用者レビュー状態 | review report、親modelと`high`を既定値ownerとして選択し実spawn引数で適用したreviewer profile、findings または no findings、disposition、reviewer reuse decision、`markdown-word-checker` 証跡、exact entry変更時の利用者明示レビュー記録 | review evidence が report に残り disposition 済み。Markdown lint gate failure は完了扱いにせず、exact entry変更は利用者が実 entries を明示確認済み |
+| `review-enforcer` | task-scoped diff、依存先と周辺repository context、task exit criteria、authoritative design、validation context、session reviewer、親agentのcurrent model、利用者override済みならreasoning effort、適用するレビュー指針、`markdown-word-checker` 結果 | review report、全区分を明示した coverage matrix、変更・依存ファイル一覧、findings または no findings、held/unexplored disposition、対象branch HEAD SHAとCI run、再レビューで拡張した確認範囲 | 全checklist区分が理由付きで disposition され、findingsが対応または明示保留され、未探索領域がfinal outcomeと矛盾せず、対象branch HEAD SHAに紐づくCI証跡がreportに残る |
 | `markdown-word-checker` | target repo root、Markdown file list、caller gate context、repo-local `tools/lint/` 設定、package lint wiring | command evidence、対象files、`skip` / `unsupported` / `failed gate` 分類、lint指摘分類、backtick回避確認、exact entry review要否、sub-agent report path | Markdown check結果がcallerへ返り、repo固有 whitelist / `prh` / target 除外のexact entry変更が利用者reviewなしに適用されていない |
 | `feedback-coding-standards-enforcer` | changed files、API diff、repo standards | standards evidence、violation fixes または rationale | standards-sensitive change の確認と記録が完了 |
 | `feedback-issue-intake-fallback-manager` | issue id/URL、available retrieval paths、partial context | authoritative requirements report、confidence、gaps | requirements と confidence が report に明示済み |
@@ -354,7 +354,7 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 - workflow 入口は `development-orchestrator` の一箇所に固定し、再開時も `restart-handover-manager` から直接始めず `development-orchestrator` へ戻して続行する。
 - `restart-handover-manager` は recorded state から再開位置を復元する skill とし、会話内容そのものを次チャットへ移送する handover 文面の作成は `handover-memo-writer` に分離する。
-- レビューは親がゲートを持つが、レビュワー実行は必ず sub-agent とする。1 セッションでは基本的に同じ reviewer sub-agent を継続し、セッション内で決まったレビュー指針を後続 review に引き継ぐ。
+- レビューは親がゲートを持つが、レビュワー実行は必ず sub-agent とする。1 セッションでは基本的に同じ reviewer sub-agent を継続し、`code-review-coverage-checklist.md` の coverage matrix、依存先確認、未探索領域、対象branch HEAD SHAのCI証跡を後続 review に引き継ぐ。再レビューは前回findingの解消確認だけで完了せず、未確認領域と同種欠陥へ範囲を広げる。
 - 設計文書編集とコード/テスト作成は、判断系 skill から分離し、`design-executor` と `implementation-executor` に寄せる。
 - `sub-agent` は単独で存在する主体ではなく、常に親から呼び出される実行形態として扱う。
 - `feedback-points-sanitizer` は、独立視点での整理が価値になるため、例外的に「親が呼び出し、sub-agent が実行」として明示する。
