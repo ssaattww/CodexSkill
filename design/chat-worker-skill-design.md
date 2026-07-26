@@ -127,14 +127,18 @@ chatgpt-worker-skills.zip
 1. `skills/chat-*/SKILL.md`を全件検出する。
 2. directory名とfront matterの`name`が一致することを確認する。
 3. Skill directory内の全fileをstagingへcopyする。
-4. Markdown linkから`shared/`配下のdependencyを再帰的に解決する。
-5. dependencyを各Skillの`references/shared/`へcopyする。
-6. repository相対linkをSkill内相対linkへ書き換える。
-7. package内linkがSkill directory外へ出ないことを確認する。
-8. ZIP root directoryが検出したSkill集合と一致することを確認する。
-9. 同一sourceから再現可能なZIPを生成する。
+4. symlinkを拒否し、repository外のcontentが配布物へ混入しないようにする。
+5. Markdown linkから`shared/`配下のdependencyを再帰的に解決する。
+6. dependencyを各Skillの`references/shared/`へcopyする。
+7. repository相対linkをSkill内相対linkへ書き換える。
+8. `shared/chat-worker/`配下の全fileが少なくとも1つのSkillから参照され、ZIPへ同梱されることを確認する。未参照fileがあればbuildを失敗させる。
+9. package内linkがSkill directory外へ出ないことを確認する。
+10. ZIP root directoryが検出したSkill集合と一致することを確認する。
+11. 同一sourceから再現可能なZIPを生成する。
 
-この方式により、ChatGPT adapter内のfileと、そのadapterが参照するChatGPT固有・共通runtime dependencyはRelease ZIPへ全て含まれる。
+この方式により、全`skills/chat-*` Skill、各Skill directory内の全file、参照される共通runtime dependency、および`shared/chat-worker/`に分類された全ChatGPT固有runtime fileがRelease ZIPへ含まれる。
+
+`shared/chat-worker/`へ追加したfileがどのSkillからも参照されない場合はRelease漏れとしてbuildを失敗させる。配布不要の設計資料は`design/`へ置き、runtime dependencyと混在させない。
 
 設計書、GitHub Actions workflow、build script自体はrepository保守物であり、ChatGPTへinstallするruntime dependencyではないためSkill ZIPのrootへ追加しない。
 
@@ -145,18 +149,21 @@ chatgpt-worker-skills.zip
 ### PR
 
 - ChatGPT adapter、共通契約、ChatGPT固有契約、build script、関連設計の変更で実行する
-- ZIPを生成して構造とlinkを検証する
+- build jobは`contents: read`だけを持ち、checkout credentialを保持しない
+- ZIPを生成して構造、link、全ChatGPT固有runtime fileの同梱を検証する
 - 生成ZIPをworkflow artifactとして保存する
 - GitHub Releaseとrolling tagは更新しない
 
 ### main push
 
 - merge後の`main` HEADをcheckoutする
-- PRと同じbuildと検証を実行する
+- read-only build jobでPRと同じbuildと検証を実行する
+- build成功後だけ、別release jobへ`contents: write`を付与する
+- 検証済みartifactをrelease jobへ渡す
 - rolling tag `chatgpt-worker-skills-latest`をmerge後HEADへ更新する
 - Release `ChatGPT Worker Skills`へ`chatgpt-worker-skills.zip`を添付または置換する
 
-`workflow_dispatch`はbuild検証だけを行い、Releaseは更新しない。
+`workflow_dispatch`はread-only build検証だけを行い、Releaseは更新しない。
 
 ## Project Instruction
 
@@ -270,6 +277,9 @@ runtime差分は次だけである。
 - 一意に特定できない場合だけ利用者へpathまたはpacket本文を求める
 - 前workerの権限は次chatへ自動継承しない
 - handoff schemaは特定3 Skill名へ固定しない
+- writerは`schema_version: 2`を生成する
+- readerは既存`schema_version: 1`を読み取り、`cold_final_review`を`independent_final_review`へ正規化する
+- 未対応の将来schemaは推測せず、blockedまたはincompleteとしてmigration要否を示す
 
 ## CodexSkill repositoryの検証方針
 
@@ -288,9 +298,11 @@ Release packaging workflowは製品codeのTDDではなく、配布物生成と�
 - CodexとChatGPTのSkillがruntime adapterに限定されている
 - repository内に共通契約の手動copyがない
 - 全`skills/chat-*` Skillが自動的にZIPへ含まれる
+- 各Skill directory内の全fileがZIPへ含まれる
 - 各Skillが参照するshared dependencyがZIP内へ同梱される
+- `shared/chat-worker/`配下の全fileがZIP内へ同梱される
 - ZIP rootにinstallable Skill directory以外を置かない
-- PRでbundle validationが実行される
-- main反映後にRelease assetが更新される
+- PR検証jobがread-onlyでbundle validationを実行する
+- main反映後のrelease jobだけがwrite権限を持ってRelease assetを更新する
 - ChatGPTとCodexの双方で独立最終レビューが必須である
 - workerまたはagentがmergeしない
