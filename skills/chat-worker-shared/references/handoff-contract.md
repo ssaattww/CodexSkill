@@ -14,6 +14,8 @@
 - branchのCI判定には、必ずpacketの`head_sha`に紐づくrunだけを使用する。
 - 実装結果、review finding、test結果、CI結果をreport writerが変更または補完してはならない。
 - 利用者が許可していないwrite、commit、push、PR操作をworkerが実行してはならない。
+- top-levelの`authorized_actions`と`write_boundary`は、そのpacketを作成したworkerの実行に対して利用者が付与した権限を記録する。
+- 現在のworkerの権限を次のchatへ自動継承しない。次worker向けfieldは提案にすぎず、利用者が確認して新しいtop-level権限として明示的に付与する。
 - secret、credential、個人情報、不要な大容量logをpacketへ埋め込まない。
 
 ## Canonical packet
@@ -111,7 +113,7 @@ review:
     - string
 
 report:
-  report_type: implementation_report | review_report | verification_report | concise_pr_comment | not_applicable
+  report_type: implementation_report | review_report | verification_report | consolidated_report | concise_pr_comment | not_applicable
   outcome: created | updated | rendered | blocked | not_applicable
   source_packets:
     - producer_skill: string
@@ -168,7 +170,32 @@ next_chat_input:
     - string
   required_attachments_or_references:
     - string
+  requested_authorized_actions:
+    - read_repository | edit_code | edit_tests | write_report | commit | push | update_pr | comment_pr
+  requested_write_boundary:
+    allowed:
+      - path_or_operation: string
+        reason: string
+    forbidden:
+      - path_or_operation: string
+        reason: string
 ```
+
+## 権限の意味
+
+### Current execution
+
+- top-levelの`authorized_actions`と`write_boundary`は、現在のworkerが実際に受け取った権限である。
+- workerは作業結果としてこれらを変更せず、受け取った値と実際に行った操作を記録する。
+- top-levelにない操作は、repository側で技術的に実行可能でも行わない。
+
+### Next chat proposal
+
+- `next_chat_input.requested_authorized_actions`と`requested_write_boundary`は、現在のworkerが次作業に必要と考える権限の提案である。
+- 提案は権限付与ではない。
+- 利用者が提案を確認し、削除、制限、追加を判断して、次chatへ新しいtop-levelの`authorized_actions`と`write_boundary`として渡す。
+- 次chatはsource packetのtop-level権限またはrequested fieldを自動継承せず、利用者が新しく付与した値だけを使用する。
+- 利用者による新しい付与がない場合、次workerはwrite、commit、push、PR操作を実行しない。
 
 ## Worker別の必須field
 
@@ -214,7 +241,7 @@ Product implementationを行わないため、`implementation.outcome`は`not_ap
 次を必須とする。
 
 - 入力に使ったhandoff packetの識別情報
-- `authorized_actions`、`write_boundary`
+- 利用者がreport writer用に新しく付与した`authorized_actions`と`write_boundary`
 - `report.report_type`、`report.outcome`、`report.source_packets`
 - 作成したreport pathまたは返却したreport本文
 - reportへ転記したHEAD SHA、CI run、artifact、finding
@@ -225,11 +252,13 @@ Report writerは、入力packetの`implementation`、`review`、`findings`、`te
 
 ## 利用者によるchat間引き渡し
 
-1. 利用者が対象workerのSkillとtask packetをchatへ渡す。
+1. 利用者が対象workerのSkill、task packet、現在のworker用のtop-level権限をchatへ渡す。
 2. workerが作業し、このcontractに従うhandoff packetを返す。
-3. 利用者がpacketの`authorized_actions`、`write_boundary`、`head_sha`、scope、finding、unknownを確認する。
-4. 利用者が`next_chat_input`と必要なrepository参照を次のchatへ渡す。
-5. 次のchatは以前の会話を推測せず、受け取ったpacketとrepositoryを正として作業する。
+3. 利用者がpacketの`head_sha`、scope、finding、unknown、next actionを確認する。
+4. workerが提案した`next_chat_input.requested_authorized_actions`と`requested_write_boundary`を利用者が確認する。
+5. 利用者が必要な権限だけを、次chat用の新しいtop-level `authorized_actions`と`write_boundary`として明示的に付与する。
+6. 利用者が`next_chat_input`と必要なrepository参照を次のchatへ渡す。
+7. 次のchatは以前の会話と前workerの権限を推測せず、利用者から新しく受け取ったpacketとrepositoryを正として作業する。
 
 ## 不完全なpacket
 
@@ -241,3 +270,4 @@ Report writerは、入力packetの`implementation`、`review`、`findings`、`te
 - 不足fieldと理由を`unknown`へ記録する。
 - `next_action.type`を`user_decision`とする。
 - `next_chat_input.instructions`へ、利用者が補うべき情報を列挙する。
+- 次chat用権限が未付与の場合は、read-onlyで安全な確認だけを行い、writeが必要なら利用者へ戻す。
