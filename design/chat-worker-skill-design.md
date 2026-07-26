@@ -137,6 +137,225 @@ handoff fileは作業結果を運ぶ構造化evidenceであり、narrative repor
 
 各矢印の間で、利用者がhandoff path、URL、またはpacket全文を次chatへ渡す。
 
+## 利用者向け実行例
+
+ここでは、Issue対応を実装し、初回レビュー、レビュー対応、修正確認、独立最終レビューまで行う標準例を示す。
+
+### Chatの使い分け
+
+| Chat | 用途 | 新規・継続 | 理由 |
+| --- | --- | --- | --- |
+| Chat A | 初回実装とレビュー対応 | 初回実装時に新規作成し、レビュー対応でも同じchatを継続 | 実装時の設計判断、Red/Green、変更履歴を保持したまま修正できるため |
+| Chat B | 初回レビュー | 新規作成 | 実装chatの意図や自己評価に引きずられないため |
+| Chat C | 修正確認 | 原則として新規作成 | 実装chatと分離し、修正diffと前回findingに限定して確認するため |
+| Chat D | 独立最終レビュー | 必ず新規作成 | 過去reviewの結論にanchoringされず、最終HEADをfreshに確認するため |
+| Report chat | report整形のみ | 必要な場合だけ新規作成 | technical判断とpresentation責務を分離するため |
+
+Chat Bを修正確認にも再利用することは許容する。ただし、独立最終レビューはChat BまたはChat Cを継続せず、必ずChat Dとして新規作成する。
+
+### 1. Chat A: 初回実装
+
+新規chatを作成し、`chat-implementation-worker`を割り当てる。
+
+#### 新規chatへ送るprompt
+
+```text
+chat-implementation-workerとして作業してください。
+
+Repository: <owner/repository>
+Issue: #<issue-number>
+Branch: <working-branch>
+Base: <base-branch>
+
+Issue、repository指示、設計書を確認し、scope内だけをTDDで実装してください。
+作業開始時に、テスト失敗時の原因調査に必要なstdout、stderr、environment、test result、対象sourceをartifactへ保存するworkflowが存在するか確認し、なければ先に追加してください。
+
+許可する操作:
+- repository read
+- code/test/workflow edit
+- commit/push
+- PR create/update
+- reports/handoffs/へのhandoff保存
+
+禁止:
+- scope外変更
+- 他PRの変更を上書きすること
+- merge
+
+完了時はcanonical handoff packetをreports/handoffs/へ保存し、そのhandoff path、最終HEAD SHA、CI run IDを返してください。
+```
+
+Chat Aが完了したら、利用者は次を確認する。
+
+- PRが作成または更新されている
+- handoff pathが返されている
+- handoff内のbranch、HEAD SHA、scope、remaining riskが妥当である
+- 対象HEAD SHAに紐づくCI結果が記録されている
+
+### 2. Chat B: 初回レビュー
+
+Chat Aとは別の新規chatを作成し、`chat-review-worker`の`initial review`を割り当てる。
+
+#### 新規chatへ送るprompt
+
+```text
+chat-review-workerとしてinitial reviewを実施してください。
+
+Repository: <owner/repository>
+PR: #<pr-number>
+Review target HEAD: <implementation-head-sha>
+Implementation handoff path: <reports/handoffs/...>
+
+GitHub connectorでPR、Issue、設計書、handoff packet、全変更file、変更contractの直接依存先を確認してください。
+BlockingまたはHighを見つけてもそこで中断せず、planned coverageを最後まで完了してからfindingsを一括報告してください。
+
+許可する操作:
+- repository/PR read
+- review report作成
+- PR review comment投稿
+- reports/handoffs/へのreview handoff保存
+
+禁止:
+- product code/testの変更
+- finding対応実装
+- merge
+
+詳細review reportをrepositoryへ配置し、PRへ簡易コメントを投稿してください。
+完了時はreview handoff path、対象HEAD SHA、verdict、findings、unexplored、next actionを返してください。
+```
+
+Chat Bが`fail`を返した場合、利用者はreview handoff pathをChat Aへ戻す。
+
+### 3. Chat Aを継続: レビュー対応
+
+初回実装を行った既存のChat Aへ戻る。新規chatは作らない。
+
+#### 既存chatへ送るprompt
+
+```text
+レビュー結果へ対応してください。
+
+Review handoff path: <reports/handoffs/...>
+Review report path: <reports/...review...md>
+Current target branch: <working-branch>
+Reviewed HEAD: <review-target-head-sha>
+
+chat-implementation-workerのreview follow-upとして、前回findingを再現するtestを先に追加または強化し、finding、修正diff、直接影響、同種欠陥だけをscopeとして対応してください。
+前回と無関係な改善は混ぜないでください。
+
+修正後は対象branch HEADに紐づくCIだけを確認し、implementation handoffを新しくreports/handoffs/へ保存してください。
+PRは更新してください。mergeはしないでください。
+```
+
+レビュー対応が複数回必要な場合も、原則としてChat Aを継続する。Chat Aのcontextが破損した、対象branchやtaskが変わった、またはhandoffだけで安全に再開できることを確認した場合だけ、新しいimplementation chatへ切り替える。
+
+### 4. Chat C: 修正確認
+
+レビュー対応後はreview用chatを使用する。独立性を高める標準例では、新規のChat Cを作成する。
+
+#### 新規chatへ送るprompt
+
+```text
+chat-review-workerとしてfix verificationを実施してください。
+
+Repository: <owner/repository>
+PR: #<pr-number>
+Previous review handoff path: <reports/handoffs/...initial-review...>
+Fix implementation handoff path: <reports/handoffs/...review-follow-up...>
+Previous reviewed HEAD: <old-head-sha>
+Current fix HEAD: <new-head-sha>
+
+前回findingsがcodeとtestの両方で解消されたか確認してください。
+確認範囲は、前回finding、修正diff、直接影響範囲、同種欠陥のsibling case、過去regression testの保持に限定してください。
+前回と無関係な未探索領域へ無制限に範囲を広げないでください。
+
+許可する操作:
+- repository/PR read
+- fix verification report作成
+- PR comment投稿
+- reports/handoffs/へのreview handoff保存
+
+禁止:
+- product code/testの変更
+- finding対応実装
+- merge
+
+対象fix HEADに紐づくCIを確認し、verdictとhandoff pathを返してください。
+```
+
+fix verificationで、修正由来の新規Blocking/Highが出た場合はChat Aへ戻す。前回と別系統のBlocking/Highが繰り返し出る場合は、追加reviewを続けず`unstable`として設計見直しまたはPR分割へ戻す。
+
+### 5. Chat D: 独立最終レビュー
+
+medium/high riskの変更、state・identity・persistence・parser・atomicity・外部processなどを扱う変更では、fix verification通過後に新規のChat Dを作成する。
+
+Chat Dには、最初から過去findingの詳細を強調しすぎない。まずIssue、設計書、最終diff、最終HEAD、risk profileを使って独立確認させる。過去handoffは、独立確認後のregression照合に使用させる。
+
+#### 新規chatへ送るprompt
+
+```text
+chat-review-workerとしてcold final reviewを実施してください。
+
+Repository: <owner/repository>
+PR: #<pr-number>
+Final target HEAD: <final-head-sha>
+Issue: #<issue-number>
+Authoritative design: <design-path>
+Final implementation handoff path: <reports/handoffs/...>
+Fix verification handoff path: <reports/handoffs/...>
+
+このchatは独立最終レビュー専用です。過去review chatの結論を前提にせず、Issue、設計書、final diff、変更contractの依存先、risk profileから最終HEADをfreshに確認してください。
+独立確認が完了した後で、過去findingのregression testが保持されているか照合してください。
+
+許可する操作:
+- repository/PR read
+- final review report作成
+- PR comment投稿
+- reports/handoffs/へのfinal review handoff保存
+
+禁止:
+- product code/testの変更
+- finding対応実装
+- merge
+
+Blocking/Highがなく、required coverageがdisposition済みで、final HEADに紐づくCIが成功している場合だけpass候補としてください。
+別系統のBlocking/Highが再び見つかった場合はunstableとして、設計見直しまたはPR分割を返してください。
+```
+
+### 6. Pass後の利用者判断
+
+Chat Dが`pass`または`pass_with_held`を返した場合、利用者は次を確認してから自分でmergeする。
+
+- final reviewの対象HEAD SHAと現在のPR HEADが一致する
+- final HEADに紐づくCIが成功している
+- Blocking/Highが0件である
+- held、unexplored、remaining riskを受容できる
+- review後に新しいcommitが追加されていない
+
+final review後にcode、test、workflow、設計書へcommitが追加された場合、そのcommitを対象とするfix verificationまたはcold final reviewをやり直す。単なるPR commentやreport追加だけでproduct behaviorとvalidation evidenceが変わらない場合は、変更内容を確認したうえで再review要否を判断する。
+
+### Report chatを使う場合
+
+worker自身が詳細reportを配置済みなら、通常は別report chatを作る必要はない。複数handoffを統合したい、repository固有templateへ再整形したい、または最終reportと簡易PR commentを一括生成したい場合だけ新規chatを作る。
+
+#### 新規chatへ送るprompt
+
+```text
+chat-report-writerとしてreport-only作業をしてください。
+
+Repository: <owner/repository>
+PR: #<pr-number>
+Source handoff paths:
+- <implementation handoff path>
+- <initial review handoff path>
+- <fix verification handoff path>
+- <cold final review handoff path>
+
+入力handoffの事実だけを使用し、finding、severity、test結果、CI結論を追加または変更しないでください。
+詳細Markdown reportを指定pathへ配置し、PRへ簡易コメントを投稿してください。
+code/testは変更せず、mergeもしないでください。
+```
+
 ## Worker境界
 
 ### Implementation worker
@@ -196,6 +415,8 @@ CIで次を検証する。
 - `write_handoff`と`reports/handoffs/`によるdurable transportが定義される
 - packet出力だけでは別chatから自動参照できないことが明記される
 - copy and paste fallbackが定義される
+- initial implementation、initial review、review follow-up、fix verification、cold final reviewの利用者向けprompt例がある
+- 新規chatと既存chatを使い分ける時点が明記される
 - review停止条件とrole boundaryが定義される
 
 ## 完了条件
@@ -204,6 +425,7 @@ CIで次を検証する。
 - Skillは英語、設計書は日本語である
 - repository-backed transportとcopy/paste transportが実装契約に含まれる
 - 利用者が親として次chatへpacketを明示的に渡す
+- 利用者が新規chatと既存chatの使い分け、および各promptを設計書だけで判断できる
 - contract testがGreenである
 - failure diagnostics workflowが存在する
 - implementation report、review report、PR commentが残る
