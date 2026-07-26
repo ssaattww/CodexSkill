@@ -1,69 +1,71 @@
 ---
 name: implementation-executor
-description: Execute concrete implementation work in code and tests after task scope has been decided. Use when code authoring, test authoring, or bounded fix work must be carried out as implementation work.
+description: Execute concrete implementation work after task scope has been decided. Use when bounded code, test, documentation, configuration, workflow, or review-follow-up edits must be performed under the target project's development policy.
 ---
 
 # Implementation Executor
 
-Perform the actual code and test changes.
-
 ## Goal
 
-Turn an already-scoped task into concrete code and test updates without re-planning the workflow.
+Execute an already-scoped implementation through the Codex runtime without redefining cross-runtime implementation rules.
+
+## Shared contracts
+
+Follow:
+
+- [Common Work Contract](../../shared/workflow/common-work-contract.md)
+- [Implementation Contract](../../shared/workflow/implementation-contract.md)
+
+These files are the canonical implementation semantics shared with ChatGPT workers. This Skill contains only the Codex execution adapter.
 
 ## Execution owner
 
-Run this skill as: `parent`
+Run this Skill as: `parent`.
 
-- This skill describes the execution work for code and test authoring.
-- `codex-delegation-executor` may assign that editing work to the parent or a `sub-agent`.
+- The parent owns scope, write boundary, and completion integration.
+- `codex-delegation-executor` may assign the actual editing work to the parent or an implementation sub-agent.
+- A delegated executor reads this Skill and the shared contracts before editing.
 
 ## Inputs
 
-Before running this skill, make sure the parent has already decided:
+Before running this Skill, the parent must establish:
 
-- task scope and non-goals
-- target files or affected modules
-- validation target or expected proof
-
-## Use this skill when
-
-- task scope and exit criteria are already known
-- code files must be changed
-- tests must be added or updated
-- review follow-up requires concrete implementation edits
+- implementation mode: initial implementation or review follow-up,
+- accepted scope and non-goals,
+- target files or affected modules,
+- authoritative requirements and design,
+- target-project development and testing policy,
+- validation target and expected proof,
+- allowed and forbidden writes.
 
 ## Required flow
 
-1. read the relevant code and tests
-2. make the smallest changes that satisfy the scoped task
-3. update or add tests when the task requires executable proof
-4. keep unrelated changes untouched
-5. report changed files, validation run, and any remaining risks
+1. Select the executor through `codex-delegation-executor`.
+2. Give the executor the accepted scope, write boundary, target identity, relevant files, validation policy, and shared-contract paths.
+3. Execute the shared Implementation Contract.
+4. Return changed files, validation evidence, commit-relevant summary, unknowns, and remaining risks to the parent.
+5. Leave report persistence, review, progress sync, commit, push, PR, and handoff orchestration to their owning parent Skills.
 
-## Rules
+## Codex adapter rules
 
-- Do not re-plan the task; `task-breakdown-planner`, `task-consistency-manager`, and `tdd-executor` own that planning work.
+- Do not re-plan the task; planning belongs to `task-breakdown-planner`, `task-consistency-manager`, and the parent workflow.
+- Do not decide TDD applicability here. The target project and caller own that policy.
 - Do not broaden scope beyond the assigned task.
-- Prefer the narrowest implementation that satisfies the required behavior.
-- Keep code and tests aligned; do not leave test expectations implicit when a task depends on them.
-
-For executor choice, follow the switchable implementation thresholds defined in `codex-delegation-executor`.
-
-Common provisional triggers for assigning this work to a `sub-agent` are:
-
-- target files are 4 or more
-- affected modules are 2 or more
-- expected code or test edit blocks are 4 or more
+- Do not let the implementation executor review its own work.
+- For executor selection, follow `codex-delegation-executor`; do not invent a separate dispatch policy here.
+- Do not merge.
 
 ## Outputs
 
-After this skill runs, the scoped code/test changes are in place and ready for validation or review.
+After this Skill runs, the parent receives:
+
+- applied scoped changes,
+- changed and intentionally untouched files,
+- focused and broader validation evidence required by the target project,
+- failure diagnostics when applicable,
+- unknowns, blocked items, and remaining risks,
+- a result ready for report generation and review.
 
 ## Completion condition
 
-This skill is complete only when:
-
-- scoped code or test edits are applied
-- changed files and remaining risks are reported
-- the result is ready for validation or review
+This Skill is complete only when the shared Common Work and Implementation contracts are satisfied for the assigned scope, the parent has the evidence required for the next workflow stage, no review verdict was issued by the executor, and no merge was performed.
