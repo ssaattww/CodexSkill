@@ -1,85 +1,75 @@
 ---
 name: chat-implementation-worker
-description: Execute a bounded initial implementation or review follow-up directly in one ChatGPT chat when the user coordinates the workflow as the parent. Use for test-first code and test changes, implementation reporting, and durable handoff without review ownership or nested worker dispatch.
+description: Execute a bounded initial implementation or review follow-up directly in one ChatGPT chat when the user coordinates the workflow as the parent. Use for code and test changes, implementation reporting, and durable handoff without review ownership or nested worker dispatch.
 ---
 
 # Chat Implementation Worker
 
 ## Goal
 
-Implement a decided task or review follow-up in one ChatGPT chat, validate it, create a durable implementation report, and produce a handoff for the next user-started chat.
+Implement a decided task or review follow-up in one ChatGPT chat, validate it according to the project instructions, create a durable implementation report, and produce a handoff for the next user-started chat.
 
 ## Execution model
 
-- The user is the parent and controls the repository, branch, task order, permissions, next chat, and merge decision.
+- The user is the parent and controls task choice, scope changes, next chat, and merge decision.
 - This worker must not start another worker.
-- Use only the supplied task packet and authoritative repository sources; do not rely on previous conversation history.
+- Resolve discoverable repository state from project instructions, the issue, the PR, the task list, repository files, reports, and handoffs before asking the user.
+- Do not require the user to repeat repository URL, branch, base, HEAD SHA, report path, handoff path, workflow rules, or permissions when authoritative sources make them unambiguous.
+- Follow the project's implementation and testing policy. Do not impose a repository-development method that the project instructions do not require.
 - This worker must create an implementation report but must not issue the final review verdict.
 - Follow the [shared handoff contract](../chat-worker-shared/references/handoff-contract.md).
 - A handoff is not automatically visible to another chat. When `write_handoff` is authorized, store it under `reports/handoffs/`; otherwise return the complete packet for user copy and paste.
 
 ## Inputs
 
-Require:
+An issue or task identifier plus the mode is normally sufficient.
 
-- task, issue, or PR identifier
-- repository, branch, base reference, and current HEAD SHA
-- mode: `initial implementation` or `review follow-up`
-- scope, non-goals, and authoritative requirements
-- target files and relevant dependency boundaries
-- current `authorized_actions` and `write_boundary`
-- behavior to prove test-first
-- focused and full validation expectations
-- report path or repository report naming policy
-- previous findings and required regressions for review follow-up
+For `review follow-up`, the PR identifier or an instruction to address the current review is normally sufficient. Discover the target branch, current HEAD, applicable review report, applicable handoff, and required changes from the PR and repository.
 
-If required information is missing, do not guess. Record it under `unknown`, mark the implementation `blocked`, create a report describing the blocked state when reporting is authorized, and return control to the user.
+Ask the user only when authoritative sources conflict, multiple unresolved candidates exist, or a product decision cannot be inferred safely.
 
 ## Modes
 
 ### initial implementation
 
-- Start with the smallest testable behavior.
-- Inspect existing contracts before introducing a new model.
+- Read the task list, issue, design, repository instructions, and relevant code before changing files.
+- Start with the smallest change that satisfies the accepted scope.
+- Follow the project's required testing order.
 - Do not redesign the whole task or broaden scope.
 
 ### review follow-up
 
-- Add or strengthen a failing regression before the fix.
-- Limit work to the finding, its direct cause, affected boundary, and sibling cases of the same defect class.
-- Preserve all earlier regression tests.
-- Do not mix unrelated cleanup into the fix.
+- Resolve the latest applicable review findings from the PR, report, and handoff.
+- Follow the project's required regression-test policy.
+- Limit work to the findings, direct causes, affected boundaries, and sibling cases of the same defect class.
+- Preserve existing regressions and avoid unrelated cleanup.
 
 ## Required flow
 
-1. Resolve repository, branch, base, HEAD, scope, permissions, write boundaries, and report destination.
-2. Read target files, direct dependencies, existing contracts, test wiring, and CI entry points.
-3. Add or identify a failing test or contract check before implementation.
-4. Record the Red command, exit code, failure, HEAD SHA, and diagnostic artifact when available.
-5. Implement the smallest change that satisfies the requirement.
-6. Run focused validation, then relevant suites and required full validation.
-7. Record build, lint, unit, integration, host, packaging, and environment evidence that applies.
-8. For failures, preserve or inspect stdout, stderr, environment, source, tests, configuration, generated output, and test results needed for diagnosis.
-9. Record changed files, intentionally untouched areas, commits, final HEAD SHA, and remaining risks.
-10. Create an implementation report under the repository report directory, normally `reports/`, using the repository naming and template rules.
-11. Create a complete handoff packet that references the report path.
-12. If `write_handoff` is authorized, write the packet to `reports/handoffs/` and return its path. Otherwise return the complete packet inline for copy and paste.
+1. Resolve discoverable repository state from the issue or PR: repository, task, branch, base, current HEAD, requirements, report naming, handoff files, and workflow expectations.
+2. Confirm that failure diagnostics required by the project instructions are available before running relevant tests.
+3. Read target files, direct dependencies, contracts, test wiring, and CI entry points.
+4. Implement and test in the order required by the project instructions.
+5. Run focused validation, then relevant suites and required full validation.
+6. For failures, preserve or inspect the diagnostic data required by the project instructions.
+7. Record changed files, intentionally untouched areas, commits, final HEAD SHA, CI run, and remaining risks.
+8. Create an implementation report under the repository report directory, normally `reports/`.
+9. Update or create the PR and post the required concise PR comment when the project instructions require it.
+10. Create a complete handoff packet that references the report and PR.
+11. If `write_handoff` is authorized, write the packet to `reports/handoffs/`; otherwise return the complete packet inline.
 
-## Test-first rules
+## Discovery rules
 
-- Executable behavior changes are test-first by default.
-- An existing test may serve as Red evidence only when it already proves the exact failure.
-- Documentation-only or externally blocked work may use `not_applicable` with a concrete reason.
-- Do not weaken tests to match the implementation.
-- Assert exact values, state, identity, side effects, and failure behavior rather than success or throw alone.
-- Fixtures must be producible by the real protocol, parser, API, or tool.
+- From an issue, resolve the task entry, accepted scope, branch or open PR, design references, and current implementation state.
+- From a PR, resolve its branch, current HEAD, base, linked issue, changed files, reports, handoffs, review comments, and HEAD-associated CI runs.
+- Select a handoff by task, producer role, mode, branch, and HEAD relationship; do not select merely by newest timestamp.
+- Use only workflow runs associated with the worker's branch HEAD when the project instructions require that rule.
+- Ask for a path or SHA only when discovery leaves a real ambiguity.
 
 ## Scope and safety rules
 
 - Do not exceed the user-approved scope.
-- Do not perform actions absent from `authorized_actions`.
-- Do not write outside `write_boundary`.
-- Do not modify work owned by another task, PR, or worker.
+- Do not modify work owned by another task or PR.
 - Do not revert unrelated changes.
 - Do not include secrets or credentials in reports or handoffs.
 - Do not treat your own implementation as independently reviewed.
@@ -88,27 +78,15 @@ If required information is missing, do not guess. Record it under `unknown`, mar
 ## Report requirement
 
 - The implementation report is a mandatory work product, separate from the handoff packet.
-- The report must describe scope, non-goals, authoritative requirements, Red and Green evidence, changed files, commands, tests, CI, artifacts, commits, final HEAD SHA, blocked items, and remaining risks.
+- The report must describe scope, requirements, implementation, changed files, tests and validation, CI, artifacts, commits, final HEAD SHA, blocked items, and remaining risks.
 - The report must not invent review findings, review verdicts, or merge approval.
-- The report may state that independent review has not yet occurred.
 - A handoff file under `reports/handoffs/` is transport evidence and does not replace the implementation report.
-- If repository writing is unavailable, return the complete report body together with the handoff packet so the user can persist it.
+- If repository writing is unavailable, return the complete report body together with the handoff packet.
 
 ## Outputs
 
-Return:
-
-- scoped code and test changes
-- Red and Green evidence
-- changed and intentionally untouched files
-- commands, tests, CI, and artifacts
-- commits and final HEAD SHA
-- implementation outcome and remaining risks
-- implementation report path or complete report body
-- `next_chat_input`
-- a packet conforming to the shared contract
-- either a `reports/handoffs/` packet path or the complete inline packet
+Return the implementation report path or complete report body, handoff path or complete packet, PR identifier, final HEAD SHA, HEAD-associated CI result, changed files, validation evidence, and remaining risks.
 
 ## Completion condition
 
-Complete only when the assigned scope is implemented or explicitly blocked, test-first evidence or an exemption is recorded, required validation is recorded, failures and risks are explicit, the final HEAD is identified, an implementation report has been created or returned in full, no review verdict was issued, and a transportable handoff is available. This worker must not merge.
+Complete only when the assigned scope is implemented or explicitly blocked, project-required validation is recorded, failures and risks are explicit, the final HEAD is identified, an implementation report has been created or returned in full, the PR is created or updated as required, no review verdict was issued, and a transportable handoff is available. This worker must not merge.
