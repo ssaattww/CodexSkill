@@ -4,108 +4,183 @@
 
 利用者が親として複数のChatGPT chatを起動し、実装、レビュー、レポート作成を独立したworker Skillへ割り当てる構成を定義する。
 
-ChatGPT chat同士は自動的に会話履歴を共有しない。repository、Issue、PR、report、handoffを永続的な引継ぎ情報として使用する。
+同じ実装・レビュー・レポート規則をCodex用SkillとChatGPT用Skillへ重複記述せず、runtime非依存の共通契約とruntime固有adapterへ分離する。
+
+ChatGPT chat同士は会話履歴を自動共有しない。repository、Issue、PR、report、handoffを永続的な引継ぎ情報として使用する。
+
+## アーキテクチャ
+
+```text
+shared workflow contracts [runtime非依存の正本]
+├─ common-work-contract.md
+├─ implementation-contract.md
+├─ review-contract.md
+└─ report-contract.md
+        │
+        ├─ Codex adapters
+        │  ├─ implementation-executor
+        │  ├─ review-enforcer
+        │  └─ report-output-manager
+        │
+        └─ ChatGPT adapters
+           ├─ chat-implementation-worker
+           ├─ chat-review-worker
+           └─ chat-report-writer
+```
+
+共通契約は`shared/workflow/`に置く。CodexとChatGPTの各Skillは、同じ意味論を再記述せず、実行方式、委譲方式、権限境界、永続化方式だけを定義する。
+
+### 共通契約
+
+- `shared/workflow/common-work-contract.md`
+  - authority、state discovery、scope、current HEAD、CI、report、handoff、merge boundary
+- `shared/workflow/implementation-contract.md`
+  - initial implementation、review follow-up、validation、implementation evidence
+- `shared/workflow/review-contract.md`
+  - normal review cycle、fix verification、independent final review、finding、coverage、verdict
+- `shared/workflow/report-contract.md`
+  - report mode、source selection、evidence fidelity、structure、write boundary
+
+### ChatGPT固有契約
+
+- `shared/chat-worker/handoff-contract.md`
+  - 独立chat間で移送するpacket schema
+- `shared/chat-worker/project-instruction-example.md`
+  - ChatGPT Project Instructionの設定例
+
+これらはSkillではない。ChatGPT Skillから参照される補助文書である。
 
 ## 対象Skill
 
-ChatGPT用Skillは次の3つである。
+現在のChatGPT用Skillは次の3つである。
 
 - `chat-implementation-worker`
 - `chat-review-worker`
 - `chat-report-writer`
 
-各Skillは別workerまたはsub-agentを起動しない。
+Release対象は固定リストではなく、`skills/chat-*/SKILL.md`に一致する全Skillである。将来ChatGPT用Skillを追加した場合、命名規則を満たせばbuild対象へ自動追加される。
 
-## ChatGPT登録用ZIP
+各ChatGPT Skillは別workerまたはsub-agentを起動しない。
 
-GitHub Releaseへ、次の構造を持つ単一ファイル`chatgpt-worker-skills.zip`を添付する。
+## repository sourceと配布物
+
+### repository source
+
+ChatGPT adapterの`SKILL.md`は、repository上の共通契約を相対linkで参照する。
+
+```text
+skills/chat-implementation-worker/SKILL.md
+  -> ../../shared/workflow/common-work-contract.md
+  -> ../../shared/workflow/implementation-contract.md
+  -> ../../shared/workflow/report-contract.md
+  -> ../../shared/chat-worker/handoff-contract.md
+  -> ../../shared/chat-worker/project-instruction-example.md
+```
+
+`skills/chat-*/references/`へ共通契約のcopyをcommitしない。保守時に編集する正本は`shared/`だけである。
+
+### ChatGPT登録用ZIP
+
+GitHub Releaseへ、単一ファイル`chatgpt-worker-skills.zip`を添付する。
+
+生成物はルート直下にSkill directoryだけを持つ。
 
 ```text
 chatgpt-worker-skills.zip
 ├─ chat-implementation-worker/
 │  ├─ SKILL.md
-│  └─ references/
-│     └─ handoff-contract.md
+│  └─ references/shared/
+│     ├─ workflow/
+│     │  ├─ common-work-contract.md
+│     │  ├─ implementation-contract.md
+│     │  └─ report-contract.md
+│     └─ chat-worker/
+│        ├─ handoff-contract.md
+│        └─ project-instruction-example.md
 ├─ chat-review-worker/
 │  ├─ SKILL.md
-│  └─ references/
-│     └─ handoff-contract.md
+│  └─ references/shared/
+│     ├─ workflow/
+│     │  ├─ common-work-contract.md
+│     │  ├─ review-contract.md
+│     │  └─ report-contract.md
+│     └─ chat-worker/
+│        └─ handoff-contract.md
 └─ chat-report-writer/
    ├─ SKILL.md
-   └─ references/
-      └─ handoff-contract.md
+   └─ references/shared/
+      ├─ workflow/
+      │  ├─ common-work-contract.md
+      │  └─ report-contract.md
+      └─ chat-worker/
+         └─ handoff-contract.md
 ```
 
-このZIPをChatGPTのSkillアップロードへ指定し、3 Skillを一括登録する。
+実際のdependency集合はlink解析結果で決まる。上記は現在の構成例である。
 
-### shared contractの意味
+このZIPをChatGPTのSkill uploadへ指定し、複数Skillを一括登録する。
 
-`handoff-contract.md`はSkillではなく、3 Skillが共通利用する補助文書である。
+## Release build
 
-- repository上の保守用原本: `shared/chat-worker/handoff-contract.md`
-- 各Skillへ同梱する実行時copy: `<skill>/references/handoff-contract.md`
-- 保守用原本そのものはChatGPTへ登録しない
-- 3つのcopyは保守用原本と同一内容にする
+`scripts/build_chatgpt_worker_skills.py`が配布物を生成する。
 
-以前の`skills/chat-worker-shared/`という配置は、4つ目のSkillに見えるため廃止する。
+1. `skills/chat-*/SKILL.md`を全件検出する。
+2. directory名とfront matterの`name`が一致することを確認する。
+3. Skill directory内の全fileをstagingへcopyする。
+4. Markdown linkから`shared/`配下のdependencyを再帰的に解決する。
+5. dependencyを各Skillの`references/shared/`へcopyする。
+6. repository相対linkをSkill内相対linkへ書き換える。
+7. package内linkがSkill directory外へ出ないことを確認する。
+8. ZIP root directoryが検出したSkill集合と一致することを確認する。
+9. 同一sourceから再現可能なZIPを生成する。
 
-## Release生成
+この方式により、ChatGPT adapter内のfileと、そのadapterが参照するChatGPT固有・共通runtime dependencyはRelease ZIPへ全て含まれる。
 
-`.github/workflows/release-chatgpt-worker-skills.yml`は、対象ファイルが`main`へmergeされた後に実行する。
+設計書、GitHub Actions workflow、build script自体はrepository保守物であり、ChatGPTへinstallするruntime dependencyではないためSkill ZIPのrootへ追加しない。
 
-1. merge後の`main` HEADをcheckoutする。
-2. 3 Skillの`SKILL.md`と`references/handoff-contract.md`の存在を確認する。
-3. 3つのcontract copyが`shared/chat-worker/handoff-contract.md`と一致することを確認する。
-4. 3 Skill directoryをルート直下に持つ単一ZIPを生成する。
-5. rolling release tag `chatgpt-worker-skills-latest`をmerge後HEADへ更新する。
-6. Release `ChatGPT Worker Skills`へ`chatgpt-worker-skills.zip`を添付または置換する。
+## GitHub Actions
 
-merge前のPR branchではReleaseを更新しない。
+`.github/workflows/release-chatgpt-worker-skills.yml`を使用する。
+
+### PR
+
+- ChatGPT adapter、共通契約、ChatGPT固有契約、build script、関連設計の変更で実行する
+- ZIPを生成して構造とlinkを検証する
+- 生成ZIPをworkflow artifactとして保存する
+- GitHub Releaseとrolling tagは更新しない
+
+### main push
+
+- merge後の`main` HEADをcheckoutする
+- PRと同じbuildと検証を実行する
+- rolling tag `chatgpt-worker-skills-latest`をmerge後HEADへ更新する
+- Release `ChatGPT Worker Skills`へ`chatgpt-worker-skills.zip`を添付または置換する
+
+`workflow_dispatch`はbuild検証だけを行い、Releaseは更新しない。
 
 ## Project Instruction
 
-Skill ZIPとは別に、対象ChatGPT ProjectへProject Instructionを設定する。
+Skill ZIPとは別に、対象ChatGPT Projectへ実際のProject Instructionを設定する。
 
-### RevMem向け例
+維持する例は`shared/chat-worker/project-instruction-example.md`である。`chat-implementation-worker`が参照するためRelease ZIPにも含まれる。
 
-```text
-対象リポジトリ:
-https://github.com/ssaattww/RevMem
-
-タスク一覧:
-tasks/tasks-status.md
-
-Codex用Skillの参照リポジトリ:
-https://github.com/ssaattww/CodexSkill
-
-必要な作業手順やSkillの構成は、この参照リポジトリを確認してください。
-
-リポジトリの参照・更新、IssueとPRの作成・更新、PRコメントの投稿にはGitHub connectorを使用してください。
-
-作業開始時に、テスト失敗時の原因調査に必要な情報をartifactとして保存するworkflowが存在するか確認してください。存在しない場合は、対象workflowへ追加してください。artifactには、少なくともテスト結果、標準出力、標準エラー、および失敗原因の調査に必要なログを含めてください。
-
-実装はTDDを基本とし、先にテストを追加して失敗を確認してから実装してください。このTDD方針と診断artifact workflowの追加方針はRevMemの実装作業に適用し、参照先のCodexSkillリポジトリには適用しません。
-
-変更は、レビュー可能な小さな論理単位でcommit/pushしてください。
-
-作業完了時は、詳細reportをrepositoryへ保存してください。それとは別に、変更内容と検証結果を要約した簡易reportをPRコメントへ投稿してください。
-
-PRの作成または既存PRの更新まで行ってください。mergeは利用者が行うため、workerはmergeしないでください。
-
-「最新のworkflow run」ではなく、対象PRのcurrent HEAD SHAとrunのhead SHAが一致するworkflow runだけをCI確認の対象としてください。HEAD更新後は新しいHEADに紐づくrunを確認してください。一致するrunがない場合はCI未実施として報告し、別SHAのrunを代用しないでください。
-```
+Project Instructionは対象projectの正本であり、例をそのまま全projectへ強制しない。特にTDD要否は対象projectが決める。
 
 ## ChatGPT worker flow
 
 ```text
 利用者 [親]
-├─ Chat A: chat-implementation-worker [初回実装]
+├─ Chat A: chat-implementation-worker [initial implementation]
 ├─ Chat B: chat-review-worker [initial review]
 ├─ Chat A: chat-implementation-worker [review follow-up]
-├─ Chat C: chat-review-worker [fix verification]
-├─ Chat D: chat-review-worker [cold final review]
+├─ Chat B: chat-review-worker [fix verification]
+├─ Chat C: chat-review-worker [independent final review]
 └─ Report chat: chat-report-writer [必要な場合のみ]
 ```
+
+initial reviewとfix verificationは、利用可能であれば同じnormal review chatを継続する。finding identity、review criteria、reviewed HEADを維持するためである。
+
+independent final reviewは、実装、review fix、normal reviewを行っていない新規chatで実施する。
 
 ### 初回実装
 
@@ -113,7 +188,7 @@ PRの作成または既存PRの更新まで行ってください。mergeは利�
 Issue #<number>を開始してください。
 ```
 
-implementation workerはIssue、task list、design、branch、PR、validation、current HEADを自己解決する。
+implementation workerはIssue、task list、design、branch、PR、validation、current HEADをrepositoryから解決する。
 
 ### 初回レビュー
 
@@ -121,7 +196,7 @@ implementation workerはIssue、task list、design、branch、PR、validation、
 PR #<number>を初回レビューしてください。
 ```
 
-initial reviewerは全変更ファイル、直接依存、要件、設計、current HEAD固有の検証証拠を確認する。
+normal reviewerは全変更file、直接依存、要件、設計、current HEAD固有のvalidation evidenceを確認する。
 
 ### レビュー対応
 
@@ -129,7 +204,7 @@ initial reviewerは全変更ファイル、直接依存、要件、設計、curr
 レビュー結果に対応してください。
 ```
 
-初回実装chatを継続し、該当findingと同一欠陥クラスのsibling caseだけを対象に修正する。
+初回実装chatを継続し、finding、直接原因、影響境界、同一欠陥classのsibling caseを対象に修正する。
 
 ### 修正確認
 
@@ -137,7 +212,7 @@ initial reviewerは全変更ファイル、直接依存、要件、設計、curr
 PR #<number>の修正確認をしてください。
 ```
 
-previous reviewed HEAD以降のfix、finding解消、regression evidence、影響範囲を確認する。
+初回review chatを継続し、previous reviewed HEAD以降のfix、finding解消、regression evidence、直接影響を確認する。
 
 ### 独立最終レビュー
 
@@ -145,54 +220,46 @@ previous reviewed HEAD以降のfix、finding解消、regression evidence、影�
 PR #<number>を独立レビューしてください。
 ```
 
-実装またはreview fixを行っていない新規chatで、final current HEADを独立確認する。過去reviewの結論は独立pass後に照合する。
+新規chatでfinal current HEADを独立確認する。過去reviewの結論は独立pass後に照合する。
 
-## Codex review flow
+## Codex reviewとの共通部分
 
-Codexでも独立最終レビューを必須とする。
+CodexとChatGPTは`shared/workflow/review-contract.md`の同じlifecycleを使用する。
 
-### 通常レビューcycle
+- normal review cycleはreviewer continuityを維持する
+- final current HEADに対してindependent final reviewを行う
+- final review後にHEADが変わればfix verificationとindependent final reviewをやり直す
+- finding、coverage、verdict、report evidenceの意味は共通である
 
-- `review-enforcer`が専用reviewer sub-agentを起動する。
-- initial reviewとfix verificationは、原則として同じreviewerを継続利用する。
-- finding identity、review criteria、fix contextを維持する。
+runtime差分は次だけである。
 
-### 独立最終レビュー
-
-通常レビューcycle完了後、別のfresh reviewer sub-agentを起動する。
-
-- implementation sub-agentとは別であること
-- 通常reviewerとは別であること
-- review fixを実装していないこと
-- 原則`fork_turns: "none"`で起動すること
-- final current HEAD、要件、設計、final diff、validation evidenceを対象とすること
-- 過去review結論を読む前に独立passを行うこと
-- 独立最終review reportを別に作成すること
-
-独立最終レビューでrequired findingが出た場合は実装へ戻る。HEAD更新後は、通常reviewerによるfix verificationを行い、その後さらに別のfresh reviewerで独立最終レビューをやり直す。
+- Codex: `review-enforcer`がnormal reviewerとfresh reviewer sub-agentをdispatchする
+- ChatGPT: 利用者がnormal review chatとfresh independent review chatを起動・再開する
 
 ## Worker責務
 
 ### `chat-implementation-worker`
 
-- 初回実装とreview follow-upを扱う
-- 対象Projectのtesting policyに従う
-- implementation report、handoff、PR簡易コメントを出力する
+- shared implementation contractをdirect chatで実行する
+- target Projectのtesting policyに従う
+- implementation report、PR簡易comment、handoffを出力する
 - review verdictを出さない
 - mergeしない
 
 ### `chat-review-worker`
 
-- initial review、fix verification、cold final reviewを扱う
+- shared review contractをdirect chatで実行する
+- initial review、fix verification、independent final reviewを扱う
 - product code、test、workflowを変更しない
-- review report、handoff、PR簡易コメントを出力する
+- review report、PR簡易comment、handoffを出力する
 - mergeしない
 
 ### `chat-report-writer`
 
+- shared report contractをdirect chatで実行する
 - repository上のevidenceを忠実に統合する
 - technical finding、test結果、CI結論を発明しない
-- report、handoff、PR簡易コメントだけを作成する
+- report、PR簡易comment、handoffだけを作成する
 - mergeしない
 
 ## Handoff
@@ -202,27 +269,28 @@ Codexでも独立最終レビューを必須とする。
 - PRまたはIssueから一意に特定できる場合は次workerがconnectorで取得する
 - 一意に特定できない場合だけ利用者へpathまたはpacket本文を求める
 - 前workerの権限は次chatへ自動継承しない
+- handoff schemaは特定3 Skill名へ固定しない
 
 ## CodexSkill repositoryの検証方針
 
 CodexSkill repository自身にはTDDを適用しない。
 
 - Red/Green用testを追加しない
-- この変更専用のcontract testを追加しない
+- 変更専用contract testを追加しない
 - TDD用workflowを追加しない
-- 既存lintまたはschema validationがあれば通常検証として使用する
-- 自動検証がない場合は設計書、Skill、workflow、Issue、PR説明の整合性をreviewする
+- Python構文確認、bundle build、ZIP構造確認、link解決、既存lint、設計整合を通常検証として使用する
 
-Release packaging workflowは製品コードのTDDではなく、配布物生成と構造検証のための運用workflowである。
+Release packaging workflowは製品codeのTDDではなく、配布物生成と構造検証のための運用workflowである。
 
 ## 完了条件
 
-- ChatGPT用3 Skillが自己完結している
-- 単一ZIPで3 Skillを一括登録できる構造になっている
-- merge後にRelease assetが生成される
-- shared contractがSkillとして誤認されない配置になっている
-- ChatGPTとCodexの双方で独立最終レビューが必須になっている
-- Codexの通常reviewerと独立最終reviewerが分離されている
-- Project Instruction例が反映されている
-- current HEAD固有CI規則が反映されている
-- workerはmergeしない
+- runtime非依存の規則が`shared/workflow/`で一元管理されている
+- CodexとChatGPTのSkillがruntime adapterに限定されている
+- repository内に共通契約の手動copyがない
+- 全`skills/chat-*` Skillが自動的にZIPへ含まれる
+- 各Skillが参照するshared dependencyがZIP内へ同梱される
+- ZIP rootにinstallable Skill directory以外を置かない
+- PRでbundle validationが実行される
+- main反映後にRelease assetが更新される
+- ChatGPTとCodexの双方で独立最終レビューが必須である
+- workerまたはagentがmergeしない
