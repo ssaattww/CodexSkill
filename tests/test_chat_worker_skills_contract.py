@@ -45,7 +45,8 @@ SKILL_SPECIFIC_MARKERS = {
         "review follow-up",
         "test-first",
         "must not issue the final review verdict",
-        "must not create a narrative report",
+        "must create an implementation report",
+        "reports/",
         "must not merge",
     ),
     "chat-review-worker": (
@@ -106,6 +107,7 @@ DESIGN_WORKFLOW_MARKERS = (
     "新規chatへ送るprompt",
     "既存chatへ送るprompt",
     "handoff path",
+    "全workerは成果物としてレポートを出力する",
 )
 
 
