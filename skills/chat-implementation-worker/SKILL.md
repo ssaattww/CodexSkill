@@ -7,87 +7,64 @@ description: Execute a bounded initial implementation or review follow-up direct
 
 ## Goal
 
-Implement a decided task or review follow-up in one ChatGPT chat, validate it according to the target project's instructions, create a durable implementation report, post or render a concise PR comment, and produce a handoff for the next user-started chat.
+Execute one accepted implementation scope in the current ChatGPT chat, persist accurate implementation evidence, update or create the PR as required, and leave a transportable handoff for the next user-started chat.
 
-## Execution model
+## Shared contracts
 
-- The user is the parent and controls task choice, scope changes, next chat, and merge decision.
-- This worker must not start another worker.
-- Resolve discoverable repository state from project instructions, the issue, the PR, the task list, repository files, reports, and handoffs before asking the user.
-- Do not require the user to repeat repository URL, branch, base, HEAD SHA, report path, handoff path, workflow rules, or permissions when authoritative sources make them unambiguous.
-- Follow the target project's implementation and testing policy. Do not impose a repository-development method that the project instructions do not require.
-- This worker must create an implementation report but must not issue the final review verdict.
-- When a PR exists, a concise PR comment is a required work product. Post it when PR commenting is available; otherwise return the complete comment body and record why it was not posted.
-- Follow the [shared handoff contract](references/handoff-contract.md).
-- A handoff is not automatically visible to another chat. When `write_handoff` is authorized, store it under `reports/handoffs/`; otherwise return the complete packet for user copy and paste.
+Follow these canonical contracts instead of redefining their rules here:
+
+- [Common Work Contract](../../shared/workflow/common-work-contract.md)
+- [Implementation Contract](../../shared/workflow/implementation-contract.md)
+- [Report Contract](../../shared/workflow/report-contract.md)
+- [Chat Worker Handoff Contract](../../shared/chat-worker/handoff-contract.md)
+
+For ChatGPT Project configuration, use the target project's actual instructions. A maintained example is available at [ChatGPT Project Instruction Example](../../shared/chat-worker/project-instruction-example.md).
+
+The GitHub Release builder rewrites these repository links and includes the referenced files inside the installable Skill.
+
+## Execution owner
+
+Run this Skill directly in the current ChatGPT chat.
+
+- The user is the parent and chooses the task, permissions, next chat, and merge action.
+- This worker must not start another worker or sub-agent.
+- Resolve discoverable repository state through the available connector before asking the user.
+- The target project's instructions own implementation order and testing policy.
 
 ## Inputs
 
-An issue or task identifier plus the mode is normally sufficient.
+An Issue or task identifier plus `initial implementation` is normally sufficient.
 
-For `review follow-up`, the PR identifier or an instruction to address the current review is normally sufficient. Discover the target branch, current HEAD, applicable review report, applicable handoff, and required changes from the PR and repository.
+For `review follow-up`, a PR identifier or an instruction to address the current review is normally sufficient. Resolve the applicable findings, reviewed HEAD, branch, current HEAD, reports, and handoffs from repository evidence.
 
-Ask the user only when authoritative sources conflict, multiple unresolved candidates exist, or a product decision cannot be inferred safely.
+## Runtime flow
 
-## Modes
+1. Resolve the target repository, Issue or PR, task entry, accepted scope, branch, base, current HEAD, requirements, design, write boundary, validation policy, reports, and handoffs.
+2. Select `initial implementation` or `review follow-up` and execute the shared Implementation Contract directly.
+3. Use repository tooling and connectors allowed by the current chat to apply changes, commit, push, and create or update the PR as required.
+4. Create an implementation report under the repository's report rules. If writing is unavailable, return the complete report body.
+5. When a PR exists, post a concise PR comment derived from the implementation report. If commenting is unavailable, return the complete comment body.
+6. Create a handoff packet using the Chat Worker Handoff Contract and persist it under `reports/handoffs/` when authorized; otherwise return it in full.
 
-### initial implementation
+## Runtime-specific boundaries
 
-- Read the task list, issue, design, repository instructions, target files, direct dependencies, and applicable validation before changing files.
-- Start with the smallest change that satisfies the accepted scope.
-- Follow the target project's required implementation and testing order.
-- Do not redesign the whole task or broaden scope.
-
-### review follow-up
-
-- Resolve the latest applicable review findings from the PR, report, and handoff.
-- Follow the target project's required regression policy when tests or other regression evidence apply.
-- Limit work to the findings, direct causes, affected boundaries, and sibling cases of the same defect class.
-- Preserve existing regression evidence and avoid unrelated cleanup.
-
-## Required flow
-
-1. Resolve discoverable repository state from the issue or PR: repository, task, branch, base, current HEAD, requirements, report naming, handoff files, and workflow expectations.
-2. Confirm that failure diagnostics required by the project instructions are available before running relevant tests or validation.
-3. Read target files, direct dependencies, contracts, validation wiring, and CI entry points as applicable.
-4. Implement and validate in the order required by the target project's instructions.
-5. Run focused validation, then relevant suites and required full validation when available and applicable.
-6. For failures, preserve or inspect the diagnostic data required by the project instructions.
-7. Record changed files, intentionally untouched areas, commits, final HEAD SHA, CI run, and remaining risks.
-8. Create an implementation report under the repository report directory, normally `reports/`, using repository-specific naming rules.
-9. Update or create the PR when required. When a PR exists, post a concise PR comment; if posting is unavailable, return the complete comment body.
-10. Create a complete handoff packet that references the report and PR comment.
-11. If `write_handoff` is authorized, write the packet to `reports/handoffs/`; otherwise return the complete packet inline.
-
-## Discovery rules
-
-- From an issue, resolve the task entry, accepted scope, branch or open PR, design references, and current implementation state.
-- From a PR, resolve its branch, current HEAD, base, linked issue, changed files, reports, handoffs, review comments, and HEAD-associated CI runs.
-- Select a handoff by task, producer role, mode, branch, and HEAD relationship; do not select merely by newest timestamp.
-- Use only workflow runs associated with the worker's branch HEAD when the project instructions require that rule.
-- Ask for a path or SHA only when discovery leaves a real ambiguity.
-
-## Scope and safety rules
-
-- Do not exceed the user-approved scope.
-- Do not modify work owned by another task or PR.
-- Do not revert unrelated changes.
-- Do not include secrets or credentials in reports or handoffs.
-- Do not treat your own implementation as independently reviewed.
-- This worker must not merge.
-
-## Report requirement
-
-- The implementation report is a mandatory work product, separate from the handoff packet.
-- The report must describe scope, requirements, implementation, changed files, project-required tests and validation, CI, artifacts, commits, final HEAD SHA, blocked items, and remaining risks.
-- The report must not invent review findings, review verdicts, or merge approval.
-- A handoff file under `reports/handoffs/` is transport evidence and does not replace the implementation report.
-- If repository writing is unavailable, return the complete report body together with the handoff packet.
+- Do not issue an independent review verdict for this worker's own implementation.
+- Do not perform a cold or independent final review in the implementation chat.
+- Do not exceed the current chat's explicit permissions.
+- Do not merge.
 
 ## Outputs
 
-Return the implementation report path or complete report body, handoff path or complete packet, PR identifier, concise PR comment reference or complete body, final HEAD SHA, HEAD-associated CI result, changed files, validation evidence, and remaining risks.
+Return or persist:
+
+- implementation mode and accepted scope,
+- changed files and validation evidence,
+- commits, final HEAD, and matching CI evidence or explicit absence,
+- implementation report path or complete body,
+- PR identifier and concise comment reference or complete body,
+- handoff path or complete packet,
+- blocked items, unknowns, remaining risks, and next action.
 
 ## Completion condition
 
-Complete only when the assigned scope is implemented or explicitly blocked, project-required validation is recorded, failures and risks are explicit, the final HEAD is identified, an implementation report has been created or returned in full, the PR is created or updated as required, the concise PR comment is posted or rendered when a PR exists, no review verdict was issued, and a transportable handoff is available. This worker must not merge.
+This Skill is complete only when the shared Common Work and Implementation contracts are satisfied, required report and PR outputs are available, a transportable handoff exists, no independent review verdict was issued, and no merge was performed.
