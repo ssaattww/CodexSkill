@@ -1,95 +1,108 @@
 ---
 name: report-output-manager
-description: Standardize report file placement, filenames, and report-type templates under the target repository's reports directory. Use when creating a new report file or deciding how to name, place, or initialize evidence, review, intake, or analysis reports.
+description: Persist already-rendered report content under a target repository's reports directory using stable placement and filename rules. Use after a renderer or task worker has produced the complete body. This skill is an artifact adapter; it does not inspect code, choose review criteria, decide verdicts, or render ReviewResult content.
 ---
 
 # Report Output Manager
 
-Keep report files predictable across skills and repositories.
+Write a supplied report body to a predictable repository artifact.
 
 ## Goal
 
-Create report files in a consistent location with stable, reusable naming and the
-correct report-type template.
+Convert rendered text plus artifact metadata into a concrete report path and persisted file without changing the source result.
 
 ## Execution owner
 
 Run this skill as: `parent`
 
-- Report path and template selection are part of parent-owned workflow control.
-- Parent should decide filenames, select the report type, and create report paths
-  before delegating work.
+- Parent owns repository path selection and write authorization.
+- Content semantics remain owned by the caller or renderer.
 
 ## Inputs
 
-Before running this skill, identify:
+Require:
 
 - target repository root
+- complete rendered body text
 - report purpose or item name
-- report type, such as implementation, review, verification, intake, or analysis
-- issue, task, or topic prefix information
-- whether an existing report should be reused
+- issue, task, PR, or topic prefix
+- revision number when this is a follow-up report
+- whether an existing artifact should be reused or replaced
+- source result identifier, when available
 
-## Run this skill
+Do not accept an incomplete `ReviewResult` and attempt to render it here. Review content must first pass through `review-result-renderer`.
 
-Run this skill when:
+## Required flow
 
-- creating a new file under `reports/`
-- deciding a report filename
-- selecting the report template for the caller's report type
-- trying to keep issue-scoped report prefixes consistent
+1. Confirm that the caller supplied complete rendered text.
+2. Determine the report path under `<repo-root>/reports/`.
+3. Use the filename policy.
+4. Preserve the supplied body exactly except for repository-required terminal newline normalization.
+5. Create or update only the intended report artifact.
+6. Return the concrete path and write result to the caller.
 
-## Core rules
+For deterministic naming, use:
 
-- Place reports in `<repo-root>/reports/`.
-- For new filenames, use:
-  - `<issue-prefix>-<item-name>-<yyyymmddhhmmss>.md`
-- When the same logical report needs another revision, keep the same prefix and item
-  name, then insert `-r<revision>` before the timestamp:
-  - `<issue-prefix>-<item-name>-r<revision>-<yyyymmddhhmmss>.md`
-- Prefer canonical issue-based prefixes over freeform labels.
-- Write report body text in Japanese unless the user explicitly requests another
-  language.
-- Do not rename legacy reports unless explicitly requested.
-- For code review and re-review reports, initialize the report from
-  [references/review-report-template.md](references/review-report-template.md).
-  Do not use the generic sub-agent template for code review when the dedicated
-  review template is available.
-- Keep all headings, confirmation rows, and prefilled text in the selected template.
-  Reviewers fill the intended blank fields and must not remove confirmation items.
-
-## Read only what you need
-
-- For naming, prefix selection, and examples:
-  - [references/report-filename-policy.md](references/report-filename-policy.md)
-- For generic Japanese sub-agent execution report structure:
-  - [references/sub-agent-report-template.md](references/sub-agent-report-template.md)
-- For code review and re-review report structure, including the confirmation item
-  list and coverage matrix:
-  - [references/review-report-template.md](references/review-report-template.md)
-
-Use the script when you want a deterministic path:
-
+- [references/report-filename-policy.md](references/report-filename-policy.md)
 - [scripts/build_report_path.sh](scripts/build_report_path.sh)
 
-Current limitation:
+The generic sub-agent execution template remains available only for callers that explicitly choose artifact-backed delegation:
 
-- `build_report_path.sh` generates the base
-  `<issue-prefix>-<item-name>-<timestamp>.md` form.
-- When you need a revisioned filename with `-r<revision>-`, choose the final path
-  manually unless the script has been extended for that case.
+- [references/sub-agent-report-template.md](references/sub-agent-report-template.md)
+
+## Filename rules
+
+- Base form:
+  - `<issue-prefix>-<item-name>-<yyyymmddhhmmss>.md`
+- Revision form:
+  - `<issue-prefix>-<item-name>-r<revision>-<yyyymmddhhmmss>.md`
+- Prefer canonical issue or PR prefixes over freeform labels.
+- Do not rename legacy reports unless explicitly requested.
+
+## Responsibility boundary
+
+This skill owns:
+
+- `reports/` placement
+- filename selection
+- repository file creation or update
+- returning the artifact reference
+
+This skill does not own:
+
+- `ReviewRequest` or `ReviewResult`
+- review criteria or risk modules
+- finding severity, verdict, follow-up, or merge-candidate
+- Markdown review layout
+- chat or PR-comment wording
+- reviewer dispatch
+- commit, push, PR comment, or merge decisions
+
+Repository commit and PR posting are handled by the surrounding Git/GitHub workflow after this adapter returns the artifact.
+
+## Rules
+
+- Do not invent or reinterpret technical content.
+- Do not derive workflow state from report prose.
+- Do not change structured IDs or fixed result values embedded in rendered text.
+- Do not ask a reviewer worker to edit this file directly when structured-result delegation is used.
+- Do not silently overwrite an unrelated report.
+- Write report body text in Japanese unless the renderer or user explicitly selected another language.
 
 ## Outputs
 
-When this skill runs, make the chosen report path, filename, and selected template
-explicit in chat, command output, or the created file itself.
+Return:
+
+- report path
+- filename
+- create or update result
+- source result identifier
+- any artifact-write failure
 
 ## Completion condition
 
 This skill is complete only when:
 
-- a concrete report path and filename have been determined and surfaced to the
-  caller
-- the correct report-type template has been selected
-- for review reports, the dedicated template has been copied without removing its
-  confirmation item list
+- the intended path and filename are explicit
+- the supplied rendered body has been persisted without semantic changes
+- artifact failure is reported separately from the source review or implementation result
