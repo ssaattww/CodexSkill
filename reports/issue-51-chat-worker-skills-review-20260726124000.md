@@ -6,14 +6,14 @@
 - Issue: #51
 - Pull Request: #52
 - Review mode: user-authorized self-review + fix verification
-- Cold final review: 該当しない
+- Cold final review: 未実施
 - Reviewer: 本PRの実装・修正を行った同一ChatGPT chat
 - User authorization: 利用者から、残作業がmergeのみになる段階で同一chatによるreviewを実施するよう明示指示あり
 - Branch: `agent/issue-51-chat-worker-skills`
 - Base: `main`
-- Review対象HEAD: `73b3b9882aa74e2895088cc789eb41acf13d46c9`
+- Review対象HEAD: `856685a65f844004c2058c39106c96b71b44ff5e`
 - Base SHA: `f1ba3dbefe94dd7cc22eeed34149804c400b13cd`
-- Ahead / Behind: ahead 79 / behind 0
+- Ahead / Behind: ahead 89 / behind 0
 - Verdict: Pass with held concerns
 - Merge: 実施しない
 
@@ -21,32 +21,9 @@
 
 本reviewは、実装・修正を行った同じchatで利用者の明示指示により実施した。そのため、`chat-review-worker`が定義するcold final reviewではない。
 
-cold final reviewは、実装または修正を行っていない新規chatでのみ実施できるよう、Skill本体と設計書を修正済みである。
+cold final reviewは、PRまたはreview fixを実装していない新規ChatGPT chatでのみ実施する。
 
-## レビュー対象
-
-### 変更ファイル
-
-- `design/chat-worker-skill-design.md`
-- `reports/issue-51-chat-worker-skills-implementation-20260726123510.md`
-- `reports/issue-51-chat-worker-skills-review-20260726124000.md`
-- `skills/chat-implementation-worker/SKILL.md`
-- `skills/chat-report-writer/SKILL.md`
-- `skills/chat-review-worker/SKILL.md`
-- `skills/chat-worker-shared/references/handoff-contract.md`
-
-### 確認した依存先と既存契約
-
-- Issue #51
-- PR #52のmetadata、description、comments、review threads
-- `design/skill-hierarchy-design.md`
-- `skills/design/skill-hierarchy-design.md`
-- `skills/implementation-executor/SKILL.md`
-- `skills/review-enforcer/SKILL.md`
-- `skills/report-output-manager/SKILL.md`
-- `tasks/tasks-status.md`
-
-既存Codex向けorchestrator、delegation、sub-agent Skillは変更されていない。新しいChatGPT chat worker flowは既存Codex向けhierarchyから分離されている。
+既存Codex flowは別契約である。Codexの`review-enforcer`は専用reviewer sub-agentを使用し、同一セッションでは原則として同じreviewerをinitial reviewと再reviewで継続利用する。Codex標準flowに新規ChatGPT chatのcold final reviewは自動適用されない。
 
 ## Authoritative requirements
 
@@ -54,176 +31,157 @@ cold final reviewは、実装または修正を行っていない新規chatで�
 
 1. 利用者が親として複数のChatGPT chatを起動する。
 2. workerは別workerまたはsub-agentを起動しない。
-3. Issue番号またはPR番号から取得できる情報はworker自身がconnectorで解決する。
-4. implementation、review、reportの3 workerを独立Skillとして提供する。
+3. Issue番号またはPR番号から取得できるrepository状態をworker自身がconnectorで解決する。
+4. implementation、review、reportの3 Skillを独立して提供する。
 5. 全workerが詳細report、handoff、簡易PR commentを成果物とする。
-6. handoffはreportの代替ではない。
-7. PRまたはIssueから一意に特定できるhandoff pathを利用者へ再入力させない。
-8. cold final reviewは、実装・修正を行っていない新規chatで実施する。
-9. RevMem向けProject Instruction例へrepository、task list、参照Skill、connector、diagnostic artifact、TDD、small commit/push、report、PR、merge、HEAD固有CIの規則を含める。
-10. RevMem向けTDD方針をCodexSkill repositoryへ適用しない。
-11. CodexSkill repository自身にはTDD用testまたは専用workflowを追加しない。
-12. mergeは利用者が行う。
+6. ChatGPTへ登録するSkill数は3つとし、`chat-worker-shared`を4つ目のSkillにしない。
+7. 各Skill packageへ`references/handoff-contract.md`を同梱し、packageを自己完結させる。
+8. canonical handoff contractとpackage copyをbyte-identicalにする。
+9. ChatGPT cold final reviewとCodex reviewの契約を区別する。
+10. 大元のskill hierarchy design 2ファイルへChatGPT worker flowを反映する。
+11. RevMem向けProject Instruction例へ利用者指定の固定情報と運用規則を含める。
+12. RevMem向けTDD方針をCodexSkill repositoryへ適用しない。
+13. CodexSkill repositoryへTDD用testまたは専用workflowを追加しない。
+14. mergeは利用者が行う。
+
+## レビュー対象
+
+### 変更ファイル
+
+- `design/chat-worker-skill-design.md`
+- `design/skill-hierarchy-design.md`
+- `reports/issue-51-chat-worker-skills-implementation-20260726123510.md`
+- `reports/issue-51-chat-worker-skills-review-20260726124000.md`
+- `skills/chat-implementation-worker/SKILL.md`
+- `skills/chat-implementation-worker/references/handoff-contract.md`
+- `skills/chat-report-writer/SKILL.md`
+- `skills/chat-report-writer/references/handoff-contract.md`
+- `skills/chat-review-worker/SKILL.md`
+- `skills/chat-review-worker/references/handoff-contract.md`
+- `skills/chat-worker-shared/references/handoff-contract.md`
+- `skills/design/skill-hierarchy-design.md`
+
+### 確認した依存先と既存契約
+
+- Issue #51
+- PR #52のmetadata、description、comments
+- `skills/review-enforcer/SKILL.md`
+- `skills/implementation-executor/SKILL.md`
+- `skills/report-output-manager/SKILL.md`
+- `tasks/tasks-status.md`
+- Agent Skill package内の相対reference前提
 
 ## Coverage
 
 | 領域 | 状態 | 確認内容 |
 | --- | --- | --- |
-| Scope | 確認済み | 最終差分は3 Skill、shared contract、専用設計書、implementation report、review reportの7ファイルに限定される |
-| Frontmatter | 確認済み | 3つの`SKILL.md`に`name`と`description`があり、既存Skillと同じ基本形式である |
-| Standalone execution | 確認済み | 全workerが別workerを起動しないことを明記している |
-| Input burden | 確認済み | Issue/PRからrepository、branch、HEAD、reports、handoffs、CIを自己解決し、曖昧な場合だけ利用者へ確認する |
-| Implementation scope | 確認済み | code/testに限定せず、documentation、configuration、repository変更を扱える |
-| Testing policy | 確認済み | 対象projectのProject Instructionへ従い、TDDをworker側から強制しない |
-| Required outputs | 確認済み | implementation、review、reportの全workerがreport、handoff、簡易PR commentを必須成果物とする |
-| Handoff transport | 確認済み | repository-backed discoveryとcopy/paste fallbackを区別し、reportとhandoffを分離する |
-| Permission boundary | 確認済み | current権限とnext chatへのrequested権限を分離し、documentation、configuration、workflow、Issue、PR操作を表現できる |
-| Review lifecycle | 確認済み | initial review、fix verification、cold final review、unstableを定義し、cold finalの新規chat条件をSkill本体へ反映した |
-| Report fidelity | 確認済み | report writerがfinding、severity、test結果、CI結論を発明しない |
-| Project Instruction example | 確認済み | 利用者が提示した全項目をRevMem向け完成例へ反映した |
-| CodexSkill non-TDD | 確認済み | TDD test、専用workflow、旧TDD report/handoffを最終差分へ含めていない |
-| Existing Codex compatibility | 確認済み | 既存Codex向けSkillとhierarchyを変更していない |
-| Design source of truth | 確認済み | `design/chat-worker-skill-design.md`の1ファイルを正本としている |
-| Report naming | 確認済み | `reports/<issue-prefix>-<item>-<timestamp>.md`形式で既存report-output方針と整合する |
-| Merge boundary | 確認済み | 全worker、設計書、Issue、PR本文がmerge禁止で一致する |
+| Scope | 確認済み | 最終差分は3 Skill、canonical contract、3 package copy、専用設計、大元設計2件、implementation/review reportに限定される |
+| Skill count | 確認済み | ChatGPTへ登録するSkillは3つで、`chat-worker-shared`はsupporting resourceのcanonical sourceとして扱う |
+| Package completeness | 確認済み | 3 packageすべてに`SKILL.md`と`references/handoff-contract.md`が存在する |
+| Relative references | 確認済み | 3つの`SKILL.md`がpackage内の`references/handoff-contract.md`を参照する |
+| Contract synchronization | 確認済み | canonicalと3 package copyのblob SHAが`fb0515ef32a72064f468a51c87348616afb944a2`で一致する |
+| Main design synchronization | 確認済み | 2つのskill hierarchy designのblob SHAが`a5485b384cfbc932edf1a4b610e0a03b84ee2a00`で一致する |
+| ChatGPT flow | 確認済み | implementation、initial review、review follow-up、fix verification、cold final review、optional report chatを定義した |
+| Codex review boundary | 確認済み | Codexは同一reviewer sub-agent継続が標準で、ChatGPTの新規chat cold final reviewを自動適用しない |
+| Existing Codex compatibility | 確認済み | 既存Codex向けorchestrator、review、delegation、sub-agent Skillは変更していない |
+| Worker separation | 確認済み | implementation、review、reportの責務、禁止事項、成果物が分離されている |
+| Project Instruction | 確認済み | RevMem用のrepository、task list、connector、artifact、TDD、commit/push、report、PR、merge、HEAD固有CIを含む |
+| CodexSkill non-TDD | 確認済み | test、TDD用workflowを最終差分へ含めていない |
+| CI | not available | Review対象HEADに紐づくworkflow runとcommit statusは存在しない |
+| Merge | 確認済み | mergeしていない |
 
 ## Review中に検出し、修正した事項
 
-### Medium 1: 旧TDD方針の成果物が最終差分へ残っていた
+### Medium 1: 3つの`SKILL.md`だけではpackageが自己完結しなかった
 
 #### 問題
 
-旧contract test、専用workflow、TDD証跡を前提にしたhandoffと複数の改訂reportがPR差分に残っていた。
+3つのSkillはshared contractをsibling directoryの相対pathで参照していた。ChatGPTへ3 Skillを個別登録する場合、`SKILL.md`だけまたは各Skill directoryだけを登録するとshared contractがpackage外になり、参照を解決できない。
 
 #### 対応
 
-- 旧handoff 2件を削除
-- superseded implementation report 5件を削除
-- superseded review report 1件を削除
-- implementation reportとreview reportを各1ファイルへ集約
-- Issue #51をCodexSkill非TDD方針へ更新
+- 各Skill packageへ`references/handoff-contract.md`を追加
+- 各`SKILL.md`の参照先をpackage-local pathへ変更
+- canonical sourceと3 copyをbyte-identicalに統一
+- 登録するSkill数は3つで、`chat-worker-shared`は登録しないことを設計へ追加
 
 #### 状態
 
 解消済み。
 
-### Medium 2: Handoffの取得経路とreport責務が旧方針のままだった
+### Medium 2: Codex reviewとChatGPT cold final reviewの適用範囲が不明確だった
 
 #### 問題
 
-repository-backed handoffでも利用者が毎回pathを渡す表現と、implementation/review workerの`report`を`not_applicable`とする表現が残っていた。
+専用設計だけを見ると、cold final reviewがCodex実行にも同様に適用されるように読めた。
 
 #### 対応
 
-- PRまたはIssueから一意に特定できるpacketは次workerがconnectorで取得する
-- 利用者がpathを渡す条件を、複数候補、repository外、discovery不可へ限定する
-- implementation/review workerが各自の必須reportを`report` fieldへ記録する
+- ChatGPT cold final reviewは新規かつ非実装chatに限定
+- Codexは専用reviewer sub-agentを使い、同一セッションでは原則同じreviewerを継続する既存契約であることを明記
+- Codexへfresh reviewを追加する場合はCodex側要件として別途定義するとした
+- 専用設計と大元のhierarchy design 2件へ同じ境界を反映
 
 #### 状態
 
 解消済み。
 
-### Medium 3: Implementation workerがMarkdown変更を対象にしにくく、PR commentが条件付きだった
+### Medium 3: 大元のskill hierarchy designに3 Skillが未反映だった
 
 #### 問題
 
-frontmatterがcode/test変更に寄っており、CodexSkillのようなdocumentation中心のtaskでSkill選択が不明確だった。また、簡易PR commentがProject Instruction次第の任意出力に見えた。
+専用設計書だけがChatGPT worker flowを定義し、大元のskill inventory、呼び出し関係、役割、契約一覧に3 Skillが存在しなかった。
 
 #### 対応
 
-- documentation、configuration、repository変更をdescriptionとflowへ追加
-- PRが存在する場合、簡易PR commentを必須成果物化
-- 投稿不能時は完成comment本文を返すcontractへ変更
-
-#### 状態
-
-解消済み。Commit: `b0aa5dbd23ea48ba414cf479f64eef480ef6b9d3`
-
-### Medium 4: Cold final reviewの新規chat条件がSkill本体に不足していた
-
-#### 問題
-
-設計書は新規chatを要求していたが、`chat-review-worker`本体はfresh perspectiveとだけ記載し、同じ実装chatがcold finalを名乗れる余地があった。
-
-#### 対応
-
-- cold final reviewを新規かつ非実装chatに限定
-- 同じchatが実装・修正した場合はcold finalを名乗らない規則を追加
-- Required flowとcompletion conditionへmode妥当性確認を追加
-
-#### 状態
-
-解消済み。Commit: `15bec8b1818d32d53973e336e0f0fb62914a7f79`
-
-### Medium 5: Handoffの権限enumが変更対象を表現できなかった
-
-#### 問題
-
-`edit_code`と`edit_tests`だけでは、documentation、configuration、workflow、Issue、PR、branch操作を表現できなかった。
-
-#### 対応
-
-必要なactionをtop-levelとnext-chat requestの両方へ追加した。
-
-#### 状態
-
-解消済み。Commit: `79c0997174b8b6a4ed65f68461c41a8e71bb3e09`
-
-### Medium 6: PR本文とreview reportが削除済みファイルを参照していた
-
-#### 問題
-
-PR本文が削除済みR6 reportを参照し、旧review reportもTDD workflowと削除済みファイルを前提としていた。
-
-#### 対応
-
-- PR本文を現行の7ファイル、非TDD方針、現行report pathへ更新
-- 本review reportで旧review reportを全面置換
+- 新しい実行方式を追加
+- ChatGPT worker flowの呼び出し関係を追加
+- 3 Skillの役割表と契約表を追加
+- 主要設計判断と保守ルールを更新
+- 2つのhierarchy designを同一blobへ更新
 
 #### 状態
 
 解消済み。
 
-## 現在の未解決findings
+## Findings
 
 ### Blocking / High
 
-- なし
+- 指摘なし
 
 ### Medium
 
-- なし
+- 未解決指摘なし
 
 ### Low
 
-- なし
+- 未解決指摘なし
 
-## Validation
+## CIとvalidation
 
-Review対象HEAD `73b3b9882aa74e2895088cc789eb41acf13d46c9`について、GitHub connectorが返した結果は次のとおりである。
+Review対象HEAD `856685a65f844004c2058c39106c96b71b44ff5e`に紐づくworkflow runは0件、commit statusも0件であった。
 
-- workflow runs: 0件
-- commit statuses: 0件
+CI runがないことをsuccessとして扱わず、CIは`not available`とした。
 
-したがって、CI successとは判定しない。CIは`not available`である。
-
-CodexSkill用のtestまたはworkflowは追加・実行していない。Markdown lint、built-in Skill validation、machine-readable schema validationは、connector-only環境から実行できないため未実施である。
+CodexSkill用のtestまたはworkflowは追加・実行していない。Markdown lintとSkill schema validationは利用可能な自動実行経路が確認できず未実施である。
 
 ## Held concerns
 
-### 1. Same-chat review
+### 1. End-to-end ChatGPT operational trial
 
 - Status: held
-- Reason: 利用者の明示指示により、実装・修正を行った同一chatがreviewした
-- Remaining risk: fresh contextによる見落とし検出は行われていない
-- Verdict impact: 本reviewをcold final reviewとは扱わない。利用者が同一chat reviewを明示選択したため、現在のPassを妨げない
+- Reason: 3つのSkill packageを実際にChatGPTへ登録し、複数chatでimplementationからcold final reviewまで完走する試験は未実施
+- Remaining risk: UI上の登録操作、Skill選択、connector差異、packet discoveryの挙動が初回利用で判明する可能性がある
+- Verdict impact: repository上のpackageとcontractの整合性Passを妨げない
 
-### 2. End-to-end operational trial
+### 2. Shared contract copy drift
 
 - Status: held
-- Reason: 実際の複数ChatGPT chatでIssue開始、implementation、review、follow-up、handoff discoveryを完走していない
-- Remaining risk: connector差異、packet選択、実運用時の入力負荷が初回利用で判明する可能性がある
-- Verdict impact: Skill contractの整合性Passを妨げない
+- Reason: canonical contractと3 package copyは現在byte-identicalだが、自動同期またはschema validationはない
+- Remaining risk: 将来の変更で一部copyだけ更新される可能性がある
+- Mitigation: 大元設計の保守ルールでbyte-identical確認を要求する
+- Verdict impact: 現在の差分は一致しているためPassを妨げない
 
 ### 3. Machine-readable validation
 
@@ -235,16 +193,15 @@ CodexSkill用のtestまたはworkflowは追加・実行していない。Markdow
 ### 4. Branch history
 
 - Status: held
-- Reason: branchはmainに対して79 commits aheadで、最終差分から削除した旧TDD試行のcommitも履歴に残る
+- Reason: branchはmainに対して89 commits aheadで、最終差分から削除した旧TDD試行のcommitも履歴に残る
 - Remaining risk: regular mergeでは中間commitがmainの祖先に入る
-- Verdict impact: 最終treeの内容はPass。mainへ旧中間commitを取り込まない場合は利用者がsquash mergeを選択する必要がある
+- Verdict impact: 最終treeの内容はPass。旧中間commitをmainへ取り込まない場合は利用者がsquash mergeを選択する必要がある
 
 ## Scope protection
 
 - `main`に対してbehind 0を確認した
-- changed filesは7件である
-- 既存Codex向けSkillとhierarchyを変更していない
-- PR #50の変更を取り込んでいない
+- changed filesは12件である
+- 既存Codex向けorchestrator、delegation、review、sub-agent Skillを変更していない
 - product code、test、workflowを最終差分へ含めていない
 - mergeしていない
 
@@ -255,5 +212,6 @@ CodexSkill用のtestまたはworkflowは追加・実行していない。Markdow
 - Medium findings: 0 unresolved
 - Low findings: 0 unresolved
 - Required implementation follow-up: なし
+- Cold final review: 未実施
 - CI: not available
 - Merge: 利用者が実施するため未実施
