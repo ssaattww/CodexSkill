@@ -40,13 +40,16 @@ ChatGPT workerは別workerまたはsub-agentを起動しない。
 
 ```text
 development-orchestrator [親]
+├─ shared/workflow/common-work-contract.md
 ├─ restart-handover-manager
 ├─ task-consistency-manager
 ├─ design-doc-maintainer
 │  ├─ codex-delegation-executor
 │  │  └─ design-executor
 │  └─ task-consistency-manager
-├─ tdd-executor [対象repositoryが要求する場合だけ]
+├─ tdd-executor [対象repositoryが明示要求する場合だけ]
+│  ├─ shared/workflow/common-work-contract.md
+│  ├─ shared/workflow/implementation-contract.md
 │  ├─ codex-delegation-executor
 │  │  └─ implementation-executor
 │  └─ sub-agent-task-manager [test evidence]
@@ -73,6 +76,18 @@ development-orchestrator [親]
 │  └─ feedback-points-sanitizer
 └─ skill-authoring-wrapper
 ```
+
+## TDD適用境界
+
+TDD要否は対象repositoryの明示的なinstruction、accepted design、または利用者指示が決める。
+
+- `development-orchestrator`は governing sourceを確認する
+- TDDが明示要求される場合だけ`tdd-executor`を呼ぶ
+- TDDが要求されない場合は`not applicable`として通常implementationへ進む
+- codeまたはtestを変更するという事実だけではTDD適用理由にならない
+- CodexSkill repository自身の保守にはTDDを適用しない
+
+CodexSkill固有の非TDD方針はroot `AGENTS.md`をrepository-level authorityとする。
 
 ## 共通review lifecycle
 
@@ -152,14 +167,19 @@ Release対象は`skills/chat-*/SKILL.md`に一致する全Skillである。現�
 `scripts/build_chatgpt_worker_skills.py`は次を行う。
 
 1. 全`skills/chat-*` Skillを自動検出する
-2. Skill directory内の全fileをstagingへcopyする
-3. Skillから参照される`shared/` dependencyを再帰的に解決する
-4. dependencyを各Skillの`references/shared/`へcopyする
-5. repository相対linkをSkill内相対linkへ書き換える
-6. 各Skillがself-containedであることを確認する
-7. root直下に全Skill directoryを持つ単一ZIPを生成する
+2. Skill directory名とfront matter `name`の一致を確認する
+3. Skill directory内の全fileをstagingへcopyする
+4. Skill sourceとdependencyのsymlinkを拒否する
+5. Skillから参照される`shared/` dependencyを再帰的に解決する
+6. dependencyを各Skillの`references/shared/`へcopyする
+7. repository相対linkをSkill内相対linkへ書き換える
+8. `shared/chat-worker/`配下の全fileが少なくとも1つのSkillへ同梱されることを確認する
+9. 各Skillがself-containedであることを確認する
+10. root直下に全Skill directoryを持つ再現可能な単一ZIPを生成する
 
 repositoryには共通contractの手動copyを置かない。Release build時にだけ生成する。
+
+`shared/chat-worker/`へ追加したfileがどのSkillからも参照されない場合、ChatGPT依存物の配布漏れとしてbuildを失敗させる。配布不要の設計資料は`design/`へ置く。
 
 ```text
 chatgpt-worker-skills.zip
@@ -168,16 +188,18 @@ chatgpt-worker-skills.zip
 └─ chat-report-writer/
 ```
 
-各directoryは`SKILL.md`と必要な`references/shared/` dependencyを含む。
+各directoryは`SKILL.md`、Skill固有file、必要な`references/shared/` dependencyを含む。
 
 ## ChatGPT固有補助文書
 
 - `shared/chat-worker/handoff-contract.md`
   - independent chat間packet schema
+  - writerはschema version 2を生成する
+  - readerは既存version 1を受理し、`cold_final_review`を`independent_final_review`へ正規化する
 - `shared/chat-worker/project-instruction-example.md`
   - ChatGPT Project Instruction例
 
-これらはSkillではない。Skillから参照された場合にRelease ZIPへ同梱される。
+これらはSkillではない。Skillから参照されてRelease ZIPへ同梱される。
 
 ## Release flow
 
@@ -186,33 +208,37 @@ chatgpt-worker-skills.zip
 ### pull request
 
 - ChatGPT adapter、共通契約、ChatGPT固有契約、build script、関連設計の変更で実行する
-- ZIP build、link解決、root Skill集合、self-contained構造を検証する
+- build jobは`contents: read`だけを持ち、checkout credentialを保持しない
+- ZIP build、link解決、root Skill集合、self-contained構造、全`shared/chat-worker/` fileの同梱を検証する
 - ZIPをworkflow artifactとして保存する
 - Releaseとtagは更新しない
 
 ### main push
 
-- merge後のmain HEADで同じbuildと検証を行う
+- merge後のmain HEADでread-only build jobを実行する
+- build成功後だけ別release jobへ`contents: write`を付与する
+- build jobの検証済みartifactをrelease jobへ渡す
 - rolling tag `chatgpt-worker-skills-latest`をmerge後HEADへ更新する
 - Release `ChatGPT Worker Skills`へ`chatgpt-worker-skills.zip`を添付または置換する
 
-`workflow_dispatch`はbuild検証だけを行う。
+`workflow_dispatch`はread-only build検証だけを行う。
 
 ## 標準作業手順
 
 1. workflow開始時にCodexSkillの鮮度を確認する
-2. 再開時は`restart-handover-manager`で状態を復元する
-3. `development-orchestrator`がtaskを選択する
-4. `task-consistency-manager`でtrackingを同期する
-5. 設計影響があれば`design-doc-maintainer`を実行する
-6. 対象repositoryがTDDを要求する場合だけ`tdd-executor`を適用する
-7. `implementation-executor`でshared implementation contractを実行する
-8. focused validationと必要なfull validationを実行する
-9. `review-enforcer`でnormal review cycleを完了する
-10. 別fresh reviewerによるindependent final reviewを完了する
-11. `progress-sync-manager`でreportとtrackingを同期する
-12. `git-workflow-manager`でcommit、push、PR更新まで行う
-13. mergeは利用者が行う
+2. root `AGENTS.md`を確認する
+3. 再開時は`restart-handover-manager`で状態を復元する
+4. `development-orchestrator`がtaskを選択する
+5. `task-consistency-manager`でtrackingを同期する
+6. 設計影響があれば`design-doc-maintainer`を実行する
+7. 対象repositoryがTDDを明示要求する場合だけ`tdd-executor`を適用する
+8. `implementation-executor`でshared implementation contractを実行する
+9. focused validationと必要なfull validationを実行する
+10. `review-enforcer`でnormal review cycleを完了する
+11. 別fresh reviewerによるindependent final reviewを完了する
+12. `progress-sync-manager`でreportとtrackingを同期する
+13. `git-workflow-manager`でcommit、push、PR更新まで行う
+14. mergeは利用者が行う
 
 CodexSkill repository自身にはTDDを適用しない。
 
@@ -222,7 +248,7 @@ CodexSkill repository自身にはTDDを適用しない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `development-orchestrator` | task選定から設計、実装、検証、review、Git提出までを統括する | 親が実行 |
+| `development-orchestrator` | task選定から設計、実装、検証、review、Git提出までを統括し、TDD applicabilityを判定する | 親が実行 |
 | `codex-delegation-executor` | 実作業の委譲先と実行profileを決める | 親が実行 |
 | `sub-agent-task-manager` | sub-agentのscope、model、reasoning、fork、report契約を固定する | 親が実行 |
 | `execution-cost-stabilizer` | retry、parallelism、実行costを安定化する | 親が実行 |
@@ -245,7 +271,7 @@ CodexSkill repository自身にはTDDを適用しない。
 | --- | --- | --- |
 | `design-doc-maintainer` | 設計影響と更新対象を判断する | 親が実行 |
 | `design-executor` | 決定済み設計変更を編集する | 親が実行 |
-| `tdd-executor` | 対象repositoryが要求するtest-first証拠を定義する | 親が実行 |
+| `tdd-executor` | 対象repositoryが明示要求する場合だけtest-first証拠を定義する | 親が実行 |
 | `implementation-executor` | shared implementation contractをCodexで実行する | 親が実行またはsub-agentへ委譲 |
 
 ### reviewと品質
@@ -292,6 +318,7 @@ CodexSkill repository自身にはTDDを適用しない。
 - CodexとChatGPTで同じ意味論が必要な場合は、先に`shared/workflow/`の正本を更新する
 - runtime adapterへ共通規則をcopyしない
 - `skills/chat-*/references/`へshared contract copyをcommitしない
+- `shared/chat-worker/`へ置くfileはChatGPT runtime dependencyに限定し、少なくとも1つのChatGPT Skillから参照する
 - ChatGPT adapterまたは参照contract変更時はbundle builderを実行する
 - Skill追加または責務変更時は本設計書を更新する
 - `design/skill-hierarchy-design.md`と`skills/design/skill-hierarchy-design.md`を同一内容に保つ
