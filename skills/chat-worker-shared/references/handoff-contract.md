@@ -60,7 +60,7 @@ base_ref: string | null
 head_sha: full commit SHA | unknown
 
 authorized_actions:
-  - read_repository | edit_code | edit_tests | write_handoff | write_report | commit | push | update_pr | comment_pr
+  - read_repository | edit_code | edit_tests | edit_documentation | edit_configuration | edit_workflows | write_handoff | write_report | create_branch | commit | push | create_issue | update_issue | create_pr | update_pr | comment_pr
 write_boundary:
   allowed:
     - path_or_operation: string
@@ -198,7 +198,7 @@ next_chat_input:
   required_attachments_or_references:
     - string
   requested_authorized_actions:
-    - read_repository | edit_code | edit_tests | write_handoff | write_report | commit | push | update_pr | comment_pr
+    - read_repository | edit_code | edit_tests | edit_documentation | edit_configuration | edit_workflows | write_handoff | write_report | create_branch | commit | push | create_issue | update_issue | create_pr | update_pr | comment_pr
   requested_write_boundary:
     allowed:
       - path_or_operation: string
