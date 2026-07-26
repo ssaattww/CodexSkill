@@ -1,6 +1,6 @@
 ---
 name: sub-agent-task-manager
-description: Create and dispatch bounded sub-agent tasks with explicit scope, ownership, execution profile, and one declared evidence mode. Use whenever investigation, implementation, review, verification, or evidence work is handed to a sub-agent. Supports artifact-backed tasks and structured-result review tasks without forcing reviewers to edit report files.
+description: Create and dispatch bounded sub-agent tasks with explicit scope, ownership, execution profile, and one declared evidence mode. Use whenever investigation, implementation, review, verification, or evidence work is handed to a sub-agent. Supports existing artifact-backed tasks and structured-result review tasks without forcing reviewers to edit report files.
 ---
 
 # Sub-Agent Task Manager
@@ -34,20 +34,22 @@ Before dispatch, identify:
 
 ## Evidence modes
 
-Choose exactly one mode before dispatch.
+Select one mode before dispatch.
 
 ### `artifact_backed`
 
 Use when the worker is expected to create or update a repository report or another owned artifact as its primary evidence.
 
-- Call `report-output-manager` before dispatch when a fixed report path is required.
-- A pre-created generic report template may be used.
+- This is the backward-compatible default when an existing caller does not explicitly provide a mode.
+- Call `report-output-manager` with `reserve_artifact` before dispatch when a fixed report path is required.
+- A pre-created generic report scaffold may be used.
 - The worker may edit only its explicitly owned artifact fields.
 
 ### `structured_result`
 
 Use when the worker must return a machine-readable result that another skill will render or persist.
 
+- The caller must select this mode explicitly.
 - Do not require a report path before dispatch.
 - Do not require the worker to edit a Markdown file.
 - Require the exact result contract and fixed values in the prompt.
@@ -60,12 +62,12 @@ The mode is part of the dispatch contract. Do not mix both as co-primary outputs
 
 1. Define the exact task type and why a sub-agent is used.
 2. Define scope, non-goals, accessible context, and write boundaries.
-3. Select `artifact_backed` or `structured_result`.
+3. Select the evidence mode; default only legacy or unspecified callers to `artifact_backed`.
 4. Receive model, reasoning effort, and fork policy from the caller.
 5. When an override is used, read [references/spawn-agent-model-overrides.md](references/spawn-agent-model-overrides.md).
 6. Identify the worker skills and references that must be read.
 7. Define the exact final output shape.
-8. For `artifact_backed`, determine and create the owned artifact before dispatch when required.
+8. For `artifact_backed`, call `report-output-manager.reserve_artifact` and create the owned artifact before dispatch when required.
 9. For `structured_result`, include the schema, enums, invariants, and validation owner; do not create a presentation artifact first.
 10. Dispatch the worker with the selected execution profile in actual spawn arguments.
 11. Keep waiting or re-polling until the task completes unless the user explicitly stops it.
@@ -84,7 +86,7 @@ Every sub-agent request must include:
 - worker skill paths to read first
 - available repository context and whether direct inspection is required
 - validation expectations
-- selected evidence mode
+- selected evidence mode or the explicit use of the backward-compatible artifact default
 - required final output shape
 - model and reasoning only through spawn arguments, not as prompt-only text
 - explicit fork policy
@@ -106,7 +108,7 @@ For `structured_result`, also include:
 
 When `review-enforcer` dispatches review work:
 
-- use `structured_result`
+- explicitly use `structured_result`
 - require the worker to read:
   - `skills/review-core/SKILL.md`
   - `skills/review-core/references/review-contract.md`
@@ -124,8 +126,8 @@ When `review-enforcer` dispatches review work:
 
 ## Implementation, investigation, and verification dispatch
 
-- Existing artifact-backed flows may continue using the generic sub-agent report template.
-- A caller may adopt a separate structured result contract when one exists.
+- Existing artifact-backed flows continue to use the default mode unless their caller adopts a structured contract.
+- A caller may explicitly adopt `structured_result` when a suitable contract exists.
 - Coding tasks must state owned files or modules and prohibit reverting unrelated changes.
 - Investigation tasks must allow direct context inspection when required.
 - Verification tasks must identify exact commands and evidence expectations.
@@ -165,7 +167,7 @@ Return:
 
 This skill is complete only when:
 
-- dispatch scope, profile, and evidence mode were explicit
+- dispatch scope, profile, and evidence mode were explicit or the documented artifact default was applied
 - the worker read the required skill contract
 - the primary output satisfies the selected mode
 - the caller received a validated output
