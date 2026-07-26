@@ -1,76 +1,42 @@
 ---
 name: chat-report-writer
-description: Convert implementation, review, or verification evidence into a Markdown report and concise PR comment in one ChatGPT chat when the user coordinates the workflow as the parent. Use for report-only work without code edits, new technical findings, or nested worker dispatch.
+description: Coordinate report generation in one ChatGPT chat by invoking runtime-neutral Skills and adding ChatGPT-specific permissions, persistence, PR comment, and handoff behavior.
 ---
 
-# Chat Report Writer
+# Chat Report Wrapper
 
 ## Goal
 
-Resolve the authoritative evidence for one task or PR, create the requested report without changing its meaning, post or render the concise PR comment, and leave a transportable handoff.
+Act as the ChatGPT runtime wrapper for report-only work. The user is the parent. This Skill must not redefine report semantics.
 
-## Shared contracts
+## Required Skills
 
-Follow these canonical contracts instead of redefining their rules here:
+Invoke these Skills in order:
 
-- [Common Work Contract](../../shared/workflow/common-work-contract.md)
-- [Report Contract](../../shared/workflow/report-contract.md)
-- [Chat Worker Handoff Contract](../../shared/chat-worker/handoff-contract.md)
+1. `work-context-manager`
+2. `report-writer`
+3. `chat-handoff-manager`
 
-The GitHub Release builder rewrites these repository links and includes the referenced files inside the installable Skill.
+All three must be installed. Do not replace them with repository-external shared files.
 
-## Execution owner
+## Runtime responsibilities
 
-Run this Skill directly in the current ChatGPT chat.
+- Use the current chat and available connectors.
+- Resolve report destination, naming rules, and permissions before writes.
+- Persist the detailed report under target-repository rules, or return it in full.
+- Post the concise PR comment when authorized, or return its complete body.
+- Persist the handoff under target-repository rules, or return the complete packet.
+- The user chooses the next chat and merge action.
 
-- The user is the parent and chooses the report type, permissions, next chat, and merge action.
-- This worker must not start another worker or sub-agent.
-- Resolve source reports, handoffs, repository evidence, comments, commits, current HEAD, and matching CI evidence through the available connector before asking the user.
-- This is report-only work. Do not perform a new implementation or technical review.
+## Boundaries
 
-## Inputs
-
-A task, Issue, or PR identifier plus the requested report mode is normally sufficient.
-
-Supported modes follow the shared Report Contract:
-
-- implementation report,
-- review report,
-- verification report,
-- consolidated report,
-- concise PR comment.
-
-Ask the user only when multiple unresolved source sets remain or a product decision is required to define the report scope.
-
-## Runtime flow
-
-1. Resolve the target task or PR, report mode, current HEAD, project rules, destination, and write boundary.
-2. Discover source reports, handoffs, comments, commits, validation, CI runs, and artifacts.
-3. Select sources by identity and commit relationship, not timestamp alone.
-4. Execute the shared Report Contract directly and preserve all unknown, held, and unexplored items.
-5. Write the detailed report under the repository's path and naming rules. If writing is unavailable, return the complete report body.
-6. Post the required concise PR comment when a PR exists. If commenting is unavailable, return the complete comment body.
-7. Create a handoff packet using the Chat Worker Handoff Contract and persist it under `reports/handoffs/` when authorized; otherwise return it in full.
-
-## Runtime-specific boundaries
-
-- Do not modify code, tests, fixtures, workflows, configuration, or design.
+- Do not start another worker or sub-agent.
+- Do not modify implementation files.
 - Do not create new technical findings or change a supplied verdict.
-- Do not convert missing or unsuccessful evidence into success.
-- Do not exceed the current chat's explicit permissions.
+- Do not redefine report rules locally when `report-writer` is unavailable; report the missing dependency.
+- Do not exceed current-chat permissions.
 - Do not merge.
-
-## Outputs
-
-Return or persist:
-
-- report mode, target identity, and authoritative source identities,
-- created or updated report paths or complete bodies,
-- copied evidence and preserved uncertainty,
-- PR comment reference or complete body,
-- handoff path or complete packet,
-- remaining unknowns, risks, and next action.
 
 ## Completion condition
 
-This Skill is complete only when the shared Common Work and Report contracts are satisfied, the requested report and PR outputs are available, no new technical judgment was invented, the write boundary is preserved, a transportable handoff exists, and no merge was performed.
+Complete when the required Skills have produced context, evidence-faithful report output, optional concise PR comment, and a transportable handoff; authorized persistence is complete; and no implementation, new review judgment, or merge was performed.
