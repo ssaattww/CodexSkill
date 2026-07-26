@@ -88,6 +88,7 @@ Red commit:
 - 新規chatへはhandoff pathまたはGitHub URLを明示的に渡す
 - repositoryへ保存できない場合はpacket全文をcopy and pasteする
 - 前chatの会話履歴や権限を自動継承しない
+- 実装結果のhandoff packetを`reports/handoffs/issue-51-chat-implementation-worker-workflow-example-0d594d1-20260726130000.md`へ保存した
 
 ## 検証
 
@@ -101,7 +102,9 @@ Red commit:
 - Run ID: `30187029412`
 - Conclusion: `success`
 
-別branchまたは別SHAのrunを判定に使用していない。
+レポートとhandoff追加後の最終HEADについても、同じcontract workflowを再実行して確認する。
+
+別branchまたは別SHAのrunを判定に使用しない。
 
 ## 残存事項
 
