@@ -1,26 +1,47 @@
 # Chat Worker Handoff Contract
 
-## 目的
+## Purpose
 
-このcontractは、利用者が親として複数のChatGPT chatを順番に起動するときに、前のchatの結果を次のchatへ渡す共通形式を定義する。
+This contract defines the payload exchanged between independent ChatGPT chats when the user acts as the parent and starts each worker chat manually.
 
-各workerは別のworkerを自動起動しない。利用者がhandoff packetを確認し、必要な部分を次のchatへ渡す。
+A handoff packet is data, not an automatic cross-chat memory mechanism. The packet is not automatically visible to another chat merely because the producing chat printed it. The user must transport it by one of the supported methods below.
 
-## 基本原則
+## Transport model
 
-- 会話履歴を前提にせず、packetだけで次のchatが作業を再開できるようにする。
-- 確認できなかった値は推測せず、`unknown`へ記録する。
-- 対象外の値は空欄にせず、理由付きで`not_applicable`へ記録する。
-- branchのCI判定には、必ずpacketの`head_sha`に紐づくrunだけを使用する。
-- 実装結果、review finding、test結果、CI結果をreport writerが変更または補完してはならない。
-- 利用者が許可していないwrite、commit、push、PR操作をworkerが実行してはならない。
-- top-levelの`authorized_actions`と`write_boundary`は、そのpacketを作成したworkerの実行に対して利用者が付与した権限を記録する。
-- 現在のworkerの権限を次のchatへ自動継承しない。次worker向けfieldは提案にすぎず、利用者が確認して新しいtop-level権限として明示的に付与する。
-- secret、credential、個人情報、不要な大容量logをpacketへ埋め込まない。
+### Repository-backed transport
+
+Repository-backed transport is the canonical durable method when repository writes are authorized.
+
+- Store the complete packet under `reports/handoffs/`.
+- Use a stable name such as `<task-id>-<producer>-<mode>-<head-short>-<timestamp>.md`.
+- Put the canonical YAML packet in a fenced block inside the Markdown file.
+- Record the created path in `handoff_transport.packet_path`.
+- The user passes the repository path or GitHub URL to the next chat.
+- The next chat reads that exact file through the repository connector and must not guess from conversation history.
+
+A handoff file is structured execution evidence, not a narrative implementation or review report. An implementation worker may therefore write a handoff file without taking ownership of report writing.
+
+### Copy and paste transport
+
+When `write_handoff` is not authorized, return the complete packet in the final response. The user must copy and paste the packet into the next chat. A summary alone is insufficient.
+
+### Unsupported assumption
+
+Workers must never assume that another chat can discover the previous chat, its final response, or its private conversation state automatically.
+
+## Core rules
+
+- The user is the parent and decides the next worker, scope, permissions, and merge action.
+- Workers must not start another worker.
+- A packet must be sufficient to continue without the previous conversation.
+- Unknown facts must be listed under `unknown`; they must not be guessed.
+- Non-applicable fields must be listed under `not_applicable` with reasons.
+- CI evidence must belong to the packet's `head_sha`.
+- A report writer must not alter implementation outcomes, findings, test results, or CI conclusions.
+- Current permissions must not inherit into the next chat. Requested permissions are proposals only.
+- Do not embed secrets, credentials, personal information, or unnecessary large logs.
 
 ## Canonical packet
-
-次のYAML形状を標準とする。Markdown内のYAML block、JSON、または同じfieldを持つ表現へ変換してよいが、fieldの意味を変更しない。
 
 ```yaml
 schema_version: 1
@@ -37,7 +58,7 @@ base_ref: string | null
 head_sha: full commit SHA | unknown
 
 authorized_actions:
-  - read_repository | edit_code | edit_tests | write_report | commit | push | update_pr | comment_pr
+  - read_repository | edit_code | edit_tests | write_handoff | write_report | commit | push | update_pr | comment_pr
 write_boundary:
   allowed:
     - path_or_operation: string
@@ -45,6 +66,12 @@ write_boundary:
   forbidden:
     - path_or_operation: string
       reason: string
+
+handoff_transport:
+  method: repository_file | copy_paste
+  packet_path: string | null
+  packet_url: string | null
+  transport_note: string
 
 scope:
   - string
@@ -150,11 +177,9 @@ unexplored:
 
 remaining_risks:
   - string
-
 unknown:
   - field_or_fact: string
     reason: string
-
 not_applicable:
   - field_or_area: string
     reason: string
@@ -171,7 +196,7 @@ next_chat_input:
   required_attachments_or_references:
     - string
   requested_authorized_actions:
-    - read_repository | edit_code | edit_tests | write_report | commit | push | update_pr | comment_pr
+    - read_repository | edit_code | edit_tests | write_handoff | write_report | commit | push | update_pr | comment_pr
   requested_write_boundary:
     allowed:
       - path_or_operation: string
@@ -181,93 +206,37 @@ next_chat_input:
         reason: string
 ```
 
-## 権限の意味
+## Permission semantics
 
-### Current execution
+Top-level `authorized_actions` and `write_boundary` describe permissions granted for the current worker. The worker records them but must not broaden them.
 
-- top-levelの`authorized_actions`と`write_boundary`は、現在のworkerが実際に受け取った権限である。
-- workerは作業結果としてこれらを変更せず、受け取った値と実際に行った操作を記録する。
-- top-levelにない操作は、repository側で技術的に実行可能でも行わない。
+`next_chat_input.requested_authorized_actions` and `requested_write_boundary` are proposals. The next chat must not inherit them automatically. The user reviews the proposal and explicitly grants a new top-level permission set.
 
-### Next chat proposal
+Without a new grant, the next worker remains read-only.
 
-- `next_chat_input.requested_authorized_actions`と`requested_write_boundary`は、現在のworkerが次作業に必要と考える権限の提案である。
-- 提案は権限付与ではない。
-- 利用者が提案を確認し、削除、制限、追加を判断して、次chatへ新しいtop-levelの`authorized_actions`と`write_boundary`として渡す。
-- 次chatはsource packetのtop-level権限またはrequested fieldを自動継承せず、利用者が新しく付与した値だけを使用する。
-- 利用者による新しい付与がない場合、次workerはwrite、commit、push、PR操作を実行しない。
-
-## Worker別の必須field
+## Required worker fields
 
 ### Implementation worker
 
-次を必須とする。
-
-- `task_id`
-- `repository`、`branch`、`base_ref`、`head_sha`
-- `authorized_actions`、`write_boundary`
-- `scope`、`non_goals`、`authoritative_requirements`
-- `files.changed`
-- Red、Green、またはtest-firstが対象外である理由を含む`tests`
-- `commands`
-- `implementation.outcome`
-- `remaining_risks`
-- `next_action`
-- `next_chat_input`
-
-Review結果とnarrative reportを作らないため、`review.review_mode`、`review.verdict`、`report.report_type`、`report.outcome`は`not_applicable`とする。
+Require repository identity, scope, requirements, permissions, changed files, Red/Green evidence or a test-first exemption, commands, implementation outcome, risks, transport, and next action. Review and report outcomes remain `not_applicable`.
 
 ### Review worker
 
-次を必須とする。
-
-- review対象の`repository`、`branch`、`base_ref`、`head_sha`
-- `authorized_actions`、`write_boundary`
-- `scope`、`non_goals`、`authoritative_requirements`
-- `files.inspected`
-- `review.review_mode`
-- `review.verdict`
-- `review.required_coverage`
-- `findings`または明示的なfindingなしのsummary
-- `held`、`unexplored`、`remaining_risks`
-- reportを作成した場合は`report`
-- `next_action`
-- `next_chat_input`
-
-Product implementationを行わないため、`implementation.outcome`は`not_applicable`とする。
+Require the reviewed HEAD, scope, requirements, permissions, inspected files, review mode, verdict, coverage, findings or explicit no-findings evidence, held items, unexplored areas, risks, transport, and next action. Implementation outcome remains `not_applicable`.
 
 ### Report writer
 
-次を必須とする。
+Require source packet identities, newly granted report permissions, report type and outcome, produced paths or rendered body, copied evidence, unknowns, transport, and next action. The writer must not modify source outcomes.
 
-- 入力に使ったhandoff packetの識別情報
-- 利用者がreport writer用に新しく付与した`authorized_actions`と`write_boundary`
-- `report.report_type`、`report.outcome`、`report.source_packets`
-- 作成したreport pathまたは返却したreport本文
-- reportへ転記したHEAD SHA、CI run、artifact、finding
-- 入力不足を示す`unknown`
-- report作成後の`next_action`
+## User-mediated transfer
 
-Report writerは、入力packetの`implementation`、`review`、`findings`、`tests`、`ci`を変更しない。
+1. The user gives a worker the task packet and current permissions.
+2. The worker performs the assigned role and creates a complete handoff packet.
+3. If `write_handoff` is authorized, the worker stores it under `reports/handoffs/`; otherwise it returns the complete packet for copy and paste.
+4. The user reviews `head_sha`, scope, findings, unknowns, and requested next permissions.
+5. The user starts the next chat and supplies the packet path or pastes the packet.
+6. The next chat reads only the supplied packet and authoritative repository sources; it does not infer the previous conversation.
 
-## 利用者によるchat間引き渡し
+## Incomplete packets
 
-1. 利用者が対象workerのSkill、task packet、現在のworker用のtop-level権限をchatへ渡す。
-2. workerが作業し、このcontractに従うhandoff packetを返す。
-3. 利用者がpacketの`head_sha`、scope、finding、unknown、next actionを確認する。
-4. workerが提案した`next_chat_input.requested_authorized_actions`と`requested_write_boundary`を利用者が確認する。
-5. 利用者が必要な権限だけを、次chat用の新しいtop-level `authorized_actions`と`write_boundary`として明示的に付与する。
-6. 利用者が`next_chat_input`と必要なrepository参照を次のchatへ渡す。
-7. 次のchatは以前の会話と前workerの権限を推測せず、利用者から新しく受け取ったpacketとrepositoryを正として作業する。
-
-## 不完全なpacket
-
-必要fieldが不足していて安全に作業できない場合、workerは値を推測しない。
-
-- `review.verdict`はreview時のみ`incomplete`とする。
-- `implementation.outcome`は実装時のみ`blocked`とする。
-- `report.outcome`はreport作成時のみ`blocked`とする。
-- 不足fieldと理由を`unknown`へ記録する。
-- `next_action.type`を`user_decision`とする。
-- `next_chat_input.instructions`へ、利用者が補うべき情報を列挙する。
-- 次chat用権限が未付与の場合は、read-onlyで安全な確認だけを行い、writeが必要なら利用者へ戻す。
+When required information is missing, do not guess. Mark implementation as `blocked`, review as `incomplete`, or report as `blocked`; list missing facts under `unknown`; set `next_action.type` to `user_decision`; and identify the exact information the user must provide.
