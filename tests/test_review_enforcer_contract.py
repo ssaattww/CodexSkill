@@ -17,6 +17,8 @@ ANALYSIS = (
     / "reports"
     / "review-coverage-analysis-revmem-pr15-pr24-pr25-20260726.md"
 )
+HIERARCHY_DESIGN = ROOT / "design" / "skill-hierarchy-design.md"
+SKILL_HIERARCHY_DESIGN = ROOT / "skills" / "design" / "skill-hierarchy-design.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -68,6 +70,21 @@ def main() -> None:
             f"PR #{pr_number}" in analysis,
             f"analysis report does not cover RevMem PR #{pr_number}",
         )
+
+    hierarchy_design = HIERARCHY_DESIGN.read_text(encoding="utf-8")
+    skill_hierarchy_design = SKILL_HIERARCHY_DESIGN.read_text(encoding="utf-8")
+    require(
+        hierarchy_design == skill_hierarchy_design,
+        "duplicated skill hierarchy designs are not synchronized",
+    )
+    require(
+        "code-review-coverage-checklist.md" in hierarchy_design,
+        "skill hierarchy design does not describe the review coverage checklist",
+    )
+    require(
+        "coverage matrix" in hierarchy_design,
+        "skill hierarchy design does not describe the coverage matrix contract",
+    )
 
     print("review-enforcer contract validation passed")
 
