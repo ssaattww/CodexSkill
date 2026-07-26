@@ -1,71 +1,38 @@
 ---
 name: implementation-executor
-description: Execute concrete implementation work after task scope has been decided. Use when bounded code, test, documentation, configuration, workflow, or review-follow-up edits must be performed under the target project's development policy.
+description: Coordinate runtime-neutral implementation through the Codex parent and sub-agent model without redefining implementation semantics.
 ---
 
-# Implementation Executor
+# Codex Implementation Wrapper
 
 ## Goal
 
-Execute an already-scoped implementation through the Codex runtime without redefining cross-runtime implementation rules.
+Act as the Codex runtime wrapper for implementation.
 
-## Shared contracts
+## Required Skills
 
-Follow:
+Invoke:
 
-- [Common Work Contract](../../shared/workflow/common-work-contract.md)
-- [Implementation Contract](../../shared/workflow/implementation-contract.md)
+1. `work-context-manager`
+2. `implementation-worker`
 
-These files are the canonical implementation semantics shared with ChatGPT workers. This Skill contains only the Codex execution adapter.
+The parent may delegate execution through `codex-delegation-executor`, but the delegated executor must use the runtime-neutral Skills above. Do not replace them with `shared/` files.
 
-## Execution owner
+## Codex responsibilities
 
-Run this Skill as: `parent`.
+- The parent owns scope, write boundary, executor selection, commit integration, progress sync, reporting, PR updates, and handoff.
+- Pass the resolved work context and selected mode to `implementation-worker`.
+- Return all implementation evidence to the parent.
+- Use `report-output-manager` for persistence after implementation evidence is available.
 
-- The parent owns scope, write boundary, and completion integration.
-- `codex-delegation-executor` may assign the actual editing work to the parent or an implementation sub-agent.
-- A delegated executor reads this Skill and the shared contracts before editing.
+## Boundaries
 
-## Inputs
-
-Before running this Skill, the parent must establish:
-
-- implementation mode: initial implementation or review follow-up,
-- accepted scope and non-goals,
-- target files or affected modules,
-- authoritative requirements and design,
-- target-project development and testing policy,
-- validation target and expected proof,
-- allowed and forbidden writes.
-
-## Required flow
-
-1. Select the executor through `codex-delegation-executor`.
-2. Give the executor the accepted scope, write boundary, target identity, relevant files, validation policy, and shared-contract paths.
-3. Execute the shared Implementation Contract.
-4. Return changed files, validation evidence, commit-relevant summary, unknowns, and remaining risks to the parent.
-5. Leave report persistence, review, progress sync, commit, push, PR, and handoff orchestration to their owning parent Skills.
-
-## Codex adapter rules
-
-- Do not re-plan the task; planning belongs to `task-breakdown-planner`, `task-consistency-manager`, and the parent workflow.
-- Do not decide TDD applicability here. The target project and caller own that policy.
-- Do not broaden scope beyond the assigned task.
-- Do not let the implementation executor review its own work.
-- For executor selection, follow `codex-delegation-executor`; do not invent a separate dispatch policy here.
+- Do not re-plan the task.
+- Do not decide TDD applicability here; the target repository and caller own it.
+- Do not redefine implementation rules locally when a required Skill is unavailable.
+- Do not let the executor review its own changes.
 - Do not merge.
-
-## Outputs
-
-After this Skill runs, the parent receives:
-
-- applied scoped changes,
-- changed and intentionally untouched files,
-- focused and broader validation evidence required by the target project,
-- failure diagnostics when applicable,
-- unknowns, blocked items, and remaining risks,
-- a result ready for report generation and review.
 
 ## Completion condition
 
-This Skill is complete only when the shared Common Work and Implementation contracts are satisfied for the assigned scope, the parent has the evidence required for the next workflow stage, no review verdict was issued by the executor, and no merge was performed.
+Complete when the required Skills have produced current context and implementation evidence for the accepted scope, the parent has the evidence required for reporting and review, no self-review verdict was issued, and no merge was performed.
