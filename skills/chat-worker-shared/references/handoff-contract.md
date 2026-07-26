@@ -20,7 +20,7 @@ The repository-backed transport is the canonical durable method when repository 
 - The next worker discovers the applicable packet through the target Issue or PR and the repository connector when those fields identify one packet unambiguously.
 - Ask the user for a path or URL only when multiple applicable packets remain, the packet is outside the repository, or repository discovery is unavailable.
 
-A handoff file is structured execution evidence, not a narrative implementation or review report. An implementation worker may therefore write a handoff file without taking ownership of report writing.
+A handoff file is structured execution evidence and does not replace the worker's required implementation, review, or requested report. Each worker produces its report and handoff as separate work products.
 
 ### Copy and paste transport
 
@@ -220,11 +220,11 @@ Without a new grant, the next worker remains read-only.
 
 ### Implementation worker
 
-Require repository identity, scope, requirements, permissions, changed files, commands, implementation outcome, risks, transport, and next action. Record the testing and validation evidence required by the target project's instructions. When no test or testing order applies, record that fact under `not_applicable` with a reason. Review and report outcomes remain `not_applicable`.
+Require repository identity, scope, requirements, permissions, changed files, commands, implementation outcome, implementation report fields, risks, transport, and next action. Record the testing and validation evidence required by the target project's instructions. When no test or testing order applies, record that fact under `not_applicable` with a reason. Review outcome remains `not_applicable`.
 
 ### Review worker
 
-Require the reviewed HEAD, scope, requirements, permissions, inspected files, review mode, verdict, coverage, findings or explicit no-findings evidence, held items, unexplored areas, risks, transport, and next action. Implementation outcome remains `not_applicable`.
+Require the reviewed HEAD, scope, requirements, permissions, inspected files, review mode, verdict, coverage, findings or explicit no-findings evidence, held items, unexplored areas, review report fields, risks, transport, and next action. Implementation outcome remains `not_applicable`.
 
 ### Report writer
 
@@ -234,7 +234,7 @@ Require source packet identities, newly granted report permissions, report type 
 
 1. The user starts a worker with the target Issue or PR and the current permissions.
 2. The worker resolves authoritative repository state and any uniquely applicable persisted packet.
-3. The worker performs the assigned role and creates a complete handoff packet.
+3. The worker performs the assigned role and creates its required report and a complete handoff packet.
 4. If `write_handoff` is authorized, the worker stores the packet under `reports/handoffs/`; otherwise it returns the complete packet for copy and paste.
 5. The user reviews `head_sha`, scope, findings, unknowns, and requested next permissions, then starts the next chat.
 6. The next worker resolves the stored packet from the Issue or PR when unambiguous. The user supplies a path, URL, or packet body only when discovery cannot select one packet safely.
