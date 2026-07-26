@@ -26,21 +26,22 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: chatgpt-worker-skills-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout target HEAD
+      - name: Checkout target HEAD without write credentials
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Build and verify complete ChatGPT Skill ZIP
         shell: bash
@@ -57,8 +58,33 @@ jobs:
           path: chatgpt-worker-skills.zip
           if-no-files-found: error
 
-      - name: Publish rolling GitHub Release after main update
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout merged main HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download validated ChatGPT Skill ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: chatgpt-worker-skills-${{ github.sha }}
+          path: release-dist
+
+      - name: Verify downloaded release asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f release-dist/chatgpt-worker-skills.zip
+          python3 -m zipfile -l release-dist/chatgpt-worker-skills.zip
+
+      - name: Publish rolling GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: chatgpt-worker-skills-latest
@@ -82,4 +108,7 @@ jobs:
               --latest
           fi
 
-          gh release upload "${TAG}" chatgpt-worker-skills.zip --clobber
+          gh release upload \
+            "${TAG}" \
+            release-dist/chatgpt-worker-skills.zip \
+            --clobber
