@@ -96,6 +96,18 @@ HANDOFF_REQUIRED_MARKERS = (
     "requested_write_boundary",
 )
 
+DESIGN_WORKFLOW_MARKERS = (
+    "## 利用者向け実行例",
+    "Chat A: 初回実装",
+    "Chat B: 初回レビュー",
+    "Chat Aを継続: レビュー対応",
+    "Chat C: 修正確認",
+    "Chat D: 独立最終レビュー",
+    "新規chatへ送るprompt",
+    "既存chatへ送るprompt",
+    "handoff path",
+)
+
 
 class ChatWorkerSkillContractTests(unittest.TestCase):
     def read_required(self, path: Path) -> str:
@@ -144,6 +156,8 @@ class ChatWorkerSkillContractTests(unittest.TestCase):
         self.assertIn("既存Codex向けskill hierarchyとは分離", primary)
         self.assertIn("自動的には参照できない", primary)
         self.assertIn("reports/handoffs/", primary)
+        for marker in DESIGN_WORKFLOW_MARKERS:
+            self.assertIn(marker, primary, f"chat worker design is missing workflow marker: {marker}")
         for skill_name in SKILLS:
             self.assertIn(skill_name, primary)
 
