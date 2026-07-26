@@ -1,0 +1,85 @@
+name: Chat worker skill contract
+
+on:
+  pull_request:
+    paths:
+      - "skills/chat-*/**"
+      - "skills/design/skill-hierarchy-design.md"
+      - "design/skill-hierarchy-design.md"
+      - "tests/test_chat_worker_skills_contract.py"
+      - ".github/workflows/chat-worker-skill-contract.yml"
+  push:
+    branches:
+      - "agent/issue-51-chat-worker-skills"
+    paths:
+      - "skills/chat-*/**"
+      - "skills/design/skill-hierarchy-design.md"
+      - "design/skill-hierarchy-design.md"
+      - "tests/test_chat_worker_skills_contract.py"
+      - ".github/workflows/chat-worker-skill-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare diagnostics directory
+        run: mkdir -p artifacts
+
+      - name: Record environment
+        shell: bash
+        run: |
+          {
+            echo "head_sha=$(git rev-parse HEAD)"
+            echo "ref=${GITHUB_REF}"
+            echo "event=${GITHUB_EVENT_NAME}"
+            uname -a
+            python3 --version
+            git status --short
+          } > artifacts/environment.txt 2>&1
+
+      - name: Run chat worker skill contract
+        id: contract
+        shell: bash
+        run: |
+          set +e
+          python3 tests/test_chat_worker_skills_contract.py \
+            > artifacts/test-stdout.log \
+            2> artifacts/test-stderr.log
+          status=$?
+          echo "exit_code=${status}" >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      - name: Collect failure context
+        if: failure()
+        shell: bash
+        run: |
+          set +e
+          mkdir -p artifacts/source
+          cp tests/test_chat_worker_skills_contract.py artifacts/source/
+          cp design/skill-hierarchy-design.md artifacts/source/design-skill-hierarchy-design.md
+          cp skills/design/skill-hierarchy-design.md artifacts/source/skills-skill-hierarchy-design.md
+          find skills -maxdepth 3 -type f \
+            \( -path 'skills/chat-*/*' -o -path 'skills/chat-*/*/*' \) \
+            -print > artifacts/chat-worker-files.txt
+          while IFS= read -r file; do
+            target="artifacts/source/${file//\//__}"
+            cp "$file" "$target"
+          done < artifacts/chat-worker-files.txt
+          git diff --check > artifacts/git-diff-check.log 2>&1
+          git status --short > artifacts/git-status.txt 2>&1
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat-worker-skill-contract-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
