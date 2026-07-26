@@ -7,6 +7,7 @@ on:
       - "skills/design/chat-worker-skill-design.md"
       - "design/chat-worker-skill-design.md"
       - "tests/test_chat_worker_skills_contract.py"
+      - "reports/issue-51-chat-worker-skills-*.md"
       - ".github/workflows/chat-worker-skill-contract.yml"
   push:
     paths:
@@ -14,6 +15,7 @@ on:
       - "skills/design/chat-worker-skill-design.md"
       - "design/chat-worker-skill-design.md"
       - "tests/test_chat_worker_skills_contract.py"
+      - "reports/issue-51-chat-worker-skills-*.md"
       - ".github/workflows/chat-worker-skill-contract.yml"
   workflow_dispatch:
 
@@ -87,6 +89,13 @@ jobs:
             target="artifacts/source/${file//\//__}"
             cp "$file" "$target"
           done < artifacts/chat-worker-files.txt
+          find reports -maxdepth 1 -type f \
+            -name 'issue-51-chat-worker-skills-*.md' \
+            -print > artifacts/issue-51-report-files.txt
+          while IFS= read -r file; do
+            target="artifacts/source/${file//\//__}"
+            cp "$file" "$target"
+          done < artifacts/issue-51-report-files.txt
           git diff --check > artifacts/git-diff-check.log 2>&1
           git status --short > artifacts/git-status.txt 2>&1
           git show --stat --oneline HEAD > artifacts/head-commit.txt 2>&1
