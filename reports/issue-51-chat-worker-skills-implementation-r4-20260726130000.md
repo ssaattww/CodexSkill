@@ -88,21 +88,14 @@ Red commit:
 - 新規chatへはhandoff pathまたはGitHub URLを明示的に渡す
 - repositoryへ保存できない場合はpacket全文をcopy and pasteする
 - 前chatの会話履歴や権限を自動継承しない
-- 実装結果のhandoff packetを`reports/handoffs/issue-51-chat-implementation-worker-workflow-example-0d594d1-20260726130000.md`へ保存した
+- 実装結果のhandoff packetを`reports/handoffs/issue-51-chat-implementation-worker-workflow-example-final-1d41f6b-20260726130500.md`へ保存した
 
 ## 検証
 
-最終HEAD:
-
-- `bbcde2c0b2a862601ea92e48d4babb9b04946019`
-
-同HEADに紐づくWorkflow Run:
-
 - Workflow: `Chat worker skill contract`
-- Run ID: `30187095415`
-- Conclusion: `success`
-
-別branchまたは別SHAのrunを判定に使用していない。
+- 最終branch HEADに紐づくrunだけを使用する
+- run IDとconclusionはPRコメントへ記録する
+- 別branchまたは別SHAのrunを判定に使用しない
 
 ## 残存事項
 
