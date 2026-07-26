@@ -7,23 +7,28 @@ description: Perform an initial review, fix verification, or cold final review d
 
 ## Goal
 
-Review a specified PR, branch, commit, or diff in one ChatGPT chat, create a durable review report, and return findings, coverage, evidence, and a verdict to the user.
+Review a specified PR in one ChatGPT chat, create a durable review report, and return findings, coverage, evidence, and a verdict to the user.
 
 ## Execution model
 
-- The user is the parent and controls the review target, mode, permissions, next chat, and merge decision.
+- The user is the parent and controls review mode, scope changes, next chat, and merge decision.
 - This worker must not start another worker.
-- Use the supplied packet, repository, issue, design, and exact target HEAD; do not rely on previous conversation history.
+- Resolve discoverable review state from project instructions, the PR, linked issue, task list, repository files, reports, handoffs, comments, and workflow runs before asking the user.
+- Do not require the user to provide repository URL, branch, base, target HEAD SHA, report path, handoff path, changed files, or CI run when the PR makes them unambiguous.
 - This worker must not modify product code or tests.
-- This worker must create a review report. A PR comment is also required when PR commenting is available.
+- This worker must create a review report. A concise PR comment is also required when PR commenting is available.
 - Follow the [shared handoff contract](../chat-worker-shared/references/handoff-contract.md).
 - A handoff is not automatically visible to another chat. When `write_handoff` is authorized, store it under `reports/handoffs/`; otherwise return the complete packet for user copy and paste.
 
 ## Inputs
 
-Require repository, PR or branch, base reference, target HEAD SHA, review mode, task exit criteria, authoritative requirements, scope, non-goals, current permissions, changed files, dependency boundaries, risk profile, required coverage, validation evidence, report destination, and previous findings for fix verification.
+A PR identifier plus the review mode is normally sufficient.
 
-If the target HEAD, requirements, or scope cannot be resolved, return `incomplete`, create an incomplete review report, and do not guess.
+For `fix verification`, discover the previous applicable review report and handoff, the commits added after that reviewed HEAD, and the corresponding implementation report and handoff.
+
+For `cold final review`, discover the current PR HEAD and applicable implementation and verification evidence, but perform the independent review before relying on earlier conclusions.
+
+Ask the user only when authoritative sources conflict, multiple unresolved candidate handoffs or review rounds exist, or a scope decision cannot be inferred safely.
 
 ## Review modes
 
@@ -31,12 +36,12 @@ If the target HEAD, requirements, or scope cannot be resolved, return `incomplet
 
 - Define planned coverage before reviewing.
 - Inspect every changed file and direct contract dependencies.
-- Continue planned coverage after finding a Blocking or High issue; report findings together after coverage is complete.
+- Continue planned coverage after finding a Blocking or High issue.
 - Include relevant malformed, partial, stale, duplicate, contradictory, and failure paths selected by the risk profile.
 
 ### fix verification
 
-- Verify each previous finding in both implementation and tests.
+- Verify each applicable previous finding in implementation and tests.
 - Inspect the fix diff, direct impact, and sibling cases of the same defect class.
 - Confirm previous regression tests remain present and strong.
 - Do not expand without limit into unrelated unexplored areas.
@@ -44,35 +49,35 @@ If the target HEAD, requirements, or scope cannot be resolved, return `incomplet
 
 ### cold final review
 
-- Review the final HEAD once from a fresh perspective using requirements, design, final diff, and risk profile.
-- Compare previous findings only after the independent pass to confirm regression retention.
+- Review the current PR HEAD once from a fresh perspective using requirements, design, final diff, and risk profile.
+- Compare previous findings only after the independent pass.
 - Pass is possible only when required coverage is complete and no new Blocking or High finding exists.
-- When different Blocking or High defect classes repeatedly appear, return `unstable` and recommend design rework or PR splitting instead of another broad review.
-
-## Coverage selection
-
-Universal coverage includes requirements, scope, all changed files, contracts, test validity and wiring, unrelated-change protection, and validation tied to the target HEAD.
-
-Select deeper coverage only where applicable: state and persistence; parser and untrusted input; concurrency and atomicity; identity, canonicalization, revision, and cache freshness; external processes, filesystem, network, Git, and APIs; performance and large inputs; documentation, workflows, and configuration.
-
-Use reasoned `not_applicable` dispositions at the module level rather than forcing every item onto every change.
+- When different Blocking or High defect classes repeatedly appear, return `unstable` and recommend design rework or PR splitting.
 
 ## Required flow
 
-1. Resolve repository, base, target HEAD, mode, requirements, permissions, write boundary, and report destination.
-2. Enumerate changed files, dependency boundaries, risk profile, and planned coverage.
-3. Inspect all changed files and relevant dependent files.
-4. Compare implementation behavior with requirements and contracts.
-5. Verify that tests use realistic fixtures and assert exact outcomes and failures.
-6. Apply selected boundary, state, identity, atomicity, performance, and documentation coverage.
-7. Use only CI runs associated with the target `head_sha`.
+1. Resolve discoverable review state from the PR: repository, linked issue, base, current HEAD, scope, requirements, changed files, reports, handoffs, comments, and HEAD-associated CI runs.
+2. Select the review evidence by task, role, mode, branch, reviewed HEAD, and commit relationship; do not select merely by newest timestamp.
+3. Enumerate changed files, dependency boundaries, risk profile, and planned coverage.
+4. Inspect all changed files and relevant dependent files.
+5. Compare implementation behavior with requirements and contracts.
+6. Verify that tests and evidence support the claimed behavior.
+7. Use only CI runs associated with the target `head_sha` when required by the project instructions.
 8. Record findings in severity order with reproducible locations, impact, and required action.
-9. Record held, out-of-scope, and unexplored areas with owners, risks, and verdict impact.
+9. Record held, out-of-scope, and unexplored areas with risks and verdict impact.
 10. Apply the mode-specific stop condition and set the verdict.
-11. Create a review report under the repository report directory, normally `reports/`, using repository naming and template rules.
-12. Post a concise PR comment when PR commenting is available.
+11. Create a review report under the repository report directory, normally `reports/`.
+12. Post a concise PR comment.
 13. Create a complete handoff packet that references the report and PR comment.
 14. If `write_handoff` is authorized, write it to `reports/handoffs/`; otherwise return the complete packet inline.
+
+## Discovery rules
+
+- The PR current HEAD is the default review target unless the user explicitly identifies another commit.
+- Resolve the linked task and design from the PR body, issue references, task list, and repository history.
+- Resolve previous review rounds by reviewed HEAD and finding identity, not by filename recency alone.
+- Resolve implementation follow-up evidence from commits after the reviewed HEAD and matching reports or handoffs.
+- Ask for a SHA or path only when discovery leaves a real ambiguity.
 
 ## Finding rules
 
@@ -104,12 +109,11 @@ Use reasoned `not_applicable` dispositions at the module level rather than forci
 - This worker must not modify product code, tests, fixtures, workflows, or configuration.
 - It must not implement its own findings.
 - Only review reports, handoff files, and PR review comments may be written.
-- It must not perform unauthorized operations.
 - It must not merge.
 
 ## Outputs
 
-Return review mode and target HEAD, inspected files and dependencies, coverage dispositions, findings or explicit no findings, held and unexplored areas, validation evidence, verdict, review report path or complete body, PR comment reference when available, `next_chat_input`, and either a `reports/handoffs/` packet path or the complete inline packet.
+Return review mode and target HEAD, inspected files and dependencies, coverage dispositions, findings or explicit no findings, held and unexplored areas, validation evidence, verdict, review report path or complete body, PR comment reference, and handoff path or complete packet.
 
 ## Completion condition
 
