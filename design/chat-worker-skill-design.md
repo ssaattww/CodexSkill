@@ -74,6 +74,10 @@ evidence-faithfulなreportと簡易PR commentを生成する。repositoryへの�
 
 builderはmissing Skill、front matter name不一致、symlink、Skill外`shared/`参照を拒否する。release時のfile複製は行わない。
 
+## Skill依存の扱い
+
+wrapperとcore Skillの依存は、同一fileへのpath参照ではなく、install済みSkill名による呼び出しとして表現する。依存Skillが利用できない場合、wrapperは処理を複製せずmissing dependencyとして停止する。
+
 ## Project Instruction例
 
 設定例はruntime Skillではないため、`design/chatgpt-project-instruction-example.md`へ置く。
