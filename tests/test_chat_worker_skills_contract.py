@@ -85,6 +85,8 @@ HANDOFF_REQUIRED_MARKERS = (
     "remaining_risks",
     "next_action",
     "next_chat_input",
+    "requested_authorized_actions",
+    "requested_write_boundary",
 )
 
 
@@ -120,6 +122,7 @@ class ChatWorkerSkillContractTests(unittest.TestCase):
         self.assertIn("次のchat", text)
         self.assertIn("unknown", text)
         self.assertIn("not_applicable", text)
+        self.assertIn("次のchatへ自動継承しない", text)
 
     def test_chat_worker_designs_are_identical_and_register_workers(self) -> None:
         primary = self.read_required(DESIGN_FILES[0])
