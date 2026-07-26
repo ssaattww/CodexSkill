@@ -25,13 +25,14 @@ implementation、review、verificationのhandoffを事実どおりにMarkdown re
 - 1つ以上のhandoff packet
 - task、Issue、PR identifier
 - repository、branch、base ref、HEAD SHA
+- `authorized_actions`と`write_boundary`
 - report path、filename policy、template
 - report本文の言語
 - PR commentを投稿する場合は対象PR
 - 入力handoffに含まれるcommands、tests、CI、artifact、finding、held、unexplored、risk
 - 既存reportを更新するのか、新規reportを作るのか
 
-入力handoffが不足している場合は、値を推測せず`unknown`として明示する。
+入力handoffが不足している場合は、値を推測せず`unknown`として明示する。`write_report`または`comment_pr`が許可されていない場合はfileやPRへ書き込まず、配置可能な完成本文を返す。
 
 ## Report modes
 
@@ -90,15 +91,17 @@ verification evidenceから次を整理する。
 ## Required flow
 
 1. handoff packetのschema、producer、mode、task、repository、HEAD SHAを確認する。
-2. report typeと使用するpacketを確定する。
-3. 入力packet内の事実と、必要ならrepository上のHEAD、run、artifactを照合する。
-4. report pathが未指定なら、利用可能な場合は既存`report-output-manager`のpath、filename、template規則を参照する。
-5. report typeに対応するsectionへevidenceを転記する。
-6. 値が不足しているfieldは`unknown`、非該当は理由付き`not_applicable`として書く。
-7. finding、test結果、CI結論、HEAD SHA、artifact IDが入力packetと一致するか再確認する。
-8. Markdown reportを指定pathへ作成または更新する。
-9. PR commentが要求された場合、reportを省略しない簡易summaryを投稿する。
-10. 作成したpath、投稿先、転記したevidence、残るunknownを[shared handoff contract](../chat-worker-shared/references/handoff-contract.md)で返す。
+2. `authorized_actions`と`write_boundary`を確認し、許可されたreport pathとPR操作だけを確定する。
+3. report typeと使用するpacketを確定する。
+4. 入力packet内の事実と、必要ならrepository上のHEAD、run、artifactを照合する。
+5. report pathが未指定なら、利用可能な場合は既存`report-output-manager`のpath、filename、template規則を参照する。
+6. report typeに対応するsectionへevidenceを転記する。
+7. 値が不足しているfieldは`unknown`、非該当は理由付き`not_applicable`として書く。
+8. finding、test結果、CI結論、HEAD SHA、artifact IDが入力packetと一致するか再確認する。
+9. Markdown reportを指定pathへ作成または更新する。write権限がなければ完成本文を返す。
+10. PR commentが要求され、`comment_pr`が許可されている場合だけ、reportを省略しない簡易summaryを投稿する。
+11. `report.report_type`、`report.outcome`、`report.source_packets`、`report.paths`、`report.pr_comments`を埋める。
+12. 作成したpath、投稿先、転記したevidence、残るunknownを[shared handoff contract](../chat-worker-shared/references/handoff-contract.md)で返す。
 
 ## Evidence fidelity rules
 
@@ -118,6 +121,7 @@ verification evidenceから次を整理する。
 - implementationを開始しない。
 - reviewを再実行せず、新しいtechnical findingを作らない。
 - report fileと、利用者が指定したPR commentだけをwrite対象とする。
+- `authorized_actions`にない操作を行わない。
 - mergeしない。
 
 ## Report structure
@@ -142,10 +146,10 @@ verification evidenceから次を整理する。
 次を返す。
 
 - 作成または更新したMarkdown report path
-- report type
-- 入力に使用したhandoff packetの識別情報
+- report typeと`report.outcome`
+- 入力に使用した`report.source_packets`
 - reportへ転記したHEAD SHA、CI run、artifact、finding
-- 投稿した場合はPR commentの要約と投稿先
+- 投稿した場合は`report.pr_comments`の投稿先
 - 入力不足として残した`unknown`
 - report作成後の`next_action`
 - [shared handoff contract](../chat-worker-shared/references/handoff-contract.md)準拠のpacket
@@ -158,6 +162,7 @@ verification evidenceから次を整理する。
 - reportの事実がsource handoffと一致している
 - unknown、not applicable、held、unexploredが必要に応じて残されている
 - Markdown reportが指定pathへ配置されるか、配置可能な完成本文が返されている
-- PR commentを要求された場合、詳細reportへの参照を含む簡易commentが投稿されている
+- PR commentを要求された場合、詳細reportへの参照を含む簡易commentが投稿されるか、権限不足として本文が返されている
+- `report` fieldがsource packet、path、comment、outcomeを表している
 - 事実を発明しないまま、codeまたはtestを変更しない
 - mergeしない
