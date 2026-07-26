@@ -20,11 +20,14 @@
 
 - `親が実行`: 親 agent がその skill を直接実行する。
 - `親が呼び出し、sub-agent が実行`: 親 agent が skill を起動し、実作業は sub-agent が担当する。
+- `利用者が親としてChatGPT chatで実行`: 利用者が独立したChatGPT chatを起動し、そのchatが指定Skillを直接実行する。workerは別workerまたはsub-agentを起動しない。
 
 補足:
 
 - `親が実行` の skill でも、内部の一部工程を `sub-agent-task-manager` 経由で sub-agent に委譲する場合がある。
 - その場合でも skill 全体の責務と完了判定は親が持つ。
+- Codex向け親/sub-agent flowと、利用者が親となるChatGPT chat worker flowは別の実行系として扱う。
+- ChatGPT向けworker SkillはCodexの`development-orchestrator`、`review-enforcer`、`sub-agent-task-manager`から自動的には呼び出さない。
 
 ## 標準開発フローの呼び出しツリー
 
@@ -63,6 +66,49 @@ development-orchestrator [親が実行]
 │  └─ feedback-points-sanitizer [親が呼び出し、sub-agent が実行]
 └─ skill-authoring-wrapper [親が実行, issue完了時の親判断でlocal skill作成/更新が必要な場合]
 ```
+
+## ChatGPT chat worker flowの呼び出し関係
+
+```text
+利用者 [親]
+├─ Chat A: chat-implementation-worker [新規chat、初回実装]
+├─ Chat B: chat-review-worker [新規chat、initial review]
+├─ Chat A: chat-implementation-worker [同じchat、review follow-up]
+├─ Chat C: chat-review-worker [原則新規chat、fix verification]
+├─ Chat D: chat-review-worker [必ず新規かつ非実装chat、cold final review]
+└─ Report chat: chat-report-writer [統合または再整形が必要な場合のみ]
+```
+
+- 利用者がchatの起動順序、scope変更、次chat、merge判断を管理する。
+- 各workerは単一chat内で担当作業を完結し、別workerまたはsub-agentを起動しない。
+- `cold final review`はChatGPT chat worker flow固有のmodeであり、実装または修正を行っていない新規chatで実施する。
+- Codex標準flowの`review-enforcer`は、専用reviewer sub-agentを使用し、同一セッションでは原則として同じreviewerを継続する。新規chatによる`cold final review`を必須とはしない。
+- Codex実行でfreshな独立最終reviewを必要とする場合は、Codex側のreview要件として明示的に追加する。ChatGPT向け`cold final review`契約を自動適用しない。
+
+## ChatGPT Skill登録構成
+
+ChatGPTへ登録するSkillは次の3つである。
+
+- `chat-implementation-worker`
+- `chat-review-worker`
+- `chat-report-writer`
+
+`chat-worker-shared`は4つ目のSkillとして登録しない。`skills/chat-worker-shared/references/handoff-contract.md`をcanonical sourceとし、各ChatGPT Skill packageへ`references/handoff-contract.md`として同梱するsupporting resourceである。
+
+各Skill packageは、少なくとも次を含む。
+
+```text
+<skill-name>/
+├─ SKILL.md
+└─ references/
+   └─ handoff-contract.md
+```
+
+- ChatGPTへ登録する数は3 Skillでよいが、3つの`SKILL.md`だけを単体登録する構成では不十分である。
+- 各package内の`references/handoff-contract.md`はcanonical sourceとbyte-identicalに保つ。
+- Project InstructionはSkillとは別に対象Projectへ設定する。repository URL、task list、connector、testing policy、artifact、commit/push、report、PR、merge、CI run選択などをProject Instructionへ置く。
+- `design/chat-worker-skill-design.md`と各reportはruntime登録対象ではない。
+- ChatGPTとCodexのSkill登録状態は別管理とし、必要な実行面へそれぞれ登録する。
 
 ## 補助フローの呼び出し関係
 
@@ -279,6 +325,14 @@ local skill を新規作成または実質更新するときは、親が次の�
 | --- | --- | --- |
 | `report-output-manager` | `reports/` 配下の report 配置、ファイル名、テンプレート参照を標準化する。 | `親が実行` |
 
+### ChatGPT chat worker
+
+| Skill名 | 役割 | 実行方式 |
+| --- | --- | --- |
+| `chat-implementation-worker` | Issueまたはtaskから初回実装とreview follow-upを行い、対象projectのtesting policyに従ってvalidation、implementation report、handoff、PR簡易コメントを出力する。 | `利用者が親としてChatGPT chatで実行` |
+| `chat-review-worker` | PRのinitial review、fix verification、cold final reviewを行い、review report、handoff、PR簡易コメントを出力する。cold final reviewは新規かつ非実装chatに限定する。 | `利用者が親としてChatGPT chatで実行` |
+| `chat-report-writer` | repository上のreports、handoffs、PR evidenceを忠実に統合または再整形し、指定report、handoff、PR簡易コメントを出力する。 | `利用者が親としてChatGPT chatで実行` |
+
 ## skill契約一覧
 
 この章では、各 skill の入力、出力、完了条件を設計レベルで要約する。
@@ -350,11 +404,21 @@ local skill を新規作成または実質更新するときは、親が次の�
 | --- | --- | --- | --- |
 | `report-output-manager` | repo root、item name、issue/task/topic prefix | concrete report path と filename | caller が使う report path が明示済み |
 
+### ChatGPT chat worker
+
+| Skill名 | 入力 | 出力 | 完了条件 |
+| --- | --- | --- | --- |
+| `chat-implementation-worker` | Issueまたはtask、Project Instruction、repository state | implementation changes、validation evidence、implementation report、handoff、PR簡易コメント | scope内の作業とProject Instruction必須validationが完了または明示的にblockedで、reportとhandoffが残り、mergeしていない |
+| `chat-review-worker` | PR、review mode、Project Instruction、repository evidence | findingsまたはno findings、coverage、verdict、review report、handoff、PR簡易コメント | modeがcurrent chatに対して有効で、必要coverageとreport/handoffが完了し、product code/testを変更せずmergeしていない |
+| `chat-report-writer` | IssueまたはPR、report type、source reports/handoffs | 指定report、source fidelity evidence、handoff、PR簡易コメント | source factsを変更せずreportを作成またはrenderし、code/testを変更せずmergeしていない |
+
 ## 主要な設計判断
 
 - workflow 入口は `development-orchestrator` の一箇所に固定し、再開時も `restart-handover-manager` から直接始めず `development-orchestrator` へ戻して続行する。
 - `restart-handover-manager` は recorded state から再開位置を復元する skill とし、会話内容そのものを次チャットへ移送する handover 文面の作成は `handover-memo-writer` に分離する。
-- レビューは親がゲートを持つが、レビュワー実行は必ず sub-agent とする。1 セッションでは基本的に同じ reviewer sub-agent を継続し、セッション内で決まったレビュー指針を後続 review に引き継ぐ。
+- Codex標準flowでは、レビューは親がゲートを持つが、レビュワー実行は必ず sub-agent とする。1 セッションでは基本的に同じ reviewer sub-agent を継続し、セッション内で決まったレビュー指針を後続 review に引き継ぐ。
+- ChatGPT chat worker flowの`cold final review`は新規かつ非実装chatで行う別契約であり、Codex標準flowへ自動適用しない。
+- ChatGPTへ登録するSkillは3つとし、shared handoff contractは4つ目のSkillではなく各packageへ同梱するsupporting resourceとして扱う。
 - 設計文書編集とコード/テスト作成は、判断系 skill から分離し、`design-executor` と `implementation-executor` に寄せる。
 - `sub-agent` は単独で存在する主体ではなく、常に親から呼び出される実行形態として扱う。
 - `feedback-points-sanitizer` は、独立視点での整理が価値になるため、例外的に「親が呼び出し、sub-agent が実行」として明示する。
@@ -371,4 +435,6 @@ local skill を新規作成または実質更新するときは、親が次の�
 
 - 新しい skill を追加したら、この設計書のツリーと一覧を更新する。
 - 呼び出し関係が変わったら、まずこの設計書を更新してから関連 report を更新する。
-- 実行方式の表現は `親が実行` と `親が呼び出し、sub-agent が実行` に統一する。
+- Codex向けflowとChatGPT chat worker flowの境界が変わった場合は、`design/chat-worker-skill-design.md`と本設計書を同時に更新する。
+- ChatGPT Skill packageのshared contract copyを更新する場合は、`skills/chat-worker-shared/references/handoff-contract.md`とbyte-identicalであることを確認する。
+- 実行方式の表現は `親が実行`、`親が呼び出し、sub-agent が実行`、`利用者が親としてChatGPT chatで実行` に統一する。
