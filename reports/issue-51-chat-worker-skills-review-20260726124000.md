@@ -1,256 +1,259 @@
-# Issue #51 ChatGPT Chat Worker Skill コードレビュー報告書
+# Issue #51 ChatGPT Chat Worker Skill レビュー報告書
 
 ## レビュー情報
 
 - Repository: `ssaattww/CodexSkill`
 - Issue: #51
 - Pull Request: #52
-- Review mode: initial review + fix verification
+- Review mode: user-authorized self-review + fix verification
+- Cold final review: 該当しない
+- Reviewer: 本PRの実装・修正を行った同一ChatGPT chat
+- User authorization: 利用者から、残作業がmergeのみになる段階で同一chatによるreviewを実施するよう明示指示あり
 - Branch: `agent/issue-51-chat-worker-skills`
 - Base: `main`
-- 対象実装HEAD: `15b226e629330b466443865fc56c0d25376bd57b`
-- 判定: Pass with held concerns
+- Review対象HEAD: `73b3b9882aa74e2895088cc789eb41acf13d46c9`
+- Base SHA: `f1ba3dbefe94dd7cc22eeed34149804c400b13cd`
+- Ahead / Behind: ahead 79 / behind 0
+- Verdict: Pass with held concerns
 - Merge: 実施しない
 
-## レビュー目的
+## Review modeの扱い
 
-次を確認した。
+本reviewは、実装・修正を行った同じchatで利用者の明示指示により実施した。そのため、`chat-review-worker`が定義するcold final reviewではない。
 
-1. 利用者が親として複数のChatGPT chatを起動する前提になっているか。
-2. Workerが別workerを起動せず、単一chat内で完結するか。
-3. implementation、review、reportの責務とwrite boundaryが分離されているか。
-4. chat間handoffだけで次chatが再開できるか。
-5. 過剰reviewを避けつつ、初回reviewの抜け漏れを減らすlifecycleになっているか。
-6. 既存Codex向けSkillを変更していないか。
-7. test-firstとfailure diagnosticsが成立しているか。
-8. 最終判定に対象branch HEAD SHA固有のCIだけを使用しているか。
+cold final reviewは、実装または修正を行っていない新規chatでのみ実施できるよう、Skill本体と設計書を修正済みである。
 
-## 確認した変更ファイル
+## レビュー対象
 
-- `.github/workflows/chat-worker-skill-contract.yml`
+### 変更ファイル
+
 - `design/chat-worker-skill-design.md`
 - `reports/issue-51-chat-worker-skills-implementation-20260726123510.md`
+- `reports/issue-51-chat-worker-skills-review-20260726124000.md`
 - `skills/chat-implementation-worker/SKILL.md`
 - `skills/chat-report-writer/SKILL.md`
 - `skills/chat-review-worker/SKILL.md`
 - `skills/chat-worker-shared/references/handoff-contract.md`
-- `skills/design/chat-worker-skill-design.md`
-- `tests/test_chat_worker_skills_contract.py`
 
-## 確認した依存先と既存契約
+### 確認した依存先と既存契約
 
+- Issue #51
+- PR #52のmetadata、description、comments、review threads
 - `design/skill-hierarchy-design.md`
 - `skills/design/skill-hierarchy-design.md`
 - `skills/implementation-executor/SKILL.md`
 - `skills/review-enforcer/SKILL.md`
 - `skills/report-output-manager/SKILL.md`
-- `skills/sub-agent-task-manager/SKILL.md`
 - `tasks/tasks-status.md`
-- Issue #51
-- PR #52
 
-既存Codex向けSkillと既存hierarchyは変更されていない。
+既存Codex向けorchestrator、delegation、sub-agent Skillは変更されていない。新しいChatGPT chat worker flowは既存Codex向けhierarchyから分離されている。
+
+## Authoritative requirements
+
+次を要件として確認した。
+
+1. 利用者が親として複数のChatGPT chatを起動する。
+2. workerは別workerまたはsub-agentを起動しない。
+3. Issue番号またはPR番号から取得できる情報はworker自身がconnectorで解決する。
+4. implementation、review、reportの3 workerを独立Skillとして提供する。
+5. 全workerが詳細report、handoff、簡易PR commentを成果物とする。
+6. handoffはreportの代替ではない。
+7. PRまたはIssueから一意に特定できるhandoff pathを利用者へ再入力させない。
+8. cold final reviewは、実装・修正を行っていない新規chatで実施する。
+9. RevMem向けProject Instruction例へrepository、task list、参照Skill、connector、diagnostic artifact、TDD、small commit/push、report、PR、merge、HEAD固有CIの規則を含める。
+10. RevMem向けTDD方針をCodexSkill repositoryへ適用しない。
+11. CodexSkill repository自身にはTDD用testまたは専用workflowを追加しない。
+12. mergeは利用者が行う。
 
 ## Coverage
 
 | 領域 | 状態 | 確認内容 |
 | --- | --- | --- |
-| Requirements | 確認済み・指摘なし | Issue #51と利用者の「利用者が親」「Markdown配置可能」「別chatは自動起動不可」という前提を照合した |
-| Scope | 確認済み・指摘なし | standalone worker 3件、shared contract、専用設計、test、workflow、reportだけを変更している |
-| Worker separation | 確認済み・指摘なし | implementation、review、reportの禁止事項とwrite対象が分離されている |
-| Handoff completeness | 確認済み・指摘なし | repository、HEAD、scope、evidence、finding、report、unknown、next chatを保持する |
-| Authorization boundary | 確認済み・指摘なし | current executionとnext chat proposalを分離し、前worker権限の自動継承を禁止した |
-| Review lifecycle | 確認済み・指摘なし | initial、fix verification、cold final、unstableの停止条件が定義されている |
-| Test quality | 確認済み・指摘なし | file存在、frontmatter、standalone性、role marker、shared field、design同期をcontract testで固定している |
-| CI and diagnostics | 確認済み・指摘なし | branch HEADをcheckoutしてactual SHAを検証し、failure artifactへ必要情報を保存する |
-| Existing Codex compatibility | 確認済み・指摘なし | 既存Codex Skillを変更せず、専用designへ分離した |
-| Performance / runtime | 対象外 | Markdown Skill contractと小規模Python contract testであり、製品runtime処理はない |
-| Operational trial | 保留 | 別々の実ChatGPT chatへbundleを配置したend-to-end運用試験は未実施 |
+| Scope | 確認済み | 最終差分は3 Skill、shared contract、専用設計書、implementation report、review reportの7ファイルに限定される |
+| Frontmatter | 確認済み | 3つの`SKILL.md`に`name`と`description`があり、既存Skillと同じ基本形式である |
+| Standalone execution | 確認済み | 全workerが別workerを起動しないことを明記している |
+| Input burden | 確認済み | Issue/PRからrepository、branch、HEAD、reports、handoffs、CIを自己解決し、曖昧な場合だけ利用者へ確認する |
+| Implementation scope | 確認済み | code/testに限定せず、documentation、configuration、repository変更を扱える |
+| Testing policy | 確認済み | 対象projectのProject Instructionへ従い、TDDをworker側から強制しない |
+| Required outputs | 確認済み | implementation、review、reportの全workerがreport、handoff、簡易PR commentを必須成果物とする |
+| Handoff transport | 確認済み | repository-backed discoveryとcopy/paste fallbackを区別し、reportとhandoffを分離する |
+| Permission boundary | 確認済み | current権限とnext chatへのrequested権限を分離し、documentation、configuration、workflow、Issue、PR操作を表現できる |
+| Review lifecycle | 確認済み | initial review、fix verification、cold final review、unstableを定義し、cold finalの新規chat条件をSkill本体へ反映した |
+| Report fidelity | 確認済み | report writerがfinding、severity、test結果、CI結論を発明しない |
+| Project Instruction example | 確認済み | 利用者が提示した全項目をRevMem向け完成例へ反映した |
+| CodexSkill non-TDD | 確認済み | TDD test、専用workflow、旧TDD report/handoffを最終差分へ含めていない |
+| Existing Codex compatibility | 確認済み | 既存Codex向けSkillとhierarchyを変更していない |
+| Design source of truth | 確認済み | `design/chat-worker-skill-design.md`の1ファイルを正本としている |
+| Report naming | 確認済み | `reports/<issue-prefix>-<item>-<timestamp>.md`形式で既存report-output方針と整合する |
+| Merge boundary | 確認済み | 全worker、設計書、Issue、PR本文がmerge禁止で一致する |
 
-## レビュー中に確認し、修正した事項
+## Review中に検出し、修正した事項
 
-### High 1: PR eventのmerge refを検証していた
-
-#### 問題
-
-初期workflowはPR eventの既定checkoutを使用していたため、branch HEADではなくGitHub生成のmerge refをtestしていた。
-
-利用者指示では、自分のbranch HEAD SHAに紐づくworkflow runだけをCI判定へ使用する必要がある。
-
-#### 修正
-
-- `TARGET_HEAD_SHA`をPR head SHAまたはpush SHAから決定
-- `actions/checkout`へ対象SHAを明示
-- `git rev-parse HEAD`と`TARGET_HEAD_SHA`の一致を独立stepで検証
-
-#### 結果
-
-解消済み。
-
-### High 2: implementation workerとreport責務の境界が曖昧だった
+### Medium 1: 旧TDD方針の成果物が最終差分へ残っていた
 
 #### 問題
 
-初期implementation workerは、利用者が明示すればnarrative implementation reportも作成できる表現だった。
+旧contract test、専用workflow、TDD証跡を前提にしたhandoffと複数の改訂reportがPR差分に残っていた。
 
-「実装だけのSkill」と「レポートだけのSkill」を切り出す目的に対して、implementation workerの責務が広すぎた。
+#### 対応
 
-#### 修正
+- 旧handoff 2件を削除
+- superseded implementation report 5件を削除
+- superseded review report 1件を削除
+- implementation reportとreview reportを各1ファイルへ集約
+- Issue #51をCodexSkill非TDD方針へ更新
 
-- implementation workerはcode、test、validation evidence、構造化handoffだけを所有
-- narrative reportを明示的に禁止
-- implementation reportは`chat-report-writer`へ渡す
-- review verdictもimplementation workerの対象外とした
-
-#### 結果
+#### 状態
 
 解消済み。
 
-### Medium 3: handoffに許可操作とreport outputの構造がなかった
+### Medium 2: Handoffの取得経路とreport責務が旧方針のままだった
 
 #### 問題
 
-初期handoffは作業結果を保持できたが、workerが実行してよい操作とpathを表現できなかった。また、report writerが作成したpath、PR comment、source packet、outcomeを構造化できなかった。
+repository-backed handoffでも利用者が毎回pathを渡す表現と、implementation/review workerの`report`を`not_applicable`とする表現が残っていた。
 
-#### 修正
+#### 対応
 
-- `authorized_actions`
-- `write_boundary`
-- `report.report_type`
-- `report.outcome`
-- `report.source_packets`
-- `report.paths`
-- `report.pr_comments`
+- PRまたはIssueから一意に特定できるpacketは次workerがconnectorで取得する
+- 利用者がpathを渡す条件を、複数候補、repository外、discovery不可へ限定する
+- implementation/review workerが各自の必須reportを`report` fieldへ記録する
 
-を追加した。
-
-#### 結果
+#### 状態
 
 解消済み。
 
-### Medium 4: 前workerの権限を次chatが継承できるように読めた
+### Medium 3: Implementation workerがMarkdown変更を対象にしにくく、PR commentが条件付きだった
 
 #### 問題
 
-Top-levelの`authorized_actions`と`write_boundary`が、producerの実行権限か、次workerへの権限付与かが曖昧だった。
+frontmatterがcode/test変更に寄っており、CodexSkillのようなdocumentation中心のtaskでSkill選択が不明確だった。また、簡易PR commentがProject Instruction次第の任意出力に見えた。
 
-Source packetをそのまま次chatへ渡すと、前workerのwrite権限を次workerが引き継ぐか、逆に必要なreport権限を持たない可能性がある。
+#### 対応
 
-#### TDD
+- documentation、configuration、repository変更をdescriptionとflowへ追加
+- PRが存在する場合、簡易PR commentを必須成果物化
+- 投稿不能時は完成comment本文を返すcontractへ変更
 
-- Test commit: `092629cffe0334fbd84c97e20af11e72ec8df0c8`
-- Workflow Run: `30186468150`
-- Result: failure
-- Diagnostic artifact:
-  - ID: `8627185141`
-  - Name: `chat-worker-skill-contract-diagnostics-30186468150-1`
+#### 状態
 
-#### 修正
+解消済み。Commit: `b0aa5dbd23ea48ba414cf479f64eef480ef6b9d3`
 
-- Top-level権限はcurrent executionの記録と定義
-- `next_chat_input.requested_authorized_actions`を追加
-- `next_chat_input.requested_write_boundary`を追加
-- requested fieldは権限付与ではなくworkerから利用者への提案と定義
-- 利用者が確認して次chatへ新しいtop-level権限として付与
-- 次chatは前workerの権限を自動継承しない
-- 権限が新規付与されない場合はwrite、commit、push、PR操作を禁止
+### Medium 4: Cold final reviewの新規chat条件がSkill本体に不足していた
 
-#### 結果
+#### 問題
+
+設計書は新規chatを要求していたが、`chat-review-worker`本体はfresh perspectiveとだけ記載し、同じ実装chatがcold finalを名乗れる余地があった。
+
+#### 対応
+
+- cold final reviewを新規かつ非実装chatに限定
+- 同じchatが実装・修正した場合はcold finalを名乗らない規則を追加
+- Required flowとcompletion conditionへmode妥当性確認を追加
+
+#### 状態
+
+解消済み。Commit: `15bec8b1818d32d53973e336e0f0fb62914a7f79`
+
+### Medium 5: Handoffの権限enumが変更対象を表現できなかった
+
+#### 問題
+
+`edit_code`と`edit_tests`だけでは、documentation、configuration、workflow、Issue、PR、branch操作を表現できなかった。
+
+#### 対応
+
+必要なactionをtop-levelとnext-chat requestの両方へ追加した。
+
+#### 状態
+
+解消済み。Commit: `79c0997174b8b6a4ed65f68461c41a8e71bb3e09`
+
+### Medium 6: PR本文とreview reportが削除済みファイルを参照していた
+
+#### 問題
+
+PR本文が削除済みR6 reportを参照し、旧review reportもTDD workflowと削除済みファイルを前提としていた。
+
+#### 対応
+
+- PR本文を現行の7ファイル、非TDD方針、現行report pathへ更新
+- 本review reportで旧review reportを全面置換
+
+#### 状態
 
 解消済み。
 
-## TDDとCI証跡
-
-### 初回Red
-
-- HEAD: `f5b2107dfdce2e9c66944f1bf5d313c0ea9e341d`
-- Run: `30185865727`
-- Result: failure
-- Artifact: `8626998950`
-
-### 初回Green
-
-- HEAD: `1a189b243fe215eaa0ddc3259a4c6ec599464ba1`
-- Run: `30186081623`
-- Result: success
-
-### Role boundary強化Red
-
-- HEAD: `32e55938644acf7530cdfd4365ed7e2a9d6695e0`
-- Run: `30186176348`
-- Result: failure
-- Artifact: `8627103321`
-
-### Branch HEAD workflow Green
-
-- HEAD: `b626eab469bd46e5350991b69c5790c41e9b4edc`
-- Run: `30186397394`
-- Result: success
-
-### Authorization non-inheritance Red
-
-- HEAD: `092629cffe0334fbd84c97e20af11e72ec8df0c8`
-- Run: `30186468150`
-- Result: failure
-- Artifact: `8627185141`
-
-### Review対象HEAD Green
-
-- HEAD: `15b226e629330b466443865fc56c0d25376bd57b`
-- Run: `30186500197`
-- Result: success
-- Job: `contract`
-- `Checkout target branch HEAD`: success
-- `Verify checked out HEAD`: success
-- `Run chat worker skill contract`: success
-
-このreview report追加後の最終HEAD runはPR commentへ記録する。
-
-## 指摘事項
+## 現在の未解決findings
 
 ### Blocking / High
 
-- 指摘なし
+- なし
 
 ### Medium
 
-- 指摘なし
+- なし
 
 ### Low
 
-- 指摘なし
+- なし
+
+## Validation
+
+Review対象HEAD `73b3b9882aa74e2895088cc789eb41acf13d46c9`について、GitHub connectorが返した結果は次のとおりである。
+
+- workflow runs: 0件
+- commit statuses: 0件
+
+したがって、CI successとは判定しない。CIは`not available`である。
+
+CodexSkill用のtestまたはworkflowは追加・実行していない。Markdown lint、built-in Skill validation、machine-readable schema validationは、connector-only環境から実行できないため未実施である。
 
 ## Held concerns
 
-### 実ChatGPT環境でのend-to-end operational trial
+### 1. Same-chat review
 
 - Status: held
-- Reason: 今回はrepository上のSkill contractとCIまでをscopeとし、複数の実ChatGPT chatへbundleを配置して一連の実装、review、reportを完走する試験は実施していない
-- Remaining risk: handoff記入負荷、実際のSkill導入経路、chatごとのconnector差異が運用時に判明する可能性がある
-- Verdict impact: repository contractのPassを妨げない。初回実運用で確認し、反復する問題だけを後続Issue化する
+- Reason: 利用者の明示指示により、実装・修正を行った同一chatがreviewした
+- Remaining risk: fresh contextによる見落とし検出は行われていない
+- Verdict impact: 本reviewをcold final reviewとは扱わない。利用者が同一chat reviewを明示選択したため、現在のPassを妨げない
 
-### Machine-readable schema
+### 2. End-to-end operational trial
 
 - Status: held
-- Reason: 今回はMarkdown上のcanonical packetとPython contract testを採用した
-- Remaining risk: packet fieldの値型やenumを完全には機械検証しない
-- Verdict impact: 初期chat運用には支障しない。自動tool連携が必要になった時点でJSON Schema化を検討する
+- Reason: 実際の複数ChatGPT chatでIssue開始、implementation、review、follow-up、handoff discoveryを完走していない
+- Remaining risk: connector差異、packet選択、実運用時の入力負荷が初回利用で判明する可能性がある
+- Verdict impact: Skill contractの整合性Passを妨げない
+
+### 3. Machine-readable validation
+
+- Status: held
+- Reason: handoff contractはMarkdown内のcanonical YAML例であり、JSON Schemaなどの自動検証を実施していない
+- Remaining risk: field型とenumの誤記を自動検出しない
+- Verdict impact: 初期運用を妨げない
+
+### 4. Branch history
+
+- Status: held
+- Reason: branchはmainに対して79 commits aheadで、最終差分から削除した旧TDD試行のcommitも履歴に残る
+- Remaining risk: regular mergeでは中間commitがmainの祖先に入る
+- Verdict impact: 最終treeの内容はPass。mainへ旧中間commitを取り込まない場合は利用者がsquash mergeを選択する必要がある
 
 ## Scope protection
 
 - `main`に対してbehind 0を確認した
-- PR #50のbranchまたは未merge変更を取り込んでいない
-- 既存Codex向けSkillを変更していない
-- 他Issueのtrackingを変更していない
+- changed filesは7件である
+- 既存Codex向けSkillとhierarchyを変更していない
+- PR #50の変更を取り込んでいない
+- product code、test、workflowを最終差分へ含めていない
 - mergeしていない
 
 ## 最終判定
 
-- Verdict: Pass with held concerns
+- Verdict: **Pass with held concerns**
 - Blocking / High findings: 0
-- Required follow-up before review request: なし
-- Merge: 実施しない
-- Remaining action:
-  - review report追加後の最終HEADに紐づくCIを確認する
-  - PR本文を最終状態へ更新する
-  - 詳細reportとは別に簡易PR commentを投稿する
+- Medium findings: 0 unresolved
+- Low findings: 0 unresolved
+- Required implementation follow-up: なし
+- CI: not available
+- Merge: 利用者が実施するため未実施
