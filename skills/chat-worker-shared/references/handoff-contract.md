@@ -39,6 +39,7 @@ Workers must never assume that another chat can discover the previous chat, its 
 - CI evidence must belong to the packet's `head_sha`.
 - A report writer must not alter implementation outcomes, findings, test results, or CI conclusions.
 - Current permissions must not inherit into the next chat. Requested permissions are proposals only.
+- Testing order and development method come from the target project's instructions. Workers must not impose TDD when the target project does not require it.
 - Do not embed secrets, credentials, personal information, or unnecessary large logs.
 
 ## Canonical packet
@@ -102,7 +103,7 @@ commands:
 
 tests:
   - name: string
-    phase: red | green | regression | verification
+    phase: red | green | pre_implementation | post_implementation | regression | verification | not_applicable
     result: passed | failed | blocked | not_run
     head_sha: full commit SHA | unknown
     evidence: string | null
@@ -218,7 +219,7 @@ Without a new grant, the next worker remains read-only.
 
 ### Implementation worker
 
-Require repository identity, scope, requirements, permissions, changed files, Red/Green evidence or a test-first exemption, commands, implementation outcome, risks, transport, and next action. Review and report outcomes remain `not_applicable`.
+Require repository identity, scope, requirements, permissions, changed files, commands, implementation outcome, risks, transport, and next action. Record the testing and validation evidence required by the target project's instructions. When no test or testing order applies, record that fact under `not_applicable` with a reason. Review and report outcomes remain `not_applicable`.
 
 ### Review worker
 
