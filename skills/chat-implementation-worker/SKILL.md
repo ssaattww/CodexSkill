@@ -7,119 +7,103 @@ description: Execute a bounded initial implementation or review follow-up direct
 
 ## Goal
 
-決定済みのtask packetを受け取り、単一のChatGPT chatでcodeとtestの実装を完了し、次のchatへ渡せるimplementation handoffを返す。
+Implement a decided task or review follow-up in one ChatGPT chat, validate it, and produce a durable implementation handoff for the next user-started chat.
 
 ## Execution model
 
-- 利用者が親として、対象repository、task packet、作業順序、次に起動するchatを管理する。
-- このchatはimplementation workerとして直接作業し、別workerを起動しない。
-- 前のchat履歴を前提にせず、task packetとrepository内のauthoritativeな情報だけを使用する。
-- このworkerはnarrative reportを作成しない。実装事実は構造化handoffへ記録し、report作成は利用者がreport専用chatへ割り当てる。
-- report専用chatへ渡す結果は、[shared handoff contract](../chat-worker-shared/references/handoff-contract.md)に従う。
+- The user is the parent and controls the repository, branch, task order, permissions, next chat, and merge decision.
+- This worker must not start another worker.
+- Use only the supplied task packet and authoritative repository sources; do not rely on previous conversation history.
+- This worker must not create a narrative report and must not issue the final review verdict.
+- Follow the [shared handoff contract](../chat-worker-shared/references/handoff-contract.md).
+- A handoff is not automatically visible to another chat. When `write_handoff` is authorized, store it under `reports/handoffs/`; otherwise return the complete packet for user copy and paste.
 
 ## Inputs
 
-作業開始前に次を確認する。
+Require:
 
-- `task_id`、IssueまたはPR
-- repository、作業branch、base ref、現在のHEAD SHA
-- mode: `initial implementation`または`review follow-up`
-- scopeとnon-goals
-- authoritative requirements、設計書、repository指示
-- target filesまたはaffected modules
-- `authorized_actions`と`write_boundary`
-- test-firstで証明するbehavior
-- focused validationとfull validationの期待値
-- `review follow-up`では前回finding、対象commit、要求される回帰test
+- task, issue, or PR identifier
+- repository, branch, base reference, and current HEAD SHA
+- mode: `initial implementation` or `review follow-up`
+- scope, non-goals, and authoritative requirements
+- target files and relevant dependency boundaries
+- current `authorized_actions` and `write_boundary`
+- behavior to prove test-first
+- focused and full validation expectations
+- previous findings and required regressions for review follow-up
 
-安全に実装するための必須情報が不足している場合は推測せず、handoffの`unknown`へ不足内容を記録して停止する。
+If required information is missing, do not guess. Record it under `unknown`, mark the implementation `blocked`, and return control to the user.
 
 ## Modes
 
 ### initial implementation
 
-新しいbehaviorをtest-firstで実装する。
-
-- task scope全体を一度に再設計しない。
-- 最小のtestable behaviorから始める。
-- 既存contractを先に確認し、同じ概念のparallel modelを作らない。
+- Start with the smallest testable behavior.
+- Inspect existing contracts before introducing a new model.
+- Do not redesign the whole task or broaden scope.
 
 ### review follow-up
 
-前回review findingを修正する。
-
-- findingを再現するtestを先に追加または強化する。
-- findingの直接原因、修正差分、その影響範囲、同種欠陥だけを対象にする。
-- unrelatedな改善を同じ変更へ混ぜない。
-- 前回のregression testを削除または弱体化しない。
+- Add or strengthen a failing regression before the fix.
+- Limit work to the finding, its direct cause, affected boundary, and sibling cases of the same defect class.
+- Preserve all earlier regression tests.
+- Do not mix unrelated cleanup into the fix.
 
 ## Required flow
 
-1. task packetとrepository stateを照合し、branch、base、HEAD、scopeを確定する。
-2. `authorized_actions`と`write_boundary`を確認し、許可されたfileとGitHub操作だけを確定する。
-3. 全target fileと必要な依存先を読み、既存contract、test wiring、CI入口を確認する。
-4. test-firstとして、実装前に失敗するtestまたはcontract checkを追加する。
-5. Redのcommand、exit code、failure内容、HEAD SHA、artifactがあればIDを記録する。
-6. taskを満たす最小のcode/test変更を行う。
-7. focused testをGreenにし、その後に関連suiteと必要なfull validationを実行する。
-8. test、build、lint、integration、host testなど、repositoryが要求する証拠を記録する。
-9. failure時は原因調査に必要なstdout、stderr、environment、source、test、config、生成物、test result artifactを確認する。
-10. 変更したfile、意図的に触れなかった範囲、commit、最終HEAD SHA、remaining riskを整理する。
-11. [shared handoff contract](../chat-worker-shared/references/handoff-contract.md)に従うimplementation handoffを返す。
+1. Resolve repository, branch, base, HEAD, scope, permissions, and write boundaries.
+2. Read target files, direct dependencies, existing contracts, test wiring, and CI entry points.
+3. Add or identify a failing test or contract check before implementation.
+4. Record the Red command, exit code, failure, HEAD SHA, and diagnostic artifact when available.
+5. Implement the smallest change that satisfies the requirement.
+6. Run focused validation, then relevant suites and required full validation.
+7. Record build, lint, unit, integration, host, packaging, and environment evidence that applies.
+8. For failures, preserve or inspect stdout, stderr, environment, source, tests, configuration, generated output, and test results needed for diagnosis.
+9. Record changed files, intentionally untouched areas, commits, final HEAD SHA, and remaining risks.
+10. Create a complete handoff packet.
+11. If `write_handoff` is authorized, write the packet to `reports/handoffs/` and return its path. Otherwise return the complete packet inline for copy and paste.
 
 ## Test-first rules
 
-- 実行可能なbehavior変更では、原則としてtest-firstにする。
-- 既存testがすでに正確に失敗条件を固定している場合は、その証拠をRedとして使用してよい。
-- documentation-onlyまたは実行不能なexternal状態でtest-firstが不適切な場合は、`not_applicable`へ具体的な理由を記録する。
-- report-only作業はこのSkillの対象外とし、report専用chatへ戻す。
-- testを実装へ合わせて弱めない。
-- successやthrowだけでなく、必要な値、状態、identity、side effectを具体的にassertする。
-- fixtureが実protocol、parser、API、toolで成立する入力か確認する。
+- Executable behavior changes are test-first by default.
+- An existing test may serve as Red evidence only when it already proves the exact failure.
+- Documentation-only or externally blocked work may use `not_applicable` with a concrete reason.
+- Do not weaken tests to match the implementation.
+- Assert exact values, state, identity, side effects, and failure behavior rather than success or throw alone.
+- Fixtures must be producible by the real protocol, parser, API, or tool.
 
 ## Scope and safety rules
 
-- 利用者が指定したscopeを超えて設計やtaskを拡張しない。
-- `authorized_actions`にないwrite、commit、push、PR操作を行わない。
-- `write_boundary`外を変更しない。
-- 他task、他PR、他workerの所有範囲を勝手に変更しない。
-- unrelated fileをrevertしない。
-- repositoryの現在状態とtask packetが矛盾する場合は、authoritative sourceを列挙して利用者判断へ戻す。
-- secret、credential、private tokenをhandoffへ含めない。
-- 自分の実装を独立review済みとは扱わず、最終review判定を行わない。
-- PRまたはbranchを更新してもmergeしない。
+- Do not exceed the user-approved scope.
+- Do not perform actions absent from `authorized_actions`.
+- Do not write outside `write_boundary`.
+- Do not modify work owned by another task, PR, or worker.
+- Do not revert unrelated changes.
+- Do not include secrets or credentials in handoffs.
+- Do not treat your own implementation as independently reviewed.
+- This worker must not merge.
 
 ## Report boundary
 
-このSkillの責務は実装とvalidation evidenceの収集に限定する。
-
-- 実装結果の事実、commands、tests、files、commit、riskをhandoffへ記録する。
-- narrative reportを作成しない。
-- 利用者は完成したhandoffを`chat-report-writer`へ渡す。
-- review finding、review verdict、merge可否をhandoffへ追加しない。
+- Record implementation facts, commands, tests, files, commits, CI, and risks in the handoff.
+- Do not create an implementation narrative report.
+- Do not add review findings, review verdicts, or merge approval.
+- A handoff file under `reports/handoffs/` is transport evidence, not a narrative report.
 
 ## Outputs
 
-次を返す。
+Return:
 
-- scoped code/test changes
-- RedとGreenのevidence
-- changed filesとintentionally untouched areas
-- commands、tests、CI、failure artifact
-- commitsと最終HEAD SHA
-- implementation outcomeとremaining risks
-- 次のreviewまたはreport chat向けの`next_chat_input`
-- [shared handoff contract](../chat-worker-shared/references/handoff-contract.md)準拠のpacket
+- scoped code and test changes
+- Red and Green evidence
+- changed and intentionally untouched files
+- commands, tests, CI, and artifacts
+- commits and final HEAD SHA
+- implementation outcome and remaining risks
+- `next_chat_input`
+- a packet conforming to the shared contract
+- either a `reports/handoffs/` packet path or the complete inline packet
 
 ## Completion condition
 
-このSkillは次をすべて満たしたときだけ完了する。
-
-- assigned scopeのcode/test変更が反映されている
-- test-firstのRed証拠、または対象外理由が記録されている
-- focused validationと必要なfull validationの結果が記録されている
-- failureが残る場合は原因、影響、artifact、次actionが明示されている
-- changed files、commit、最終HEAD SHA、remaining risksが記録されている
-- narrative reportを作成しない
-- 最終review判定を行わないまま、利用者が次のchatへ渡せるhandoffが完成している
-- mergeしない
+Complete only when the assigned scope is implemented or explicitly blocked, test-first evidence or an exemption is recorded, required validation is recorded, failures and risks are explicit, the final HEAD is identified, no narrative report or review verdict was created, and a transportable handoff is available. This worker must not merge.
