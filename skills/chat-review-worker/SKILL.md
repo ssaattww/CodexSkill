@@ -26,6 +26,7 @@ description: Perform an initial review, fix verification, or cold final review d
 - taskまたはIssueの終了条件
 - authoritative requirements、設計書、repository指示
 - scopeとnon-goals
+- `authorized_actions`と`write_boundary`
 - changed filesと、変更contractのcaller、consumer、validator、persistence、UI、external boundary
 - risk profileとrequired coverage
 - test、build、lint、integration、CI、artifactのevidence
@@ -97,16 +98,20 @@ description: Perform an initial review, fix verification, or cold final review d
 ## Required flow
 
 1. repository、base、HEAD、review mode、authoritative requirementsを確定する。
-2. changed files、dependency boundary、risk profile、planned coverageを列挙する。
-3. 全変更fileを直接確認し、必要なdependent fileを読む。
-4. requirementsとimplementation contractを照合する。
-5. testsが実際に成立するfixture、exact result、failure conditionを確認しているか調べる。
-6. selected risk coverageに従い、boundary、state、identity、atomicity、performance、documentationを確認する。
-7. CIを使う場合は、repositoryの最新runではなく対象`head_sha`に紐づくrunだけを確認する。
-8. findingをseverity順で整理し、fileとline、impact、required actionを記録する。
-9. held、out-of-scope、unexploredには理由、owner、remaining risk、verdict impactを記録する。
-10. review modeごとのstop conditionを適用し、verdictを決める。
-11. 必要ならreview reportをrepositoryへ配置し、[shared handoff contract](../chat-worker-shared/references/handoff-contract.md)準拠のpacketを返す。
+2. `authorized_actions`と`write_boundary`を確認し、review reportまたはPR commentのwrite可否を確定する。
+3. changed files、dependency boundary、risk profile、planned coverageを列挙する。
+4. 全変更fileを直接確認し、必要なdependent fileを読む。
+5. requirementsとimplementation contractを照合する。
+6. testsが実際に成立するfixture、exact result、failure conditionを確認しているか調べる。
+7. selected risk coverageに従い、boundary、state、identity、atomicity、performance、documentationを確認する。
+8. CIを使う場合は、repositoryの最新runではなく対象`head_sha`に紐づくrunだけを確認する。
+9. findingをseverity順で整理し、fileとline、impact、required actionを記録する。
+10. held、out-of-scope、unexploredには理由、owner、remaining risk、verdict impactを記録する。
+11. review modeごとのstop conditionを適用し、verdictを決める。
+12. `write_report`が許可されている場合だけreview reportをrepositoryへ配置する。
+13. `comment_pr`が許可されている場合だけPR review commentを投稿する。
+14. reportを作成した場合はhandoffの`report` fieldへtype、outcome、path、comment targetを記録する。
+15. [shared handoff contract](../chat-worker-shared/references/handoff-contract.md)準拠のpacketを返す。
 
 ## Finding rules
 
@@ -154,6 +159,7 @@ description: Perform an initial review, fix verification, or cold final review d
 - test、fixture、workflow、設定をreview中に修正しない。
 - findingへの対応実装を同じchatで開始しない。
 - review report、review handoff、PR review commentだけを明示されたwrite対象とする。
+- `authorized_actions`にないwriteやPR操作を行わない。
 - mergeしない。
 
 ## Outputs
@@ -167,6 +173,7 @@ description: Perform an initial review, fix verification, or cold final review d
 - held、unexplored、remaining risks
 - commands、tests、CI run、artifact evidence
 - verdict: `pass`、`pass_with_held`、`fail`、`incomplete`、`unstable`
+- reportを作成した場合は`report` field
 - 次のimplementation、report、design rework、PR split向け`next_chat_input`
 - [shared handoff contract](../chat-worker-shared/references/handoff-contract.md)準拠のpacket
 
@@ -177,6 +184,6 @@ description: Perform an initial review, fix verification, or cold final review d
 - review対象とHEAD SHAが明示されている
 - review modeに必要なcoverageが最後まで確認されている
 - findings、held、unexplored、evidence、verdictが記録されている
-- reportを書いた場合は対象HEADとhandoffの内容が一致している
+- reportを書いた場合は対象HEAD、許可されたpath、handoffの内容が一致している
 - product codeを変更しないまま、利用者が次のchatへ渡せるhandoffが完成している
 - mergeしない
