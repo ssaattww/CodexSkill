@@ -16,7 +16,7 @@ Resolve the applicable source reports and handoffs for a task or PR, then create
 - Resolve discoverable report sources from project instructions, the PR, linked issue, repository reports, handoffs, comments, commits, and workflow runs before asking the user.
 - Do not require the user to list source paths, repository URL, target HEAD, or PR evidence when the task or PR makes them unambiguous.
 - This worker must not modify code or tests and must not invent facts.
-- Follow the [shared handoff contract](../chat-worker-shared/references/handoff-contract.md).
+- Follow the [shared handoff contract](references/handoff-contract.md).
 - A produced handoff is not automatically visible to another chat. When `write_handoff` is authorized, store it under `reports/handoffs/`; otherwise return the complete packet for user copy and paste.
 
 ## Inputs
