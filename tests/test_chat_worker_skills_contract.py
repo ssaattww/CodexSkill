@@ -10,8 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SHARED_CONTRACT = ROOT / "skills" / "chat-worker-shared" / "references" / "handoff-contract.md"
 DESIGN_FILES = (
-    ROOT / "design" / "skill-hierarchy-design.md",
-    ROOT / "skills" / "design" / "skill-hierarchy-design.md",
+    ROOT / "design" / "chat-worker-skill-design.md",
+    ROOT / "skills" / "design" / "chat-worker-skill-design.md",
 )
 
 SKILLS = {
@@ -112,11 +112,12 @@ class ChatWorkerSkillContractTests(unittest.TestCase):
         self.assertIn("unknown", text)
         self.assertIn("not_applicable", text)
 
-    def test_hierarchy_designs_are_identical_and_register_chat_workers(self) -> None:
+    def test_chat_worker_designs_are_identical_and_register_workers(self) -> None:
         primary = self.read_required(DESIGN_FILES[0])
         mirrored = self.read_required(DESIGN_FILES[1])
-        self.assertEqual(primary, mirrored, "the two hierarchy design files must be byte-identical")
+        self.assertEqual(primary, mirrored, "the two chat worker design files must be byte-identical")
         self.assertIn("利用者が親となるChatGPT chat worker flow", primary)
+        self.assertIn("既存Codex向けskill hierarchyとは分離", primary)
         for skill_name in SKILLS:
             self.assertIn(skill_name, primary)
 
