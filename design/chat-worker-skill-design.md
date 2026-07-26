@@ -52,21 +52,38 @@ ChatGPT chat同士は自動的にsub-agentとして連携しないため、利�
 
 全taskで共通する情報はProject Instructionへ置き、各chat promptでは再掲しない。
 
-RevMemでは、利用者が提示した次の情報を固定前提とする。
+### RevMem向けProject Instruction例
 
-- repository: `https://github.com/ssaattww/RevMem`
-- task list: `tasks/tasks-status.md`
-- reference Skill repository: `https://github.com/ssaattww/CodexSkill`
-- repository accessはconnectorを使用する
-- IssueとPRの作成・更新もconnectorで行う
-- test failure時の診断artifact workflowを作業開始時に確認する
-- Project InstructionでTDDが指定されているため、RevMem実装ではtestを先に作る
-- 小さくcommit/pushする
-- reportとは別にPRへ簡易コメントを残す
-- PR作成・更新まで行い、mergeしない
-- CIは自分のbranch HEAD SHAに紐づくworkflow runだけを見る
+以下は、RevMemで使用する固定情報と運用規則を、Project Instructionへそのまま設定できる形に整理した例である。
 
-これらを毎回のpromptへ書かない。
+```text
+対象リポジトリ:
+https://github.com/ssaattww/RevMem
+
+タスク一覧:
+tasks/tasks-status.md
+
+Codex用Skillの参照リポジトリ:
+https://github.com/ssaattww/CodexSkill
+
+必要な作業手順やSkillの構成は、このリポジトリを参照してください。
+
+リポジトリの参照・更新、IssueとPRの作成・更新、PRコメントの投稿にはGitHub connectorを使用してください。
+
+作業開始時に、テスト失敗時の原因調査に必要な情報をartifactとして保存するworkflowが存在するか確認してください。存在しない場合は、対象workflowへ追加してください。artifactには、少なくともテスト結果と失敗原因の調査に必要なログを含めてください。
+
+実装はTDDを基本とし、先にテストを追加して失敗を確認してから実装してください。
+
+変更は、レビュー可能な小さな論理単位でcommit/pushしてください。
+
+作業完了時は、詳細reportをrepositoryへ保存してください。それとは別に、変更内容と検証結果を要約した簡易reportをPRコメントへ投稿してください。
+
+PRの作成または既存PRの更新まで行ってください。mergeは利用者が行うため、workerはmergeしないでください。
+
+並行開発中の別branchのrunを誤認しないでください。「最新のworkflow run」ではなく、対象PRのhead branchのcurrent HEAD SHAを取得し、runのhead SHAが一致するworkflow runだけをCI確認の対象としてください。HEADが更新された場合は、更新後のHEAD SHAに紐づくrunを改めて確認してください。
+```
+
+この例に含まれるrepository URL、task list、参照Skill、connector、TDD、artifact、commit/push、report、PR、CI、mergeの各方針はtask共通の固定情報である。これらを毎回のchat promptへ書かない。
 
 CodexSkill repository自身のSkill Markdown変更には、TDD用contract testや専用workflowを導入しない。Markdown lintや有効な検証基盤がない状態で形式的なtestを追加しない。Skill変更は設計、差分確認、reviewで検証する。
 
