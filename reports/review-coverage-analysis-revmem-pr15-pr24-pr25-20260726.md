@@ -1,247 +1,199 @@
-# RevMem PR Review Coverage Analysis
+# RevMem PRレビュー確認観点分析
 
-- Date: 2026-07-26
-- Source repository: `ssaattww/RevMem`
-- Reviewed pull requests: PR #15, PR #24, PR #25
-- Purpose: identify the concrete review dimensions that were repeatedly used and
-  convert them into a reusable `review-enforcer` checklist.
+- 作成日: 2026-07-26
+- 調査元: `ssaattww/RevMem`
+- 対象: PR #15、PR #24、PR #25
+- 目的: 実際のレビューで確認していた事項を抽出し、`review-enforcer`で再利用できる確認観点へ整理する
 
-## Summary
+## 結論
 
-The three reviews did not stop at checking the modified lines. They repeatedly
-expanded into contracts, dependency boundaries, malformed input, persisted state,
-realistic tests, regression retention, performance, documentation, CI evidence,
-and scope protection.
+3件のレビューでは、変更行だけでなく、仕様、依存先、runtime境界、状態不変条件、不正入力、atomicity、テストの現実性、回帰テスト保持、性能、設計書、PR証跡、CI対象SHA、scope保護まで確認していた。
 
-The common review dimensions were:
+共通していた確認観点は次のとおり。
 
-1. Confirm the task exit criteria and authoritative design before reading the
-   implementation.
-2. Inspect every changed file and the production or test code that consumes the
-   changed contract.
-3. Verify identity, revision, path, state, and persistence invariants at runtime
-   boundaries instead of trusting static types.
-4. Reject malformed, partial, contradictory, stale, duplicate, or unsupported
-   input atomically.
-5. Ensure tests use inputs that can exist in the real protocol or file format.
-6. Preserve earlier regression cases while adding new ones during re-review.
-7. Check observable side effects, transaction count, process count, and algorithmic
-   complexity.
-8. Keep source documentation, design documents, reports, and PR evidence aligned
-   with the current implementation.
-9. Validate only the workflow run associated with the reviewed branch HEAD SHA.
-10. Record unrelated findings separately and do not modify work owned by another
-    task or pull request.
+1. 実装を見る前に、task終了条件、Issue、設計書、repository指示を確認する。
+2. 全変更ファイルに加え、変更したcontractを利用するcaller、validator、persistence、UI、後続taskへの影響を確認する。
+3. static typeを信用するだけでなく、外部入力、cache、parser、永続化境界でruntime validationを確認する。
+4. malformed、partial、contradictory、stale、duplicate、unknown inputを正常扱いしない。
+5. 複数stateや複数sourceが関係する処理では、identity、優先順位、snapshot一貫性、atomicityを確認する。
+6. テストfixtureが実際のGit diff、protocol、APIで成立する入力か確認する。
+7. 再レビューで新しいtestを追加するとき、過去のfindingを固定した回帰testを削除しない。
+8. 重複I/O、process起動回数、transaction回数、計算量、同期blockを確認する。
+9. 実装、設計書、公開API文書、implementation report、PR本文を現状へ同期する。
+10. CI判定には対象branchのHEAD SHAに紐づくrunだけを使用する。
+11. scope外の問題はheldとして記録し、他taskや他PRの所有範囲を勝手に変更しない。
+12. 再レビューでは、前回findingの解消確認だけでなく、未確認領域と同種欠陥を追加探索する。
 
-## PR #15: Document Context Routing and Review State Ownership
+## PR #15で確認していた事項
 
-The review covered the following points.
+対象機能は、document context routingとreview state ownership。
 
-### Context resolution and specification
+### Owner解決とidentity
 
-- Git ownership must be resolved before workspace membership.
-- Git working tree, untracked file, detached HEAD, non-Git workspace, external
-  file, remote file, and UNC identity paths must follow the intended precedence.
-- Git inspection failures must distinguish non-repository, unborn HEAD, missing
-  object, and unknown failures instead of collapsing all exit codes into one case.
-- Repository, context, file, branch, detached revision, workspace, and external
-  identities must be canonical and stable.
+- Git管理の有無をworkspace membershipより先に判定しているか。
+- Git working tree、untracked file、detached HEAD、非Git workspace、external file、remote、UNCを意図した優先順位で分類しているか。
+- repository、context、file、branch、detached revision、workspace、external-fileのidentityがcanonicalか。
+- UNCではserver authorityを含めて同一性を判定しているか。
+- Git command失敗をnon-repository、unborn HEAD、missing object、unknown failureへ適切に分類しているか。
 
-### Persistence and atomicity
+### 永続化とatomicity
 
-- A new branch or detached context must not overwrite repository-wide Global state.
-- Empty lower-owner state must still produce an explicit empty baseline.
-- Initial promotion, all source deltas, and all baselines must be committed in one
-  atomic compare-and-swap operation.
-- Commit failure must not leave ranges, baselines, or only one source partially
-  persisted.
-- Persisted reconciliation metadata must be part of a formal core contract and
-  validated on load, save, and commit.
-- Reviewed intervals must be canonical and within the declared line count.
+- 新しいbranchまたはdetached context作成時にrepository-wide Global stateを空で上書きしないか。
+- lower ownerにfile stateがない場合でも、明示的な空baselineを記録するか。
+- 初回promotion、全source delta、全baselineを一つのplanned snapshotへ集約しているか。
+- 一つのlogical operationでCAS commitを複数回行い、部分状態を残さないか。
+- commit失敗時にrangeだけ、baselineだけ、一部sourceだけが残らないか。
+- reconciliation metadataが正式なcore contractとvalidatorに含まれるか。
+- persisted intervalがcanonicalで、`lineCount`内に収まるか。
+- schema既存データとの後方互換とfilesystem round-tripを維持するか。
 
-### Reconciliation semantics
+### Reconciliation
 
-- One writable open must observe each lower owner once and use the same immutable
-  snapshot for promotion, delta calculation, and baseline recording.
-- Workspace and external-file sources need an explicit priority rule when their
-  additions and removals conflict.
-- Deleting and recreating a lower-owner context must not reuse an obsolete baseline
-  as a common ancestor.
-- Reconciliation must preserve higher-priority decisions and apply only
-  non-conflicting lower-priority changes.
+- 同一open内でlower ownerを複数回読み、promotionとbaselineへ異なるsnapshotを使用しないか。
+- workspaceとexternal-fileのaddition/removalが競合した場合の優先順位が明示されているか。
+- lower ownerを削除・再作成した後も、古いbaselineをcommon baselineとして誤用しないか。
+- 高優先sourceの判断を低優先sourceが上書きしないか。
+- owner昇格後のdelta計算が同じimmutable source observationに基づくか。
 
-### Performance and side effects
+### 性能と副作用
 
-- Writable open and decoration refresh must not duplicate active-owner Git
-  inspection.
-- The review estimated process multiplication in remote repositories rather than
-  accepting functionally correct but excessively repeated inspection.
+- writable openとdecoration refreshでGit inspectionを重複実行していないか。
+- remote repositoryで一操作あたりのprocess起動数が過大にならないか。
+- state更新と表示更新を理由に同じrepository inspectionを再実行していないか。
 
-### Design, tests, CI, and scope
+### 設計書、テスト、CI、scope
 
-- Design documents must describe the feature rather than an Issue or Task history.
-- Related ownership, storage, and reconciliation design must be consolidated by
-  feature into one authoritative document.
-- Tests must cover branch, detached HEAD, untracked, external, UNC, empty baseline,
-  conflicting sources, malformed metadata, and failed atomic commits.
-- The final verdict must use the workflow run for the pull request branch HEAD SHA.
-- Changes owned by T300, PR #22, and other merged work must remain untouched.
-- The separate `objectExists` exit-code problem was recorded as held instead of
-  being silently folded into this pull request.
+- 設計書をIssue番号やTask番号単位でなく、機能単位で整理しているか。
+- ownership、storage、reconciliationのauthoritative designを一つへ統合しているか。
+- branch、detached HEAD、untracked、external、UNC、empty baseline、source競合、malformed metadata、CAS失敗をテストしているか。
+- 対象branch HEAD SHAのCI runだけを最終判定へ使用しているか。
+- T300、PR #22、他のマージ済み変更をscope外として保護しているか。
+- `objectExists`のexit code分類など別担当の問題をheldとして分離しているか。
 
-## PR #24: File-Level State Transitions
+## PR #24で確認していた事項
 
-The review covered the following points.
+対象機能は、Git diffのfile-level transitionをreview stateへ適用する処理。
 
 ### Transition semantics
 
-- Rename chains, directory moves, swaps, copy, addition, deletion, ambiguous rename,
-  and split-like transitions must be order independent.
-- All source file IDs must be resolved from the pre-change snapshot.
-- Copy must preserve the source state while creating the destination state with the
-  intended reviewed status and revision semantics.
-- A rename back to a previous path must update `previousPaths` correctly.
-- Delete and rename of the same source must be rejected rather than returning a
-  state that is both present and deleted.
+- rename chain、directory move、swap、copy、addition、deletion、ambiguous rename、split相当を順序非依存で処理できるか。
+- source file IDを変更前snapshotから解決しているか。
+- copy元stateを保持し、copy先だけを意図した未確認stateへするか。
+- renameで過去pathへ戻る場合、`previousPaths`からcurrent pathを適切に除去するか。
+- 同一sourceのdeleteとrenameを同時に受理し、`files`と`deletedFileIds`に同じfileを残さないか。
+- rename、copy、additionのdestination collisionをatomicに拒否するか。
 
-### Parser and validator consistency
+### Parserとvalidatorの整合
 
-- The authoritative diff parser and the transition validator must agree on path
-  decoding, quoted paths, tabs, timestamps, and `/dev/null`.
-- Duplicate destination paths must be rejected across copy, rename, and ordinary
-  additions.
-- `rename from` and `rename to` must appear exactly once as a pair.
-- `new file mode`, `deleted file mode`, and old or new `/dev/null` sides must form a
-  consistent status matrix.
-- Missing mandatory paths, malformed sections, contradictory metadata, and partial
-  transitions must fail atomically rather than being ignored with `continue`.
-- Duplicate parser logic was treated as a structural risk because future fixes can
-  diverge between implementations.
+- authoritative parserとvalidatorで、quoted path、TAB、timestamp、`/dev/null`の解釈が一致するか。
+- `rename from`と`rename to`をexactly onceのpairとして検証するか。
+- `new file mode`、`deleted file mode`とold/new sideの`/dev/null`が矛盾しないか。
+- copy、rename、plain additionが同じdestinationへ収束する入力を拒否するか。
+- 必須path欠落、malformed section、duplicate metadata、partial transitionをsilent `continue`で無視しないか。
+- parserとvalidatorにpath/section解析が二重実装され、将来乖離する構造になっていないか。
 
-### Snapshot and runtime state invariants
+### Snapshotとruntime state
 
-- Existing and generated states must pass the same public validator.
-- `schemaVersion`, `fileId`, `currentPath`, `previousPaths`, `lineCount`,
-  `contentHash`, and reviewed intervals must be validated.
-- `modifiedReviewed` and `originalReviewedByDiff` must be sorted, canonical,
-  non-overlapping, non-adjacent, and within their declared bounds.
-- Snapshot paths and file IDs must be unique.
-- The final result must be validated again after the transition engine returns.
+- 既存state、生成state、最終resultを同じpublic validatorへ通しているか。
+- `schemaVersion`、`fileId`、`currentPath`、`previousPaths`、`lineCount`、`contentHash`を検証するか。
+- `modifiedReviewed`と`originalReviewedByDiff`がsafe integer、非負、半開区間、sort済み、非重複、非隣接か。
+- snapshot内のfile IDとcurrent pathが一意か。
+- unchecked engine返却後のresultを再検証しているか。
+- new file生成経路だけvalidatorを迂回しないか。
 
-### Text and diff evidence
+### Textとdiff evidence
 
-- Whitespace or EOL-only classification must be proven from complete old and new
-  text, not inferred from incomplete hunks.
-- Old and new text must be tied to the same path, revision, line count, and hunk
-  coordinates as the transition being applied.
-- Removed and added lines reconstructed from text must exactly match the parsed
-  zero-context diff.
+- whitespace/EOL-only判定を不完全hunkだけから推測していないか。
+- old/new全文が対象path、revision、line count、diff hunkと結び付いているか。
+- 全文から再構成したremoved/added linesがzero-context diffと完全一致するか。
+- 無関係な全文を与えて実変更を無視できないか。
 
-### Test quality, performance, CI, and scope
+### テスト、性能、CI
 
-- Tests must include malformed rename metadata, mode and `/dev/null` contradictions,
-  duplicate destinations, timestamped headers, state validation, generated state,
-  rename history, and delete-plus-rename conflicts.
-- Tests must be added before the fix and connected to the normal unit-test command.
-- Failure diagnostics must preserve stdout, stderr, source, tests, configuration,
-  and generated files as artifacts.
-- The final CI decision must use the run associated with the branch HEAD SHA after
-  current `main` is incorporated.
-- Repeated destination scans were examined for quadratic behavior.
+- malformed rename、modeと`/dev/null`矛盾、destination重複、timestamp header、generated state、rename history、delete+rename conflictをテストしているか。
+- 修正前に失敗testを追加し、通常unit suiteへ接続しているか。
+- failure時にstdout、stderr、source、test、config、generated filesをartifactへ保存しているか。
+- main取り込み後のbranch HEAD SHAに紐づくCIを確認しているか。
+- destination数に比例してO(n²)となる走査を行っていないか。
 
-## PR #25: Pull Request Diff Progress Calculation
+## PR #25で確認していた事項
 
-The review covered the following points.
+対象機能は、PRの追加・削除行を分母とするreview progress計算。
 
-### Progress numerator and denominator
+### 分子と分母
 
-- Only actual addition and deletion coordinates may contribute to progress.
-- Context lines, unknown coordinates, Global state, another revision, or another
-  context must not increase the numerator.
-- Unique addition and deletion coordinates must exactly match the source statistics
-  for each side; clipping an inconsistent result is not acceptable.
-- File-level and aggregate reviewed count, total count, and percentage must remain
-  internally consistent, including the zero-denominator rule.
-- Addition and deletion counts must remain available to downstream UI instead of
-  being irreversibly collapsed into one total.
+- 実際のaddition/deletion座標だけを分子へ算入しているか。
+- context line、unknown coordinate、Global state、別revision、別contextを算入しないか。
+- unique addition/deletion座標数とGitHub統計値をside別に厳密一致させるか。
+- 不一致を上限丸めで隠さずfailureへ倒すか。
+- file単位とPR aggregateのreviewed、total、progressが整合するか。
+- 分母0の扱いを明示しているか。
+- addition/deletion内訳を後続UIへ渡せるか。
 
-### Contract and identity integrity
+### Contractとidentity
 
-- Existing `PullRequestFileChange`, `DiffHunk`, and `DiffLine` contracts must be
-  reused so status, old path, new path, file ID, and hunks are not lost.
-- Context ID, base SHA, head SHA, original diff ID, and changed files must be carried
-  in one validated snapshot.
-- Stale cached files must not be combinable with a current pull-request context.
-- The canonical diff identity must be checked against the base and head revisions.
-- Review state map key, payload file ID, revision, current path, line count, and
-  interval bounds must match the changed file.
+- 既存`PullRequestFileChange`、`DiffHunk`、`DiffLine`を再利用しているか。
+- 簡略modelによりfile ID、status、old/new path、hunkを失っていないか。
+- context ID、base SHA、head SHA、original diff ID、changed filesを一体のvalidated snapshotへ持たせているか。
+- stale cacheのfilesをcurrent PR contextと組み合わせられないか。
+- diff identityをbase/head revisionと照合しているか。
+- review stateのmap key、payload file ID、revision、current path、line count、interval boundsがchanged fileと一致するか。
 
 ### Unified diff validation
 
-- Runtime `DiffLine.kind` and file status must be exhaustively validated.
-- Hunk header counts, line body counts, old and new cursor movement, opposite-side
-  coordinate absence, ordering, gaps, and cumulative delta must be coherent.
-- Duplicate actual coordinates, missing coordinates, no-op hunks, and context-only
-  hunks must be rejected.
-- Added and deleted files must provide complete file diffs rather than an arbitrary
-  partial hunk that happens to match statistics.
-- Modified-side hunk extent and zero-count anchors must remain inside the current
-  file line count when same-head state exists.
-- Status, old path, new path, side usage, and line-count combinations must follow a
-  complete matrix for added, deleted, modified, renamed, and copied files.
+- runtimeの`DiffLine.kind`とfile statusをexhaustiveに検証するか。
+- hunk header countとbody countが一致するか。
+- old/new cursor、opposite-side coordinate absence、hunk order、gap、cumulative deltaが整合するか。
+- duplicate coordinate、missing coordinate、zero-zero hunk、context-only hunkを拒否するか。
+- added/deleted fileでpartial patchをcomplete file diffとして受理しないか。
+- modified-side hunk extentとzero-count anchorをcurrent fileの`lineCount`へ結び付けるか。
+- added、deleted、modified、renamed、copiedごとのpath、side、count matrixを検証するか。
 
 ### Exclusion policy
 
-- Binary and glob exclusion affects aggregation, not the validity of the diff or
-  state snapshot.
-- Non-binary files must be structurally validated before an exclusion can skip
-  counting.
-- Both old and new paths must be repository-relative and canonical.
-- Canonical path duplicates must be rejected even when file IDs differ.
-- Excluded results must retain source counts, classification, and exclusion reason.
+- binaryまたはglob exclusionが集計だけを除外し、diff/state validationを迂回しないか。
+- 非binary fileの構造検証をexclusion判定前に完了しているか。
+- old/new両pathをrepository-relativeにcanonicalizeしているか。
+- file IDが異なってもcanonical path重複を拒否するか。
+- excluded resultでもsource count、status、exclusion reasonを保持するか。
+- excluded fileだけstale stateやinvalid intervalの検証をskipしないか。
 
-### Test quality and regression retention
+### テスト品質と回帰保持
 
-- Fixtures must represent unified diffs that Git can actually produce.
-- Tests must cover additions, deletions, replacements, multiple hunks, partial
-  progress, exclusion, binary files, stale identity, non-PR context, invalid state,
-  duplicate IDs and paths, malformed coordinates, and zero denominators.
-- New re-review tests must accumulate; earlier regression cases must not be removed
-  when a fixture suite is reorganized.
-- Implementation reports must list the tests that still exist in the current suite.
+- fixtureが実際にGitが生成できるunified diffか。
+- addition、deletion、replacement、multiple hunk、partial progress、exclusion、binary、stale identity、non-PR context、invalid state、duplicate ID/path、malformed coordinate、zero denominatorをテストするか。
+- file-level progressとaggregate progressのexact valueをassertするか。
+- 新しいreview対応でtest suiteを組み替える際、過去findingの回帰testを削除しないか。
+- implementation reportに記載したcaseがcurrent suiteへ残っているか。
 
-### Documentation, performance, and CI
+### 文書、性能、CI
 
-- Public DTO properties and calculator behavior must document coordinate bases,
-  normalized paths, exclusions, zero denominators, ordering, parameters, returns,
-  and validation failures.
-- The PR description and implementation report must be refreshed after each major
-  contract change so Red, Green, final HEAD, and workflow run remain accurate.
-- Reviewed intervals must not be expanded line by line when changed-coordinate
-  lookup can use normalized intervals and bounded search.
-- CI success alone is insufficient when the malformed cases under review have no
-  regression tests.
-- The final CI decision must use the workflow run associated with the branch HEAD
-  SHA, and failure artifacts must be used to diagnose intermediate failures.
+- public DTOとcalculatorでcoordinate base、normalized path、exclusion、zero denominator、order、validation failureを説明しているか。
+- `@param`、`@returns`、`@throws`を含む公開contractがあるか。
+- PR本文とimplementation reportを最新のRed、Green、final HEAD、CIへ同期しているか。
+- reviewed intervalを一行ずつ巨大な`Set`へ展開せず、changed coordinate中心の計算量にしているか。
+- CI successだけでmalformed caseの未テストを見逃していないか。
+- branch HEAD SHAのrunとfailure artifactだけを判定・診断へ使用しているか。
 
-## Cross-PR Review Requirements Derived From the Analysis
+## CodexSkillへ反映する確認項目
 
-A reusable code review must explicitly cover or disposition all of the following:
+レビュー報告書では、最低限、次の区分を明示的に確認またはdispositionする。
 
-- task exit criteria and authoritative design
-- changed files and dependent call sites
-- public and persisted contracts
-- identity, revision, path, and state invariants
-- malformed, stale, partial, duplicate, contradictory, and unknown input
-- atomicity and failure behavior
-- realistic test fixtures and test-first evidence
-- cumulative regression retention
-- performance, repeated I/O, repeated process launches, and algorithmic complexity
-- source documentation and design consistency
-- report and PR evidence consistency
-- branch-HEAD-specific CI and failure artifacts
-- scope boundaries, held findings, and unrelated-owner protection
-- re-review of previously uninspected code, not only verification of the last fix
+- レビュー基準
+- 変更・依存範囲
+- 契約・仕様
+- 状態・identity・永続化
+- 境界・不正入力
+- Atomicity・失敗動作
+- テスト品質・回帰保持
+- 性能・副作用
+- 文書・設計整合
+- CI・証跡
+- 再レビュー拡張
 
-These requirements are implemented in
-`skills/review-enforcer/references/code-review-coverage-checklist.md`.
+各区分は、確認済み、指摘あり、保留、対象外、未確認のいずれかを記録する。保留、対象外、未確認には理由と残存リスクを記録する。
+
+実際の確認項目は次のファイルへ反映する。
+
+- `skills/review-enforcer/references/code-review-coverage-checklist.md`
+- `skills/report-output-manager/references/review-report-template.md`
