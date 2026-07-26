@@ -27,11 +27,10 @@ description: Execute a bounded initial implementation or review follow-up direct
 - scopeとnon-goals
 - authoritative requirements、設計書、repository指示
 - target filesまたはaffected modules
-- write boundaryと変更禁止範囲
+- `authorized_actions`と`write_boundary`
 - test-firstで証明するbehavior
 - focused validationとfull validationの期待値
 - `review follow-up`では前回finding、対象commit、要求される回帰test
-- commit、push、PR更新のうち、このchatへ許可された操作
 
 安全に実装するための必須情報が不足している場合は推測せず、handoffの`unknown`へ不足内容を記録して停止する。
 
@@ -57,15 +56,16 @@ description: Execute a bounded initial implementation or review follow-up direct
 ## Required flow
 
 1. task packetとrepository stateを照合し、branch、base、HEAD、scopeを確定する。
-2. 全target fileと必要な依存先を読み、既存contract、test wiring、CI入口を確認する。
-3. test-firstとして、実装前に失敗するtestまたはcontract checkを追加する。
-4. Redのcommand、exit code、failure内容、HEAD SHA、artifactがあればIDを記録する。
-5. taskを満たす最小のcode/test変更を行う。
-6. focused testをGreenにし、その後に関連suiteと必要なfull validationを実行する。
-7. test、build、lint、integration、host testなど、repositoryが要求する証拠を記録する。
-8. failure時は原因調査に必要なstdout、stderr、environment、source、test、config、生成物、test result artifactを確認する。
-9. 変更したfile、意図的に触れなかった範囲、commit、最終HEAD SHA、remaining riskを整理する。
-10. [shared handoff contract](../chat-worker-shared/references/handoff-contract.md)に従うimplementation handoffを返す。
+2. `authorized_actions`と`write_boundary`を確認し、許可されたfileとGitHub操作だけを確定する。
+3. 全target fileと必要な依存先を読み、既存contract、test wiring、CI入口を確認する。
+4. test-firstとして、実装前に失敗するtestまたはcontract checkを追加する。
+5. Redのcommand、exit code、failure内容、HEAD SHA、artifactがあればIDを記録する。
+6. taskを満たす最小のcode/test変更を行う。
+7. focused testをGreenにし、その後に関連suiteと必要なfull validationを実行する。
+8. test、build、lint、integration、host testなど、repositoryが要求する証拠を記録する。
+9. failure時は原因調査に必要なstdout、stderr、environment、source、test、config、生成物、test result artifactを確認する。
+10. 変更したfile、意図的に触れなかった範囲、commit、最終HEAD SHA、remaining riskを整理する。
+11. [shared handoff contract](../chat-worker-shared/references/handoff-contract.md)に従うimplementation handoffを返す。
 
 ## Test-first rules
 
@@ -80,6 +80,8 @@ description: Execute a bounded initial implementation or review follow-up direct
 ## Scope and safety rules
 
 - 利用者が指定したscopeを超えて設計やtaskを拡張しない。
+- `authorized_actions`にないwrite、commit、push、PR操作を行わない。
+- `write_boundary`外を変更しない。
 - 他task、他PR、他workerの所有範囲を勝手に変更しない。
 - unrelated fileをrevertしない。
 - repositoryの現在状態とtask packetが矛盾する場合は、authoritative sourceを列挙して利用者判断へ戻す。
