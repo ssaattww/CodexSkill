@@ -13,6 +13,7 @@
 - 対象外の値は空欄にせず、理由付きで`not_applicable`へ記録する。
 - branchのCI判定には、必ずpacketの`head_sha`に紐づくrunだけを使用する。
 - 実装結果、review finding、test結果、CI結果をreport writerが変更または補完してはならない。
+- 利用者が許可していないwrite、commit、push、PR操作をworkerが実行してはならない。
 - secret、credential、個人情報、不要な大容量logをpacketへ埋め込まない。
 
 ## Canonical packet
@@ -32,6 +33,16 @@ repository: owner/name
 branch: string
 base_ref: string | null
 head_sha: full commit SHA | unknown
+
+authorized_actions:
+  - read_repository | edit_code | edit_tests | write_report | commit | push | update_pr | comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: string
+      reason: string
+  forbidden:
+    - path_or_operation: string
+      reason: string
 
 scope:
   - string
@@ -99,6 +110,21 @@ review:
   summary:
     - string
 
+report:
+  report_type: implementation_report | review_report | verification_report | concise_pr_comment | not_applicable
+  outcome: created | updated | rendered | blocked | not_applicable
+  source_packets:
+    - producer_skill: string
+      task_id: string
+      head_sha: full commit SHA | unknown
+  paths:
+    - string
+  pr_comments:
+    - target: string
+      url_or_id: string | unknown
+  summary:
+    - string
+
 findings:
   - id: string
     severity: blocking | high | medium | low
@@ -152,6 +178,7 @@ next_chat_input:
 
 - `task_id`
 - `repository`、`branch`、`base_ref`、`head_sha`
+- `authorized_actions`、`write_boundary`
 - `scope`、`non_goals`、`authoritative_requirements`
 - `files.changed`
 - Red、Green、またはtest-firstが対象外である理由を含む`tests`
@@ -161,13 +188,14 @@ next_chat_input:
 - `next_action`
 - `next_chat_input`
 
-Review結果を作らないため、`review.review_mode`と`review.verdict`は`not_applicable`とする。
+Review結果とnarrative reportを作らないため、`review.review_mode`、`review.verdict`、`report.report_type`、`report.outcome`は`not_applicable`とする。
 
 ### Review worker
 
 次を必須とする。
 
 - review対象の`repository`、`branch`、`base_ref`、`head_sha`
+- `authorized_actions`、`write_boundary`
 - `scope`、`non_goals`、`authoritative_requirements`
 - `files.inspected`
 - `review.review_mode`
@@ -175,6 +203,7 @@ Review結果を作らないため、`review.review_mode`と`review.verdict`は`n
 - `review.required_coverage`
 - `findings`または明示的なfindingなしのsummary
 - `held`、`unexplored`、`remaining_risks`
+- reportを作成した場合は`report`
 - `next_action`
 - `next_chat_input`
 
@@ -185,6 +214,8 @@ Product implementationを行わないため、`implementation.outcome`は`not_ap
 次を必須とする。
 
 - 入力に使ったhandoff packetの識別情報
+- `authorized_actions`、`write_boundary`
+- `report.report_type`、`report.outcome`、`report.source_packets`
 - 作成したreport pathまたは返却したreport本文
 - reportへ転記したHEAD SHA、CI run、artifact、finding
 - 入力不足を示す`unknown`
@@ -196,7 +227,7 @@ Report writerは、入力packetの`implementation`、`review`、`findings`、`te
 
 1. 利用者が対象workerのSkillとtask packetをchatへ渡す。
 2. workerが作業し、このcontractに従うhandoff packetを返す。
-3. 利用者がpacketの`head_sha`、scope、finding、unknownを確認する。
+3. 利用者がpacketの`authorized_actions`、`write_boundary`、`head_sha`、scope、finding、unknownを確認する。
 4. 利用者が`next_chat_input`と必要なrepository参照を次のchatへ渡す。
 5. 次のchatは以前の会話を推測せず、受け取ったpacketとrepositoryを正として作業する。
 
@@ -206,6 +237,7 @@ Report writerは、入力packetの`implementation`、`review`、`findings`、`te
 
 - `review.verdict`はreview時のみ`incomplete`とする。
 - `implementation.outcome`は実装時のみ`blocked`とする。
+- `report.outcome`はreport作成時のみ`blocked`とする。
 - 不足fieldと理由を`unknown`へ記録する。
 - `next_action.type`を`user_decision`とする。
 - `next_chat_input.instructions`へ、利用者が補うべき情報を列挙する。
