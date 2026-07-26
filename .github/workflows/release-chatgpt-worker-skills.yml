@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - "skills/chat-*/**"
-      - "shared/workflow/**"
-      - "shared/chat-worker/**"
+      - "skills/work-context-manager/**"
+      - "skills/implementation-worker/**"
+      - "skills/review-worker/**"
+      - "skills/report-writer/**"
       - "scripts/build_chatgpt_worker_skills.py"
-      - "scripts/verify_no_committed_chatgpt_skill_copies.py"
       - "design/chat-worker-skill-design.md"
+      - "design/chatgpt-project-instruction-example.md"
       - "design/skill-hierarchy-design.md"
       - "skills/design/skill-hierarchy-design.md"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
@@ -17,11 +19,13 @@ on:
       - main
     paths:
       - "skills/chat-*/**"
-      - "shared/workflow/**"
-      - "shared/chat-worker/**"
+      - "skills/work-context-manager/**"
+      - "skills/implementation-worker/**"
+      - "skills/review-worker/**"
+      - "skills/report-writer/**"
       - "scripts/build_chatgpt_worker_skills.py"
-      - "scripts/verify_no_committed_chatgpt_skill_copies.py"
       - "design/chat-worker-skill-design.md"
+      - "design/chatgpt-project-instruction-example.md"
       - "design/skill-hierarchy-design.md"
       - "skills/design/skill-hierarchy-design.md"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
@@ -41,18 +45,11 @@ jobs:
       - name: Checkout target HEAD without write credentials
         uses: actions/checkout@v4
         with:
-          # pull_request github.sha is a synthetic merge ref; validate the actual PR HEAD.
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Verify shared dependencies are not committed into Skills
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 scripts/verify_no_committed_chatgpt_skill_copies.py
-
-      - name: Build and verify complete ChatGPT Skill ZIP
+      - name: Build and verify ChatGPT wrapper and core Skill ZIP
         shell: bash
         run: |
           set -euo pipefail
@@ -103,7 +100,7 @@ jobs:
           git tag -f "${TAG}" "${GITHUB_SHA}"
           git push --force origin "refs/tags/${TAG}"
 
-          notes="Upload chatgpt-worker-skills.zip to ChatGPT Skills. The archive contains every repository Skill matching skills/chat-*/SKILL.md and all referenced shared runtime dependencies generated from the canonical shared/ sources during release staging. Source commit: ${GITHUB_SHA}."
+          notes="Upload chatgpt-worker-skills.zip to ChatGPT Skills. The archive contains ChatGPT runtime wrappers and the parent-independent core Skills they invoke. No Skill depends on repository-external shared files. Source commit: ${GITHUB_SHA}."
 
           if gh release view "${TAG}" >/dev/null 2>&1; then
             gh release edit "${TAG}" \
