@@ -348,6 +348,8 @@ core Skillとwrapperはいずれもmergeを行わず、利用者がmerge判断�
 
 既存設計書を更新する場合、構成変更と無関係な節、運用手順、入力例、責務、完了条件を削除しない。新しい構成と矛盾する箇所だけを置換し、必要な説明を追加する。
 
+今回の再構成でも、既存のProject Instruction例、worker flow、各作業の入力例、Codex review flow、worker責務、handoff、検証方針、完了条件を維持する。
+
 ## 完了条件
 
 - 実装、レビュー、レポートの意味論が親非依存core Skillとして定義されている
