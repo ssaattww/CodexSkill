@@ -3,31 +3,25 @@ name: Validate and release ChatGPT worker skills
 on:
   pull_request:
     paths:
-      - "skills/chat-*/**"
-      - "skills/work-context-manager/**"
-      - "skills/implementation-worker/**"
-      - "skills/review-worker/**"
-      - "skills/report-writer/**"
+      - "AGENTS.md"
+      - "README.md"
+      - "skills/**"
+      - "design/**"
+      - "tasks/**"
       - "scripts/build_chatgpt_worker_skills.py"
-      - "design/chat-worker-skill-design.md"
-      - "design/chatgpt-project-instruction-example.md"
-      - "design/skill-hierarchy-design.md"
-      - "skills/design/skill-hierarchy-design.md"
+      - "scripts/verify_skill_repository.py"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
   push:
     branches:
       - main
     paths:
-      - "skills/chat-*/**"
-      - "skills/work-context-manager/**"
-      - "skills/implementation-worker/**"
-      - "skills/review-worker/**"
-      - "skills/report-writer/**"
+      - "AGENTS.md"
+      - "README.md"
+      - "skills/**"
+      - "design/**"
+      - "tasks/**"
       - "scripts/build_chatgpt_worker_skills.py"
-      - "design/chat-worker-skill-design.md"
-      - "design/chatgpt-project-instruction-example.md"
-      - "design/skill-hierarchy-design.md"
-      - "skills/design/skill-hierarchy-design.md"
+      - "scripts/verify_skill_repository.py"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
   workflow_dispatch:
 
@@ -48,6 +42,12 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Validate repository Skill architecture and active links
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/verify_skill_repository.py
 
       - name: Build and verify ChatGPT wrapper and core Skill ZIP
         shell: bash
@@ -100,7 +100,7 @@ jobs:
           git tag -f "${TAG}" "${GITHUB_SHA}"
           git push --force origin "refs/tags/${TAG}"
 
-          notes="Upload chatgpt-worker-skills.zip to ChatGPT Skills. The archive contains ChatGPT runtime wrappers and the parent-independent core Skills they invoke. No Skill depends on repository-external shared files. Source commit: ${GITHUB_SHA}."
+          notes="Upload chatgpt-worker-skills.zip to ChatGPT Skills. The archive contains ChatGPT runtime wrappers and the parent-independent core Skills they invoke. No Skill depends on repository-external shared files. Repository-wide Skill dependency and active-link validation passed for source commit: ${GITHUB_SHA}."
 
           if gh release view "${TAG}" >/dev/null 2>&1; then
             gh release edit "${TAG}" \
