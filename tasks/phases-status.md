@@ -48,19 +48,20 @@
 
 ## Phase 6: 独立最終レビュー指摘への対応
 
-- Status: In Progress
+- Status: Done
 - Notes:
   - independent final reviewはReviewed HEAD `7fe8660d0fb4133bd732dd8456ff4390cf7b91e7`に対してverdict `fail`、required finding 5件を記録した
   - `PR54-IFR-001`: deleted shared contract参照をcore Skill呼び出しへ置換した
   - `PR54-IFR-002`: handoff schema version 3へfull evidence fieldを追加した
   - `PR54-IFR-003`: reviewed implementation HEADと1回のreport-attestation commitで有限に終端する規則を追加した
-  - `PR54-IFR-004`: Issue #53、task／phase tracking、current architecture reportをcore／wrapper構成へ同期する
+  - `PR54-IFR-004`: Issue #53、task／phase tracking、historical report、current reportをcore／wrapper構成へ同期した
   - `PR54-IFR-005`: obsolete validatorをrepository-wide Skill validatorへ置換し、workflowへ接続した
   - hierarchy design 2件とChatGPT worker designへreview follow-upを反映した
+  - review follow-up HEAD `fa49675daa0ea2e04136e51faba41072299844d0`のworkflow run `30436893200`が成功した
+  - repository-wide Skill／active-link validationと8 Skill ZIP buildが成功した
+  - artifact ID `8717769416`、digest `sha256:9083066d5ccd40bafe83dcf7f7df9b4b7001d9759aefc67299344c9ad5c1312b`
   - CodexSkill repositoryにはTDDを適用していない
-  - current-HEAD repository validation、bundle workflow、artifact確認は実施中
-  - normal reviewerによるfix verificationは未実施
-  - fresh reviewerによる独立最終reviewは未実施
+  - tracking update後のcurrent HEAD workflowを再確認する
   - PR #54はDraftのまま維持する
   - mergeは利用者が行う
 
@@ -68,11 +69,12 @@
 
 - Status: Pending
 - Notes:
-  - Phase 6の全非final変更とcurrent implementation／verification reportをcommit／pushする
-  - current-HEAD repository validationとbundle artifactを確認する
   - normal reviewerが5 findingをidentity単位でfix verificationする
-  - required findingがなければindependent-final-review report pathを予約し、implementation HEADをfreezeする
+  - fix verificationではrepository validator、handoff schema、review terminal rule、Issue／tracking／report同期、新規変更領域を確認する
+  - required findingがなければ、全非final変更が確定していることを確認する
+  - independent-final-review report pathを予約し、implementation HEADをfreezeする
   - 別fresh reviewerがfrozen implementation HEADを独立最終reviewする
   - passing reportを保存する場合は予約済みpathだけを変更する1回のreport-attestation commitを作成する
+  - report-attestation diffをallowlist検証する
   - PR body／commentへreviewed implementation HEAD、attestation HEAD、current-HEAD evidenceを記録する
   - attestation後にrepository commitを追加しない
