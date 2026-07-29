@@ -18,7 +18,7 @@ Invoke these Skills in order:
 3. `report-writer`
 4. `chat-handoff-manager`
 
-All four must be installed. Do not replace them with repository-external shared files.
+All four must be installed. Do not replace them with repository-external shared files or locally reproduced core logic.
 
 ## Modes
 
@@ -33,10 +33,41 @@ Use the same normal review chat for initial review and fix verification when ava
 - Use the current chat and available connectors.
 - Resolve permissions before repository writes or PR comments.
 - Validate reviewer continuity or independence before invoking `review-worker`.
+- Resolve the exact reviewed implementation HEAD and use only matching validation and CI evidence.
 - Persist the detailed review report under target-repository rules, or return it in full.
 - Post the concise PR review comment when authorized, or return its complete body.
-- Persist the handoff under target-repository rules, or return the complete packet.
+- Persist normal-review and fix-verification handoffs under target-repository rules, or return complete packets.
 - The user chooses the next chat and merge action.
+
+## Normal review flow
+
+1. Invoke `work-context-manager` for the current PR HEAD, requirements, design, previous findings, reports, tracking, and matching evidence.
+2. Invoke `review-worker` for initial review or fix verification.
+3. Invoke `report-writer` and persist the detailed report before the branch is considered ready for independent final review.
+4. Invoke `chat-handoff-manager` with the complete review output; do not omit findings, coverage, held, unexplored, or reviewed-HEAD evidence.
+5. Required fixes return to the implementation chat. After fixes, validation, report, tracking, commit, and push, reuse the same normal review chat when available.
+
+## Independent final review flow
+
+Before starting the fresh independent-final-review chat:
+
+- all implementation, design, workflow, configuration, task-tracking, handoff, and non-final report changes must be committed and pushed,
+- the independent-final-review report path or paths must be reserved,
+- the current PR HEAD must be frozen as `reviewed_implementation_head`.
+
+Then:
+
+1. Invoke `work-context-manager` for the frozen implementation HEAD and matching evidence.
+2. Validate that this chat is independent from implementation, review fixes, and normal review.
+3. Invoke `review-worker` in `independent final review` mode.
+4. If the verdict requires a fix, do not persist a passing attestation. Return to the normal implementation and fix-verification lifecycle.
+5. When the verdict passes, invoke `report-writer` with the pre-reserved report path and the reviewed implementation HEAD.
+6. Persist at most one report-attestation commit. Its first parent must be the reviewed implementation HEAD, and its diff may change only the reserved independent-final-review report path or paths.
+7. Validate and record the attestation diff. Treat the completion identity as `reviewed implementation HEAD + report-attestation HEAD`.
+8. Post or update the concise PR comment after the attestation commit; PR comments and PR body changes do not change Git HEAD.
+9. Invoke `chat-handoff-manager` and return the final packet inline or transport it outside the PR branch. Do not commit a handoff after the report-attestation head.
+
+Any other post-review repository commit invalidates completion and requires normal fix verification followed by another fresh independent final review.
 
 ## Boundaries
 
@@ -44,9 +75,25 @@ Use the same normal review chat for initial review and fix verification when ava
 - Do not implement findings.
 - Do not redefine review criteria locally when `review-worker` is unavailable; report the missing dependency.
 - Do not exceed current-chat permissions.
-- Do not reuse a verdict after HEAD changes.
+- Do not reuse a verdict after the reviewed implementation HEAD changes.
+- Do not commit tracking, design, Skill, workflow, configuration, implementation, or handoff changes after independent final review.
+- Do not create more than one report-attestation commit.
 - Do not merge.
+
+## Outputs
+
+Return or persist:
+
+- review mode,
+- reviewed implementation HEAD,
+- reviewer continuity or independence evidence,
+- full coverage dispositions, findings, held items, unexplored areas, validation assessment, and verdict,
+- detailed report path or complete body,
+- report-attestation head and validated allowlist evidence when applicable,
+- PR comment reference or complete body,
+- complete handoff packet or external transport reference,
+- remaining risks and next action.
 
 ## Completion condition
 
-Complete when the required Skills have produced context, review coverage, findings, verdict, report output, and a transportable handoff; authorized PR updates are complete; reviewer continuity or independence is explicit; and no merge was performed.
+Complete when the required Skills have produced context, complete review evidence, verdict, report output, and a lossless handoff; authorized PR updates are complete; reviewer continuity or independence is explicit; and either the reviewed implementation HEAD remains unchanged or exactly one validated report-attestation commit exists with no later repository commit. No merge is performed.
