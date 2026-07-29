@@ -7,8 +7,8 @@
 ## In Progress
 
 - T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
-  - Status: 独立最終レビュー指摘5件へのreview follow-upとcurrent-HEAD検証完了、normal fix verification待ち
-  - Phase: Phase 6
+  - Status: fix verification残存3件へのreview follow-up実装完了、current-HEAD検証と再fix verification待ち
+  - Phase: Phase 7
   - Estimate: L
   - Depends on: なし
   - Supersedes:
@@ -20,13 +20,18 @@
     - Codex wrapperがcore SkillをSkill名で呼び出し、runtime固有責務だけを持つ
     - ChatGPT wrapperがcore SkillをSkill名で呼び出し、runtime固有責務だけを持つ
     - 各Skillが自directory内で完結し、Skill外shared runtime fileへ依存しない
-    - `chat-handoff-manager`がfull finding、reviewed HEAD、coverage、held、unexplored、requirements、validation、test、artifact、commit、report／comment参照をlosslessにtransportする
-    - schema version 1／2のsourceに存在する情報をnormalizationで捨てない
+    - `chat-handoff-manager`がtyped projectionとversioned raw source payloadの両方を保持する
+    - handoffがdevelopment policy、planned validation、required failure diagnostics、blocked state、implementation failure diagnosticsを保持する
+    - handoffがreviewer identity／continuity／independence、reserved report path、attestation allowlist／validation条件を保持する
+    - handoffがfull finding、reviewed HEAD、coverage、held、unexplored、requirements、test、artifact、commit、report／comment参照をlosslessにtransportする
+    - schema version 1／2のoriginal packetとmapping不能fieldをnormalizationで捨てない
     - 4 ChatGPT wrapperと4 core Skillが独立root directoryとして単一ZIPへ含まれる
     - repository-wide validatorがfront matter、Skill dependency、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
     - PR buildがread-onlyかつ実PR HEAD SHAをcheckoutし、main反映後のrelease jobだけがwrite権限を持つ
-    - independent final review前に全非final repository変更をcommit／pushする
+    - independent final review前にSkill decision、feedback ledger、normal handoff、report、trackingを含む全非final repository変更をcommit／pushする
+    - pre-freeze処理でrepositoryが変わった場合はnormal review／fix verificationへ戻る
     - passing final reportは予約済みpathだけを変更する1回のreport-attestation commitで保存できる
+    - attestation後にrepository-writing Skillまたは追加Git commitを実行しない
     - current implementation HEAD固有のrepository validation、bundle workflow、artifact確認が成功する
     - normal reviewerがfinding `PR54-IFR-001`から`PR54-IFR-005`をfix verificationしてpassする
     - 別fresh reviewerがcurrent implementation HEADを独立最終reviewしてpassする
@@ -55,20 +60,21 @@
     - `skills/design/skill-hierarchy-design.md`
     - `reports/issue-53-independent-final-review-20260729083728.md`
     - `reports/issue-53-core-skill-wrapper-review-followup-20260729174338.md`
+    - `reports/issue-53-fix-verification-20260729182457.md`
+    - `reports/issue-53-fix-verification-followup-20260729182800.md`
   - Review Follow-up:
-    - `PR54-IFR-001`: deleted `shared/workflow/`参照をcore Skill呼び出しへ置換し、repository-wide validatorを追加
-    - `PR54-IFR-002`: `chat-handoff-manager`をlossless schema version 3へ拡張
-    - `PR54-IFR-003`: reviewed implementation HEADと1回のreport-attestation commitで有限に終端する規則をcore／wrapper／designへ反映
-    - `PR54-IFR-004`: Issue #53をsuperseding decisionで更新し、本trackingとcurrent reportをcore／wrapper構成へ更新
-    - `PR54-IFR-005`: obsolete shared-copy validatorを削除し、current architecture向けvalidatorへ置換してCIへ接続
+    - `PR54-IFR-001`: `resolved`。deleted `shared/workflow/`参照をcore Skill呼び出しへ置換し、repository-wide validatorを追加
+    - `PR54-IFR-002`: second follow-upでtyped fieldを追加し、complete core outputとlegacy packetをversioned raw `source_payloads`として保持
+    - `PR54-IFR-003`: second follow-upでSkill decision、Skill update、feedback ledger、normal handoffをfreeze前へ移動し、repository変更時はnormal cycleへ戻す
+    - `PR54-IFR-004`: second follow-upでT-002をPhase 7へ移し、Phase 7をIn Progressへ同期
+    - `PR54-IFR-005`: `resolved`。obsolete shared-copy validatorをcurrent architecture向けvalidatorへ置換してCIへ接続
   - Verification:
     - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
-    - 独立最終review reportはReviewed HEAD `7fe8660d0fb4133bd732dd8456ff4390cf7b91e7`へ5 findingを記録し、verdict `fail`
-    - review follow-up HEAD `fa49675daa0ea2e04136e51faba41072299844d0`のworkflow run `30436893200`が成功
-    - repository-wide Skill／active-link validationと8 Skill ZIP buildが成功
-    - artifact `chatgpt-worker-skills-fa49675daa0ea2e04136e51faba41072299844d0`、ID `8717769416`、digest `sha256:9083066d5ccd40bafe83dcf7f7df9b4b7001d9759aefc67299344c9ad5c1312b`
-    - 本tracking commit後のcurrent HEAD workflowは再確認する
-    - normal fix verificationは未実施
+    - independent final reviewはReviewed HEAD `7fe8660d0fb4133bd732dd8456ff4390cf7b91e7`へ5 findingを記録し、verdict `fail`
+    - first fix verificationはReviewed implementation HEAD `39e2902beb47e85d412d1b1bc8044d8653b7cd34`へ`PR54-IFR-001`／`005` resolved、`002`／`003`／`004` partialを記録し、verdict `fail`
+    - first fix-verification report commitは`53d52ae3e4c8c47a03984d55fa3f30ccf5218c87`
+    - second review-follow-up後のcurrent-HEAD repository validation、bundle workflow、artifact確認は未実施
+    - second fix verificationは未実施
     - fresh independent final reviewは未実施
 
 ## Backlog
