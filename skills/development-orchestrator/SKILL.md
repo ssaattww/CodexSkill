@@ -62,16 +62,19 @@ Before running this Skill, establish:
 11. If and only if the target repository explicitly requires TDD for the selected work, call `tdd-executor`. Otherwise record TDD as not applicable with the governing source and continue.
 12. Call `codex-delegation-executor` to choose an executor. The selected `implementation-executor` invokes `work-context-manager` and `implementation-worker` for implementation or review follow-up.
 13. Run focused validation, then broader validation required by the target repository.
-14. Before final review, create or update implementation and verification reports through `report-output-manager`, synchronize task and phase tracking, and commit and push all implementation, design, workflow, report, and tracking changes.
-15. Call `review-enforcer` for the normal review cycle. Persist normal review and fix-verification reports before selecting the independent-final-review target. Required fixes return through `implementation-executor`, followed by validation, tracking synchronization, and commit or push.
-16. When the normal cycle converges, ensure every non-final repository change is committed and pushed. Reserve the independent-final-review report path, then freeze the current HEAD as the reviewed implementation HEAD.
-17. Call `review-enforcer` with a fresh independent reviewer against that frozen HEAD.
-18. When independent final review passes, persist its detailed report through `report-output-manager` as at most one report-attestation commit. The commit's first parent must be the reviewed implementation HEAD and its changed paths must be limited to the pre-reserved independent-final-review report path or paths.
-19. Validate the report-attestation diff. Update the PR body or concise PR comment after the attestation commit because those operations do not change Git HEAD. Do not commit task, design, Skill, workflow, configuration, handoff, or implementation changes after the independent final review.
-20. When an Issue or task reaches done, make an explicit parent-side decision: `no skill action needed`, `update an existing skill`, or `propose a new skill`.
-21. When the chosen Skill action should be executed now, call `skill-authoring-wrapper` before freezing the independent-final-review target; otherwise record it as follow-up work.
-22. Call `feedback-points-manager` when reusable process feedback, Skillization state, or a follow-up Issue must be recorded.
-23. Return to task confirmation.
+14. Before review, create or update implementation and verification reports through `report-output-manager`, synchronize task and phase tracking, and commit and push all implementation, design, workflow, report, and tracking changes.
+15. Call `review-enforcer` for the normal review cycle. Persist normal review and fix-verification reports before selecting the independent-final-review target. Required fixes return through `implementation-executor`, followed by validation, report and tracking synchronization, commit or push, and another normal fix-verification round.
+16. After the normal cycle converges, make the parent-owned end-of-Issue Skill-gap decision: `no skill action needed`, `update an existing skill`, or `propose a new skill`.
+17. When the chosen Skill action should be executed in the current scope, call `skill-authoring-wrapper` now. Otherwise record the action as follow-up work before the final-review freeze.
+18. Call `feedback-points-manager` for reusable process feedback, Skillization state, or a follow-up Issue. Persist any repository-backed normal handoff, feedback ledger, report, or tracking change now.
+19. If steps 16 through 18 changed any repository file, run applicable validation, update reports and tracking, commit and push, and return to the normal review or fix-verification cycle. Repeat until the normal cycle converges with all end-of-Issue and feedback changes included.
+20. Ensure every non-final repository change is committed and pushed. Reserve the independent-final-review report path, then freeze the current HEAD as the reviewed implementation HEAD.
+21. Call `review-enforcer` with a fresh independent reviewer against that frozen HEAD.
+22. If the independent review discovers any required repository change, invalidate the frozen state and return to implementation, validation, reporting, tracking, feedback or Skill-action processing as applicable, followed by normal fix verification and another fresh independent final review.
+23. When independent final review passes, persist its detailed report through `report-output-manager` as at most one report-attestation commit. The commit's first parent must be the reviewed implementation HEAD and its changed paths must be limited to the pre-reserved independent-final-review report path or paths.
+24. Validate the report-attestation diff. Update the PR body, concise PR comment, review request, or external Issue only after the attestation commit because those operations do not change Git HEAD.
+25. Do not commit task, design, Skill, workflow, configuration, feedback, handoff, report, or implementation changes after the attestation head. Return the final handoff inline or outside the reviewed PR branch.
+26. Return to task confirmation. Starting another task begins a new lifecycle and must not append commits to the completed attestation pair.
 
 ## Report-attestation terminal rule
 
@@ -81,10 +84,12 @@ An independent-final-review verdict remains attached to its reviewed implementat
 - its first parent is the reviewed implementation HEAD,
 - only the independent-final-review report path or paths reserved before review are changed,
 - the report identifies the reviewed implementation HEAD and states that the commit is an administrative attestation rather than reviewed implementation,
-- an automated or explicit diff check confirms that no executable, Skill, design, workflow, configuration, task-tracking, or product file changed,
+- an automated or explicit diff check confirms that no executable, Skill, design, workflow, configuration, task-tracking, feedback, handoff, or product file changed,
 - no later repository commit exists.
 
 The completion identity is the pair `reviewed implementation HEAD + validated report-attestation HEAD`. Any other post-review commit invalidates completion and requires normal fix verification followed by another fresh independent final review.
+
+After the freeze, only operations that do not change Git HEAD are permitted: PR body or comment updates, review requests, external Issue creation or update, and branch-external or inline transport. Discovery of a required repository write invalidates the terminal state and returns the workflow to the normal cycle.
 
 ## Core rules
 
@@ -96,6 +101,8 @@ The completion identity is the pair `reviewed implementation HEAD + validated re
 - Do not enter the workflow on stale local Skills when a safe latest synchronization was available.
 - Do not trust the workflow entry until `AGENTS.md` contains the required Skill-first constraints or the user has been explicitly notified.
 - Do not skip parent-owned end-of-Issue Skill-gap reflection.
+- Complete Skill action decisions, feedback classification, feedback-ledger synchronization, normal handoff persistence, reports, and tracking before freezing the independent-final-review target.
+- If any of those actions changes the repository, require validation and normal review before freezing again.
 - Do not leave substantial local Skill changes without an explicit caller.
 - Do not choose parent versus sub-agent implementation outside `codex-delegation-executor`.
 - Do not dispatch implementation sub-agent work before the user-confirmed model is known.
@@ -105,8 +112,8 @@ The completion identity is the pair `reviewed implementation HEAD + validated re
 - When work is delegated, make the sub-agent read the applicable wrapper and core Skill files instead of relying only on a paraphrased prompt.
 - Do not make delegated tasks re-enter this orchestration Skill unless orchestration analysis itself was delegated.
 - Do not use deleted or repository-external `shared/` contracts as a fallback.
-- Call `feedback-points-manager` for reusable process problems, repeated instructions, or workflow failures.
 - Stop and re-plan when required work is missing from task tracking.
+- After report attestation, do not call any Skill that can write to the reviewed repository branch.
 
 ## Outputs
 
@@ -117,7 +124,7 @@ After this Skill runs, the workflow has:
 - the governing target-project development and testing policy,
 - a concrete route through applicable wrapper and core Skills,
 - implementation and validation evidence or an explicit blocking condition,
-- review, report, tracking, commit, and PR state,
+- review, report, tracking, Skill-action, feedback, commit, and PR state,
 - a reviewed implementation HEAD and, when repository persistence is required, a validated report-attestation head.
 
 ## Completion condition
@@ -128,10 +135,11 @@ A task cycle is complete only when:
 - target-project-required tests and validation are recorded,
 - TDD was applied only when required and otherwise recorded as not applicable,
 - normal review and independent final review are complete,
-- required non-final reports and tracking were committed before independent final review,
+- required non-final reports, tracking, Skill decisions, feedback classification, feedback-ledger updates, and normal handoffs were committed before independent final review,
+- any repository change discovered during pre-freeze finalization returned through validation and normal review,
 - any post-review repository write is exactly one validated report-attestation commit,
+- no repository-writing Skill ran after the attestation head,
 - commit and PR actions are complete,
-- the end-of-Issue Skill decision is recorded,
 - no merge was performed.
 
 ## What this Skill must not do
