@@ -11,9 +11,16 @@ Advance one task at a time through the target project's required development lif
 
 This is the single standard entry point for implementation and resume flows.
 
-## Shared contracts
+## Required Skills
 
-Follow the [Common Work Contract](../../shared/workflow/common-work-contract.md) for authority, state discovery, target identity, validation evidence, report separation, and merge boundary.
+Use independent Skills rather than repository-external shared files:
+
+- `work-context-manager` resolves authority, scope, target identity, policy, validation evidence, and write boundaries.
+- `implementation-executor` is the Codex wrapper that invokes `implementation-worker`.
+- `report-output-manager` is the Codex wrapper that invokes `report-writer`.
+- `review-enforcer` is the Codex wrapper that invokes `review-worker`.
+
+If a required Skill is unavailable, stop with a missing dependency. Do not reproduce its rules locally and do not fall back to `shared/` files.
 
 The target repository owns its development method and testing order. This orchestrator must not impose TDD when the target repository does not require it.
 
@@ -48,19 +55,36 @@ Before running this Skill, establish:
 4. If it is dirty, diverged, or unsafe to update automatically, stop and resolve that state explicitly before trusting the workflow.
 5. For a resumed or restarted session, call `restart-handover-manager` to reconstruct the current position.
 6. At the first applicable user confirmation, confirm the implementation sub-agent model. When the intended work is not explicit, also read [start intake policy](references/start-intake-policy.md) and establish the work target.
-7. Confirm state from task tracking, phase tracking, relevant reports, feedback points, repository evidence, and the target project's development policy.
-8. Select exactly one next task.
+7. Invoke `work-context-manager` to resolve authority, current state, scope candidates, policy, validation targets, and write boundaries.
+8. Select exactly one next task from the resolved context.
 9. Call `task-consistency-manager`.
 10. Call `design-doc-maintainer` when design impact exists.
 11. If and only if the target repository explicitly requires TDD for the selected work, call `tdd-executor`. Otherwise record TDD as not applicable with the governing source and continue.
-12. Call `codex-delegation-executor` to choose an executor and run implementation and verification under the shared implementation contract.
-13. Call `review-enforcer`.
-14. Call `progress-sync-manager`.
-15. Call `git-workflow-manager`.
-16. When an Issue or task reaches done, make an explicit parent-side decision: `no skill action needed`, `update an existing skill`, or `propose a new skill`.
-17. When the chosen Skill action should be executed now, call `skill-authoring-wrapper`.
-18. Call `feedback-points-manager` when reusable process feedback, Skillization state, or a follow-up Issue must be recorded.
-19. Return to task confirmation.
+12. Call `codex-delegation-executor` to choose an executor. The selected `implementation-executor` invokes `work-context-manager` and `implementation-worker` for implementation or review follow-up.
+13. Run focused validation, then broader validation required by the target repository.
+14. Before final review, create or update implementation and verification reports through `report-output-manager`, synchronize task and phase tracking, and commit and push all implementation, design, workflow, report, and tracking changes.
+15. Call `review-enforcer` for the normal review cycle. Persist normal review and fix-verification reports before selecting the independent-final-review target. Required fixes return through `implementation-executor`, followed by validation, tracking synchronization, and commit or push.
+16. When the normal cycle converges, ensure every non-final repository change is committed and pushed. Reserve the independent-final-review report path, then freeze the current HEAD as the reviewed implementation HEAD.
+17. Call `review-enforcer` with a fresh independent reviewer against that frozen HEAD.
+18. When independent final review passes, persist its detailed report through `report-output-manager` as at most one report-attestation commit. The commit's first parent must be the reviewed implementation HEAD and its changed paths must be limited to the pre-reserved independent-final-review report path or paths.
+19. Validate the report-attestation diff. Update the PR body or concise PR comment after the attestation commit because those operations do not change Git HEAD. Do not commit task, design, Skill, workflow, configuration, handoff, or implementation changes after the independent final review.
+20. When an Issue or task reaches done, make an explicit parent-side decision: `no skill action needed`, `update an existing skill`, or `propose a new skill`.
+21. When the chosen Skill action should be executed now, call `skill-authoring-wrapper` before freezing the independent-final-review target; otherwise record it as follow-up work.
+22. Call `feedback-points-manager` when reusable process feedback, Skillization state, or a follow-up Issue must be recorded.
+23. Return to task confirmation.
+
+## Report-attestation terminal rule
+
+An independent-final-review verdict remains attached to its reviewed implementation HEAD. A later Git HEAD may be accepted only as a report-attestation head when all conditions below hold:
+
+- exactly one commit follows the reviewed implementation HEAD,
+- its first parent is the reviewed implementation HEAD,
+- only the independent-final-review report path or paths reserved before review are changed,
+- the report identifies the reviewed implementation HEAD and states that the commit is an administrative attestation rather than reviewed implementation,
+- an automated or explicit diff check confirms that no executable, Skill, design, workflow, configuration, task-tracking, or product file changed,
+- no later repository commit exists.
+
+The completion identity is the pair `reviewed implementation HEAD + validated report-attestation HEAD`. Any other post-review commit invalidates completion and requires normal fix verification followed by another fresh independent final review.
 
 ## Core rules
 
@@ -78,8 +102,9 @@ Before running this Skill, establish:
 - Treat design editing, test authoring, code authoring, documentation, configuration, and workflow editing as implementation work owned through the applicable executor.
 - Do not call `tdd-executor` merely because code or tests may change. Call it only when the target repository explicitly requires TDD.
 - CodexSkill repository maintenance is non-TDD unless the user explicitly changes that repository policy.
-- When work is delegated, prefer making the sub-agent read the relevant Skill and shared contract files instead of relying only on a paraphrased prompt.
+- When work is delegated, make the sub-agent read the applicable wrapper and core Skill files instead of relying only on a paraphrased prompt.
 - Do not make delegated tasks re-enter this orchestration Skill unless orchestration analysis itself was delegated.
+- Do not use deleted or repository-external `shared/` contracts as a fallback.
 - Call `feedback-points-manager` for reusable process problems, repeated instructions, or workflow failures.
 - Stop and re-plan when required work is missing from task tracking.
 
@@ -88,10 +113,12 @@ Before running this Skill, establish:
 After this Skill runs, the workflow has:
 
 - one explicitly selected task,
+- a structured context from `work-context-manager`,
 - the governing target-project development and testing policy,
-- a concrete route through applicable child Skills,
+- a concrete route through applicable wrapper and core Skills,
 - implementation and validation evidence or an explicit blocking condition,
-- review, report, tracking, commit, and PR state.
+- review, report, tracking, commit, and PR state,
+- a reviewed implementation HEAD and, when repository persistence is required, a validated report-attestation head.
 
 ## Completion condition
 
@@ -100,9 +127,9 @@ A task cycle is complete only when:
 - accepted implementation is complete or explicitly blocked,
 - target-project-required tests and validation are recorded,
 - TDD was applied only when required and otherwise recorded as not applicable,
-- review is complete,
-- required reports exist,
-- progress files are synchronized,
+- normal review and independent final review are complete,
+- required non-final reports and tracking were committed before independent final review,
+- any post-review repository write is exactly one validated report-attestation commit,
 - commit and PR actions are complete,
 - the end-of-Issue Skill decision is recorded,
 - no merge was performed.
@@ -110,7 +137,7 @@ A task cycle is complete only when:
 ## What this Skill must not do
 
 - Do not contain detailed TDD instructions.
-- Do not contain detailed Git instructions.
+- Do not contain detailed Git instructions beyond the lifecycle boundary needed to keep review finite.
 - Do not contain detailed review criteria.
 - Do not directly replace child Skills.
 - Do not bypass `codex-delegation-executor` when executable work needs an owner decision.
