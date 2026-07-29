@@ -56,35 +56,32 @@
   - `PR54-IFR-003`: reviewed implementation HEADと1回のreport-attestation commitで有限に終端する規則を追加した
   - `PR54-IFR-004`: Issue #53、task／phase tracking、historical report、current reportをcore／wrapper構成へ同期した
   - `PR54-IFR-005`: obsolete validatorをrepository-wide Skill validatorへ置換し、workflowへ接続した
-  - hierarchy design 2件とChatGPT worker designへreview follow-upを反映した
-  - review follow-up HEAD `39e2902beb47e85d412d1b1bc8044d8653b7cd34`のworkflow run `30437095001`が成功した
-  - repository-wide Skill／active-link validationと8 Skill ZIP buildが成功した
   - first fix verificationは`PR54-IFR-001`／`005` resolved、`002`／`003`／`004` partial、verdict `fail`となった
   - CodexSkill repositoryにはTDDを適用していない
   - PR #54はDraftのまま維持する
   - mergeは利用者が行う
 
-## Phase 7: 残存finding対応、再fix verification、独立最終レビュー
+## Phase 7: Review収束と独立最終レビュー
 
 - Status: In Progress
 - Notes:
-  - `PR54-IFR-002`: typed schemaへdevelopment policy、validation plan、failure diagnostics、blocked state、reviewer identity／independence、attestation gateを追加した
-  - `PR54-IFR-002`: complete core Skill outputとlegacy packetをversioned `source_payloads`へ保持し、mapping不能fieldを失わない規則へ変更した
-  - `PR54-IFR-003`: end-of-Issue Skill decision、current-scope Skill update、feedback classification／ledger、normal handoffをpre-freeze gateへ移した
-  - `PR54-IFR-003`: pre-freeze処理でrepositoryが変わった場合はvalidationとnormal review／fix verificationへ戻す規則を追加した
-  - `PR54-IFR-003`: attestation後はPR／Issue等のnon-Git operationとbranch外transportだけを許可し、repository-writing Skillを禁止した
-  - `PR54-IFR-004`: T-002をPhase 7へ更新し、本PhaseをIn Progressへ同期した
-  - `chat-handoff-manager`、`development-orchestrator`、`review-enforcer`、hierarchy design 2件、ChatGPT worker designを同期した
-  - second review-follow-up implementation HEAD `e67631a91a8f0c31002757babe87aa6c3460c481`のworkflow run `30440705441`がsuccess
-  - second review-follow-up report commit HEAD `b9727199dea305ca5fa5f5a14ebda3f8ad5ddad0`のworkflow run `30440831719`がsuccess
-  - repository-wide Skill／active-link validationと8 Skill ZIP buildが両HEADでsuccess
-  - artifact ID `8719355181`、digest `sha256:3f375fb4c7480ab5bad457a4ab7604a325289f72cfa2dc972bd479151e359fdc`
-  - tracking同期後のcurrent HEAD workflowをPR body／commentへ記録する
-  - 同じfinding identityによる再fix verificationを実施する
-  - required findingがなければ、全pre-freeze変更が確定していることを確認する
-  - independent-final-review report pathを予約し、implementation HEADをfreezeする
-  - 別fresh reviewerがfrozen implementation HEADを独立最終reviewする
-  - passing reportを保存する場合は予約済みpathだけを変更する1回のreport-attestation commitを作成する
+  - first fix-verification残存3件へtyped／raw handoff、pre-freeze gate、task／phase同期を追加した
+  - r2 fix verificationはReviewed implementation HEAD `5742ff0efd4885b5fe0b504ceb33ff7c927fcd10`に対しsource finding 5件をresolvedとし、verdict `pass_with_held`を記録した
+  - r2 fix-verification report commitは`162e19ff44410d3fdfd8230615af8370cb8e2add`
+  - independent final review r2は同HEADに対し`PR54-IFR2-001` high、`PR54-IFR2-002` medium、`PR54-IFR2-003` mediumを記録し、verdict `fail`となった
+  - independent-final-review-r2 report commitは`9922865b2bd49cb7a76d462258e075c6959ee05e`
+  - pre-freeze stateはrequired findingにより無効化され、normal lifecycleへ戻した
+  - `PR54-IFR2-001`: task／phase／Issue／PRへr2結果、current stage、pre-freeze stateを同期する
+  - `PR54-IFR2-002`: `PR54-IFR-004`のauthoritative source severity `high`をerratumで維持し、review／report Skillへseverity continuity guardを追加する
+  - `PR54-IFR2-003`: workflowのPR／main path filterへ`shared/**`を追加する
+  - Skill-gap decisionは`update existing skill`。`review-worker`と`report-writer`を更新し、新規Skillは作成しない
+  - feedback classificationはtask-specific defectであり、新しい反復ユーザー指示ではないためactive feedback ledgerへ追加しない
+  - normal handoffはIssue #53、PR #54、task／phase、review report群から一意に復元できるrepository-backed stateとして扱う
+  - source severity erratumは`reports/issue-53-finding-severity-erratum-20260729193100.md`
+  - current review-follow-up変更後にrepository validator、8 Skill ZIP build、matching artifactを確認する
+  - normal reviewerが`PR54-IFR2-001`から`PR54-IFR2-003`をfix verificationする
+  - fix verificationがpassし、全pre-freeze変更が確定した後にindependent-final-review report pathを予約する
+  - 別fresh reviewerがnew frozen implementation HEADを独立最終reviewする
+  - passing reportを保存する場合だけ予約済みpathを変更する1回のreport-attestation commitを作成する
   - report-attestation diffをallowlist検証する
-  - PR body／commentへreviewed implementation HEAD、attestation HEAD、current-HEAD evidenceを記録する
   - attestation後にrepository commitまたはrepository-writing Skillを実行しない
