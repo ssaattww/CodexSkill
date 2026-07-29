@@ -35,6 +35,8 @@ Inspect the accepted scope, requirements, design, entire diff, every changed fil
 
 Verify each applicable finding by identity and reviewed HEAD. Inspect the fix diff, direct impact, affected contract, and sibling cases of the same defect class. Also inspect newly changed areas for additional defects.
 
+Preserve each source finding's severity. A severity may change only through an explicit reclassification record containing the source severity, new severity, evidence-based reason, and approving authority. A transcription correction is an erratum, not an implicit reclassification, and must not silently rewrite historical review evidence.
+
 ### Independent final review
 
 Review the frozen implementation HEAD independently. The reviewer must not have implemented the change, implemented review fixes, or served as the normal reviewer. Perform an independent pass before relying on previous review conclusions.
@@ -68,6 +70,8 @@ For every required criterion, record one of:
 ## Findings
 
 Each finding must include identity, severity, origin, location, description, impact, evidence, and required action. Do not hide uncertainty or convert missing evidence into success.
+
+Finding identity and severity are continuity-bearing review data. Fix verification and report consolidation must preserve them unless an explicit reclassification record is supplied. When a downstream report contains a severity transcription error, preserve the historical report and publish a current erratum identifying the source severity and the incorrect downstream value.
 
 ## Verdicts
 
@@ -119,6 +123,7 @@ Return:
 - reviewer identity and independence evidence,
 - required coverage dispositions,
 - full findings,
+- any explicit severity reclassification records,
 - held items,
 - unexplored areas,
 - validation assessment,
@@ -131,7 +136,7 @@ Return:
 
 ## Completion condition
 
-A review round is complete when the immutable reviewed implementation HEAD is explicit, all required coverage has a disposition, findings and uncertainty are evidence-based, the verdict follows the stated rules, and no implementation or merge was performed.
+A review round is complete when the immutable reviewed implementation HEAD is explicit, all required coverage has a disposition, findings and uncertainty are evidence-based, finding identity and severity continuity are preserved or explicitly reclassified, the verdict follows the stated rules, and no implementation or merge was performed.
 
 The overall independent-final-review lifecycle is complete only when either:
 
