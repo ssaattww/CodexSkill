@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
-  - Status: 独立最終レビュー指摘5件へのreview follow-up完了、current-HEAD検証とnormal fix verification待ち
+  - Status: 独立最終レビュー指摘5件へのreview follow-upとcurrent-HEAD検証完了、normal fix verification待ち
   - Phase: Phase 6
   - Estimate: L
   - Depends on: なし
@@ -64,7 +64,10 @@
   - Verification:
     - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
     - 独立最終review reportはReviewed HEAD `7fe8660d0fb4133bd732dd8456ff4390cf7b91e7`へ5 findingを記録し、verdict `fail`
-    - finding対応後のcurrent-HEAD repository validation、bundle workflow、artifact確認は実施中
+    - review follow-up HEAD `fa49675daa0ea2e04136e51faba41072299844d0`のworkflow run `30436893200`が成功
+    - repository-wide Skill／active-link validationと8 Skill ZIP buildが成功
+    - artifact `chatgpt-worker-skills-fa49675daa0ea2e04136e51faba41072299844d0`、ID `8717769416`、digest `sha256:9083066d5ccd40bafe83dcf7f7df9b4b7001d9759aefc67299344c9ad5c1312b`
+    - 本tracking commit後のcurrent HEAD workflowは再確認する
     - normal fix verificationは未実施
     - fresh independent final reviewは未実施
 
