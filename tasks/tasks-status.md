@@ -2,12 +2,12 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-07-29
+- Updated: 2026-07-30
 
 ## In Progress
 
 - T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
-  - Status: independent final review r2のrequired finding 3件へreview follow-up中
+  - Status: `PR54-IFR2-001`残存へのreview follow-upとしてschema version 3 normal handoff packetとProject Instruction単一設定化を反映中
   - Phase: Phase 7
   - Estimate: L
   - Depends on: なし
@@ -25,6 +25,8 @@
     - handoffがreviewer identity／continuity／independence、reserved report path、attestation allowlist／validation条件を保持する
     - handoffがfull finding、reviewed HEAD、coverage、held、unexplored、requirements、test、artifact、commit、report／comment参照をlosslessにtransportする
     - schema version 1／2のoriginal packetとmapping不能fieldをnormalizationで捨てない
+    - normal handoffをschema version 3 packetとして`reports/handoffs/`へ保存する
+    - Project Instruction例の対象固有リポジトリ名は最初の対象URLだけで指定し、後続instructionでは一般名で参照する
     - 4 ChatGPT wrapperと4 core Skillが独立root directoryとして単一ZIPへ含まれる
     - repository-wide validatorがfront matter、Skill dependency、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
     - PRとmain pushのworkflow triggerが`shared/**`だけの変更でもrepository validatorを実行する
@@ -67,30 +69,38 @@
     - `reports/issue-53-fix-verification-r2-20260729185000.md`
     - `reports/issue-53-independent-final-review-r2-20260729185400.md`
     - `reports/issue-53-finding-severity-erratum-20260729193100.md`
+    - `reports/issue-53-independent-final-review-r2-followup-20260729193100.md`
+    - `reports/issue-53-independent-final-review-r2-fix-verification-20260729212800.md`
+    - `reports/issue-53-normal-handoff-followup-20260730060300.md`
+    - `reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`
   - Review History:
     - initial independent final review: source finding 5件、verdict `fail`
     - first fix verification: `PR54-IFR-001`／`005` resolved、`002`／`003`／`004` partial、verdict `fail`
     - r2 fix verification: source finding 5件 resolved、verdict `pass_with_held`、report commit `162e19ff44410d3fdfd8230615af8370cb8e2add`
     - independent final review r2: `PR54-IFR2-001` high、`PR54-IFR2-002` medium、`PR54-IFR2-003` medium、verdict `fail`、report commit `9922865b2bd49cb7a76d462258e075c6959ee05e`
+    - independent-final-review-r2 fix verification: `PR54-IFR2-002`／`003` resolved、`PR54-IFR2-001` partial、verdict `fail`、report commit `17339b357226125b1b6bd6850645bfec8c92fcab`
   - Finding Fidelity:
     - `PR54-IFR-004`のauthoritative source severityは`high`
     - first／r2 fix-verification reportの`medium`表記はreclassificationではなくtranscription error
     - correctionは`reports/issue-53-finding-severity-erratum-20260729193100.md`を正とし、historical reportは改変しない
   - Pre-freeze State:
-    - state: invalidated by independent final review r2 required findings; normal lifecycleへ復帰
+    - state: invalidated; normal lifecycleへ復帰中
     - Skill-gap decision: `update existing skill`を選択し、`review-worker`と`report-writer`へseverity continuity guardを反映。新規Skillは不要
     - feedback classification: task-specific implementation／report fidelity defect。新しい反復ユーザー指示ではないためactive feedback ledger追記は不要
-    - normal handoff: Issue #53、PR #54、本tracking、phase tracking、review report群から一意に復元可能。standalone handoff fileは不要
-    - freeze: 未実施。`PR54-IFR2-*`のfix verification passとcurrent-HEAD CI確認後に再判定する
+    - normal handoff: schema version 3 packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存する
+    - freeze: 未実施。`PR54-IFR2-001`のfix verification passとcurrent-HEAD CI確認後に再判定する
   - Current Review Follow-up:
-    - `PR54-IFR2-001`: r2結果、current stage、pre-freeze stateをtask／phase／Issue／PRへ同期する
-    - `PR54-IFR2-002`: source severity `high`をerratumで維持し、Skillへexplicit reclassification metadata規則を追加する
-    - `PR54-IFR2-003`: workflowのPR／main path filterへ`shared/**`を追加する
+    - `PR54-IFR2-001`: repository discoveryによる代替を廃止し、complete schema version 3 normal handoff packetを保存する
+    - `PR54-IFR2-002`: resolvedを維持する
+    - `PR54-IFR2-003`: resolvedを維持する
+    - Project Instruction例は対象固有リポジトリ名の指定を対象URL1か所へ集約する
   - Verification:
     - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
-    - Reviewed implementation HEAD `162e19ff44410d3fdfd8230615af8370cb8e2add`のworkflow run `30441434956`と8 Skill artifact `8719602133`はsuccess
-    - current review-follow-up HEADのrepository validation、8 Skill ZIP build、artifactは変更完了後に確認する
-    - normal fix verificationは未実施
+    - Reviewed implementation HEAD `17339b357226125b1b6bd6850645bfec8c92fcab`のworkflow run `30452219416`はsuccess
+    - repository Skill／active-link validationと8 Skill ZIP buildがsuccess
+    - artifact `chatgpt-worker-skills-17339b357226125b1b6bd6850645bfec8c92fcab`、ID `8723969199`、digest `sha256:73db9250fbae30e591be184b8d04417d72920392b98c25cf75765b6878cdce9a`
+    - handoff packet保存後のcurrent HEAD workflowとartifactを再確認する
+    - `PR54-IFR2-001`の再fix verificationは未実施
     - fresh independent final reviewは未実施
 
 ## Backlog
