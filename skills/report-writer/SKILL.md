@@ -36,7 +36,9 @@ For an independent-final-review report, require:
 - Do not convert missing, failed, blocked, or unavailable checks into success.
 - Distinguish direct evidence from inference.
 - Keep findings, held items, unexplored areas, unknowns, and remaining risks explicit.
-- Preserve full findings rather than shortening away origin, location, impact, evidence, or required action.
+- Preserve full findings rather than shortening away identity, severity, origin, location, impact, evidence, or required action.
+- Preserve a source finding's severity through fix verification and consolidation. Change it only when the authoritative review evidence includes `source_severity`, `new_severity`, an evidence-based reason, and the approving authority.
+- Treat an unexplained downstream severity difference as a discrepancy. Keep historical reports unchanged and emit a current erratum or correction record rather than silently normalizing the value.
 - A concise PR comment summarizes but does not replace the detailed report.
 - A handoff transports state but does not replace the detailed report.
 - Do not claim that a report-attestation commit was reviewed as implementation.
@@ -54,6 +56,7 @@ A detailed report should include, as applicable:
 - validation commands and results,
 - CI runs, jobs, and artifacts tied to the target HEAD,
 - full findings and dispositions,
+- severity reclassification records or severity errata,
 - intentionally untouched areas,
 - blocked, unknown, held, and unexplored items,
 - remaining risks,
@@ -89,6 +92,13 @@ target_identity:
   base_ref: string | null
   current_head: full_sha | unknown
   reviewed_implementation_head: full_sha | null
+severity_records:
+  - finding_id: string
+    source_severity: blocking | high | medium | low
+    new_severity: blocking | high | medium | low | null
+    reason: string | null
+    approved_by: string | null
+    record_type: preserved | reclassified | erratum
 persistence:
   mode: repository_file | report_attestation_commit | external_artifact | copy_paste
   reserved_paths:
@@ -105,10 +115,11 @@ unresolved_discrepancies:
 
 - Do not invent evidence or findings.
 - Do not change implementation or review conclusions supplied by their owning Skills without identifying the discrepancy.
+- Do not silently change finding identity or severity.
 - Do not assume a particular reports directory or PR API; the caller supplies persistence rules.
 - Do not write task, design, Skill, workflow, configuration, implementation, or handoff content as part of report-attestation mode.
 - Do not merge.
 
 ## Completion condition
 
-Complete when the report is internally consistent, evidence-faithful, explicit about uncertainty, records the exact reviewed implementation identity and persistence requirements, is suitable for the caller to persist or publish, and does not imply that an administrative report commit changes the reviewed implementation verdict or authorizes a merge.
+Complete when the report is internally consistent, evidence-faithful, preserves finding identity and severity or records an explicit reclassification or erratum, is explicit about uncertainty, records the exact reviewed implementation identity and persistence requirements, is suitable for the caller to persist or publish, and does not imply that an administrative report commit changes the reviewed implementation verdict or authorizes a merge.
