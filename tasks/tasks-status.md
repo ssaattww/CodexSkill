@@ -2,55 +2,71 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-07-26
+- Updated: 2026-07-29
 
 ## In Progress
 
-- T-002: Codex／ChatGPT Skillを共通契約化し、ChatGPT runtime依存物を単一ZIPへ自動収集する
-  - Status: 実装・通常検証完了、独立最終レビュー待ち
+- T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
+  - Status: 独立最終レビュー指摘5件へのreview follow-up完了、current-HEAD検証とnormal fix verification待ち
   - Phase: Phase 6
   - Estimate: L
   - Depends on: なし
+  - Supersedes:
+    - `shared/workflow/`contractを複数Skillから参照する旧方針
+    - Release時にshared dependencyを各Skillへ複製する旧方針
+    - 3 ChatGPT Skillとshared handoff fileだけを配布する旧構成
   - Exit Criteria:
-    - runtime非依存の作業・実装・レビュー・レポート契約が`shared/workflow/`で一元管理されている
-    - Codex側とChatGPT側が共通契約を参照するruntime adapterになっている
-    - ChatGPT Skill内に共通契約の手動copyが残っていない
-    - 全`skills/chat-*/SKILL.md`と各Skill内fileが自動的に単一ZIPへ含まれる
-    - 参照されるshared dependencyと全`shared/chat-worker/` runtime fileがZIPへ含まれ、漏れがあればbuildが失敗する
-    - PR buildがread-onlyかつPRの実HEAD SHAをcheckoutし、main反映後のrelease jobだけがwrite権限を持つ
-    - CodexSkill repository自身へTDDを適用しない方針がroot instructionと実行入口に反映されている
-    - hierarchy design 2件とChatGPT worker designが実装と同期している
-    - 最終current HEAD固有のbundle workflowとartifact検証が成功する
-    - 独立したfresh reviewerによる最終レビューが成功する
-    - commit、push、Draft PR更新が完了し、mergeを行わない
+    - runtime非依存のcontext、implementation、review、report意味論が独立core Skillとして定義されている
+    - Codex wrapperがcore SkillをSkill名で呼び出し、runtime固有責務だけを持つ
+    - ChatGPT wrapperがcore SkillをSkill名で呼び出し、runtime固有責務だけを持つ
+    - 各Skillが自directory内で完結し、Skill外shared runtime fileへ依存しない
+    - `chat-handoff-manager`がfull finding、reviewed HEAD、coverage、held、unexplored、requirements、validation、test、artifact、commit、report／comment参照をlosslessにtransportする
+    - schema version 1／2のsourceに存在する情報をnormalizationで捨てない
+    - 4 ChatGPT wrapperと4 core Skillが独立root directoryとして単一ZIPへ含まれる
+    - repository-wide validatorがfront matter、Skill dependency、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
+    - PR buildがread-onlyかつ実PR HEAD SHAをcheckoutし、main反映後のrelease jobだけがwrite権限を持つ
+    - independent final review前に全非final repository変更をcommit／pushする
+    - passing final reportは予約済みpathだけを変更する1回のreport-attestation commitで保存できる
+    - current implementation HEAD固有のrepository validation、bundle workflow、artifact確認が成功する
+    - normal reviewerがfinding `PR54-IFR-001`から`PR54-IFR-005`をfix verificationしてpassする
+    - 別fresh reviewerがcurrent implementation HEADを独立最終reviewしてpassする
+    - mergeを行わない
   - Output:
-    - `shared/workflow/common-work-contract.md`
-    - `shared/workflow/implementation-contract.md`
-    - `shared/workflow/review-contract.md`
-    - `shared/workflow/report-contract.md`
-    - `shared/chat-worker/handoff-contract.md`
-    - `shared/chat-worker/project-instruction-example.md`
-    - `scripts/build_chatgpt_worker_skills.py`
-    - `.github/workflows/release-chatgpt-worker-skills.yml`
+    - `skills/work-context-manager/SKILL.md`
+    - `skills/implementation-worker/SKILL.md`
+    - `skills/review-worker/SKILL.md`
+    - `skills/report-writer/SKILL.md`
     - `skills/chat-implementation-worker/SKILL.md`
     - `skills/chat-review-worker/SKILL.md`
     - `skills/chat-report-writer/SKILL.md`
+    - `skills/chat-handoff-manager/SKILL.md`
     - `skills/implementation-executor/SKILL.md`
     - `skills/review-enforcer/SKILL.md`
     - `skills/report-output-manager/SKILL.md`
     - `skills/development-orchestrator/SKILL.md`
     - `skills/tdd-executor/SKILL.md`
     - `skills/skill-authoring-wrapper/SKILL.md`
+    - `scripts/build_chatgpt_worker_skills.py`
+    - `scripts/verify_skill_repository.py`
+    - `.github/workflows/release-chatgpt-worker-skills.yml`
     - `design/chat-worker-skill-design.md`
+    - `design/chatgpt-project-instruction-example.md`
     - `design/skill-hierarchy-design.md`
     - `skills/design/skill-hierarchy-design.md`
-    - `reports/issue-53-shared-workflow-contracts-20260726154744.md`
+    - `reports/issue-53-independent-final-review-20260729083728.md`
+    - `reports/issue-53-core-skill-wrapper-review-followup-20260729174338.md`
+  - Review Follow-up:
+    - `PR54-IFR-001`: deleted `shared/workflow/`参照をcore Skill呼び出しへ置換し、repository-wide validatorを追加
+    - `PR54-IFR-002`: `chat-handoff-manager`をlossless schema version 3へ拡張
+    - `PR54-IFR-003`: reviewed implementation HEADと1回のreport-attestation commitで有限に終端する規則をcore／wrapper／designへ反映
+    - `PR54-IFR-004`: Issue #53をsuperseding decisionで更新し、本trackingとcurrent reportをcore／wrapper構成へ更新
+    - `PR54-IFR-005`: obsolete shared-copy validatorを削除し、current architecture向けvalidatorへ置換してCIへ接続
   - Verification:
     - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
-    - PR HEAD `cbe0004d133ec71570c76bdcb47122fab963d86a`のworkflow run `30191605925`が成功
-    - artifact `chatgpt-worker-skills-cbe0004d133ec71570c76bdcb47122fab963d86a`を展開し、3 Skill、必要なshared contract、Project Instruction例、handoff contract、ZIP integrity、repository相対link解消を確認
-    - tracking・report・設計整合commit後の最終current HEAD workflowは再確認する
-    - 独立最終レビューは未実施
+    - 独立最終review reportはReviewed HEAD `7fe8660d0fb4133bd732dd8456ff4390cf7b91e7`へ5 findingを記録し、verdict `fail`
+    - finding対応後のcurrent-HEAD repository validation、bundle workflow、artifact確認は実施中
+    - normal fix verificationは未実施
+    - fresh independent final reviewは未実施
 
 ## Backlog
 
