@@ -46,7 +46,7 @@
   - PR buildをread-only、main反映後のrelease jobだけをwrite可能とした
   - PR eventではsynthetic merge refではなく実PR HEAD SHAをcheckoutしてartifact名にも使用するよう修正した
 
-## Phase 6: 独立最終レビュー指摘への対応
+## Phase 6: 独立最終レビュー指摘への初回対応
 
 - Status: Done
 - Notes:
@@ -57,24 +57,30 @@
   - `PR54-IFR-004`: Issue #53、task／phase tracking、historical report、current reportをcore／wrapper構成へ同期した
   - `PR54-IFR-005`: obsolete validatorをrepository-wide Skill validatorへ置換し、workflowへ接続した
   - hierarchy design 2件とChatGPT worker designへreview follow-upを反映した
-  - review follow-up HEAD `fa49675daa0ea2e04136e51faba41072299844d0`のworkflow run `30436893200`が成功した
+  - review follow-up HEAD `39e2902beb47e85d412d1b1bc8044d8653b7cd34`のworkflow run `30437095001`が成功した
   - repository-wide Skill／active-link validationと8 Skill ZIP buildが成功した
-  - artifact ID `8717769416`、digest `sha256:9083066d5ccd40bafe83dcf7f7df9b4b7001d9759aefc67299344c9ad5c1312b`
+  - first fix verificationは`PR54-IFR-001`／`005` resolved、`002`／`003`／`004` partial、verdict `fail`となった
   - CodexSkill repositoryにはTDDを適用していない
-  - tracking update後のcurrent HEAD workflowを再確認する
   - PR #54はDraftのまま維持する
   - mergeは利用者が行う
 
-## Phase 7: Fix verificationと独立最終レビュー
+## Phase 7: 残存finding対応、再fix verification、独立最終レビュー
 
-- Status: Pending
+- Status: In Progress
 - Notes:
-  - normal reviewerが5 findingをidentity単位でfix verificationする
-  - fix verificationではrepository validator、handoff schema、review terminal rule、Issue／tracking／report同期、新規変更領域を確認する
-  - required findingがなければ、全非final変更が確定していることを確認する
+  - `PR54-IFR-002`: typed schemaへdevelopment policy、validation plan、failure diagnostics、blocked state、reviewer identity／independence、attestation gateを追加した
+  - `PR54-IFR-002`: complete core Skill outputとlegacy packetをversioned `source_payloads`へ保持し、mapping不能fieldを失わない規則へ変更した
+  - `PR54-IFR-003`: end-of-Issue Skill decision、current-scope Skill update、feedback classification／ledger、normal handoffをpre-freeze gateへ移した
+  - `PR54-IFR-003`: pre-freeze処理でrepositoryが変わった場合はvalidationとnormal review／fix verificationへ戻す規則を追加した
+  - `PR54-IFR-003`: attestation後はPR／Issue等のnon-Git operationとbranch外transportだけを許可し、repository-writing Skillを禁止した
+  - `PR54-IFR-004`: T-002をPhase 7へ更新し、本PhaseをIn Progressへ同期した
+  - `chat-handoff-manager`、`development-orchestrator`、`review-enforcer`、hierarchy design 2件、ChatGPT worker designを同期した
+  - second review-follow-up後のrepository-wide validationと8 Skill ZIP buildを実行する
+  - 同じfinding identityによる再fix verificationを実施する
+  - required findingがなければ、全pre-freeze変更が確定していることを確認する
   - independent-final-review report pathを予約し、implementation HEADをfreezeする
   - 別fresh reviewerがfrozen implementation HEADを独立最終reviewする
   - passing reportを保存する場合は予約済みpathだけを変更する1回のreport-attestation commitを作成する
   - report-attestation diffをallowlist検証する
   - PR body／commentへreviewed implementation HEAD、attestation HEAD、current-HEAD evidenceを記録する
-  - attestation後にrepository commitを追加しない
+  - attestation後にrepository commitまたはrepository-writing Skillを実行しない
