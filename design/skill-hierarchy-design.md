@@ -138,11 +138,22 @@ Codexでも独立最終レビューを必須とし、技術レビューの意味
 
 元のnormal reviewerを継続できない場合は、replacement identityと理由を記録し、finding identity、criteria、reviewed HEAD、fix context、held、unexploredを完全に引き継ぐ。
 
+### Pre-freeze gate
+
+normal review cycleが収束した後、independent final reviewのtargetをfreezeする前に、次を完了する。
+
+- parent-owned end-of-Issue Skill-gap decision
+- current scopeで実行する`skill-authoring-wrapper`作業
+- feedback classificationと`feedback-points-manager`によるledger同期
+- repository-backed normal handoff
+- implementation、design、workflow、configuration、tracking、normal review report、fix-verification report、verification report
+- current-HEAD validationとCI evidence
+
+上記の処理でrepository fileが変わった場合、validation、report、tracking、commit／pushを行い、normal reviewまたはfix verificationへ戻る。新しいrepository writeが残った状態でfreezeしてはならない。
+
 ### 独立最終レビュー
 
-通常レビューcycle完了後に、別のfresh reviewer sub-agentを起動する。
-
-独立最終レビュー開始前に、implementation、design、workflow、configuration、tracking、handoff、normal review report、verification reportを含む全ての非final変更をcommit／pushする。independent-final-review report pathを先に予約し、その時点のcurrent HEADを`reviewed implementation HEAD`として固定する。
+pre-freeze gateを通過し、全ての非final変更がcommit／pushされた後に、independent-final-review report pathを予約し、その時点のcurrent HEADを`reviewed implementation HEAD`として固定する。
 
 fresh reviewerは次を満たす。
 
@@ -152,11 +163,12 @@ fresh reviewerは次を満たす。
 - 原則`fork_turns: "none"`で起動すること
 - frozen reviewed implementation HEADを対象とすること
 - 要件、設計、final diff、全変更file、直接依存、tracking、report、current HEAD固有validation evidenceを読むこと
+- reviewer identityとindependence evidenceを記録すること
 - `review-worker`のindependent final reviewを実行すること
 - 過去review結論を読む前に独立passを行うこと
 - normal review reportとは別にindependent final review reportを作ること
 
-独立最終レビューでrequired findingが出た場合はimplementationへ戻る。HEAD更新後はnormal reviewerでfix verificationを行い、さらに別のfresh reviewerで独立最終レビューをやり直す。
+独立最終レビューでrequired findingまたは新しいrepository write obligationが出た場合はterminal stateを無効化し、implementationまたはpre-freeze処理へ戻る。HEAD更新後はnormal reviewerでfix verificationを行い、さらに別のfresh reviewerで独立最終レビューをやり直す。
 
 normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身のreviewだけでは完了条件を満たさない。
 
@@ -171,7 +183,7 @@ normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身の
 - reviewed implementation HEADの後に存在するcommitはこの1件だけである
 - diffは予約済みindependent-final-review report pathだけを変更する
 - reportはreviewed implementation HEADとadministrative attestationであることを明記する
-- executable、Skill、design、workflow、configuration、tracking、handoff、product fileを変更しない
+- executable、Skill、design、workflow、configuration、tracking、feedback、handoff、product fileを変更しない
 - report-attestation commit以後にrepository commitを作らない
 - 親またはwrapperがallowlist diffを検証し、結果をPR bodyまたはPR commentへ記録する
 
@@ -184,7 +196,14 @@ report_attestation_head: full_sha | null
 
 report-attestation commitは新しいimplementation contentへverdictを転用するものではない。条件外のpost-review commitが1件でも発生した場合、完了状態を無効化し、normal fix verificationとfresh independent final reviewをやり直す。
 
-PR body、PR comment、review requestの更新はGit HEADを変更しないため、attestation後に実施できる。final handoffはinlineまたはPR branch外でtransportし、attestation後のhandoff commitは作らない。
+attestation後に許可するのはGit HEADを変更しない処理だけである。
+
+- PR body／PR commentの更新
+- review request
+- external Issueの作成または更新
+- inlineまたはPR branch外のhandoff transport
+
+attestation後にrepository writeの必要性が判明した場合はterminal stateを無効化し、normal cycleへ戻る。
 
 ## ChatGPT chat worker flow
 
@@ -293,16 +312,21 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 
 - reportとhandoffを別成果物とする
 - schema version 3を使用する
-- core Skill outputをfield単位で欠落なくtransportする
+- typed projectionとversioned `source_payloads`の両方を保持する
+- source core Skillのcomplete outputをraw payloadとして保持し、typed fieldに表現できない情報を失わない
+- development policy、planned validation、required failure diagnostics、blocked stateを保持する
+- implementation failure diagnosticsとblocked itemsを保持する
+- reviewer identity、reviewer continuity、independence evidenceを保持する
+- reserved report pathsとreport-attestation allowed flag、first-parent、allowlist、forbidden path class、validation resultを保持する
+- full findingのorigin、location、impact、evidence、required actionを保持する
+- reviewed HEAD、required coverage、held、unexplored、requirements、intentionally untouched、test、CI artifact、commit、report／comment referenceを保持する
+- schema version 1／2のoriginal packetを`source_payloads`として保存し、mapping不能fieldを捨てない
 - repository write可能時は通常handoffを`reports/handoffs/`へ保存する
 - PRまたはIssueから一意に特定できる場合は次workerがconnectorで取得する
 - 一意に特定できない場合だけ利用者へpathまたはpacket本文を求める
 - 前workerの権限は次chatへ自動継承しない
 - unknownを推測で補完しない
 - target Skill、mode、必要権限、参照先をpacketへ記録する
-- full findingのorigin、location、impact、evidence、required actionを保持する
-- reviewed HEAD、required coverage、held、unexplored、requirements、intentionally untouched、test、CI artifact、commit、report／comment referenceを保持する
-- schema version 1／2からのnormalization時に存在する情報を捨てない
 - final independent review後のhandoffはinlineまたはPR branch外でtransportし、report-attestation後のcommitを追加しない
 
 ## Release flow
@@ -311,7 +335,7 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 
 ### pull request
 
-- `AGENTS.md`、`README.md`、全Skill、design、tasks、builder、repository validator、workflowの変更で実行する
+- `AGENTS.md`、`README.md`、全Skill、design、tasks、reports、builder、repository validator、workflowの変更で実行する
 - build jobは`contents: read`だけを持ち、checkout credentialを保持しない
 - PRのsynthetic merge SHAではなく実PR HEAD SHAをcheckoutする
 - `scripts/verify_skill_repository.py`で全Skillのfront matter、Skill名依存、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
@@ -349,13 +373,17 @@ Release時の共通file複製とrepository相対link書換は行わない。
 11. `progress-sync-manager`でreportとtrackingを同期し、全非final変更をcommit／pushする。
 12. `review-enforcer`から`review-worker`を呼び出して通常review cycleを完了する。
 13. fixがあれば実装、validation、report、tracking、commit／push、normal fix verificationを繰り返す。
-14. normal cycle完了後、全非final変更がcommit／push済みであることを確認し、independent-final-review report pathを予約する。
-15. current HEADをreviewed implementation HEADとしてfreezeする。
-16. 別fresh reviewerによる独立最終reviewを実施する。
-17. passing reportを保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成し、allowlist diffを検証する。
-18. PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
-19. attestation後にrepository commitを追加しない。final handoffはinlineまたはbranch外でtransportする。
-20. mergeは利用者が行う。
+14. normal cycle収束後、end-of-Issue Skill-gap decisionを行う。
+15. current scopeで必要な`skill-authoring-wrapper`処理を実行し、feedback classification、feedback ledger、normal handoffを保存する。
+16. steps 14から15でrepositoryが変わった場合、validation、report、tracking、commit／push、normal fix verificationを再実施する。
+17. 全pre-freeze変更を含むnormal cycleが収束したことを確認し、independent-final-review report pathを予約する。
+18. current HEADをreviewed implementation HEADとしてfreezeする。
+19. 別fresh reviewerによる独立最終reviewを実施する。
+20. repository changeが必要になった場合はfreezeを無効化し、normal cycleへ戻る。
+21. passing reportを保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成し、allowlist diffを検証する。
+22. PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
+23. attestation後にrepository-writing Skillを呼ばず、repository commitを追加しない。final handoffはinlineまたはbranch外でtransportする。
+24. mergeは利用者が行う。
 
 ## Skill一覧
 
@@ -363,7 +391,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `development-orchestrator` | task選定から設計、実装、検証、レビュー、Git提出、final attestation boundaryまでを統括する | 親が実行 |
+| `development-orchestrator` | task選定から設計、実装、検証、レビュー、Git提出、pre-freeze gate、final attestation boundaryまでを統括する | 親が実行 |
 | `codex-delegation-executor` | 実作業の委譲先と実行profileを決める | 親が実行 |
 | `sub-agent-task-manager` | sub-agentのscope、model、reasoning、fork、report契約を固定する | 親が実行 |
 | `execution-cost-stabilizer` | retry、parallelism、実行コストを安定化する | 親が実行 |
@@ -402,7 +430,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `review-enforcer` | reviewer identity、通常review cycle、独立最終review、report-attestation gateを管理するCodex wrapper | 親が実行、reviewはsub-agent |
+| `review-enforcer` | reviewer identity、通常review cycle、pre-freeze gate、独立最終review、report-attestation gateを管理するCodex wrapper | 親が実行、reviewはsub-agent |
 | `markdown-word-checker` | Markdown lintと表記ルールを検証する | 親が実行 |
 | `feedback-coding-standards-enforcer` | coding standardを検証する | 親が実行 |
 | `feedback-issue-intake-fallback-manager` | Issue取得失敗時に要件を確保する | 親が実行 |
@@ -425,7 +453,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | `chat-implementation-worker` | ChatGPT上の初回実装とreview follow-upを統括する | 利用者が親としてChatGPT chatで実行 |
 | `chat-review-worker` | ChatGPT上のinitial、fix verification、independent final review、report-attestationを統括する | 利用者が親としてChatGPT chatで実行 |
 | `chat-report-writer` | ChatGPT上のsource discovery、report永続化、PR commentを統括する | 利用者が親としてChatGPT chatで実行 |
-| `chat-handoff-manager` | 独立chat間のlossless handoff packetを生成する | ChatGPT wrapperから呼び出す |
+| `chat-handoff-manager` | 独立chat間のlossless typed／raw handoff packetを生成する | ChatGPT wrapperから呼び出す |
 
 ## 共通規則
 
@@ -438,12 +466,14 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - CIは対象current HEAD SHAに紐づくrunだけを使用する。
 - 別SHAのrunを代用しない。
 - reportとhandoffを混同しない。
-- handoffはcore Skill outputを欠落なくtransportする。
-- unknown、held、unexplored、失敗結果を消さない。
+- handoffはtyped projectionとversioned raw source payloadでcore Skill outputを欠落なくtransportする。
+- unknown、blocked、held、unexplored、失敗結果を消さない。
 - core Skillとwrapperは自directory外のshared fileへ依存しない。
 - dependency Skillが存在しない場合、wrapperは処理を複製せずmissing dependencyとして停止する。
-- independent final review前に全非final repository変更を確定する。
+- end-of-Issue Skill decision、feedback ledger、normal handoff、report、trackingをindependent final review前に確定する。
+- pre-freeze処理でrepositoryが変わった場合はnormal reviewへ戻る。
 - independent final review後は条件を満たす1回のreport-attestation commit以外のGit commitを作らない。
+- attestation後はrepository-writing Skillを呼ばない。
 - worker、sub-agent、親agentはmergeしない。
 
 ## 保守規則
@@ -453,6 +483,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - ChatGPT Skill package変更時はRelease workflowと`design/chat-worker-skill-design.md`も更新する。
 - ChatGPT Project Instruction例を変更する場合は`design/chatgpt-project-instruction-example.md`を更新する。
 - review lifecycle変更時は`review-worker`、`review-enforcer`、`chat-review-worker`、`report-writer`、`report-output-manager`、本設計書、専用設計書を同時更新する。
+- handoff schema変更時は`chat-handoff-manager`、ChatGPT wrapper、両設計書、Issue／trackingを同期する。
 - core Skill dependency変更時はCodex wrapper、ChatGPT wrapper、Release builder、repository validator、両設計書を同時更新する。
 - `scripts/verify_skill_repository.py`でactive Markdown link、Skill依存、front matter、symlink、削除済みshared runtime path、hierarchy design同期を検証する。
 - 既存設計書の変更時は、構成変更と無関係な節を削除せず、矛盾する箇所だけを置換する。
