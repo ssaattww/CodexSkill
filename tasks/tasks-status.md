@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
-  - Status: fix verification残存3件へのreview follow-up実装完了、current-HEAD検証と再fix verification待ち
+  - Status: fix verification残存3件へのreview follow-upとHEAD固有検証完了、再fix verification待ち
   - Phase: Phase 7
   - Estimate: L
   - Depends on: なし
@@ -73,7 +73,11 @@
     - independent final reviewはReviewed HEAD `7fe8660d0fb4133bd732dd8456ff4390cf7b91e7`へ5 findingを記録し、verdict `fail`
     - first fix verificationはReviewed implementation HEAD `39e2902beb47e85d412d1b1bc8044d8653b7cd34`へ`PR54-IFR-001`／`005` resolved、`002`／`003`／`004` partialを記録し、verdict `fail`
     - first fix-verification report commitは`53d52ae3e4c8c47a03984d55fa3f30ccf5218c87`
-    - second review-follow-up後のcurrent-HEAD repository validation、bundle workflow、artifact確認は未実施
+    - second review-follow-up implementation HEAD `e67631a91a8f0c31002757babe87aa6c3460c481`のworkflow run `30440705441`がsuccess
+    - second review-follow-up report commit HEAD `b9727199dea305ca5fa5f5a14ebda3f8ad5ddad0`のworkflow run `30440831719`がsuccess
+    - repository-wide Skill／active-link validationと8 Skill ZIP buildが両HEADでsuccess
+    - artifact `chatgpt-worker-skills-b9727199dea305ca5fa5f5a14ebda3f8ad5ddad0`、ID `8719355181`、digest `sha256:3f375fb4c7480ab5bad457a4ab7604a325289f72cfa2dc972bd479151e359fdc`
+    - 本tracking同期後のcurrent HEAD workflowはPR body／commentへ記録する
     - second fix verificationは未実施
     - fresh independent final reviewは未実施
 
