@@ -1,3 +1,9 @@
+> [!WARNING]
+> このreportは、2026-07-26時点の旧`shared/workflow/`方式と旧3 Skill配布物を記録した**historical evidence**である。
+> 2026-07-29のsuperseding decisionにより、current architectureは親非依存core Skill 4件、ChatGPT runtime wrapper 4件、Skill外shared runtime依存なしへ変更された。
+> current implementation／review-follow-up evidenceは`reports/issue-53-core-skill-wrapper-review-followup-20260729174338.md`を参照すること。
+> 本文中の旧file、旧HEAD、旧artifact、旧完了条件をcurrent stateとして使用しないこと。以下の本文は歴史的証拠を保持するため変更しない。
+
 # Issue #53 Codex／ChatGPT Skill共通契約化 実装レポート
 
 ## メタデータ
