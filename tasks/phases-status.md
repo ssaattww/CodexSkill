@@ -58,7 +58,6 @@
   - `PR54-IFR-005`: obsolete validatorをrepository-wide Skill validatorへ置換し、workflowへ接続した
   - first fix verificationは`PR54-IFR-001`／`005` resolved、`002`／`003`／`004` partial、verdict `fail`となった
   - CodexSkill repositoryにはTDDを適用していない
-  - PR #54はDraftのまま維持する
   - mergeは利用者が行う
 
 ## Phase 7: Review収束と独立最終レビュー
@@ -67,19 +66,27 @@
 - Notes:
   - first fix-verification残存3件へtyped／raw handoff、pre-freeze gate、task／phase同期を追加した
   - r2 fix verificationはReviewed implementation HEAD `5742ff0efd4885b5fe0b504ceb33ff7c927fcd10`に対しsource finding 5件をresolvedとし、verdict `pass_with_held`を記録した
-  - r2 fix-verification report commitは`162e19ff44410d3fdfd8230615af8370cb8e2add`
-  - independent final review r2は同HEADに対し`PR54-IFR2-001` high、`PR54-IFR2-002` medium、`PR54-IFR2-003` mediumを記録し、verdict `fail`となった
-  - independent-final-review-r2 report commitは`9922865b2bd49cb7a76d462258e075c6959ee05e`
-  - independent-final-review-r2 fix verificationは`PR54-IFR2-002`／`003` resolved、`PR54-IFR2-001` partial、verdict `fail`となった
-  - fix-verification report commitは`17339b357226125b1b6bd6850645bfec8c92fcab`
-  - `PR54-IFR2-001`残存原因は、normal handoffをschema version 3 packetではなくrepository discoveryで代替したこと
-  - complete schema version 3 normal handoff packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存する
-  - packetはtyped projection、versioned `source_payloads`、current target、finding disposition、CI／artifact、blocked／unknown／held、next Skill／mode／requested permissionを保持する
-  - Project Instruction例は対象固有リポジトリ名を対象URL1か所だけで指定し、後続instructionを一般表現へ統一した
+  - independent final review r2は`PR54-IFR2-001` high、`PR54-IFR2-002` medium、`PR54-IFR2-003` mediumを記録し、verdict `fail`となった
+  - `PR54-IFR2-002`はseverity erratumとcontinuity guardでresolvedを維持している
+  - `PR54-IFR2-003`はPR／main path filterへ`shared/**`を追加しresolvedを維持している
+  - `PR54-IFR2-001`のnormal handoff packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存した
+  - fix verification r2はpacketの`source_payloads`がcomplete outputではなく要約へ縮退していることと、task／phaseのfuture stateを指摘し、verdict `fail`となった
+  - `reports/issue-53-complete-source-payload-followup-20260730070000.md`へcomplete report bodyを保存した
+  - packetの4 `source_payloads`を各core SkillのOutput contractと同じfield名・構造へ更新した
+  - `work-context-manager.authoritative_requirements`をstructured objectsとして保持した
+  - `implementation-worker.changed_files`へ各pathのpurposeを保持した
+  - `review-worker`のreviewer identity、coverage、full finding、severity record、held、unexplored、validation、verdictを保持した
+  - `report-writer.complete_body`へ詳細report全文を埋め込み、`severity_records`を保持した
+  - packet／report commitは`ab7d58dccc96b6e22a36723b885e8f44666d7007`
+  - commit `ab7d58dccc96b6e22a36723b885e8f44666d7007`のworkflow run `30495649913`はsuccess
+  - repository validatorと8 Skill ZIP buildはsuccess
+  - artifact ID `8741451881`、digest `sha256:da3589d11beae31eab5265b2b982e491c8b8560e6f274c9a0bdd1b398244ff9c`
+  - task／phaseをpacket保存済み、current-HEAD検証済み、normal fix verification待ちの現在形へ同期した
+  - Project Instruction例は対象固有リポジトリ名を対象URL1か所だけで指定し、後続instructionを一般表現へ統一済み
   - Skill-gap decisionは`update existing skill`。既存Skill更新済みで新規Skillは作成しない
   - feedback classificationはtask-specific defectであり、active feedback ledgerへ追加しない
-  - pre-freeze stateはinvalidatedのまま維持し、normal handoff packet保存後もnormal reviewerのfix verification passまではfreezeしない
-  - handoff packet保存後のcurrent HEADでrepository validator、8 Skill ZIP build、matching artifactを確認する
+  - pre-freeze stateはinvalidatedのまま維持し、normal reviewerの`PR54-IFR2-001` fix verification passまではfreezeしない
+  - tracking同期HEADのrepository validator、8 Skill ZIP build、matching artifactを確認する
   - normal reviewerが`PR54-IFR2-001`を同じidentityで再fix verificationし、新規変更領域も確認する
   - fix verificationがpassし、全pre-freeze変更が確定した後にindependent-final-review report pathを予約する
   - 別fresh reviewerがnew frozen implementation HEADを独立最終reviewする

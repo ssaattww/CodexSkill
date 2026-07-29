@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
-  - Status: `PR54-IFR2-001`残存へのreview follow-upとしてschema version 3 normal handoff packetとProject Instruction単一設定化を反映中
+  - Status: `PR54-IFR2-001`のcomplete source payload対応とcurrent-HEAD検証完了、normal fix verification待ち
   - Phase: Phase 7
   - Estimate: L
   - Depends on: なし
@@ -26,6 +26,8 @@
     - handoffがfull finding、reviewed HEAD、coverage、held、unexplored、requirements、test、artifact、commit、report／comment参照をlosslessにtransportする
     - schema version 1／2のoriginal packetとmapping不能fieldをnormalizationで捨てない
     - normal handoffをschema version 3 packetとして`reports/handoffs/`へ保存する
+    - `source_payloads`が4 core Skillのcomplete outputをfield名と構造を変えず保持する
+    - `report-writer` payloadが`complete_body`全文と`severity_records`を保持する
     - Project Instruction例の対象固有リポジトリ名は最初の対象URLだけで指定し、後続instructionでは一般名で参照する
     - 4 ChatGPT wrapperと4 core Skillが独立root directoryとして単一ZIPへ含まれる
     - repository-wide validatorがfront matter、Skill dependency、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
@@ -72,6 +74,8 @@
     - `reports/issue-53-independent-final-review-r2-followup-20260729193100.md`
     - `reports/issue-53-independent-final-review-r2-fix-verification-20260729212800.md`
     - `reports/issue-53-normal-handoff-followup-20260730060300.md`
+    - `reports/issue-53-independent-final-review-r2-fix-verification-r2-20260730062100.md`
+    - `reports/issue-53-complete-source-payload-followup-20260730070000.md`
     - `reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`
   - Review History:
     - initial independent final review: source finding 5件、verdict `fail`
@@ -79,28 +83,33 @@
     - r2 fix verification: source finding 5件 resolved、verdict `pass_with_held`、report commit `162e19ff44410d3fdfd8230615af8370cb8e2add`
     - independent final review r2: `PR54-IFR2-001` high、`PR54-IFR2-002` medium、`PR54-IFR2-003` medium、verdict `fail`、report commit `9922865b2bd49cb7a76d462258e075c6959ee05e`
     - independent-final-review-r2 fix verification: `PR54-IFR2-002`／`003` resolved、`PR54-IFR2-001` partial、verdict `fail`、report commit `17339b357226125b1b6bd6850645bfec8c92fcab`
+    - fix verification r2: packet persistenceは確認したがcomplete raw output不足で`PR54-IFR2-001` partial、verdict `fail`、report commit `98abfa40755e9d4ad3617fb8ae4e4f70159ef193`
   - Finding Fidelity:
     - `PR54-IFR-004`のauthoritative source severityは`high`
     - first／r2 fix-verification reportの`medium`表記はreclassificationではなくtranscription error
     - correctionは`reports/issue-53-finding-severity-erratum-20260729193100.md`を正とし、historical reportは改変しない
   - Pre-freeze State:
-    - state: invalidated; normal lifecycleへ復帰中
-    - Skill-gap decision: `update existing skill`を選択し、`review-worker`と`report-writer`へseverity continuity guardを反映。新規Skillは不要
-    - feedback classification: task-specific implementation／report fidelity defect。新しい反復ユーザー指示ではないためactive feedback ledger追記は不要
-    - normal handoff: schema version 3 packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存する
-    - freeze: 未実施。`PR54-IFR2-001`のfix verification passとcurrent-HEAD CI確認後に再判定する
+    - state: invalidated; normal lifecycleを継続
+    - Skill-gap decision: `update existing skill`。`review-worker`と`report-writer`へseverity continuity guardを反映済み。新規Skillは不要
+    - feedback classification: task-specific implementation／report fidelity defect。active feedback ledger追記は不要
+    - normal handoff: schema version 3 packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存済み
+    - source payload: 4 core Skillのcomplete output、structured authority、changed-file purpose、full review evidence、`complete_body`全文、`severity_records`を保存済み
+    - packet／report commit: `ab7d58dccc96b6e22a36723b885e8f44666d7007`
+    - freeze: 未実施。`PR54-IFR2-001`のnormal fix verification pass後に再判定する
   - Current Review Follow-up:
-    - `PR54-IFR2-001`: repository discoveryによる代替を廃止し、complete schema version 3 normal handoff packetを保存する
-    - `PR54-IFR2-002`: resolvedを維持する
-    - `PR54-IFR2-003`: resolvedを維持する
-    - Project Instruction例は対象固有リポジトリ名の指定を対象URL1か所へ集約する
+    - `PR54-IFR2-001`: complete source payloadとtracking current-state同期を実装済み。normal fix verification待ち
+    - `PR54-IFR2-002`: resolved維持
+    - `PR54-IFR2-003`: resolved維持
+    - Project Instruction例は対象固有リポジトリ名の指定を対象URL1か所へ集約済み
   - Verification:
     - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
-    - Reviewed implementation HEAD `17339b357226125b1b6bd6850645bfec8c92fcab`のworkflow run `30452219416`はsuccess
+    - input HEAD `98abfa40755e9d4ad3617fb8ae4e4f70159ef193`のworkflow run `30492531017`がsuccess
+    - input artifact `8740261320`、digest `sha256:e63e70c61b4845d7a7009db5e7fd32ab6fca09b868ea6ee165c1d8e42474c9b8`
+    - packet／report commit HEAD `ab7d58dccc96b6e22a36723b885e8f44666d7007`のworkflow run `30495649913`がsuccess
     - repository Skill／active-link validationと8 Skill ZIP buildがsuccess
-    - artifact `chatgpt-worker-skills-17339b357226125b1b6bd6850645bfec8c92fcab`、ID `8723969199`、digest `sha256:73db9250fbae30e591be184b8d04417d72920392b98c25cf75765b6878cdce9a`
-    - handoff packet保存後のcurrent HEAD workflowとartifactを再確認する
-    - `PR54-IFR2-001`の再fix verificationは未実施
+    - artifact `chatgpt-worker-skills-ab7d58dccc96b6e22a36723b885e8f44666d7007`、ID `8741451881`、digest `sha256:da3589d11beae31eab5265b2b982e491c8b8560e6f274c9a0bdd1b398244ff9c`
+    - 本tracking同期HEADのmatching workflowとartifactはIssue／PRへ記録する
+    - `PR54-IFR2-001`のnormal fix verificationは未実施
     - fresh independent final reviewは未実施
 
 ## Backlog
