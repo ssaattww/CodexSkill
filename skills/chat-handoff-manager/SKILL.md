@@ -7,7 +7,7 @@ description: Create and validate lossless, transportable handoff packets between
 
 ## Goal
 
-Create a complete handoff packet that lets another user-started ChatGPT chat continue without relying on conversation memory or silently losing implementation, review, validation, report, or permission evidence.
+Create a complete handoff packet that lets another user-started ChatGPT chat continue without relying on conversation memory or silently losing context, implementation, review, validation, report, permission, blocked-state, or terminal-gate evidence.
 
 ## Runtime boundary
 
@@ -19,7 +19,7 @@ Accept:
 
 - the structured context from `work-context-manager`,
 - the complete output of `implementation-worker`, `review-worker`, or `report-writer`,
-- runtime-specific authorization, persistence, PR-comment, and next-chat information supplied by the wrapper.
+- runtime-specific authorization, persistence, PR-comment, attestation-gate, and next-chat information supplied by the wrapper.
 
 Do not summarize away fields required by the producing core Skill. A handoff is a lossless transport envelope for available evidence, not a shorter substitute for that evidence.
 
@@ -48,6 +48,20 @@ authoritative_requirements:
   - source: user_instruction | repository_instruction | issue | task | design | pr | report | handoff | other
     reference: string
     summary: string
+
+development_policy:
+  method: string | unknown
+  testing_order: string | unknown
+  governing_source: string | unknown
+validation_plan:
+  commands:
+    - string
+  required_failure_diagnostics:
+    - string
+blocked:
+  - item: string
+    reason: string
+    required_input_or_decision: string | null
 
 authorized_actions:
   - read_repository | edit_code | edit_tests | edit_documentation | edit_configuration | edit_workflows | write_handoff | write_report | create_branch | commit | push | create_issue | update_issue | create_pr | update_pr | comment_pr
@@ -112,12 +126,34 @@ implementation:
       reviewed_head: full_sha | unknown
       disposition: addressed | partial | blocked | not_applicable
       evidence: string
+  failure_diagnostics:
+    - type: log | test_result | standard_output | standard_error | artifact | other
+      location: string | null
+      summary: string
+  blocked_items:
+    - item: string
+      reason: string
+      required_input_or_decision: string | null
   summary:
     - string
 
 review:
   mode: initial_review | fix_verification | independent_final_review | not_applicable
   reviewed_head: full_sha | unknown
+  reviewer:
+    identity: string | unknown
+    role: normal_reviewer | replacement_normal_reviewer | independent_final_reviewer | not_applicable
+    continuity:
+      previous_reviewer_identity: string | null
+      changed: true | false
+      reason: string | null
+    independence:
+      implemented_change: true | false | unknown
+      implemented_review_fix: true | false | unknown
+      served_as_normal_reviewer: true | false | unknown
+      inherited_conversation: true | false | unknown
+      evidence:
+        - string
   verdict: pass | pass_with_held | fail | incomplete | unstable | not_applicable
   required_coverage:
     - criterion: string
@@ -127,6 +163,21 @@ review:
     - item: string
       result: supported | unsupported | failed | unavailable | not_applicable
       evidence: string
+  reserved_report_paths:
+    - string
+  report_attestation:
+    allowed: true | false | not_applicable
+    reviewed_implementation_head: full_sha | null
+    allowed_paths:
+      - string
+    required_first_parent: full_sha | null
+    maximum_commits_after_reviewed_head: integer | null
+    forbidden_path_classes:
+      - executable | skill | design | workflow | configuration | tracking | handoff | product | other
+    no_later_commits_required: true | false | not_applicable
+    validation_status: pending | passed | failed | not_applicable
+    validation_evidence:
+      - string
   summary:
     - string
 
@@ -176,6 +227,15 @@ not_applicable:
 remaining_risks:
   - string
 
+source_payloads:
+  - source_skill: string
+    output_contract_version: string | unknown
+    content_type: application/yaml | application/json | text/markdown | text/plain | other
+    payload: object | string
+extensions:
+  - namespace: string
+    payload: object | string
+
 next_action:
   type: none | implementation | review | report | design_rework | split_pr | user_decision | external_owner
   target_skill: string | none
@@ -197,9 +257,12 @@ transport:
 
 ## Lossless transport rules
 
-- Preserve every available field required by the producing core Skill's output contract.
+- Populate the typed projection for every available field defined above.
+- Also preserve each producing core Skill's complete, versioned output under `source_payloads`; typed projection does not replace the raw source payload.
+- Preserve every available field required by the producing core Skill's output contract, including development policy, planned validation, required failure diagnostics, blocked state, failure diagnostics, reviewer identity, reviewer independence, reserved report paths, and exact report-attestation conditions.
 - Preserve exact finding identity, origin, location, impact, evidence, required action, and reviewed HEAD.
 - Preserve required coverage dispositions, held items, unexplored areas, validation assessment, intentionally untouched areas, commands, tests, CI artifacts, implementation commits, report paths, and PR comment references.
+- Use `extensions` for runtime or future fields that are not yet represented in the typed projection.
 - Do not replace structured evidence with a prose summary when the structured evidence is available.
 - Unknown facts remain unknown; do not guess.
 - CI evidence must belong to the packet's target HEAD.
@@ -213,20 +276,25 @@ transport:
 - Writers emit schema version 3.
 - Readers must accept schema versions 1 and 2 when encountered.
 - Normalize version 1 or 2 `cold_final_review` to `independent_final_review`.
-- Preserve every field that exists in an older packet. Do not discard older free-form or structured evidence merely because version 3 uses a different location.
-- Map absent version 3 fields to explicit `unknown` or `not_applicable` entries with the reason `not present in source schema`; do not invent values.
+- Preserve the complete original version 1 or 2 packet as a `source_payloads` entry before projecting fields into version 3.
+- Preserve every field that exists in an older packet. Mapping failures or fields without a version 3 typed destination must remain in the original `source_payloads` entry or a namespaced `extensions` entry.
+- Map genuinely absent version 3 fields to explicit `unknown` or `not_applicable` entries with the reason `not present in source schema`; do not invent values.
+- Do not convert an existing source value into `unknown` merely because no typed mapping exists.
 - When missing fields prevent safe continuation, mark the receiving operation `blocked` or review verdict `incomplete` and identify the exact missing evidence.
-- Unsupported future schema versions remain blocked until a migration rule exists.
+- Unsupported future schema versions remain blocked until a migration rule exists; preserve the untouched future packet as source evidence when safe parsing is possible.
 
 ## Final-review terminal rule
 
 After an independent final review passes and its detailed report is persisted as a report-attestation commit, return the final handoff inline or transport it outside the reviewed PR branch. Do not create another repository handoff commit after the attestation head, because that would create an unreviewed post-attestation HEAD.
 
-The packet must record both:
+The packet must record:
 
 - `review.reviewed_head`: the implementation HEAD reviewed by the independent reviewer,
+- `review.reviewer`: identity and independence evidence,
+- `review.reserved_report_paths`: paths reserved before the review,
+- `review.report_attestation`: the complete allowlist and validation gate,
 - `report.attestation_head`: the validated report-only commit, when one exists.
 
 ## Completion condition
 
-Complete when the packet losslessly represents the available core-Skill output, target and reviewed identities are explicit, findings and uncertainty retain their evidence, permissions and transport are explicit, compatibility handling did not discard data, the next chat can continue independently, and no implementation, review verdict change, additional post-attestation commit, or merge was performed.
+Complete when the packet's typed projection and preserved source payloads losslessly represent the available core-Skill output, target and reviewed identities are explicit, blocked state and failure-diagnostic requirements remain actionable, reviewer identity and independence are verifiable, report-attestation conditions are reproducible, findings and uncertainty retain their evidence, permissions and transport are explicit, compatibility handling did not discard data, the next chat can continue independently, and no implementation, review verdict change, additional post-attestation commit, or merge was performed.
