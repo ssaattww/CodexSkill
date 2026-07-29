@@ -32,7 +32,8 @@ Persist normal-review and fix-verification reports, synchronize tracking, and co
 
 After the normal cycle converges:
 
-- finish every implementation, design, workflow, configuration, tracking, handoff, and non-final report change,
+- finish every implementation, design, workflow, configuration, tracking, feedback-ledger, normal handoff, and non-final report change,
+- finish the parent-owned end-of-Issue Skill-gap decision and execute any in-scope Skill update,
 - reserve the independent-final-review report path or paths,
 - commit and push those changes,
 - freeze the current PR HEAD as `reviewed_implementation_head`,
@@ -49,16 +50,32 @@ The independent reviewer must differ from the implementation agent and normal re
 5. Return required findings to the implementation flow.
 6. Reuse the normal reviewer for fix verification when available.
 7. After each fix, require validation, report and tracking synchronization, commit, push, and current-HEAD evidence before another review round.
-8. After convergence, ensure all non-final repository changes are committed and pushed, reserve the independent-final-review report path, and freeze the implementation HEAD.
-9. Dispatch a fresh independent final reviewer against that frozen implementation HEAD.
-10. If the verdict requires a fix, return to implementation and normal fix verification; do not create a passing attestation.
-11. When the verdict passes, invoke `report-writer` and `report-output-manager` in report-attestation mode.
-12. Persist at most one report-attestation commit whose first parent is the reviewed implementation HEAD and whose changed paths are limited to the pre-reserved independent-final-review report path or paths.
-13. Validate the attestation diff and record the pair `reviewed implementation HEAD + report-attestation HEAD`.
-14. Update the PR body or concise PR comment only after the attestation commit; those operations do not change Git HEAD.
-15. Do not commit any later handoff, tracking, design, Skill, workflow, configuration, report, or implementation change.
+8. After convergence, verify that the parent has completed the end-of-Issue Skill-gap decision, any in-scope `skill-authoring-wrapper` work, feedback classification and ledger synchronization, normal handoff persistence, reports, and tracking.
+9. If step 8 creates or discovers any repository change, require validation, commit or push, and another normal review or fix-verification round. Do not freeze the target yet.
+10. Only after the normal cycle converges again with all pre-freeze work included, ensure every non-final repository change is committed and pushed, reserve the independent-final-review report path, and freeze the implementation HEAD.
+11. Dispatch a fresh independent final reviewer against that frozen implementation HEAD.
+12. If the verdict or any newly discovered obligation requires a repository change, invalidate the frozen state and return to implementation or pre-freeze finalization followed by normal fix verification.
+13. When the verdict passes, invoke `report-writer` and `report-output-manager` in report-attestation mode.
+14. Persist at most one report-attestation commit whose first parent is the reviewed implementation HEAD and whose changed paths are limited to the pre-reserved independent-final-review report path or paths.
+15. Validate the attestation diff and record the pair `reviewed implementation HEAD + report-attestation HEAD`.
+16. After the attestation commit, permit only operations that do not change Git HEAD: PR body or comment updates, review requests, external Issue operations, and inline or branch-external handoff transport.
+17. Do not call any repository-writing Skill after attestation and do not commit any later handoff, tracking, design, Skill, workflow, configuration, feedback, report, or implementation change.
 
 Any other post-review commit invalidates completion and requires normal fix verification followed by another fresh independent final review.
+
+## Pre-freeze gate
+
+The independent-final-review target must not be frozen until all of the following are explicit and repository-stable:
+
+- implementation, validation, design, workflow, configuration, reports, and tracking,
+- normal review and fix-verification evidence,
+- end-of-Issue Skill-gap decision,
+- any selected in-scope Skill update,
+- feedback classification and any feedback ledger write,
+- repository-backed normal handoff,
+- current-HEAD validation and CI evidence.
+
+A newly discovered repository write after this gate invalidates the gate and returns the workflow to the normal cycle.
 
 ## Report-attestation gate
 
@@ -68,19 +85,20 @@ A report-attestation head is acceptable only when:
 - the commit's first parent is the reviewed implementation HEAD,
 - only pre-reserved independent-final-review report paths changed,
 - the report names the reviewed implementation HEAD and identifies the commit as administrative attestation,
-- no executable, Skill, design, workflow, configuration, tracking, handoff, or product path changed,
+- no executable, Skill, design, workflow, configuration, tracking, feedback, handoff, or product path changed,
 - no later repository commit exists.
 
 The technical verdict remains attached to the reviewed implementation HEAD. The attestation commit does not expand the reviewed implementation scope.
 
 ## Codex responsibilities
 
-- Parent owns reviewer identity, sub-agent dispatch, report path reservation, lifecycle gating, attestation validation, and integration.
+- Parent owns reviewer identity, sub-agent dispatch, report path reservation, pre-freeze gating, lifecycle gating, attestation validation, and integration.
 - Parent review cannot replace reviewer sub-agent work.
 - Do not cancel a reviewer merely because it is slow.
 - Reviewers do not implement findings.
 - Do not reuse a verdict from an earlier implementation HEAD.
 - Do not create more than one report-attestation commit.
+- Do not permit a repository-writing Skill after attestation.
 - Do not merge.
 
 ## Outputs
@@ -88,6 +106,7 @@ The technical verdict remains attached to the reviewed implementation HEAD. The 
 Return:
 
 - normal review and fix-verification evidence,
+- pre-freeze gate evidence,
 - independent-final-review evidence,
 - reviewed implementation HEAD,
 - report-attestation head or explicit absence,
@@ -97,8 +116,8 @@ Return:
 
 ## Completion condition
 
-Complete only when the required Skills have produced normal review and independent-final-review evidence, all non-final repository changes preceded the frozen reviewed implementation HEAD, no unresolved required finding or verdict-invalidating unexplored area remains, and either no report commit was required or exactly one validated report-attestation head exists with no later repository commit. No merge is performed.
+Complete only when the required Skills have produced normal review and independent-final-review evidence, all non-final repository changes and mandatory end-of-Issue or feedback work preceded the frozen reviewed implementation HEAD, no unresolved required finding or verdict-invalidating unexplored area remains, and either no report commit was required or exactly one validated report-attestation head exists with no later repository commit or repository-writing Skill execution. No merge is performed.
 
 ## Cross-cutting rule
 
-If a repeated review-related instruction appears, call `feedback-points-manager` before freezing the independent-final-review target or record it as follow-up work.
+If a repeated review-related instruction appears, call `feedback-points-manager` and persist any resulting repository change before freezing the independent-final-review target. After freeze, record newly discovered feedback only through a non-Git external operation or invalidate the terminal state and return to the normal cycle.
