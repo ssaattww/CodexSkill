@@ -138,6 +138,8 @@ Codexでも独立最終レビューを必須とし、技術レビューの意味
 
 元のnormal reviewerを継続できない場合は、replacement identityと理由を記録し、finding identity、criteria、reviewed HEAD、fix context、held、unexploredを完全に引き継ぐ。
 
+finding identityとsource severityはcontinuity-bearing evidenceとして維持する。severityを変更する場合は、source severity、new severity、evidence-based reason、approving authorityを明示する。downstream reportの転記誤りはhistorical reportを黙って書き換えず、current erratumとして記録する。
+
 ### Pre-freeze gate
 
 normal review cycleが収束した後、independent final reviewのtargetをfreezeする前に、次を完了する。
@@ -335,7 +337,8 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 
 ### pull request
 
-- `AGENTS.md`、`README.md`、全Skill、design、tasks、reports、builder、repository validator、workflowの変更で実行する
+- `AGENTS.md`、`README.md`、全Skill、`shared/**`、design、tasks、reports、builder、repository validator、workflowの変更で実行する
+- forbidden shared runtime pathだけを追加する変更でも、PRとmain pushの両方でvalidation workflowを起動する
 - build jobは`contents: read`だけを持ち、checkout credentialを保持しない
 - PRのsynthetic merge SHAではなく実PR HEAD SHAをcheckoutする
 - `scripts/verify_skill_repository.py`で全Skillのfront matter、Skill名依存、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
@@ -462,6 +465,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - CodexSkill repository自身にはTDDを適用しない。
 - implementationは自分の変更へreview verdictを出さない。
 - reviewerはfindingを実装しない。
+- finding identityとsource severityを維持し、severity変更はsource／new severity、理由、承認主体を明示する。
 - reviewは詳細reportへ記録する。
 - CIは対象current HEAD SHAに紐づくrunだけを使用する。
 - 別SHAのrunを代用しない。
@@ -486,4 +490,5 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - handoff schema変更時は`chat-handoff-manager`、ChatGPT wrapper、両設計書、Issue／trackingを同期する。
 - core Skill dependency変更時はCodex wrapper、ChatGPT wrapper、Release builder、repository validator、両設計書を同時更新する。
 - `scripts/verify_skill_repository.py`でactive Markdown link、Skill依存、front matter、symlink、削除済みshared runtime path、hierarchy design同期を検証する。
+- workflow trigger変更時はforbidden pathだけの変更でもvalidatorが起動するcoverageを両設計書とPR説明へ同期する。
 - 既存設計書の変更時は、構成変更と無関係な節を削除せず、矛盾する箇所だけを置換する。
