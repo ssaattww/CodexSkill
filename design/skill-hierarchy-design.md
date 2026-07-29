@@ -64,12 +64,14 @@ ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persiste
 ```text
 development-orchestrator [親]
 ├─ restart-handover-manager
+├─ work-context-manager
 ├─ task-consistency-manager
 ├─ design-doc-maintainer
 │  ├─ codex-delegation-executor
 │  │  └─ design-executor
 │  └─ task-consistency-manager
 ├─ tdd-executor [対象repositoryが明示要求する場合だけ]
+│  ├─ work-context-manager
 │  ├─ codex-delegation-executor
 │  │  └─ implementation-executor [wrapper]
 │  │     ├─ work-context-manager
@@ -85,6 +87,7 @@ development-orchestrator [親]
 │     ├─ work-context-manager
 │     └─ report-writer
 ├─ review-enforcer [wrapper]
+│  ├─ work-context-manager
 │  ├─ markdown-word-checker
 │  ├─ sub-agent-task-manager [normal reviewer]
 │  │  └─ review-worker
@@ -107,8 +110,9 @@ development-orchestrator [親]
 
 TDD要否は対象repositoryの明示的なinstruction、accepted design、または利用者指示が決める。
 
-- `development-orchestrator`はgoverning sourceを確認する
+- `development-orchestrator`は`work-context-manager`でgoverning sourceを確認する
 - TDDが明示要求される場合だけ`tdd-executor`を呼ぶ
+- `tdd-executor`は`implementation-executor`から`implementation-worker`を呼び出す
 - TDDが要求されない場合は`not applicable`として通常implementationへ進む
 - codeまたはtestを変更するという事実だけではTDD適用理由にならない
 - CodexSkill repository自身の保守にはTDDを適用しない
@@ -125,24 +129,29 @@ Codexでも独立最終レビューを必須とし、技術レビューの意味
 2. 専用normal reviewer sub-agentを選ぶ。
 3. reviewerは`work-context-manager`でtargetとevidenceを解決する。
 4. initial reviewとして`review-worker`を実行する。
-5. finding、review criteria、reviewed HEAD、fix contextをreportへ保持する。
+5. finding、review criteria、reviewed HEAD、fix context、held、unexploredをreportへ保持する。
 6. required findingがある場合はimplementation flowへ戻す。
 7. fix後は原則として同じnormal reviewerを継続利用する。
-8. `review-worker`のfix verificationでfinding解消、fix diff、直接影響、同一欠陥classを確認する。
-9. required findingが解消または明示的にdispositionされるまで、bounded normal cycleを継続する。
+8. `review-worker`のfix verificationでfinding解消、fix diff、直接影響、同一欠陥class、新規変更領域を確認する。
+9. normal review／fix verification report、implementation report、verification report、tracking、designを保存してcommit／pushする。
+10. required findingが解消または明示的にdispositionされるまで、bounded normal cycleを継続する。
 
-元のnormal reviewerを継続できない場合は、replacement identityと理由を記録し、finding identity、criteria、reviewed HEAD、fix contextを完全に引き継ぐ。
+元のnormal reviewerを継続できない場合は、replacement identityと理由を記録し、finding identity、criteria、reviewed HEAD、fix context、held、unexploredを完全に引き継ぐ。
 
 ### 独立最終レビュー
 
 通常レビューcycle完了後に、別のfresh reviewer sub-agentを起動する。
 
+独立最終レビュー開始前に、implementation、design、workflow、configuration、tracking、handoff、normal review report、verification reportを含む全ての非final変更をcommit／pushする。independent-final-review report pathを先に予約し、その時点のcurrent HEADを`reviewed implementation HEAD`として固定する。
+
+fresh reviewerは次を満たす。
+
 - implementation sub-agentと異なること
 - 通常reviewerと異なること
 - review fixを実装していないこと
 - 原則`fork_turns: "none"`で起動すること
-- final current HEADを対象とすること
-- 要件、設計、final diff、全変更file、直接依存、current HEAD固有validation evidenceを読むこと
+- frozen reviewed implementation HEADを対象とすること
+- 要件、設計、final diff、全変更file、直接依存、tracking、report、current HEAD固有validation evidenceを読むこと
 - `review-worker`のindependent final reviewを実行すること
 - 過去review結論を読む前に独立passを行うこと
 - normal review reportとは別にindependent final review reportを作ること
@@ -150,6 +159,32 @@ Codexでも独立最終レビューを必須とし、技術レビューの意味
 独立最終レビューでrequired findingが出た場合はimplementationへ戻る。HEAD更新後はnormal reviewerでfix verificationを行い、さらに別のfresh reviewerで独立最終レビューをやり直す。
 
 normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身のreviewだけでは完了条件を満たさない。
+
+## 最終review reportの終端規則
+
+独立最終レビューのtechnical verdictは`reviewed implementation HEAD`へ結び付ける。
+
+詳細reportをrepositoryへ保存する必要がある場合、次の条件を全て満たす1回だけの`report-attestation commit`を許可する。
+
+- independent-final-review report pathはreview開始前に予約済みである
+- report-attestation commitのfirst parentはreviewed implementation HEADである
+- reviewed implementation HEADの後に存在するcommitはこの1件だけである
+- diffは予約済みindependent-final-review report pathだけを変更する
+- reportはreviewed implementation HEADとadministrative attestationであることを明記する
+- executable、Skill、design、workflow、configuration、tracking、handoff、product fileを変更しない
+- report-attestation commit以後にrepository commitを作らない
+- 親またはwrapperがallowlist diffを検証し、結果をPR bodyまたはPR commentへ記録する
+
+完了identityは次のpairで表す。
+
+```yaml
+reviewed_implementation_head: full_sha
+report_attestation_head: full_sha | null
+```
+
+report-attestation commitは新しいimplementation contentへverdictを転用するものではない。条件外のpost-review commitが1件でも発生した場合、完了状態を無効化し、normal fix verificationとfresh independent final reviewをやり直す。
+
+PR body、PR comment、review requestの更新はGit HEADを変更しないため、attestation後に実施できる。final handoffはinlineまたはPR branch外でtransportし、attestation後のhandoff commitは作らない。
 
 ## ChatGPT chat worker flow
 
@@ -214,7 +249,9 @@ PR #<number>の修正確認をしてください。
 PR #<number>を独立レビューしてください。
 ```
 
-新規chatで`review-worker`のindependent final reviewを実行する。過去reviewの結論は独立pass後に照合する。
+新規chatでfrozen reviewed implementation HEADを対象に`review-worker`のindependent final reviewを実行する。過去reviewの結論は独立pass後に照合する。
+
+passing reportをrepositoryへ保存する場合は、Codexと同じreport-attestation終端規則を適用する。final handoffはattestation後にinlineで返し、repository commitを追加しない。
 
 ## ChatGPT登録用Skillセット
 
@@ -255,12 +292,18 @@ chatgpt-worker-skills.zip
 handoff contractを複数Skillから同一fileとして参照しない。`chat-handoff-manager`を独立Skillとして使用する。
 
 - reportとhandoffを別成果物とする
-- repository write可能時はhandoffを`reports/handoffs/`へ保存する
+- schema version 3を使用する
+- core Skill outputをfield単位で欠落なくtransportする
+- repository write可能時は通常handoffを`reports/handoffs/`へ保存する
 - PRまたはIssueから一意に特定できる場合は次workerがconnectorで取得する
 - 一意に特定できない場合だけ利用者へpathまたはpacket本文を求める
 - 前workerの権限は次chatへ自動継承しない
 - unknownを推測で補完しない
 - target Skill、mode、必要権限、参照先をpacketへ記録する
+- full findingのorigin、location、impact、evidence、required actionを保持する
+- reviewed HEAD、required coverage、held、unexplored、requirements、intentionally untouched、test、CI artifact、commit、report／comment referenceを保持する
+- schema version 1／2からのnormalization時に存在する情報を捨てない
+- final independent review後のhandoffはinlineまたはPR branch外でtransportし、report-attestation後のcommitを追加しない
 
 ## Release flow
 
@@ -268,11 +311,12 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 
 ### pull request
 
-- ChatGPT wrapper、core Skill、builder、関連設計の変更で実行する
+- `AGENTS.md`、`README.md`、全Skill、design、tasks、builder、repository validator、workflowの変更で実行する
 - build jobは`contents: read`だけを持ち、checkout credentialを保持しない
 - PRのsynthetic merge SHAではなく実PR HEAD SHAをcheckoutする
+- `scripts/verify_skill_repository.py`で全Skillのfront matter、Skill名依存、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
 - 全`chat-*` wrapperと必須core Skillを検出する
-- missing Skill、front matter name不一致、symlink、Skill外`shared/`参照を拒否する
+- missing Skill、front matter name不一致、symlink、Skill外shared参照を拒否する
 - 単一`chatgpt-worker-skills.zip`を作成する
 - ZIP rootが検出Skill集合と一致することを確認する
 - ZIPをworkflow artifactとして保存する
@@ -280,13 +324,13 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 
 ### main push
 
-- merge後のmain HEADでread-only build jobを実行する
+- merge後のmain HEADでread-only validation／build jobを実行する
 - build成功後だけ別release jobへ`contents: write`を付与する
 - build jobの検証済みartifactをrelease jobへ渡す
 - rolling tag `chatgpt-worker-skills-latest`をmerge後HEADへ更新する
 - GitHub Release `ChatGPT Worker Skills`へZIPを添付または置換する
 
-`workflow_dispatch`はread-only build検証だけを行い、Releaseを更新しない。
+`workflow_dispatch`はread-only validation／buildだけを行い、Releaseを更新しない。
 
 Release時の共通file複製とrepository相対link書換は行わない。
 
@@ -294,19 +338,24 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 1. workflow開始時にCodexSkillの鮮度を確認する。
 2. 再開時は`restart-handover-manager`で状態を復元する。
-3. `development-orchestrator`がtaskを選択する。
-4. `task-consistency-manager`でtrackingを同期する。
-5. 設計影響があれば`design-doc-maintainer`を実行する。
-6. `work-context-manager`でauthority、scope、target identity、development policy、validation target、write boundaryを解決する。
+3. `work-context-manager`でauthority、scope、target identity、development policy、validation target、write boundaryを解決する。
+4. `development-orchestrator`がtaskを選択する。
+5. `task-consistency-manager`でtrackingを同期する。
+6. 設計影響があれば`design-doc-maintainer`を実行する。
 7. 対象repositoryがTDDを要求する場合は`tdd-executor`を実行する。
 8. `implementation-executor`から`implementation-worker`を呼び出して実装する。
 9. focused validationと必要なfull validationを実行する。
-10. `review-enforcer`から`review-worker`を呼び出して通常review cycleを完了する。
-11. 別fresh reviewerによる独立最終reviewを完了する。
-12. `report-output-manager`から`report-writer`を呼び出してreportを保存する。
-13. `progress-sync-manager`でreportとtrackingを同期する。
-14. `git-workflow-manager`でcommit、push、PR更新まで行う。
-15. mergeは利用者が行う。
+10. `report-output-manager`から`report-writer`を呼び出してimplementation／verification reportを保存する。
+11. `progress-sync-manager`でreportとtrackingを同期し、全非final変更をcommit／pushする。
+12. `review-enforcer`から`review-worker`を呼び出して通常review cycleを完了する。
+13. fixがあれば実装、validation、report、tracking、commit／push、normal fix verificationを繰り返す。
+14. normal cycle完了後、全非final変更がcommit／push済みであることを確認し、independent-final-review report pathを予約する。
+15. current HEADをreviewed implementation HEADとしてfreezeする。
+16. 別fresh reviewerによる独立最終reviewを実施する。
+17. passing reportを保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成し、allowlist diffを検証する。
+18. PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
+19. attestation後にrepository commitを追加しない。final handoffはinlineまたはbranch外でtransportする。
+20. mergeは利用者が行う。
 
 ## Skill一覧
 
@@ -314,12 +363,12 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `development-orchestrator` | task選定から設計、実装、検証、レビュー、Git提出までを統括する | 親が実行 |
+| `development-orchestrator` | task選定から設計、実装、検証、レビュー、Git提出、final attestation boundaryまでを統括する | 親が実行 |
 | `codex-delegation-executor` | 実作業の委譲先と実行profileを決める | 親が実行 |
 | `sub-agent-task-manager` | sub-agentのscope、model、reasoning、fork、report契約を固定する | 親が実行 |
 | `execution-cost-stabilizer` | retry、parallelism、実行コストを安定化する | 親が実行 |
 | `feedback-autonomy-boundary-manager` | 自律継続と利用者確認の境界を決める | 親が実行 |
-| `skill-authoring-wrapper` | local Skillをrepository標準へ揃える | 親が実行 |
+| `skill-authoring-wrapper` | core Skill／runtime wrapperをrepository標準へ揃える | 親が実行 |
 
 ### 親非依存core Skill
 
@@ -327,8 +376,8 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | --- | --- | --- |
 | `work-context-manager` | authority、scope、target identity、policy、validation、CI、write boundaryを解決する | runtime非依存Skillとして実行 |
 | `implementation-worker` | initial implementationとreview follow-upを実施する | runtime非依存Skillとして実行 |
-| `review-worker` | initial review、fix verification、independent final reviewを実施する | runtime非依存Skillとして実行 |
-| `report-writer` | evidence-faithfulなreportと簡易PR commentを生成する | runtime非依存Skillとして実行 |
+| `review-worker` | initial review、fix verification、independent final reviewとattestation条件を返す | runtime非依存Skillとして実行 |
+| `report-writer` | evidence-faithfulなreport、簡易PR comment、persistence metadataを生成する | runtime非依存Skillとして実行 |
 
 ### 計画と追跡
 
@@ -346,14 +395,14 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | --- | --- | --- |
 | `design-doc-maintainer` | 設計影響と更新対象を判断する | 親が実行 |
 | `design-executor` | 決定済み設計変更を編集する | 親が実行 |
-| `tdd-executor` | 対象repositoryが要求するtest-first証拠を定義する | 親が実行 |
+| `tdd-executor` | 対象repositoryが要求するtest-first証拠をcore Skill経由で定義する | 親が実行 |
 | `implementation-executor` | executorを管理し、`implementation-worker`を呼び出すCodex wrapper | 親が実行 |
 
 ### レビューと品質
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `review-enforcer` | reviewer identityと通常review cycle、独立最終reviewを管理するCodex wrapper | 親が実行、reviewはsub-agent |
+| `review-enforcer` | reviewer identity、通常review cycle、独立最終review、report-attestation gateを管理するCodex wrapper | 親が実行、reviewはsub-agent |
 | `markdown-word-checker` | Markdown lintと表記ルールを検証する | 親が実行 |
 | `feedback-coding-standards-enforcer` | coding standardを検証する | 親が実行 |
 | `feedback-issue-intake-fallback-manager` | Issue取得失敗時に要件を確保する | 親が実行 |
@@ -367,16 +416,16 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | `git-commit-manager` | scoped commitを作成する | 親が実行 |
 | `git-pr-submitter` | PRを作成または更新する | 親が実行 |
 | `git-review-followup-manager` | review findingをimplementation flowへ戻す | 親が実行 |
-| `report-output-manager` | report pathとpersistenceを管理し、`report-writer`を呼び出すCodex wrapper | 親が実行 |
+| `report-output-manager` | report path／persistence／report-attestationを管理し、`report-writer`を呼び出すCodex wrapper | 親が実行 |
 
 ### ChatGPT runtime wrapper
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
 | `chat-implementation-worker` | ChatGPT上の初回実装とreview follow-upを統括する | 利用者が親としてChatGPT chatで実行 |
-| `chat-review-worker` | ChatGPT上のinitial、fix verification、independent final reviewを統括する | 利用者が親としてChatGPT chatで実行 |
+| `chat-review-worker` | ChatGPT上のinitial、fix verification、independent final review、report-attestationを統括する | 利用者が親としてChatGPT chatで実行 |
 | `chat-report-writer` | ChatGPT上のsource discovery、report永続化、PR commentを統括する | 利用者が親としてChatGPT chatで実行 |
-| `chat-handoff-manager` | 独立chat間handoff packetを生成する | ChatGPT wrapperから呼び出す |
+| `chat-handoff-manager` | 独立chat間のlossless handoff packetを生成する | ChatGPT wrapperから呼び出す |
 
 ## 共通規則
 
@@ -389,9 +438,12 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - CIは対象current HEAD SHAに紐づくrunだけを使用する。
 - 別SHAのrunを代用しない。
 - reportとhandoffを混同しない。
+- handoffはcore Skill outputを欠落なくtransportする。
 - unknown、held、unexplored、失敗結果を消さない。
-- core Skillとwrapperは自directory外の`shared/`fileへ依存しない。
+- core Skillとwrapperは自directory外のshared fileへ依存しない。
 - dependency Skillが存在しない場合、wrapperは処理を複製せずmissing dependencyとして停止する。
+- independent final review前に全非final repository変更を確定する。
+- independent final review後は条件を満たす1回のreport-attestation commit以外のGit commitを作らない。
 - worker、sub-agent、親agentはmergeしない。
 
 ## 保守規則
@@ -400,6 +452,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - `design/skill-hierarchy-design.md`と`skills/design/skill-hierarchy-design.md`を同一内容に保つ。
 - ChatGPT Skill package変更時はRelease workflowと`design/chat-worker-skill-design.md`も更新する。
 - ChatGPT Project Instruction例を変更する場合は`design/chatgpt-project-instruction-example.md`を更新する。
-- review lifecycle変更時は`review-worker`、`review-enforcer`、`chat-review-worker`、本設計書、専用設計書を同時更新する。
-- core Skill dependency変更時はCodex wrapper、ChatGPT wrapper、Release builder、両設計書を同時更新する。
+- review lifecycle変更時は`review-worker`、`review-enforcer`、`chat-review-worker`、`report-writer`、`report-output-manager`、本設計書、専用設計書を同時更新する。
+- core Skill dependency変更時はCodex wrapper、ChatGPT wrapper、Release builder、repository validator、両設計書を同時更新する。
+- `scripts/verify_skill_repository.py`でactive Markdown link、Skill依存、front matter、symlink、削除済みshared runtime path、hierarchy design同期を検証する。
 - 既存設計書の変更時は、構成変更と無関係な節を削除せず、矛盾する箇所だけを置換する。
