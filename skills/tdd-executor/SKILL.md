@@ -9,12 +9,15 @@ description: Apply test-driven development only when the target repository expli
 
 Apply a target repository's explicit test-first policy without imposing TDD on repositories or tasks that do not require it.
 
-## Shared contracts
+## Required Skills
 
-Follow:
+Use:
 
-- [Common Work Contract](../../shared/workflow/common-work-contract.md)
-- [Implementation Contract](../../shared/workflow/implementation-contract.md)
+- `work-context-manager` to resolve the governing TDD source, scope, target identity, validation policy, and write boundary.
+- `implementation-executor` as the Codex wrapper for test and implementation edits.
+- `implementation-worker` as the runtime-neutral implementation Skill invoked by that wrapper.
+
+If a required Skill is unavailable, stop with a missing dependency. Do not use deleted or repository-external `shared/` contracts as a substitute.
 
 The target project's instructions own whether TDD applies. This Skill owns only the Codex test-first execution adapter after applicability has been established.
 
@@ -30,6 +33,7 @@ Run this Skill as: `parent`.
 
 Before running this Skill, establish:
 
+- the structured output of `work-context-manager`,
 - the exact repository instruction, Project Instruction, accepted design, or user instruction that requires TDD,
 - current task scope and exit criteria,
 - relevant existing tests and changed behavior,
@@ -54,12 +58,12 @@ CodexSkill repository maintenance is non-TDD unless the user explicitly changes 
 
 When the applicability gate passes:
 
-1. Read the governing TDD policy, task, and exit criteria.
+1. Invoke `work-context-manager` and verify that the governing TDD source, task, target identity, validation policy, and write boundary are explicit.
 2. Identify the smallest testable behavior for the task.
 3. Define happy-path, failure-path, boundary, and regression cases required by the accepted scope.
-4. Use `codex-delegation-executor` and `implementation-executor` to add or update the smallest tests that expose the current gap.
+4. Use `codex-delegation-executor` and `implementation-executor`; the executor invokes `implementation-worker` to add or update the smallest tests that expose the current gap.
 5. Run the test and record actual failing evidence tied to the current pre-implementation HEAD or workspace state.
-6. Only after valid Red evidence exists, return control for implementation.
+6. Only after valid Red evidence exists, return control for implementation through the same wrapper and core Skill path.
 7. After implementation, run the applicable tests again and record Green and broader validation evidence.
 8. Preserve diagnostics and artifacts required by the target project.
 
@@ -71,6 +75,7 @@ When the applicability gate passes:
 - Add integration or end-to-end proof only when narrower tests cannot establish the contract.
 - Keep tests tied to task exit criteria.
 - Do not weaken existing tests to obtain Green.
+- Do not duplicate `implementation-worker` semantics locally.
 - Do not merge.
 
 ## Outputs
@@ -78,6 +83,7 @@ When the applicability gate passes:
 When applicable, return:
 
 - governing TDD source,
+- resolved target identity and write boundary,
 - named test targets,
 - defined cases,
 - Red command and evidence,
