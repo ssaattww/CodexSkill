@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-07-29
+- Updated: 2026-07-30
 
 ## Phase 1: 契約・設計
 
@@ -70,16 +70,17 @@
   - r2 fix-verification report commitは`162e19ff44410d3fdfd8230615af8370cb8e2add`
   - independent final review r2は同HEADに対し`PR54-IFR2-001` high、`PR54-IFR2-002` medium、`PR54-IFR2-003` mediumを記録し、verdict `fail`となった
   - independent-final-review-r2 report commitは`9922865b2bd49cb7a76d462258e075c6959ee05e`
-  - pre-freeze stateはrequired findingにより無効化され、normal lifecycleへ戻した
-  - `PR54-IFR2-001`: task／phase／Issue／PRへr2結果、current stage、pre-freeze stateを同期する
-  - `PR54-IFR2-002`: `PR54-IFR-004`のauthoritative source severity `high`をerratumで維持し、review／report Skillへseverity continuity guardを追加する
-  - `PR54-IFR2-003`: workflowのPR／main path filterへ`shared/**`を追加する
-  - Skill-gap decisionは`update existing skill`。`review-worker`と`report-writer`を更新し、新規Skillは作成しない
-  - feedback classificationはtask-specific defectであり、新しい反復ユーザー指示ではないためactive feedback ledgerへ追加しない
-  - normal handoffはIssue #53、PR #54、task／phase、review report群から一意に復元できるrepository-backed stateとして扱う
-  - source severity erratumは`reports/issue-53-finding-severity-erratum-20260729193100.md`
-  - current review-follow-up変更後にrepository validator、8 Skill ZIP build、matching artifactを確認する
-  - normal reviewerが`PR54-IFR2-001`から`PR54-IFR2-003`をfix verificationする
+  - independent-final-review-r2 fix verificationは`PR54-IFR2-002`／`003` resolved、`PR54-IFR2-001` partial、verdict `fail`となった
+  - fix-verification report commitは`17339b357226125b1b6bd6850645bfec8c92fcab`
+  - `PR54-IFR2-001`残存原因は、normal handoffをschema version 3 packetではなくrepository discoveryで代替したこと
+  - complete schema version 3 normal handoff packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存する
+  - packetはtyped projection、versioned `source_payloads`、current target、finding disposition、CI／artifact、blocked／unknown／held、next Skill／mode／requested permissionを保持する
+  - Project Instruction例は対象固有リポジトリ名を対象URL1か所だけで指定し、後続instructionを一般表現へ統一した
+  - Skill-gap decisionは`update existing skill`。既存Skill更新済みで新規Skillは作成しない
+  - feedback classificationはtask-specific defectであり、active feedback ledgerへ追加しない
+  - pre-freeze stateはinvalidatedのまま維持し、normal handoff packet保存後もnormal reviewerのfix verification passまではfreezeしない
+  - handoff packet保存後のcurrent HEADでrepository validator、8 Skill ZIP build、matching artifactを確認する
+  - normal reviewerが`PR54-IFR2-001`を同じidentityで再fix verificationし、新規変更領域も確認する
   - fix verificationがpassし、全pre-freeze変更が確定した後にindependent-final-review report pathを予約する
   - 別fresh reviewerがnew frozen implementation HEADを独立最終reviewする
   - passing reportを保存する場合だけ予約済みpathを変更する1回のreport-attestation commitを作成する
