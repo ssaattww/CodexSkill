@@ -1,69 +1,38 @@
 ---
 name: implementation-executor
-description: Execute concrete implementation work in code and tests after task scope has been decided. Use when code authoring, test authoring, or bounded fix work must be carried out as implementation work.
+description: Coordinate runtime-neutral implementation through the Codex parent and sub-agent model without redefining implementation semantics.
 ---
 
-# Implementation Executor
-
-Perform the actual code and test changes.
+# Codex Implementation Wrapper
 
 ## Goal
 
-Turn an already-scoped task into concrete code and test updates without re-planning the workflow.
+Act as the Codex runtime wrapper for implementation.
 
-## Execution owner
+## Required Skills
 
-Run this skill as: `parent`
+Invoke:
 
-- This skill describes the execution work for code and test authoring.
-- `codex-delegation-executor` may assign that editing work to the parent or a `sub-agent`.
+1. `work-context-manager`
+2. `implementation-worker`
 
-## Inputs
+The parent may delegate execution through `codex-delegation-executor`, but the delegated executor must use the runtime-neutral Skills above. Do not replace them with `shared/` files.
 
-Before running this skill, make sure the parent has already decided:
+## Codex responsibilities
 
-- task scope and non-goals
-- target files or affected modules
-- validation target or expected proof
+- The parent owns scope, write boundary, executor selection, commit integration, progress sync, reporting, PR updates, and handoff.
+- Pass the resolved work context and selected mode to `implementation-worker`.
+- Return all implementation evidence to the parent.
+- Use `report-output-manager` for persistence after implementation evidence is available.
 
-## Use this skill when
+## Boundaries
 
-- task scope and exit criteria are already known
-- code files must be changed
-- tests must be added or updated
-- review follow-up requires concrete implementation edits
-
-## Required flow
-
-1. read the relevant code and tests
-2. make the smallest changes that satisfy the scoped task
-3. update or add tests when the task requires executable proof
-4. keep unrelated changes untouched
-5. report changed files, validation run, and any remaining risks
-
-## Rules
-
-- Do not re-plan the task; `task-breakdown-planner`, `task-consistency-manager`, and `tdd-executor` own that planning work.
-- Do not broaden scope beyond the assigned task.
-- Prefer the narrowest implementation that satisfies the required behavior.
-- Keep code and tests aligned; do not leave test expectations implicit when a task depends on them.
-
-For executor choice, follow the switchable implementation thresholds defined in `codex-delegation-executor`.
-
-Common provisional triggers for assigning this work to a `sub-agent` are:
-
-- target files are 4 or more
-- affected modules are 2 or more
-- expected code or test edit blocks are 4 or more
-
-## Outputs
-
-After this skill runs, the scoped code/test changes are in place and ready for validation or review.
+- Do not re-plan the task.
+- Do not decide TDD applicability here; the target repository and caller own it.
+- Do not redefine implementation rules locally when a required Skill is unavailable.
+- Do not let the executor review its own changes.
+- Do not merge.
 
 ## Completion condition
 
-This skill is complete only when:
-
-- scoped code or test edits are applied
-- changed files and remaining risks are reported
-- the result is ready for validation or review
+Complete when the required Skills have produced current context and implementation evidence for the accepted scope, the parent has the evidence required for reporting and review, no self-review verdict was issued, and no merge was performed.

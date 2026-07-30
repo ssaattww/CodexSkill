@@ -1,26 +1,78 @@
-name: Release ChatGPT worker skills
+name: Validate and release ChatGPT worker skills
 
 on:
+  pull_request:
+    paths:
+      - "AGENTS.md"
+      - "README.md"
+      - "skills/**"
+      - "shared/**"
+      - "design/**"
+      - "tasks/**"
+      - "reports/**"
+      - "scripts/build_chatgpt_worker_skills.py"
+      - "scripts/verify_skill_repository.py"
+      - ".github/workflows/release-chatgpt-worker-skills.yml"
   push:
     branches:
       - main
     paths:
-      - "skills/chat-implementation-worker/**"
-      - "skills/chat-review-worker/**"
-      - "skills/chat-report-writer/**"
-      - "shared/chat-worker/handoff-contract.md"
+      - "AGENTS.md"
+      - "README.md"
+      - "skills/**"
+      - "shared/**"
+      - "design/**"
+      - "tasks/**"
+      - "reports/**"
+      - "scripts/build_chatgpt_worker_skills.py"
+      - "scripts/verify_skill_repository.py"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: release-chatgpt-worker-skills
+  group: chatgpt-worker-skills-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  package-and-release:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target HEAD without write credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate repository Skill architecture and active links
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/verify_skill_repository.py
+
+      - name: Build and verify ChatGPT wrapper and core Skill ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_chatgpt_worker_skills.py \
+            --output chatgpt-worker-skills.zip
+          python3 -m zipfile -l chatgpt-worker-skills.zip
+
+      - name: Upload validation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatgpt-worker-skills-${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          path: chatgpt-worker-skills.zip
+          if-no-files-found: error
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout merged main HEAD
@@ -29,34 +81,18 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
-      - name: Verify package contracts
-        shell: bash
-        run: |
-          set -euo pipefail
-          canonical="shared/chat-worker/handoff-contract.md"
-          for skill in chat-implementation-worker chat-review-worker chat-report-writer; do
-            test -f "skills/${skill}/SKILL.md"
-            test -f "skills/${skill}/references/handoff-contract.md"
-            cmp "${canonical}" "skills/${skill}/references/handoff-contract.md"
-          done
+      - name: Download validated ChatGPT Skill ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: chatgpt-worker-skills-${{ github.sha }}
+          path: release-dist
 
-      - name: Build one multi-skill ZIP
+      - name: Verify downloaded release asset
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf dist chatgpt-worker-skills.zip
-          mkdir -p dist
-          for skill in chat-implementation-worker chat-review-worker chat-report-writer; do
-            cp -R "skills/${skill}" "dist/${skill}"
-          done
-          (
-            cd dist
-            zip -r ../chatgpt-worker-skills.zip \
-              chat-implementation-worker \
-              chat-review-worker \
-              chat-report-writer
-          )
-          unzip -l chatgpt-worker-skills.zip
+          test -f release-dist/chatgpt-worker-skills.zip
+          python3 -m zipfile -l release-dist/chatgpt-worker-skills.zip
 
       - name: Publish rolling GitHub Release
         env:
@@ -68,16 +104,21 @@ jobs:
           git tag -f "${TAG}" "${GITHUB_SHA}"
           git push --force origin "refs/tags/${TAG}"
 
+          notes="Upload chatgpt-worker-skills.zip to ChatGPT Skills. The archive contains ChatGPT runtime wrappers and the parent-independent core Skills they invoke. No Skill depends on repository-external shared files. Repository-wide Skill dependency and active-link validation passed for source commit: ${GITHUB_SHA}."
+
           if gh release view "${TAG}" >/dev/null 2>&1; then
             gh release edit "${TAG}" \
               --title "ChatGPT Worker Skills" \
-              --notes "Upload chatgpt-worker-skills.zip to ChatGPT Skills. The ZIP contains three Skills: implementation, review, and report writer. Source commit: ${GITHUB_SHA}." \
+              --notes "${notes}" \
               --latest
           else
             gh release create "${TAG}" \
               --title "ChatGPT Worker Skills" \
-              --notes "Upload chatgpt-worker-skills.zip to ChatGPT Skills. The ZIP contains three Skills: implementation, review, and report writer. Source commit: ${GITHUB_SHA}." \
+              --notes "${notes}" \
               --latest
           fi
 
-          gh release upload "${TAG}" chatgpt-worker-skills.zip --clobber
+          gh release upload \
+            "${TAG}" \
+            release-dist/chatgpt-worker-skills.zip \
+            --clobber

@@ -1,177 +1,123 @@
 ---
 name: review-enforcer
-description: Require normal review, fix verification, and an independent final review before a Codex task or PR is treated as complete. Use after implementation, after review fixes, before final progress sync, and before merge readiness is reported.
+description: Coordinate runtime-neutral review through Codex reviewer sub-agents, reviewer continuity, independent final review, report attestation, and completion gates.
 ---
 
-# Review Enforcer
-
-Prevent completion without both iterative review and an independent final review.
+# Codex Review Wrapper
 
 ## Goal
 
-Make task completion impossible until:
+Act as the Codex runtime wrapper for review without redefining review semantics, and enforce a finite lifecycle between immutable reviewed implementation content and repository-persisted review evidence.
 
-1. a dedicated reviewer has completed the normal review cycle,
-2. all required findings have been addressed or explicitly dispositioned, and
-3. a fresh reviewer sub-agent has independently reviewed the final current HEAD.
+## Required Skills
 
-## Execution owner
+Invoke:
 
-Run this skill as: `parent`.
+1. `work-context-manager`
+2. `review-worker`
+3. `report-writer`
+4. `report-output-manager`
 
-- Parent owns completion gating and finding disposition.
-- All review work remains mandatory sub-agent work.
-- Parent review cannot replace either review stage.
+Do not replace these Skills with `shared/` files or duplicate their semantics locally.
 
-## Review stages
+## Codex reviewer lifecycle
 
 ### Normal review cycle
 
-Use one dedicated reviewer sub-agent for:
+Use one dedicated reviewer sub-agent for initial review and fix verification while available. Preserve finding identity, reviewed HEAD, selected criteria, held and unexplored items, and fix context.
 
-- initial review,
-- review of newly discovered scope within the same task,
-- fix verification and re-review.
-
-Reuse the same reviewer during this cycle when it remains available. This preserves finding identity and review criteria across fixes.
+Persist normal-review and fix-verification reports, synchronize tracking, and commit or push all resulting repository changes before selecting the independent-final-review target.
 
 ### Independent final review
 
-After the normal review cycle is complete, start a different, fresh reviewer sub-agent for one independent final review of the final current HEAD.
+After the normal cycle converges:
 
-The independent final reviewer must:
+- finish every implementation, design, workflow, configuration, tracking, feedback-ledger, normal handoff, and non-final report change,
+- finish the parent-owned end-of-Issue Skill-gap decision and execute any in-scope Skill update,
+- reserve the independent-final-review report path or paths,
+- commit and push those changes,
+- freeze the current PR HEAD as `reviewed_implementation_head`,
+- start a different fresh reviewer sub-agent.
 
-- not be the implementation sub-agent,
-- not be the normal-cycle reviewer,
-- not have implemented review fixes,
-- be spawned with `fork_turns: "none"` unless a strictly bounded positive partial fork is explicitly justified,
-- receive requirements, design, final diff, validation evidence, and the current HEAD,
-- perform an independent pass before reading earlier review conclusions,
-- inspect all changed files and direct contract dependencies,
-- produce a separate final-review report.
-
-A continuation of the normal reviewer session is not an independent final review.
-
-## Inputs
-
-Before running this skill, gather:
-
-- task-scoped diff or changed-file set,
-- surrounding repository context,
-- relevant requirements and design,
-- validation and CI evidence for the current HEAD,
-- current task and PR identifiers,
-- normal reviewer assignment and report,
-- finding disposition and fix-verification evidence,
-- parent model and any user reasoning-effort override,
-- task-specific review criteria,
-- Markdown check evidence when Markdown-related work is in scope.
+The independent reviewer must differ from the implementation agent and normal reviewer, must not have implemented fixes, and should use `fork_turns: "none"` unless a bounded exception is justified.
 
 ## Required flow
 
-1. Prepare the task-scoped diff while keeping broader workspace context available.
-2. Resolve the current PR HEAD and use only validation and CI evidence associated with that HEAD.
-3. For Markdown-related changes, run `markdown-word-checker` and record its result.
-4. Pre-create the normal review report through `report-output-manager`.
-5. Dispatch the normal reviewer through `sub-agent-task-manager`.
-6. Use the parent model and `high` reasoning by default unless the user overrides it.
-7. Require findings-first, severity-ordered review with locations where available.
-8. Materialize the review result into the pre-created report.
-9. Address required findings through the implementation flow.
-10. Re-run the same normal reviewer for fix verification when available.
-11. Repeat until required findings are resolved or explicitly dispositioned.
-12. Freeze the final review target to the current PR HEAD.
-13. Pre-create a separate independent-final-review report.
-14. Spawn a new reviewer sub-agent with no inherited conversation history.
-15. Require the new reviewer to perform an independent pass before consulting earlier findings.
-16. If the independent reviewer finds a required issue, return to implementation and the normal review cycle.
-17. After any subsequent fix, run fix verification and then start another fresh independent final reviewer against the new HEAD.
-18. Only after the independent final review passes may progress sync and merge readiness proceed.
+1. Invoke `work-context-manager` for the current PR HEAD and matching evidence.
+2. Run applicable Markdown and repository gates.
+3. Dispatch a normal reviewer sub-agent that invokes `review-worker` in the selected mode.
+4. Invoke `report-writer` and persist through `report-output-manager`.
+5. Return required findings to the implementation flow.
+6. Reuse the normal reviewer for fix verification when available.
+7. After each fix, require validation, report and tracking synchronization, commit, push, and current-HEAD evidence before another review round.
+8. After convergence, verify that the parent has completed the end-of-Issue Skill-gap decision, any in-scope `skill-authoring-wrapper` work, feedback classification and ledger synchronization, normal handoff persistence, reports, and tracking.
+9. If step 8 creates or discovers any repository change, require validation, commit or push, and another normal review or fix-verification round. Do not freeze the target yet.
+10. Only after the normal cycle converges again with all pre-freeze work included, ensure every non-final repository change is committed and pushed, reserve the independent-final-review report path, and freeze the implementation HEAD.
+11. Dispatch a fresh independent final reviewer against that frozen implementation HEAD.
+12. If the verdict or any newly discovered obligation requires a repository change, invalidate the frozen state and return to implementation or pre-freeze finalization followed by normal fix verification.
+13. When the verdict passes, invoke `report-writer` and `report-output-manager` in report-attestation mode.
+14. Persist at most one report-attestation commit whose first parent is the reviewed implementation HEAD and whose changed paths are limited to the pre-reserved independent-final-review report path or paths.
+15. Validate the attestation diff and record the pair `reviewed implementation HEAD + report-attestation HEAD`.
+16. After the attestation commit, permit only operations that do not change Git HEAD: PR body or comment updates, review requests, external Issue operations, and inline or branch-external handoff transport.
+17. Do not call any repository-writing Skill after attestation and do not commit any later handoff, tracking, design, Skill, workflow, configuration, feedback, report, or implementation change.
 
-## Reviewer identity rules
+Any other post-review commit invalidates completion and requires normal fix verification followed by another fresh independent final review.
 
-- The implementation agent cannot review its own work.
-- The normal reviewer cannot serve as the independent final reviewer.
-- The independent final reviewer cannot implement its own findings.
-- A new HEAD produced after final-review findings invalidates the previous independent final review.
-- The replacement independent final review must target the new current HEAD.
+## Pre-freeze gate
 
-## Markdown gate
+The independent-final-review target must not be frozen until all of the following are explicit and repository-stable:
 
-- Treat `failed gate` as blocking unless the task intentionally introduces a stricter failing gate and records that state.
-- Treat `needs user review` as stopped until the approved repository-specific setting is applied and lint is rerun.
-- Treat `unsupported` as requiring explicit disposition; it is not success.
-- Exact whitelist, `prh`, or target-exclusion changes require explicit user review and rerun evidence.
-- Include focused/full results, aggregate gate state, and remaining risks in both applicable review reports.
+- implementation, validation, design, workflow, configuration, reports, and tracking,
+- normal review and fix-verification evidence,
+- end-of-Issue Skill-gap decision,
+- any selected in-scope Skill update,
+- feedback classification and any feedback ledger write,
+- repository-backed normal handoff,
+- current-HEAD validation and CI evidence.
 
-## Finding disposition
+A newly discovered repository write after this gate invalidates the gate and returns the workflow to the normal cycle.
 
-- Address findings that break the intended normal path.
-- If scope expansion requires a product decision, stop for user disposition.
-- Record avoidable non-blocking concerns as held when the intended path remains usable.
-- Do not convert missing review or missing evidence into `no findings`.
-- CI success alone is not an independent review.
+## Report-attestation gate
 
-## Required reports
+A report-attestation head is acceptable only when:
 
-Normal review report must include:
+- exactly one commit follows the reviewed implementation HEAD,
+- the commit's first parent is the reviewed implementation HEAD,
+- only pre-reserved independent-final-review report paths changed,
+- the report names the reviewed implementation HEAD and identifies the commit as administrative attestation,
+- no executable, Skill, design, workflow, configuration, tracking, feedback, handoff, or product path changed,
+- no later repository commit exists.
 
-- task and target HEAD,
-- normal reviewer identity,
-- review criteria,
-- changed and dependent files,
-- findings or explicit no findings,
-- validation evidence,
-- finding disposition,
-- re-review evidence.
+The technical verdict remains attached to the reviewed implementation HEAD. The attestation commit does not expand the reviewed implementation scope.
 
-Independent final review report must include:
+## Codex responsibilities
 
-- target final HEAD,
-- fresh reviewer identity,
-- confirmation that it differs from the normal reviewer and implementation agent,
-- confirmation of no inherited review conversation,
-- independently selected coverage,
-- findings or explicit no findings,
-- held and unexplored areas,
-- final verdict and merge-readiness impact.
-
-## Rules
-
-- Review one task or PR scope at a time.
-- Review and independent final review are mandatory sub-agent work.
-- Do not substitute parent review.
-- Do not complete while either report is missing.
-- Do not use an independent final review from an earlier HEAD.
-- Do not silently omit the independent final review because the normal review had no findings.
-- Do not cancel an in-flight reviewer merely because it is slow.
-- Review requests must ask for review, not a diff summary.
-- Reviewers may fill only the intended report sections and must preserve parent-owned report structure.
+- Parent owns reviewer identity, sub-agent dispatch, report path reservation, pre-freeze gating, lifecycle gating, attestation validation, and integration.
+- Parent review cannot replace reviewer sub-agent work.
+- Do not cancel a reviewer merely because it is slow.
+- Reviewers do not implement findings.
+- Do not reuse a verdict from an earlier implementation HEAD.
+- Do not create more than one report-attestation commit.
+- Do not permit a repository-writing Skill after attestation.
+- Do not merge.
 
 ## Outputs
 
-After this skill runs, there must be:
+Return:
 
-- a normal review report,
-- fix-verification evidence when fixes occurred,
-- a separate independent final review report for the current HEAD,
-- explicit findings or explicit no findings from both applicable stages,
-- a final disposition stating whether implementation follow-up is required,
-- confirmation that merge has not been performed by the agent.
+- normal review and fix-verification evidence,
+- pre-freeze gate evidence,
+- independent-final-review evidence,
+- reviewed implementation HEAD,
+- report-attestation head or explicit absence,
+- attestation allowlist validation,
+- reviewer identity and independence evidence,
+- full findings, coverage, held and unexplored items, validation assessment, verdict, remaining risks, and next action.
 
 ## Completion condition
 
-This skill is complete only when:
-
-- the normal review cycle has completed,
-- required findings have been addressed or explicitly dispositioned,
-- the current HEAD is explicit,
-- a different fresh reviewer sub-agent independently reviewed that current HEAD,
-- the independent final review report exists,
-- no unresolved Blocking or High finding remains,
-- any verdict-invalidating unexplored area is resolved,
-- required current-HEAD validation evidence is recorded.
+Complete only when the required Skills have produced normal review and independent-final-review evidence, all non-final repository changes and mandatory end-of-Issue or feedback work preceded the frozen reviewed implementation HEAD, no unresolved required finding or verdict-invalidating unexplored area remains, and either no report commit was required or exactly one validated report-attestation head exists with no later repository commit or repository-writing Skill execution. No merge is performed.
 
 ## Cross-cutting rule
 
-If a repeated review-related instruction appears, call `feedback-points-manager`.
+If a repeated review-related instruction appears, call `feedback-points-manager` and persist any resulting repository change before freezing the independent-final-review target. After freeze, record newly discovered feedback only through a non-Git external operation or invalidate the terminal state and return to the normal cycle.
