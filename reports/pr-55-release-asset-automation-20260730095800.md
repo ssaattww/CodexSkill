@@ -67,15 +67,15 @@ PR #55で、ChatGPT worker Skill ZIPの配布を次の4経路へ整理した。
 ### Current verified implementation HEAD
 
 ```text
-3e26d9ba742cce20611e64ba1cda62224ef00536
+9b89b487e077a91707f3b07859447d90292c905a
 ```
 
 ### GitHub Actions
 
 - Workflow: `Validate and release ChatGPT worker skills`
-- Run ID: `30577297119`
-- Run number: `134`
-- Head SHA: `3e26d9ba742cce20611e64ba1cda62224ef00536`
+- Run ID: `30577431643`
+- Run number: `135`
+- Head SHA: `9b89b487e077a91707f3b07859447d90292c905a`
 - Conclusion: `success`
 
 Successful build steps:
@@ -93,16 +93,18 @@ PR作業中のため、次のpublish jobは設計どおり`skipped`だった。
 
 ### Artifact
 
-- Artifact ID: `8773195277`
-- Name: `chatgpt-worker-skills-30577297119`
+- Artifact ID: `8773247546`
+- Name: `chatgpt-worker-skills-30577431643`
 - Size: `15586` bytes
-- Digest: `sha256:68cd0cab12de33e4dcbac15ae390ce88260d12d7dc20d86800e1667fa3952f9a`
+- Digest: `sha256:3b465c5b7a04a0a96e52b7a1607edf5da9d2ee8102b451d7403423625841c6b5`
 
 ## Event-specific verification boundary
 
 PR merge Pre-release jobは実際のmerge後にだけ実行される。rolling通常Release jobは`main` push後にだけ実行される。手動Release asset jobは利用者による実際の`release.published`イベント後にだけ実行される。
 
 PR #55をmergeしていない現在時点では、rolling通常Release更新、PR単位Pre-release作成、手動ReleaseへのAsset uploadの実行結果は未確認である。
+
+PR #55のWorkflowがmainへ反映される前に公開済みだったReleaseには遡ってAssetを添付しない。main反映後に新しく公開されるRelease／Pre-releaseが自動添付の対象になる。
 
 ただし、Workflow YAML、PR eventでの条件評価、repository validator、ZIP build、run ID基準のartifact受け渡しはcurrent HEAD固有runで成功している。
 
