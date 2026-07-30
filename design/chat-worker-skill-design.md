@@ -168,30 +168,41 @@ chatgpt-worker-skills.zip
 
 `.github/workflows/release-chatgpt-worker-skills.yml`を使用する。
 
-### PR build
+### PR validation build
 
-1. PRのsynthetic merge SHAではなく実PR HEAD SHAをcheckoutする。
-2. checkout credentialを保持せず、`contents: read`だけで実行する。
-3. repository-wide validatorで全Skill、dependency、active link、symlink、design同期を確認する。
-4. 全`skills/chat-*/SKILL.md`を検出する。
-5. 必須core Skillを検出する。
+1. `opened`、`synchronize`、`reopened`で実行する。
+2. PRのsynthetic merge SHAではなく実PR HEAD SHAをcheckoutする。
+3. checkout credentialを保持せず、`contents: read`だけで実行する。
+4. repository-wide validatorで全Skill、dependency、active link、symlink、design同期を確認する。
+5. 全`skills/chat-*/SKILL.md`と必須core Skillを検出する。
 6. directory名とfront matterの`name`が一致することを確認する。
 7. symlink、missing Skill、Skill外`shared/`参照を拒否する。
 8. wrapperとcore Skillを独立root directoryとしてZIPへ収録する。
 9. ZIP rootが検出したSkill集合と一致することを確認する。
 10. 生成ZIPをworkflow artifactとして保存する。
-11. rolling tagとGitHub Releaseは更新しない。
+11. GitHub Releaseは更新しない。
 
-### main push
+### PR merge Pre-release
 
-1. merge後の`main` HEADをcheckoutする。
-2. PRと同じread-only validation／buildを実行する。
-3. build成功後だけ別release jobへ`contents: write`を付与する。
-4. build jobの検証済みartifactをrelease jobへ渡す。
-5. rolling tag `chatgpt-worker-skills-latest`をmerge後HEADへ更新する。
-6. Release `ChatGPT Worker Skills`へ`chatgpt-worker-skills.zip`を添付または置換する。
+1. `pull_request.closed`かつ`merged == true`の場合だけ実行する。未merge closeでは実行しない。
+2. `merge_commit_sha`をcheckoutし、PR validationと同じread-only validation／buildを再実行する。
+3. build成功後だけpublish jobへ`contents: write`を付与する。
+4. build jobの検証済みartifactをpublish jobへ渡す。
+5. tag `chatgpt-worker-skills-pr-<PR番号>`をmerge commitへ作成する。
+6. `ChatGPT Worker Skills PR #<PR番号>`をPre-releaseとして作成し、`chatgpt-worker-skills.zip`をAssetへ添付する。
+7. job再実行時は同じPR tag／Pre-releaseを更新し、同名Assetを置換する。
+8. この自動Pre-releaseの`release.published`イベントでは再build／再uploadしない。
 
-PR branchと`workflow_dispatch`ではReleaseを更新しない。
+### 手動Release／Pre-release
+
+1. GitHub UIまたはAPIでRelease／Pre-releaseを公開した`release.published`イベントで実行する。
+2. Release tagが指すcommitをcheckoutし、repository validationとZIP buildを実行する。
+3. build成功後だけupload jobへ`contents: write`を付与する。
+4. 検証済み`chatgpt-worker-skills.zip`を、公開された同じReleaseのAssetへ添付する。
+5. 同名Assetが存在する場合は置換する。
+6. 自動PR merge Pre-release用tag prefix `chatgpt-worker-skills-pr-`は二重処理防止のため対象外とする。
+
+`workflow_dispatch`はread-only validation／buildだけを行い、Releaseを更新しない。
 
 Release時の共通file複製とrepository相対linkの書換は行わない。
 
@@ -412,7 +423,8 @@ core Skillとwrapperはいずれもmergeを行わず、利用者がmerge判断�
 - ChatGPT wrapperがruntime固有責務だけを持つ
 - wrapperとcore SkillがSkill外`shared/`fileへ依存していない
 - wrapperと必須core Skillを単一ZIPで登録できる構造になっている
-- merge後にRelease assetが生成される
+- PRマージ時にPR単位のPre-releaseへZIP Assetが生成される
+- 手動Release／Pre-release公開時に同じReleaseへZIP Assetが追加される
 - ChatGPTとCodexの双方で同じreview lifecycleを使用する
 - initial reviewとfix verificationがnormal reviewer continuityを維持する
 - pre-freeze gateがSkill decision、feedback ledger、normal handoff、report、trackingを含む
