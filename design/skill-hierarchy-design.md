@@ -349,6 +349,15 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 - ZIPをworkflow artifactとして保存する
 - GitHub Releaseは更新しない
 
+### Rolling normal Release
+
+- 対象変更が`main`へpushされた場合に実行する
+- push後の`main` HEADでread-only validation／build jobを実行する
+- build成功後だけ別publish jobへ`contents: write`を付与する
+- build jobの検証済みartifactをpublish jobへ渡す
+- rolling tag `chatgpt-worker-skills-latest`を対象HEADへ更新する
+- 固定通常Release `ChatGPT Worker Skills`へZIPを添付または置換する
+
 ### PR merge Pre-release
 
 - `pull_request.closed`かつ`merged == true`の場合だけ実行し、未merge closeでは実行しない
@@ -363,12 +372,13 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 
 ### 手動Release／Pre-release
 
-- GitHub UIまたはAPIで公開した`release.published`イベントで実行する
+- 利用者がGitHub UIまたはAPIで公開した`release.published`イベントで実行する
 - Release tagが指すcommitでread-only validation／build jobを実行する
 - build成功後だけ別upload jobへ`contents: write`を付与する
 - build jobの検証済みZIPを、公開された同じReleaseへ添付する
 - 同名Assetがある場合は置換する
 - 自動PR merge Pre-release用tag prefix `chatgpt-worker-skills-pr-`は対象外とする
+- Workflowの`GITHUB_TOKEN`で作成または更新したReleaseイベントは再帰的なWorkflow runを生成しない
 
 `workflow_dispatch`はread-only validation／buildだけを行い、Releaseを更新しない。
 
