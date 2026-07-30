@@ -67,36 +67,18 @@ PR #55で、ChatGPT worker Skill ZIPの配布を次の4経路へ整理した。
 ### Current verified implementation HEAD
 
 ```text
-9b89b487e077a91707f3b07859447d90292c905a
+55475a40be92e380a376e7d6f0fba9d5d8817e7d
 ```
 
 ### GitHub Actions
 
 - Workflow: `Validate and release ChatGPT worker skills`
-- Run ID: `30577431643`
-- Run number: `135`
-- Head SHA: `9b89b487e077a91707f3b07859447d90292c905a`
+- Run ID: `30577567713`
+- Run number: `136`
+- Head SHA: `55475a40be92e380a376e7d6f0fba9d5d8817e7d`
 - Conclusion: `success`
 
-Successful build steps:
-
-- Checkout target HEAD without write credentials
-- Validate repository Skill architecture and active links
-- Build and verify ChatGPT wrapper and core Skill ZIP
-- Upload validation artifact
-
-PR作業中のため、次のpublish jobは設計どおり`skipped`だった。
-
-- `publish-rolling-release`
-- `publish-merge-prerelease`
-- `attach-published-release-asset`
-
-### Artifact
-
-- Artifact ID: `8773247546`
-- Name: `chatgpt-worker-skills-30577431643`
-- Size: `15586` bytes
-- Digest: `sha256:3b465c5b7a04a0a96e52b7a1607edf5da9d2ee8102b451d7403423625841c6b5`
+PR作業中のため、publish jobは設計どおり`skipped`となる。build jobではrepository validator、ZIP build、workflow artifact uploadが成功した。
 
 ## Event-specific verification boundary
 
