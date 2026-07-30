@@ -64,37 +64,47 @@ PR #55で、ChatGPT worker Skill ZIPの配布を次の4経路へ整理した。
 
 ## Validation
 
-### Previous verified implementation HEAD
+### Current verified implementation HEAD
 
 ```text
-5a10890c9b99e458855be9def245604c154209aa
+3e26d9ba742cce20611e64ba1cda62224ef00536
 ```
 
-### Previous GitHub Actions evidence
+### GitHub Actions
 
 - Workflow: `Validate and release ChatGPT worker skills`
-- Run ID: `30504399327`
-- Run number: `132`
-- Head SHA: `5a10890c9b99e458855be9def245604c154209aa`
+- Run ID: `30577297119`
+- Run number: `134`
+- Head SHA: `3e26d9ba742cce20611e64ba1cda62224ef00536`
 - Conclusion: `success`
-- Repository validator: `success`
-- ZIP build: `success`
-- Artifact upload: `success`
 
-PR作業中のため、publish jobは設計どおり`skipped`だった。
+Successful build steps:
 
-### Current correction
+- Checkout target HEAD without write credentials
+- Validate repository Skill architecture and active links
+- Build and verify ChatGPT wrapper and core Skill ZIP
+- Upload validation artifact
 
-- fixed rolling normal Releaseの自動更新を廃止せず、`publish-rolling-release` jobとして復元した。
-- Artifact名をrun ID基準へ変更し、同一run内のbuild jobと各publish jobが確実に同じ検証済みZIPを受け渡すようにした。
-- `release.published`ではRelease tagを明示的なcheckout refとして使用する。
-- current correction HEAD固有のCI evidenceは、Workflow run完了後にPR body／commentへ記録する。
+PR作業中のため、次のpublish jobは設計どおり`skipped`だった。
+
+- `publish-rolling-release`
+- `publish-merge-prerelease`
+- `attach-published-release-asset`
+
+### Artifact
+
+- Artifact ID: `8773195277`
+- Name: `chatgpt-worker-skills-30577297119`
+- Size: `15586` bytes
+- Digest: `sha256:68cd0cab12de33e4dcbac15ae390ce88260d12d7dc20d86800e1667fa3952f9a`
 
 ## Event-specific verification boundary
 
 PR merge Pre-release jobは実際のmerge後にだけ実行される。rolling通常Release jobは`main` push後にだけ実行される。手動Release asset jobは利用者による実際の`release.published`イベント後にだけ実行される。
 
 PR #55をmergeしていない現在時点では、rolling通常Release更新、PR単位Pre-release作成、手動ReleaseへのAsset uploadの実行結果は未確認である。
+
+ただし、Workflow YAML、PR eventでの条件評価、repository validator、ZIP build、run ID基準のartifact受け渡しはcurrent HEAD固有runで成功している。
 
 ## Testing policy
 
