@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
-  - Status: `PR54-IFR2-001`のcomplete source payload対応とcurrent-HEAD検証完了、normal fix verification待ち
+  - Status: normal fix verification pass、pre-freeze最終HEAD検証待ち
   - Phase: Phase 7
   - Estimate: L
   - Depends on: なし
@@ -76,6 +76,8 @@
     - `reports/issue-53-normal-handoff-followup-20260730060300.md`
     - `reports/issue-53-independent-final-review-r2-fix-verification-r2-20260730062100.md`
     - `reports/issue-53-complete-source-payload-followup-20260730070000.md`
+    - `reports/issue-53-independent-final-review-r2-fix-verification-r3-20260730072800.md`
+    - `reports/issue-53-normal-review-pass-prefreeze-followup-20260730091000.md`
     - `reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`
   - Review History:
     - initial independent final review: source finding 5件、verdict `fail`
@@ -84,32 +86,37 @@
     - independent final review r2: `PR54-IFR2-001` high、`PR54-IFR2-002` medium、`PR54-IFR2-003` medium、verdict `fail`、report commit `9922865b2bd49cb7a76d462258e075c6959ee05e`
     - independent-final-review-r2 fix verification: `PR54-IFR2-002`／`003` resolved、`PR54-IFR2-001` partial、verdict `fail`、report commit `17339b357226125b1b6bd6850645bfec8c92fcab`
     - fix verification r2: packet persistenceは確認したがcomplete raw output不足で`PR54-IFR2-001` partial、verdict `fail`、report commit `98abfa40755e9d4ad3617fb8ae4e4f70159ef193`
+    - fix verification r3: `PR54-IFR2-001` resolved、`002`／`003` resolved維持、remaining required findings 0件、verdict `pass_with_held`、report commit `6fb76ce5f4cf3e358c5d70c5139a024d9495186f`
   - Finding Fidelity:
     - `PR54-IFR-004`のauthoritative source severityは`high`
     - first／r2 fix-verification reportの`medium`表記はreclassificationではなくtranscription error
     - correctionは`reports/issue-53-finding-severity-erratum-20260729193100.md`を正とし、historical reportは改変しない
   - Pre-freeze State:
-    - state: invalidated; normal lifecycleを継続
+    - state: pending final current-HEAD validation
     - Skill-gap decision: `update existing skill`。`review-worker`と`report-writer`へseverity continuity guardを反映済み。新規Skillは不要
     - feedback classification: task-specific implementation／report fidelity defect。active feedback ledger追記は不要
     - normal handoff: schema version 3 packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存済み
     - source payload: 4 core Skillのcomplete output、structured authority、changed-file purpose、full review evidence、`complete_body`全文、`severity_records`を保存済み
     - packet／report commit: `ab7d58dccc96b6e22a36723b885e8f44666d7007`
-    - freeze: 未実施。`PR54-IFR2-001`のnormal fix verification pass後に再判定する
+    - normal fix-verification report commit: `6fb76ce5f4cf3e358c5d70c5139a024d9495186f`
+    - normal review verdict: `pass_with_held`; required finding 0件
+    - freeze: 本trackingとpre-freeze follow-up reportを含むcurrent HEADのmatching validation成功後に実施する
   - Current Review Follow-up:
-    - `PR54-IFR2-001`: complete source payloadとtracking current-state同期を実装済み。normal fix verification待ち
+    - `PR54-IFR2-001`: resolved
     - `PR54-IFR2-002`: resolved維持
     - `PR54-IFR2-003`: resolved維持
+    - normal fix verification cycle: 収束済み
     - Project Instruction例は対象固有リポジトリ名の指定を対象URL1か所へ集約済み
   - Verification:
     - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
     - input HEAD `98abfa40755e9d4ad3617fb8ae4e4f70159ef193`のworkflow run `30492531017`がsuccess
     - input artifact `8740261320`、digest `sha256:e63e70c61b4845d7a7009db5e7fd32ab6fca09b868ea6ee165c1d8e42474c9b8`
     - packet／report commit HEAD `ab7d58dccc96b6e22a36723b885e8f44666d7007`のworkflow run `30495649913`がsuccess
-    - repository Skill／active-link validationと8 Skill ZIP buildがsuccess
     - artifact `chatgpt-worker-skills-ab7d58dccc96b6e22a36723b885e8f44666d7007`、ID `8741451881`、digest `sha256:da3589d11beae31eab5265b2b982e491c8b8560e6f274c9a0bdd1b398244ff9c`
-    - 本tracking同期HEADのmatching workflowとartifactはIssue／PRへ記録する
-    - `PR54-IFR2-001`のnormal fix verificationは未実施
+    - tracking同期HEAD `6976a94391dd3d7afa3c8284c19986edd6f18726`のworkflow run `30495814619`がsuccess
+    - fix-verification r3 report commit `6fb76ce5f4cf3e358c5d70c5139a024d9495186f`のworkflow run `30496514600`がsuccess
+    - artifact `chatgpt-worker-skills-6fb76ce5f4cf3e358c5d70c5139a024d9495186f`、ID `8741787240`、digest `sha256:03286426413470e9a9ad64ed13e003cfb562a8e87b978f3ab4d8a7e4c2e09eb9`
+    - 本pre-freeze follow-upとtracking更新後HEADのmatching workflow／artifactを確認する
     - fresh independent final reviewは未実施
 
 ## Backlog
