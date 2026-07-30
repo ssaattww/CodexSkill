@@ -335,27 +335,40 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 
 `.github/workflows/release-chatgpt-worker-skills.yml`を使用する。
 
-### pull request
+### pull request validation
 
 - `AGENTS.md`、`README.md`、全Skill、`shared/**`、design、tasks、reports、builder、repository validator、workflowの変更で実行する
-- forbidden shared runtime pathだけを追加する変更でも、PRとmain pushの両方でvalidation workflowを起動する
+- forbidden shared runtime pathだけを追加する変更でもvalidation workflowを起動する
+- `opened`、`synchronize`、`reopened`では実PR HEAD SHAをcheckoutする
 - build jobは`contents: read`だけを持ち、checkout credentialを保持しない
-- PRのsynthetic merge SHAではなく実PR HEAD SHAをcheckoutする
 - `scripts/verify_skill_repository.py`で全Skillのfront matter、Skill名依存、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
 - 全`chat-*` wrapperと必須core Skillを検出する
 - missing Skill、front matter name不一致、symlink、Skill外shared参照を拒否する
 - 単一`chatgpt-worker-skills.zip`を作成する
 - ZIP rootが検出Skill集合と一致することを確認する
 - ZIPをworkflow artifactとして保存する
-- rolling tagとGitHub Releaseは更新しない
+- GitHub Releaseは更新しない
 
-### main push
+### PR merge Pre-release
 
-- merge後のmain HEADでread-only validation／build jobを実行する
-- build成功後だけ別release jobへ`contents: write`を付与する
-- build jobの検証済みartifactをrelease jobへ渡す
-- rolling tag `chatgpt-worker-skills-latest`をmerge後HEADへ更新する
-- GitHub Release `ChatGPT Worker Skills`へZIPを添付または置換する
+- `pull_request.closed`かつ`merged == true`の場合だけ実行し、未merge closeでは実行しない
+- `merge_commit_sha`でread-only validation／build jobを再実行する
+- build成功後だけ別publish jobへ`contents: write`を付与する
+- build jobの検証済みartifactをpublish jobへ渡す
+- tag `chatgpt-worker-skills-pr-<PR番号>`をmerge commitへ作成する
+- `ChatGPT Worker Skills PR #<PR番号>`をPre-releaseとして作成する
+- Pre-releaseへ`chatgpt-worker-skills.zip`を添付する
+- job再実行時は同じPR tag／Pre-releaseとAssetを更新する
+- 自動Pre-releaseの`release.published`イベントはtag prefixで除外し、二重build／uploadしない
+
+### 手動Release／Pre-release
+
+- GitHub UIまたはAPIで公開した`release.published`イベントで実行する
+- Release tagが指すcommitでread-only validation／build jobを実行する
+- build成功後だけ別upload jobへ`contents: write`を付与する
+- build jobの検証済みZIPを、公開された同じReleaseへ添付する
+- 同名Assetがある場合は置換する
+- 自動PR merge Pre-release用tag prefix `chatgpt-worker-skills-pr-`は対象外とする
 
 `workflow_dispatch`はread-only validation／buildだけを行い、Releaseを更新しない。
 
