@@ -57,28 +57,42 @@ PR #55で、ChatGPT worker Skill ZIPの配布を次の4経路へ整理した。
 
 ## Design synchronization
 
-- `design/chat-worker-skill-design.md`のRelease生成節と完了条件を更新対象とする。
-- `design/skill-hierarchy-design.md`と`skills/design/skill-hierarchy-design.md`は同一内容を維持する。
-- Release時に共通fileを複製せず、repository相対linkを書き換えない既存方針は維持する。
-- Project Instruction例、review lifecycle、handoff、Merge境界などRelease変更と無関係な既存節は維持する。
+- `design/chat-worker-skill-design.md`のRelease生成節と完了条件へ4経路の併存を反映した。
+- `design/skill-hierarchy-design.md`と`skills/design/skill-hierarchy-design.md`を同一blob SHA `58062a701366b49cfd0870032fa5608be5bd1ec8`へ同期した。
+- Release時に共通fileを複製せず、repository相対linkを書き換えない既存方針は維持した。
+- Project Instruction例、review lifecycle、handoff、Merge境界などRelease変更と無関係な既存節は維持した。
 
 ## Validation
 
-### Current verified implementation HEAD
+### Verified implementation HEAD
 
 ```text
-55475a40be92e380a376e7d6f0fba9d5d8817e7d
+c8e89817fa6216ea773cb8493f0dfc9d9033f00e
 ```
 
 ### GitHub Actions
 
 - Workflow: `Validate and release ChatGPT worker skills`
-- Run ID: `30577567713`
-- Run number: `136`
-- Head SHA: `55475a40be92e380a376e7d6f0fba9d5d8817e7d`
+- Run ID: `30577982738`
+- Run number: `140`
+- Head SHA: `c8e89817fa6216ea773cb8493f0dfc9d9033f00e`
 - Conclusion: `success`
+- Repository validator: `success`
+- ZIP build: `success`
+- Artifact upload: `success`
 
-PR作業中のため、publish jobは設計どおり`skipped`となる。build jobではrepository validator、ZIP build、workflow artifact uploadが成功した。
+PR作業中のため、次のpublish jobは設計どおり`skipped`だった。
+
+- `publish-rolling-release`
+- `publish-merge-prerelease`
+- `attach-published-release-asset`
+
+### Artifact
+
+- Artifact ID: `8773453993`
+- Name: `chatgpt-worker-skills-30577982738`
+- Size: `15586` bytes
+- Digest: `sha256:b448df10a3eccdb9deb4d6753a5da8474eef5e09d6530a72954081e3ce003be8`
 
 ## Event-specific verification boundary
 
@@ -88,7 +102,7 @@ PR #55をmergeしていない現在時点では、rolling通常Release更新、P
 
 PR #55のWorkflowがmainへ反映される前に公開済みだったReleaseには遡ってAssetを添付しない。main反映後に新しく公開されるRelease／Pre-releaseが自動添付の対象になる。
 
-ただし、Workflow YAML、PR eventでの条件評価、repository validator、ZIP build、run ID基準のartifact受け渡しはcurrent HEAD固有runで成功している。
+ただし、Workflow YAML、PR eventでの条件評価、repository validator、ZIP build、run ID基準のartifact受け渡し、設計書同期はimplementation HEAD固有runで成功している。
 
 ## Testing policy
 
