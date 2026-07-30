@@ -2,6 +2,11 @@ name: Validate and release ChatGPT worker skills
 
 on:
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
     paths:
       - "AGENTS.md"
       - "README.md"
@@ -27,23 +32,38 @@ on:
       - "scripts/build_chatgpt_worker_skills.py"
       - "scripts/verify_skill_repository.py"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: chatgpt-worker-skills-${{ github.ref }}
+  group: chatgpt-worker-skills-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   build:
+    if: >-
+      !(
+        github.event_name == 'pull_request' &&
+        github.event.action == 'closed' &&
+        github.event.pull_request.merged != true
+      ) &&
+      !(
+        github.event_name == 'release' &&
+        startsWith(github.event.release.tag_name, 'chatgpt-worker-skills-pr-')
+      )
+    env:
+      TARGET_REF: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merge_commit_sha || github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout target HEAD without write credentials
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ env.TARGET_REF }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -64,16 +84,20 @@ jobs:
       - name: Upload validation artifact
         uses: actions/upload-artifact@v4
         with:
-          name: chatgpt-worker-skills-${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          name: chatgpt-worker-skills-${{ github.run_id }}
           path: chatgpt-worker-skills.zip
           if-no-files-found: error
 
-  release:
+  publish-rolling-release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build
     permissions:
       contents: write
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: chatgpt-worker-skills-latest
     steps:
       - name: Checkout merged main HEAD
         uses: actions/checkout@v4
@@ -84,10 +108,10 @@ jobs:
       - name: Download validated ChatGPT Skill ZIP
         uses: actions/download-artifact@v4
         with:
-          name: chatgpt-worker-skills-${{ github.sha }}
+          name: chatgpt-worker-skills-${{ github.run_id }}
           path: release-dist
 
-      - name: Verify downloaded release asset
+      - name: Verify downloaded rolling release asset
         shell: bash
         run: |
           set -euo pipefail
@@ -95,9 +119,6 @@ jobs:
           python3 -m zipfile -l release-dist/chatgpt-worker-skills.zip
 
       - name: Publish rolling GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: chatgpt-worker-skills-latest
         shell: bash
         run: |
           set -euo pipefail
@@ -118,6 +139,99 @@ jobs:
               --latest
           fi
 
+          gh release upload \
+            "${TAG}" \
+            release-dist/chatgpt-worker-skills.zip \
+            --clobber
+
+  publish-merge-prerelease:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true
+    needs: build
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      TAG: chatgpt-worker-skills-pr-${{ github.event.pull_request.number }}
+    steps:
+      - name: Download validated ChatGPT Skill ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: chatgpt-worker-skills-${{ github.run_id }}
+          path: release-dist
+
+      - name: Verify downloaded prerelease asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f release-dist/chatgpt-worker-skills.zip
+          python3 -m zipfile -l release-dist/chatgpt-worker-skills.zip
+
+      - name: Publish PR merge prerelease
+        shell: bash
+        run: |
+          set -euo pipefail
+          notes="Automatic ChatGPT Worker Skills prerelease for merged PR #${PR_NUMBER}. Source PR: ${PR_URL}. Source commit: ${MERGE_SHA}. Repository validation and package structure verification passed."
+          title="ChatGPT Worker Skills PR #${PR_NUMBER}"
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release edit "${TAG}" \
+              --target "${MERGE_SHA}" \
+              --title "${title}" \
+              --notes "${notes}" \
+              --prerelease
+            gh release upload \
+              "${TAG}" \
+              release-dist/chatgpt-worker-skills.zip \
+              --clobber
+          else
+            gh release create \
+              "${TAG}" \
+              release-dist/chatgpt-worker-skills.zip \
+              --target "${MERGE_SHA}" \
+              --title "${title}" \
+              --notes "${notes}" \
+              --prerelease \
+              --latest=false
+          fi
+
+  attach-published-release-asset:
+    if: >-
+      github.event_name == 'release' &&
+      !startsWith(github.event.release.tag_name, 'chatgpt-worker-skills-pr-')
+    needs: build
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: Download validated ChatGPT Skill ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: chatgpt-worker-skills-${{ github.run_id }}
+          path: release-dist
+
+      - name: Verify downloaded release asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f release-dist/chatgpt-worker-skills.zip
+          python3 -m zipfile -l release-dist/chatgpt-worker-skills.zip
+
+      - name: Attach ZIP to published release
+        shell: bash
+        run: |
+          set -euo pipefail
           gh release upload \
             "${TAG}" \
             release-dist/chatgpt-worker-skills.zip \
