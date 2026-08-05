@@ -14,17 +14,23 @@ Act as the ChatGPT runtime wrapper for implementation. The user is the parent. T
 Invoke these Skills in order:
 
 1. `work-context-manager`
-2. `implementation-worker`
-3. `report-writer`
-4. `chat-handoff-manager`
+2. `task-consistency-manager`
+3. `task-breakdown-planner` when tracking is missing, vague, or must be split
+4. `implementation-worker`
+5. `progress-sync-manager`
+6. `report-writer`
+7. `chat-handoff-manager`
 
-All four must be installed. Do not replace them with repository-external shared files.
+`work-context-manager`, `task-consistency-manager`, `implementation-worker`, `progress-sync-manager`, `report-writer`, and `chat-handoff-manager` must be installed. `task-breakdown-planner` must also be installed so the wrapper can invoke it when its condition applies. Do not replace any required Skill with repository-external shared files.
 
 ## Runtime responsibilities
 
 - Use the current chat and available connectors.
 - Resolve permissions before writes.
+- Confirm the accepted work is represented in canonical task tracking before significant implementation starts.
+- Add or split task tracking through `task-breakdown-planner` when required, then re-run `task-consistency-manager`.
 - Apply changes, commit, push, and create or update the PR only when authorized.
+- Synchronize canonical task and phase state through `progress-sync-manager` after implementation progress, validation, review follow-up, or blocking state changes.
 - Persist the detailed implementation report under target-repository rules, or return it in full when writing is unavailable.
 - Post the concise PR comment when authorized, or return its complete body.
 - Persist the handoff under target-repository rules, or return the complete packet for copy and paste.
@@ -40,11 +46,12 @@ Pass the selected mode and resolved context to `implementation-worker`.
 ## Boundaries
 
 - Do not start another worker or sub-agent.
-- Do not implement rules locally when the required Skill is unavailable; report the missing dependency.
+- Do not implement rules locally when a required Skill is unavailable; report the missing dependency.
+- Do not edit canonical task tracking directly outside the task tracking Skills.
 - Do not issue an independent review verdict.
 - Do not exceed current-chat permissions.
 - Do not merge.
 
 ## Completion condition
 
-Complete when the required Skills have produced context, implementation evidence, report output, and a transportable handoff; authorized repository and PR updates are complete; final HEAD and matching CI evidence or explicit absence are recorded; and no merge was performed.
+Complete when the required Skills have produced context, consistent task tracking, implementation evidence, synchronized progress, report output, and a transportable handoff; authorized repository and PR updates are complete; final HEAD and matching CI evidence or explicit absence are recorded; and no merge was performed.
