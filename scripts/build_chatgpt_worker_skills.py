@@ -14,6 +14,11 @@ CORE_SKILLS = {
     "review-worker",
     "report-writer",
 }
+TASK_TRACKING_SKILLS = {
+    "task-breakdown-planner",
+    "task-consistency-manager",
+    "progress-sync-manager",
+}
 IGNORED_NAMES = {"__pycache__", ".DS_Store"}
 
 
@@ -24,8 +29,9 @@ class BundleError(RuntimeError):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Build one ChatGPT Skill-set ZIP containing every chat-* wrapper and "
-            "the parent-independent core Skills they invoke."
+            "Build one ChatGPT Skill-set ZIP containing every chat-* wrapper, "
+            "the parent-independent core Skills they invoke, and the task "
+            "tracking Skills required to update repository task state."
         )
     )
     parser.add_argument(
@@ -58,7 +64,7 @@ def discover_skill_dirs(repo_root: Path) -> list[Path]:
     names = {
         path.parent.name
         for path in skills_root.glob("chat-*/SKILL.md")
-    } | CORE_SKILLS
+    } | CORE_SKILLS | TASK_TRACKING_SKILLS
 
     skill_dirs: list[Path] = []
     for name in sorted(names):
