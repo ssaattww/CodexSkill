@@ -70,17 +70,9 @@ canonical task trackingはtask tracking Skill経由で更新し、wrapperが更�
 
 hierarchy designの正本と`skills/design/`配下のmirrorは同一内容とした。
 
-## Commit
-
-- `69d65655b0569f88c421e7dc06893a7017ba23a6`: ChatGPT配布ZIPへtask tracking Skillを追加
-- `478ee3d23e02c485fca9ee8aa741cea5a2e52036`: implementation wrapperへtask tracking flowを追加
-- `349fd609852f25a5638f8a4f30d1ea78b93bc7f4`: ChatGPT worker設計をtask tracking Skill構成へ同期
-- `e5b92dbd5ce9b26cdcfc29e037f7a7c11e55cf17`: hierarchy designをtask tracking Skill構成へ更新
-- `712039aba3090c2eca5d1e0385fd0d7c7dc1da97`: hierarchy design mirrorを同期
-
 ## 検証
 
-最終HEADはPRコメントで記録する。詳細report自身を更新するとHEADが変わるため、本fileでは設計・実装内容を記録し、current HEAD一致CI、artifact ID、digestはPRコメントを最終証拠とする。別SHAのworkflow runは代用しない。
+current HEAD一致CI、artifact ID、digestはPRコメントを最終証拠とする。詳細report自身へCI結果を書き戻すとHEADが変わるため、本fileでは設計・実装内容のみを記録する。別SHAのworkflow runは代用しない。
 
 ## 結果
 
