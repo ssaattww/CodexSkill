@@ -77,25 +77,10 @@ hierarchy designの正本と`skills/design/`配下のmirrorは同一内容とし
 - `349fd609852f25a5638f8a4f30d1ea78b93bc7f4`: ChatGPT worker設計をtask tracking Skill構成へ同期
 - `e5b92dbd5ce9b26cdcfc29e037f7a7c11e55cf17`: hierarchy designをtask tracking Skill構成へ更新
 - `712039aba3090c2eca5d1e0385fd0d7c7dc1da97`: hierarchy design mirrorを同期
-- `5dfd95aa2d93821b55c023c80b39193164f1cdb2`: reportへ設計同期結果を反映
-- `928a94502cd535dc163bc59e07df1fcdf31494e5`: reportへ検証結果を反映
-- `c5f80116620c123b9b6b81756ffb094bde11a1f1`: 最終HEAD
 
 ## 検証
 
-最終HEAD `c5f80116620c123b9b6b81756ffb094bde11a1f1`に一致するGitHub Actions workflow runを確認した。
-
-- Workflow: `Validate and release ChatGPT worker skills`
-- Run ID: `31049281139`
-- Run number: `153`
-- Status: `completed`
-- Conclusion: `success`
-- Artifact: `chatgpt-worker-skills-31049281139`
-- Artifact ID: `8947723723`
-- Digest: `sha256:b2e75db1761e3f671d896cc4d956b8518eb370ca8e4190019b4d1fab645ec1f8`
-- Artifact head SHA: `c5f80116620c123b9b6b81756ffb094bde11a1f1`
-
-このrunではrepository Skill architecture／active link validation、hierarchy design mirror一致、ChatGPT Skill ZIP build、11 Skillのarchive listing、artifact uploadが成功した。別SHAのworkflow runは代用していない。
+最終HEADはPRコメントで記録する。詳細report自身を更新するとHEADが変わるため、本fileでは設計・実装内容を記録し、current HEAD一致CI、artifact ID、digestはPRコメントを最終証拠とする。別SHAのworkflow runは代用しない。
 
 ## 結果
 
