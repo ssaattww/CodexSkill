@@ -7,7 +7,7 @@ description: Create and validate lossless, transportable handoff packets between
 
 ## Goal
 
-Create a complete handoff packet that lets another user-started ChatGPT chat continue without relying on conversation memory or silently losing context, implementation, review, validation, report, permission, blocked-state, or terminal-gate evidence.
+Create a complete handoff packet that lets another user-started ChatGPT chat continue without relying on conversation memory or silently losing context, implementation, review, validation, report, permission, blocked-state, task-tracking, or terminal-gate evidence.
 
 ## Runtime boundary
 
@@ -17,11 +17,12 @@ This Skill is ChatGPT-specific transport logic. It does not implement, review, w
 
 Accept:
 
-- the structured context from `work-context-manager`,
+- the structured context from `work-context-manager`, including canonical tracking paths,
 - the complete output of `implementation-worker`, `review-worker`, or `report-writer`,
+- task-tracking output from `task-consistency-manager`, `task-breakdown-planner`, or `progress-sync-manager` when those Skills ran,
 - runtime-specific authorization, persistence, PR-comment, attestation-gate, and next-chat information supplied by the wrapper.
 
-Do not summarize away fields required by the producing core Skill. A handoff is a lossless transport envelope for available evidence, not a shorter substitute for that evidence.
+Do not summarize away fields required by the producing Skill. A handoff is a lossless transport envelope for available evidence, not a shorter substitute for that evidence.
 
 ## Required packet
 
@@ -37,6 +38,18 @@ producer:
 repository: owner/name | unknown
 issue_or_pr: string | null
 task_id: string | null
+task_tracking:
+  task_path: repository_relative_path | unknown
+  phase_path: repository_relative_path | null | unknown
+  state: string | unknown
+  phase: string | null | unknown
+  dependencies:
+    - string
+  exit_criteria:
+    - string
+  blockers:
+    - string
+  pending_action: string | null | unknown
 branch: string | unknown
 base_ref: string | null
 target:
@@ -258,8 +271,10 @@ transport:
 ## Lossless transport rules
 
 - Populate the typed projection for every available field defined above.
-- Also preserve each producing core Skill's complete, versioned output under `source_payloads`; typed projection does not replace the raw source payload.
-- Preserve every available field required by the producing core Skill's output contract, including development policy, planned validation, required failure diagnostics, blocked state, failure diagnostics, reviewer identity, reviewer independence, reserved report paths, and exact report-attestation conditions.
+- Preserve canonical `task_tracking.task_path` and `task_tracking.phase_path` exactly as resolved by `work-context-manager`; do not collapse them to basenames or guess replacements.
+- Preserve available task state, phase, dependencies, exit criteria, blockers, and pending tracking action from the latest task-tracking Skill output.
+- Also preserve each producing core or task-tracking Skill's complete, versioned output under `source_payloads`; typed projection does not replace the raw source payload.
+- Preserve every available field required by the producing Skill's output contract, including development policy, planned validation, required failure diagnostics, blocked state, failure diagnostics, reviewer identity, reviewer independence, reserved report paths, and exact report-attestation conditions.
 - Preserve exact finding identity, origin, location, impact, evidence, required action, and reviewed HEAD.
 - Preserve required coverage dispositions, held items, unexplored areas, validation assessment, intentionally untouched areas, commands, tests, CI artifacts, implementation commits, report paths, and PR comment references.
 - Use `extensions` for runtime or future fields that are not yet represented in the typed projection.
@@ -278,7 +293,7 @@ transport:
 - Normalize version 1 or 2 `cold_final_review` to `independent_final_review`.
 - Preserve the complete original version 1 or 2 packet as a `source_payloads` entry before projecting fields into version 3.
 - Preserve every field that exists in an older packet. Mapping failures or fields without a version 3 typed destination must remain in the original `source_payloads` entry or a namespaced `extensions` entry.
-- Map genuinely absent version 3 fields to explicit `unknown` or `not_applicable` entries with the reason `not present in source schema`; do not invent values.
+- Map genuinely absent version 3 fields, including `task_tracking`, to explicit `unknown` or `not_applicable` entries with the reason `not present in source schema`; do not invent values.
 - Do not convert an existing source value into `unknown` merely because no typed mapping exists.
 - When missing fields prevent safe continuation, mark the receiving operation `blocked` or review verdict `incomplete` and identify the exact missing evidence.
 - Unsupported future schema versions remain blocked until a migration rule exists; preserve the untouched future packet as source evidence when safe parsing is possible.
@@ -297,4 +312,4 @@ The packet must record:
 
 ## Completion condition
 
-Complete when the packet's typed projection and preserved source payloads losslessly represent the available core-Skill output, target and reviewed identities are explicit, blocked state and failure-diagnostic requirements remain actionable, reviewer identity and independence are verifiable, report-attestation conditions are reproducible, findings and uncertainty retain their evidence, permissions and transport are explicit, compatibility handling did not discard data, the next chat can continue independently, and no implementation, review verdict change, additional post-attestation commit, or merge was performed.
+Complete when the packet's typed projection and preserved source payloads losslessly represent the available core-Skill and task-tracking output, canonical tracking paths and current task state are explicit or explicitly unknown/not applicable, target and reviewed identities are explicit, blocked state and failure-diagnostic requirements remain actionable, reviewer identity and independence are verifiable, report-attestation conditions are reproducible, findings and uncertainty retain their evidence, permissions and transport are explicit, compatibility handling did not discard data, the next chat can continue independently, and no implementation, review verdict change, additional post-attestation commit, or merge was performed.
