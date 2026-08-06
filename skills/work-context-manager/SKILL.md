@@ -1,13 +1,13 @@
 ---
 name: work-context-manager
-description: Resolve authoritative task context, repository state, scope, target identity, validation policy, and write boundaries without depending on a Codex parent or ChatGPT chat runtime.
+description: Resolve authoritative task context, repository state, scope, target identity, validation policy, canonical tracking paths, and write boundaries without depending on a Codex parent or ChatGPT chat runtime.
 ---
 
 # Work Context Manager
 
 ## Goal
 
-Produce a runtime-neutral work context that another Skill can use for implementation, review, or report generation.
+Produce a runtime-neutral work context that another Skill can use for implementation, review, report generation, or canonical task tracking.
 
 ## Runtime independence
 
@@ -40,6 +40,7 @@ Resolve as much as the available evidence permits:
 
 - repository and repository instructions,
 - Issue, task, phase, accepted scope, and non-goals,
+- canonical task tracking path and canonical phase tracking path when configured,
 - branch, base ref, PR, current HEAD, and relevant commit range,
 - requirements and design references,
 - changed files, target files, and direct dependencies,
@@ -50,6 +51,8 @@ Resolve as much as the available evidence permits:
 - report and handoff naming rules,
 - allowed and forbidden writes,
 - unknown, blocked, unexplored, and not-applicable items.
+
+Resolve tracking paths from explicit project or repository configuration when available. Do not replace a configured path such as `tasks/tasks-status.md` with a guessed basename such as `tasks-status.md`. If no canonical task tracking path is configured or discoverable, return it as unknown rather than inventing one. A phase tracking path may be null when the target project does not use a separate phase file.
 
 An Issue or PR identifier is normally sufficient when repository evidence determines the remaining state unambiguously.
 
@@ -84,6 +87,9 @@ Return a structured context containing:
 repository: owner/name | unknown
 issue_or_pr: string | null
 task_id: string | null
+tracking:
+  task_path: repository_relative_path | unknown
+  phase_path: repository_relative_path | null | unknown
 mode: implementation | review | report | unknown
 branch: string | unknown
 base_ref: string | null
@@ -127,4 +133,4 @@ This Skill does not merge and does not grant merge permission to its caller.
 
 ## Completion condition
 
-Complete when discoverable state has been resolved, conflicts and unknowns remain explicit, scope and target identity are usable by the next Skill, and no runtime-specific execution or persistence behavior has been assumed.
+Complete when discoverable state has been resolved, canonical tracking paths are explicit or marked unknown/not applicable, conflicts and unknowns remain explicit, scope and target identity are usable by the next Skill, and no runtime-specific execution or persistence behavior has been assumed.
