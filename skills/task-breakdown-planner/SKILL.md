@@ -1,6 +1,6 @@
 ---
 name: task-breakdown-planner
-description: Break an issue, request, or large work item into concrete tasks and phases with dependencies and exit criteria. Use when starting a new issue, when an existing task is too large, when planning remaining work to completion, or when rescoping after new requirements appear.
+description: Break an issue, request, or large work item into concrete tasks and phases with dependencies and exit criteria using the target project's canonical tracking paths. Use when starting a new issue, when an existing task is too large, when planning remaining work to completion, or when rescoping after new requirements appear.
 ---
 
 # Task Breakdown Planner
@@ -13,56 +13,46 @@ Create a task structure that allows one-task-at-a-time execution without hidden 
 
 ## Execution owner
 
-Run this skill as: `parent`
+Run this Skill in the caller that owns authorized canonical tracking writes.
 
-- Task and phase design set the execution contract and should stay under parent control.
-- For large or noisy scope, the parent may request a bounded planning draft from a `sub-agent`, but final task/phase adoption remains parent work.
+- In the Codex standard flow, that owner is normally the parent.
+- In a ChatGPT worker flow, the current chat may execute this Skill directly when the wrapper has write authorization.
+- This Skill does not require or start a sub-agent.
+- A caller with its own delegation capability may obtain a bounded planning draft separately, but final task and phase adoption remains with the authorized caller and delegation is never required by this Skill.
 
 ## Inputs
 
-Before running this skill, gather:
+Before running this Skill, gather:
 
-- issue or request scope
-- known constraints and dependencies
-- current `tasks-status.md` and `phases-status.md` when they already exist
+- issue or request scope,
+- known constraints and dependencies,
+- structured context from `work-context-manager`, including `tracking.task_path` and `tracking.phase_path`,
+- current content of the resolved canonical tracking files when they already exist.
+
+Do not hardcode `tasks-status.md` or `phases-status.md`. Use the resolved repository-relative paths exactly. If `tracking.task_path` is unknown, stop as blocked instead of guessing. If `tracking.phase_path` is null, do not invent a separate phase file. If it is unknown and phase tracking is required by the project, stop as blocked.
 
 ## Outputs
 
-Produce or revise:
+Produce or revise at the resolved canonical paths:
 
-- phase entries in `phases-status.md`
-- task entries in `tasks-status.md`
-- dependencies
-- exit criteria
-- size estimates
+- task entries,
+- phase entries when the project uses a separate phase tracking file,
+- dependencies,
+- exit criteria,
+- size estimates.
 
-If `tasks-status.md` or `phases-status.md` must be created from scratch, write a top-of-file rule stating that the file may be updated only through `task-breakdown-planner`, `task-consistency-manager`, or `progress-sync-manager`.
+Return the canonical task tracking path, canonical phase tracking path or null, created or revised task identities, phases when applicable, dependencies, exit criteria, estimates, and next executable task.
+
+If a canonical tracking file must be created according to authoritative project rules, write a top-of-file rule stating that the file may be updated only through `task-breakdown-planner`, `task-consistency-manager`, or `progress-sync-manager`.
 
 ## Completion condition
 
-This skill is complete only when:
+This Skill is complete only when:
 
-- task and phase breakdown is explicit
-- dependencies and exit criteria are recorded
-- another agent could execute the next task without guessing
-
-## Large-scope delegation
-
-If the issue or remaining work is large enough that a first-pass breakdown would be expensive to do inline, the parent may:
-
-1. use `sub-agent-task-manager`
-2. ask a `sub-agent` for a bounded draft of tasks, phases, dependencies, and exit criteria
-3. require a report under `reports/`
-4. review and finalize the adopted breakdown in the parent
-
-Do not let the `sub-agent` become the final owner of task structure.
-
-Use these provisional thresholds as the default trigger:
-
-- expected task candidates are 5 or more
-- expected phases are 3 or more
-- explicit dependency edges to reason about are 4 or more
-- the parent would otherwise need to read 4 or more source documents before drafting the breakdown
+- task and phase breakdown is explicit,
+- dependencies and exit criteria are recorded,
+- another agent or chat could execute the next task without guessing,
+- no guessed tracking path was used.
 
 ## Breakdown rules
 
@@ -70,13 +60,13 @@ Prefer tasks that can move all the way to commit and PR.
 
 Split by workflow boundaries such as:
 
-- investigation
-- design update
-- failing tests
-- implementation
-- review fixes
-- integration or E2E verification
-- documentation or tracking sync
+- investigation,
+- design update,
+- failing tests when the target project requires them,
+- implementation,
+- review fixes,
+- integration or E2E verification,
+- documentation or tracking sync.
 
 Do not create tasks that are so broad that they hide multiple implementation cycles.
 
@@ -84,12 +74,12 @@ Do not create tasks that are so broad that they hide multiple implementation cyc
 
 A task is acceptable only if another agent could execute it without guessing:
 
-- what to change
-- how to prove it works
-- when to stop
+- what to change,
+- how to prove it works,
+- when to stop.
 
 ## Phase rules
 
-Create or update phases when the work introduces a meaningful milestone or exit checkpoint.
+Create or update phases only when the target project uses phases and the work introduces a meaningful milestone or exit checkpoint.
 
 Keep remaining phases truthful. Do not leave stale estimates or completed work in remaining sections.
