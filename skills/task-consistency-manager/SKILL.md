@@ -1,102 +1,95 @@
 ---
 name: task-consistency-manager
-description: Validate that intended work is explicitly represented in tasks-status.md and phases-status.md before and during implementation. Use when starting a task, when implementation reveals missing scope, dependencies, or exit criteria, or when review uncovers new work that must be tracked before proceeding.
+description: Validate that intended work is explicitly represented in canonical task and phase tracking before and during implementation. Use when starting a task, when implementation reveals missing scope, dependencies, or exit criteria, or when review uncovers new work that must be tracked before proceeding.
 ---
 
 # Task Consistency Manager
 
-Ensure that no meaningful work proceeds unless it exists in task tracking.
+Ensure that no meaningful work proceeds unless it exists in canonical task tracking.
 
 ## Goal
 
-Keep `tasks-status.md` and `phases-status.md` aligned with actual implementation scope.
+Keep the configured canonical task and phase tracking aligned with actual implementation scope.
 
 ## Execution owner
 
-Run this skill as: `parent`
+Run this Skill in the caller that owns authorized canonical tracking writes.
 
-- This skill updates canonical task tracking and should remain parent-owned.
-- For large tracking diffs or many discoveries, the parent may request a consistency audit from a `sub-agent`, but final tracking updates remain parent work.
+- In the Codex standard flow, that owner is normally the parent.
+- In a ChatGPT worker flow, the current chat may execute this Skill directly when the wrapper has write authorization.
+- This Skill does not require or start a sub-agent.
+- A caller with its own delegation capability may obtain a bounded audit separately, but final canonical tracking writes remain with the authorized caller and delegation is never required by this Skill.
 
 ## Inputs
 
-Before running this skill, gather:
+Before running this Skill, gather:
 
-- current intended work item
-- `tasks-status.md`
-- `phases-status.md`
-- any newly discovered scope from implementation or review
+- current intended work item,
+- structured context from `work-context-manager`, including `tracking.task_path` and `tracking.phase_path`,
+- current content of the resolved canonical tracking files,
+- any newly discovered scope from implementation or review.
 
-## Run this skill
+Do not hardcode `tasks-status.md` or `phases-status.md`. Use the resolved repository-relative paths exactly. If `tracking.task_path` is unknown, stop as blocked instead of guessing. If `tracking.phase_path` is null, do not create a phase file unless an authoritative project rule requires one. If it is unknown and phase tracking is required, stop as blocked.
 
-Run this skill:
+## Run this Skill
 
-- before starting any task
-- when implementation reveals missing work
-- when a task is too large or vague
-- when review creates follow-up work
-- when phase scope or exit criteria have changed
+Run this Skill:
+
+- before starting any task,
+- when implementation reveals missing work,
+- when a task is too large or vague,
+- when review creates follow-up work,
+- when phase scope or exit criteria have changed.
 
 ## Required checks
 
 Check whether the current work item has:
 
-- a task entry
-- a phase assignment
-- dependencies
-- exit criteria
-- an estimate or expected size
-- wording precise enough to decide done vs not done
+- a task entry,
+- a phase assignment when the project uses phases,
+- dependencies,
+- exit criteria,
+- an estimate or expected size,
+- wording precise enough to decide done vs not done.
 
 ## Required actions
 
-If the task is missing, add or revise tracking before implementation continues.
+If the task is missing, add or revise canonical tracking before implementation continues.
 
-If the task is too large, split it into smaller tasks.
+If the task is too large, invoke `task-breakdown-planner` using the same resolved tracking paths.
 
 If the task implies additional work not yet tracked, add the missing tasks first.
 
-If the task changes phase scope, update `phases-status.md` as well.
+If the task changes phase scope and a canonical phase tracking file exists, update that resolved phase path as well.
 
-If `tasks-status.md` or `phases-status.md` does not exist yet and must be created, include a top-of-file rule stating that the file may be updated only through `task-breakdown-planner`, `task-consistency-manager`, or `progress-sync-manager`.
+If a canonical tracking file must be created according to authoritative project rules, include a top-of-file rule stating that the file may be updated only through `task-breakdown-planner`, `task-consistency-manager`, or `progress-sync-manager`.
 
 ## Strong rule
 
-Do not implement significant work that is not represented in `tasks-status.md`.
+Do not implement significant work that is not represented in the resolved canonical task tracking file.
 
 Allow exceptions only for tiny corrections such as obvious typos or purely mechanical renames with no behavior or contract impact.
 
 ## Outputs
 
-After this skill runs, tracking must make the next step unambiguous:
+After this Skill runs, return:
 
-- which task is active
-- what blocks it
-- what exits it
-- whether additional tasks were added
+- canonical task tracking path,
+- canonical phase tracking path or null,
+- active task identity,
+- current tracking state,
+- phase when applicable,
+- dependencies,
+- exit criteria,
+- blockers,
+- whether additional tasks were added or split,
+- next pending tracking action.
 
 ## Completion condition
 
-This skill is complete only when:
+This Skill is complete only when:
 
-- tracking reflects the real current scope
-- any missing or split tasks are recorded
-- the next implementation step is unambiguous from tracking
-
-## Large-scope delegation
-
-If tracking review would span many tasks, many review findings, or a noisy mismatch between execution and tracking, the parent may:
-
-1. use `sub-agent-task-manager`
-2. ask a `sub-agent` for a bounded audit of missing tasks, stale entries, and ambiguous wording
-3. require a report under `reports/`
-4. apply and confirm the final tracking changes in the parent
-
-Do not let the `sub-agent` silently rewrite canonical tracking without parent review.
-
-Use these provisional thresholds as the default trigger:
-
-- suspected stale or missing tracking points are 3 or more
-- affected task rows are 5 or more
-- review findings or implementation discoveries to reconcile are 3 or more
-- `tasks-status.md` and `phases-status.md` both need coordinated edits across 2 or more sections each
+- tracking reflects the real current scope,
+- any missing or split tasks are recorded,
+- the next implementation step is unambiguous from canonical tracking,
+- no guessed tracking path was used.
