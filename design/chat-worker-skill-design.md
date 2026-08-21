@@ -46,7 +46,7 @@ commit、push、CI waitは別の状態である。review対象を固定するcom
 3. findingがあれば、local fix、該当local validation、commit、同じnormal reviewerによるfinding-limited closureを反復する。このreview/fix loopではCI完了を待たない。
 4. closure依頼前のcompleteness matrixで各findingの全required action、production実装、actual composition fixture、focused evidenceを確認する。
 5. CIを発火するpush前に、そのpushに含まれる変更範囲の該当local validationをGreenにする。local gate失敗中はCI-triggering pushを行わない。
-6. normal cycle収束後、final push前にrepository-defined full local gateをGreenにする。inner loopのfocused testはこのfull gateの代用にしない。
+6. normal cycle収束後、final publication candidate HEADに対してrepository-defined full local equivalence gateを一度だけGreenにし、exact-HEAD evidenceを記録する。inner loopはfocused evidenceを再利用し、broader validationはこのfull gateの代用にしない。content deltaでcandidateが変わった場合だけ旧runをinvalidatedとして保持して再実行する。
 7. independent final reviewと許可された一回のreport-attestation commitを完了してからfinal pushする。attestation後のexact-head `pull_request` required CIだけをmerge gateとして一度待つ。repository policyが要求しない`push` runは待たない。
 
 ### `remote_ci_only`

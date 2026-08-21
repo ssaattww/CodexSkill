@@ -73,7 +73,7 @@ commit、push、CI waitは別状態である。review対象を固定するcommit
 
 `local_execution_available`では、変更範囲のlocal testを実行してからreview対象commitを作成し、reviewする。findingごとのreview/fix loopはlocal fix、該当local validation、commit、finding-limited closureで進め、CI完了を待たない。closure依頼前に、全required action、production実装、actual composition fixture、focused evidenceをfindingごとに揃えたcompleteness matrixを確認する。
 
-CIを発火するpush前には該当local validationをGreenにする。normal cycle収束後のfinal push前にはrepository-defined full local gateをGreenにし、inner-loop focused testで代用しない。final attestation後にfinal pushを行い、exact-head `pull_request` required CIだけをmerge gateとして一度待つ。repository policyが要求しない`push` runは待たない。
+CIを発火するpush前には該当local validationをGreenにする。inner loopはfocused evidenceを再利用し、broader validationとは別に、normal cycle収束後のfinal publication candidate HEADへrepository-defined full local equivalence gateをちょうど一度実行してexact-HEAD evidenceを記録する。content deltaでcandidateが変わった場合だけ旧runをinvalidatedとして保持して再実行する。final attestation後にfinal pushを行い、PR作成または更新後にexact-head `pull_request` required CIだけをmerge gateとして一度待つ。repository policyが要求しない`push` runは待たない。
 
 ### Remote CI route
 
@@ -432,8 +432,10 @@ Release時の共通file複製とrepository相対link書換は行わない。
 19. 別fresh reviewerによる独立最終reviewを実施する。
 20. repository changeが必要になった場合はterminal stateを無効化し、normal cycleと同一independent reviewerのbounded finding／CI-delta closureへ戻る。
 21. passing reportを保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成し、allowlist diffを検証する。
-22. report-attestation commitをfinal pushし、exact-head `pull_request` required CIをmerge gateとして一度待つ。`remote_ci_only`ではroute内のmatching current-HEAD CIも正式verification evidenceとして扱う。
-23. final push後にPRを作成または更新し、PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
+22. report-attestation commitをfinal pushする。
+23. authorized PRを作成または更新する。
+24. publication後にexact-head `pull_request` required CIをmerge gateとして一度待つ。`remote_ci_only`ではroute内のmatching current-HEAD CIも正式verification evidenceとして扱う。
+25. PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
 24. attestation後にrepository-writing Skillを呼ばず、repository commitを追加しない。final handoffはinlineまたはbranch外でtransportする。
 25. mergeは利用者が行う。
 

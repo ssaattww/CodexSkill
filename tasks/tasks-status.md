@@ -17,6 +17,8 @@
     - local routeのCI-triggering push前に変更範囲のlocal validationがGreenである
     - remote-CI-only routeがmatching current-HEAD CIを正式なverification evidenceとして扱う
     - commit、push、CI waitを別の状態遷移として扱う
+    - canonical state vocabularyとして`commit_pending|committed`、`push_pending|pushed`、`ci_wait_pending|ci_wait_completed`をcontext、report、handoff、trackingで保持する
+    - final publication candidate HEADのfull local equivalence gateはnormal convergence後に一度だけ実行し、content delta時だけinvalidated evidenceを保持して再実行する
     - finding closure前にrequired action、production path、fixture、evidenceの完全性を確認する
     - terminal attestation後のexact-head pull-request CIだけをlocal routeのmerge gateとして待つ
     - local routeはvalidated local committed HEADをpre-review pushせずfreeze／one-time independent full review／attestation後にfinal push、authorized PR作成または更新、exact-head CI waitの順で進む
@@ -40,6 +42,7 @@
     - `skills/chat-review-worker/SKILL.md`
     - `skills/chat-handoff-manager/SKILL.md`
     - `skills/review-enforcer/SKILL.md`
+    - `skills/review-worker/SKILL.md`
     - `skills/git-workflow-manager/SKILL.md`
     - `skills/git-commit-manager/SKILL.md`
     - `skills/progress-sync-manager/SKILL.md`
@@ -89,7 +92,7 @@
     - PRとmain pushのworkflow triggerが`shared/**`だけの変更でもrepository validatorを実行する
     - PR buildがread-onlyかつ実PR HEAD SHAをcheckoutし、main反映後のrelease jobだけがwrite権限を持つ
     - finding identityとsource severityを維持し、reclassificationにはsource／new severity、理由、承認主体を記録する
-    - independent final review前にSkill decision、feedback ledger、normal handoff、report、trackingを含む全非final repository変更をcommit／pushする
+    - independent final review前の全non-final変更はcommitする。pre-review pushはremote-CI-onlyのformal verificationに限り、local routeへは適用しない
     - pre-freeze処理でrepositoryが変わった場合はnormal review／fix verificationへ戻る
     - passing final reportは予約済みpathだけを変更する1回のreport-attestation commitで保存できる
     - attestation後にrepository-writing Skillまたは追加Git commitを実行しない

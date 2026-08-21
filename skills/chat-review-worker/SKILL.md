@@ -25,6 +25,7 @@ All four must be installed. Do not replace them with repository-external shared 
 - `initial review`
 - `fix verification`
 - `independent final review`
+- `independent final closure`
 
 Use the same normal review chat for initial review and fix verification when available. Independent final review must use a fresh chat that did not implement, fix, or perform normal review.
 
@@ -81,7 +82,7 @@ Any other post-review repository commit invalidates completion and requires norm
 - Do not redefine review criteria locally when `review-worker` is unavailable; report the missing dependency.
 - Do not exceed current-chat permissions.
 - Do not reuse a verdict after the reviewed implementation HEAD changes.
-- Do not commit tracking, design, Skill, workflow, configuration, implementation, or handoff changes after independent final review.
+- Do not commit tracking, design, Skill, workflow, configuration, implementation, or handoff changes after a passing report-attestation commit; before that terminal state, required fixes follow the bounded closure path.
 - Do not create more than one report-attestation commit.
 - Do not merge.
 

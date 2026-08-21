@@ -40,7 +40,7 @@ targets, and applicable findings.
 3. Confirm required failure diagnostics can be preserved.
 4. Apply the smallest coherent change.
 5. Keep code, tests, documentation, configuration, and workflows aligned with the requirement.
-6. Run focused validation, then broader validation required by the target project.
+6. Run focused validation for the inner loop. Record broader validation separately from the repository-defined full local equivalence gate; the latter is executed once for the final publication candidate HEAD after normal convergence, unless a content delta invalidates that exact-HEAD evidence.
 7. Preserve or inspect logs, test results, standard output, standard error, and artifacts for failures.
 8. Return changed files, intentionally untouched areas, commands, results, commits, final HEAD, matching CI evidence, unknowns, and risks.
 

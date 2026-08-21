@@ -55,8 +55,9 @@ Then apply its purpose gate:
   outcome exist for the included implementation scope.
 - `normal_report`: the report faithfully records available implementation or
   review evidence; it must not require its own future SHA.
-- `report_attestation`: an independent full review has passed; first parent,
-  reserved-path allowlist, and no-later-commit conditions are explicit. This is
+- `report_attestation`: one exhaustive independent review has passed, or its
+  same-reviewer bounded closure has passed for the updated reviewed HEAD; first
+  parent, reserved-path allowlist, and no-later-commit conditions are explicit. This is
   the only post-review commit and its SHA is recorded externally after commit.
 
 Keep commit, push, and CI-wait state distinct. `local_execution_available`

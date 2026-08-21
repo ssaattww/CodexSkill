@@ -109,9 +109,15 @@ verification_capability_evidence:
 execution_state:
   technical_head: full_sha | unknown
   administrative_parent: full_sha | null
-  commit: pending | completed | not_required | unknown
-  push: pending | completed | not_required | unauthorized | unknown
-  ci_wait: pending | completed | not_required | unavailable | unknown
+  commit: commit_pending | committed | not_required | unknown
+  push: push_pending | pushed | not_required | unauthorized | unknown
+  ci_wait: ci_wait_pending | ci_wait_completed | not_required | unavailable | unknown
+  full_local_equivalence_gate:
+    state: not_started | passed | invalidated | not_required | unsupported | unknown
+    candidate_head: full_sha | unknown
+    invalidated_runs:
+      - head: full_sha
+        reason: string
 scope:
   - string
 non_goals:

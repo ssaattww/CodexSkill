@@ -16,6 +16,7 @@ Use the output of `work-context-manager` plus implementation or review evidence.
 For an independent-final-review report, require:
 
 - the immutable reviewed implementation HEAD,
+- initial independent reviewed HEAD, closure reviewed-HEAD chain, reviewer continuity, closure scope, and finding completeness matrix when closure occurred,
 - reviewer identity and independence evidence,
 - complete coverage dispositions, findings, held and unexplored items, validation assessment, and verdict,
 - the pre-reserved report path or paths,
@@ -56,6 +57,7 @@ A detailed report should include, as applicable:
 - validation commands and results,
 - CI runs, jobs, and artifacts tied to the target HEAD,
 - full findings and dispositions,
+- initial independent HEAD, closure reviewed-HEAD chain, reviewer continuity, closure scope, and completeness matrix,
 - severity reclassification records or severity errata,
 - intentionally untouched areas,
 - blocked, unknown, held, and unexplored items,
@@ -97,8 +99,21 @@ verification:
   technical_head: full_sha | unknown
   administrative_parent: full_sha | null
   commit_state: commit_pending | committed | not_required | unknown
-  push_state: pending | pushed | not_required | unauthorized | unknown
-  ci_wait_state: pending | completed | not_required | unavailable | unknown
+  push_state: push_pending | pushed | not_required | unauthorized | unknown
+  ci_wait_state: ci_wait_pending | ci_wait_completed | not_required | unavailable | unknown
+independent_closure:
+  initial_independent_reviewed_head: full_sha | null
+  closure_reviewed_heads:
+    - full_sha
+  reviewer_continuity: string | null
+  closure_scope:
+    - finding_or_ci_delta: string
+  completeness_matrix:
+    - finding_id: string
+      required_action: string
+      production_path: string
+      actual_composition_fixture: string
+      focused_evidence: string
 severity_records:
   - finding_id: string
     source_severity: blocking | high | medium | low

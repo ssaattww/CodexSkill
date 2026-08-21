@@ -54,10 +54,10 @@ verification:
     state: commit_pending | committed | not_required | unknown
     review_target_sha: full_sha | null
   push:
-    state: pending | pushed | not_required | unauthorized | unknown
+    state: push_pending | pushed | not_required | unauthorized | unknown
     head_sha: full_sha | unknown
   ci_wait:
-    state: pending | completed | not_required | unavailable | unknown
+    state: ci_wait_pending | ci_wait_completed | not_required | unavailable | unknown
     required_for: route_verification | merge_gate | not_required | unknown
   final_publication:
     sequence: final_push_then_authorized_pr_create_or_update_then_exact_head_pull_request_ci_wait | not_applicable | unknown
@@ -178,6 +178,19 @@ review:
     - criterion: string
       disposition: checked_no_finding | checked_finding | held | not_applicable | unexplored
       evidence: string
+  independent_closure:
+    initial_independent_reviewed_head: full_sha | null
+    closure_reviewed_heads:
+      - full_sha
+    reviewer_continuity: string | null
+    closure_scope:
+      - finding_or_ci_delta: string
+    completeness_matrix:
+      - finding_id: string
+        required_action: string
+        production_path: string
+        actual_composition_fixture: string
+        focused_evidence: string
   validation_assessment:
     - item: string
       result: supported | unsupported | failed | unavailable | not_applicable
@@ -293,6 +306,10 @@ transport:
 ## Compatibility
 
 - Writers emit schema version 3.
+- For version 3 packets written with prior enum spellings, normalize
+  `push.pending` to `push_pending`, `ci_wait.pending` to `ci_wait_pending`,
+  and `ci_wait.completed` to `ci_wait_completed`; preserve the original raw
+  payload in `source_payloads`.
 - Readers must accept schema versions 1 and 2 when encountered.
 - Normalize version 1 or 2 `cold_final_review` to `independent_final_review`.
 - Preserve the complete original version 1 or 2 packet as a `source_payloads` entry before projecting fields into version 3.
