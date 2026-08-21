@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
-  - Status: 通常review finding `I62-NR-001`〜`003`のfollow-up実装中
+  - Status: 通常review cycle収束、独立最終review待ち
   - Phase: Phase 8
   - Estimate: M
   - Depends on: Issue #58、Issue #61
@@ -48,13 +48,18 @@
     - `reports/issue-62-design-update-20260821183448.md`
     - `reports/issue-62-skill-implementation-20260821184240.md`
     - `reports/issue-62-normal-review-followup-20260821190259.md`
+    - `reports/issue-62-normal-review-20260821185421.md`
+    - `reports/issue-62-normal-review-finding-closure-20260821190920.md`
+    - `reports/issue-62-normal-review-followup-r2-20260821191250.md`
+    - `reports/issue-62-normal-review-finding-closure-r2-20260821191456.md`
   - Verification:
     - TDDはCodexSkill repository policyにより`not applicable`
     - `git diff --check`は成功
     - 2つのSkill hierarchy設計は一致
     - repository validator／bundle buildはlocal Python runtime不在のため`unsupported`
     - Markdown lintは`tools/lint/`と`package.json`不在のため`unsupported`
-    - 通常review、独立review、PR作成はpending
+    - 通常reviewは`I62-NR-001`〜`003`を全件closedとし`pass_with_held`
+    - 独立review、PR作成はpending
 
 - T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
   - Status: normal fix verification pass、pre-freeze最終HEAD検証待ち
