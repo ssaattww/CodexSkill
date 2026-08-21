@@ -13,7 +13,9 @@ Implement one accepted scope and return implementation evidence to the caller.
 
 Use the output of `work-context-manager`. Do not infer runtime permissions, persistence, delegation, or merge authority.
 
-Required context includes scope, non-goals, requirements, target identity, write boundary, development policy, validation targets, and applicable findings.
+Required context includes scope, non-goals, requirements, target identity,
+`verification_capability`, write boundary, development policy, validation
+targets, and applicable findings.
 
 ## Modes
 
@@ -38,9 +40,13 @@ Required context includes scope, non-goals, requirements, target identity, write
 3. Confirm required failure diagnostics can be preserved.
 4. Apply the smallest coherent change.
 5. Keep code, tests, documentation, configuration, and workflows aligned with the requirement.
-6. Run focused validation, then broader validation required by the target project.
+6. Run focused validation for the inner loop. Record broader validation separately from the repository-defined full local equivalence gate; the latter is executed once for the final publication candidate HEAD after normal convergence, unless a content delta invalidates that exact-HEAD evidence.
 7. Preserve or inspect logs, test results, standard output, standard error, and artifacts for failures.
 8. Return changed files, intentionally untouched areas, commands, results, commits, final HEAD, matching CI evidence, unknowns, and risks.
+
+Keep validation, review-target commit, push, and CI evidence or wait state
+separate. Record the evidence supplied by the caller, but do not define or
+perform runtime-specific push or CI-wait routing in this runtime-neutral Skill.
 
 ## Testing policy
 
@@ -64,9 +70,10 @@ Return:
 - intentionally untouched areas,
 - validation commands and results,
 - failure diagnostics and artifacts,
-- commit identities,
-- final HEAD SHA,
-- matching CI run or explicit absence,
+- verification capability and validation evidence,
+- review-target commit identity or explicit pending state,
+- push state and matching CI evidence or explicit absence,
+- final technical HEAD SHA and administrative parent when applicable,
 - blocked items, unknowns, and remaining risks,
 - next required action.
 

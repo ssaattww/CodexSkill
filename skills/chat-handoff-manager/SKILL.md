@@ -44,6 +44,25 @@ target:
   reviewed_head: full_sha | null
   commit_range: string | null
 
+verification:
+  capability: local_execution_available | remote_ci_only | unknown
+  capability_evidence:
+    - string
+  technical_head: full_sha | unknown
+  administrative_parent: full_sha | null
+  commit:
+    state: commit_pending | committed | not_required | unknown
+    review_target_sha: full_sha | null
+  push:
+    state: push_pending | pushed | not_required | unauthorized | unknown
+    head_sha: full_sha | unknown
+  ci_wait:
+    state: ci_wait_pending | ci_wait_completed | not_required | unavailable | unknown
+    required_for: route_verification | merge_gate | not_required | unknown
+  final_publication:
+    sequence: final_push_then_authorized_pr_create_or_update_then_exact_head_pull_request_ci_wait | not_applicable | unknown
+    pr_action: create | update | not_required | unauthorized | unknown
+
 authoritative_requirements:
   - source: user_instruction | repository_instruction | issue | task | design | pr | report | handoff | other
     reference: string
@@ -138,7 +157,7 @@ implementation:
     - string
 
 review:
-  mode: initial_review | fix_verification | independent_final_review | not_applicable
+  mode: initial_review | fix_verification | independent_final_review | independent_final_closure | not_applicable
   reviewed_head: full_sha | unknown
   reviewer:
     identity: string | unknown
@@ -159,6 +178,19 @@ review:
     - criterion: string
       disposition: checked_no_finding | checked_finding | held | not_applicable | unexplored
       evidence: string
+  independent_closure:
+    initial_independent_reviewed_head: full_sha | null
+    closure_reviewed_heads:
+      - full_sha
+    reviewer_continuity: string | null
+    closure_scope:
+      - finding_or_ci_delta: string
+    completeness_matrix:
+      - finding_id: string
+        required_action: string
+        production_path: string
+        actual_composition_fixture: string
+        focused_evidence: string
   validation_assessment:
     - item: string
       result: supported | unsupported | failed | unavailable | not_applicable
@@ -259,7 +291,7 @@ transport:
 
 - Populate the typed projection for every available field defined above.
 - Also preserve each producing core Skill's complete, versioned output under `source_payloads`; typed projection does not replace the raw source payload.
-- Preserve every available field required by the producing core Skill's output contract, including development policy, planned validation, required failure diagnostics, blocked state, failure diagnostics, reviewer identity, reviewer independence, reserved report paths, and exact report-attestation conditions.
+- Preserve every available field required by the producing core Skill's output contract, including development policy, planned validation, required failure diagnostics, blocked state, `verification_capability`, separate commit/push/CI-wait state, failure diagnostics, reviewer identity, reviewer independence, reserved report paths, and exact report-attestation conditions.
 - Preserve exact finding identity, origin, location, impact, evidence, required action, and reviewed HEAD.
 - Preserve required coverage dispositions, held items, unexplored areas, validation assessment, intentionally untouched areas, commands, tests, CI artifacts, implementation commits, report paths, and PR comment references.
 - Use `extensions` for runtime or future fields that are not yet represented in the typed projection.
@@ -274,6 +306,10 @@ transport:
 ## Compatibility
 
 - Writers emit schema version 3.
+- For version 3 packets written with prior enum spellings, normalize
+  `push.pending` to `push_pending`, `ci_wait.pending` to `ci_wait_pending`,
+  and `ci_wait.completed` to `ci_wait_completed`; preserve the original raw
+  payload in `source_payloads`.
 - Readers must accept schema versions 1 and 2 when encountered.
 - Normalize version 1 or 2 `cold_final_review` to `independent_final_review`.
 - Preserve the complete original version 1 or 2 packet as a `source_payloads` entry before projecting fields into version 3.
@@ -291,9 +327,17 @@ The packet must record:
 
 - `review.reviewed_head`: the implementation HEAD reviewed by the independent reviewer,
 - `review.reviewer`: identity and independence evidence,
+- `review.mode` and reviewed-head chain for the one exhaustive independent pass and any same-reviewer bounded closure,
 - `review.reserved_report_paths`: paths reserved before the review,
 - `review.report_attestation`: the complete allowlist and validation gate,
 - `report.attestation_head`: the validated report-only commit, when one exists.
+- `verification`: capability evidence plus distinct technical head,
+  administrative parent, commit, push, and CI-wait state. Do not require a
+  packet or report to contain its own future commit SHA; use `commit_pending`
+  until a commit exists.
+- `verification.final_publication`: the terminal sequence of final push,
+  authorized PR creation or update, then exact-head required `pull_request` CI
+  wait when it is the merge gate.
 
 ## Completion condition
 

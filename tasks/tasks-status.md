@@ -2,9 +2,67 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-07-30
+- Updated: 2026-08-21
 
 ## In Progress
+
+- T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
+  - Status: 通常review cycle収束、独立最終review待ち
+  - Phase: Phase 8
+  - Estimate: M
+  - Depends on: Issue #58、Issue #61
+  - Exit Criteria:
+    - work contextが実際のtool capabilityから`local_execution_available`または`remote_ci_only`を解決する
+    - local routeがlocal test、review対象commit、reviewの順で進み、review中にCI完了を待たない
+    - local routeのCI-triggering push前に変更範囲のlocal validationがGreenである
+    - remote-CI-only routeがmatching current-HEAD CIを正式なverification evidenceとして扱う
+    - commit、push、CI waitを別の状態遷移として扱う
+    - canonical state vocabularyとして`commit_pending|committed`、`push_pending|pushed`、`ci_wait_pending|ci_wait_completed`をcontext、report、handoff、trackingで保持する
+    - final publication candidate HEADのfull local equivalence gateはnormal convergence後に一度だけ実行し、content delta時だけinvalidated evidenceを保持して再実行する
+    - finding closure前にrequired action、production path、fixture、evidenceの完全性を確認する
+    - terminal attestation後のexact-head pull-request CIだけをlocal routeのmerge gateとして待つ
+    - local routeはvalidated local committed HEADをpre-review pushせずfreeze／one-time independent full review／attestation後にfinal push、authorized PR作成または更新、exact-head CI waitの順で進む
+    - remote-CI-onlyだけがauthorized pre-review pushとmatching current-HEAD CIをformal verificationに使う
+    - independent full reviewは一度だけとし、以後は同一reviewerのfinding／CI-delta closureに限定する
+    - review-target、final task、normal report、report-attestation commitのpurpose gateが循環なく区別される
+    - runtime-neutral core SkillとCodex／ChatGPT wrapperの責務が重複しない
+    - workflow設計、Skill hierarchy、関連Skill contractが同期している
+    - repository validation、Markdown check、通常review、独立reviewが成功する
+    - commit、push、PR作成が完了する
+  - Output:
+    - `design/chat-worker-skill-design.md`
+    - `design/skill-hierarchy-design.md`
+    - `skills/design/skill-hierarchy-design.md`
+    - `skills/work-context-manager/SKILL.md`
+    - `skills/implementation-worker/SKILL.md`
+    - `skills/development-orchestrator/SKILL.md`
+    - `skills/execution-cost-stabilizer/SKILL.md`
+    - `skills/implementation-executor/SKILL.md`
+    - `skills/chat-implementation-worker/SKILL.md`
+    - `skills/chat-review-worker/SKILL.md`
+    - `skills/chat-handoff-manager/SKILL.md`
+    - `skills/review-enforcer/SKILL.md`
+    - `skills/review-worker/SKILL.md`
+    - `skills/git-workflow-manager/SKILL.md`
+    - `skills/git-commit-manager/SKILL.md`
+    - `skills/progress-sync-manager/SKILL.md`
+    - `skills/report-output-manager/SKILL.md`
+    - `skills/report-writer/SKILL.md`
+    - `reports/issue-62-design-update-20260821183448.md`
+    - `reports/issue-62-skill-implementation-20260821184240.md`
+    - `reports/issue-62-normal-review-followup-20260821190259.md`
+    - `reports/issue-62-normal-review-20260821185421.md`
+    - `reports/issue-62-normal-review-finding-closure-20260821190920.md`
+    - `reports/issue-62-normal-review-followup-r2-20260821191250.md`
+    - `reports/issue-62-normal-review-finding-closure-r2-20260821191456.md`
+  - Verification:
+    - TDDはCodexSkill repository policyにより`not applicable`
+    - `git diff --check`は成功
+    - 2つのSkill hierarchy設計は一致
+    - repository validator／bundle buildはlocal Python runtime不在のため`unsupported`
+    - Markdown lintは`tools/lint/`と`package.json`不在のため`unsupported`
+    - 通常reviewは`I62-NR-001`〜`003`を全件closedとし`pass_with_held`
+    - 独立review、PR作成はpending
 
 - T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
   - Status: normal fix verification pass、pre-freeze最終HEAD検証待ち
@@ -34,7 +92,7 @@
     - PRとmain pushのworkflow triggerが`shared/**`だけの変更でもrepository validatorを実行する
     - PR buildがread-onlyかつ実PR HEAD SHAをcheckoutし、main反映後のrelease jobだけがwrite権限を持つ
     - finding identityとsource severityを維持し、reclassificationにはsource／new severity、理由、承認主体を記録する
-    - independent final review前にSkill decision、feedback ledger、normal handoff、report、trackingを含む全非final repository変更をcommit／pushする
+    - independent final review前の全non-final変更はcommitする。pre-review pushはremote-CI-onlyのformal verificationに限り、local routeへは適用しない
     - pre-freeze処理でrepositoryが変わった場合はnormal review／fix verificationへ戻る
     - passing final reportは予約済みpathだけを変更する1回のreport-attestation commitで保存できる
     - attestation後にrepository-writing Skillまたは追加Git commitを実行しない

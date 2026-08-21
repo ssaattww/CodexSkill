@@ -16,6 +16,7 @@ Use the output of `work-context-manager` plus implementation or review evidence.
 For an independent-final-review report, require:
 
 - the immutable reviewed implementation HEAD,
+- initial independent reviewed HEAD, closure reviewed-HEAD chain, reviewer continuity, closure scope, and finding completeness matrix when closure occurred,
 - reviewer identity and independence evidence,
 - complete coverage dispositions, findings, held and unexplored items, validation assessment, and verdict,
 - the pre-reserved report path or paths,
@@ -32,7 +33,7 @@ For an independent-final-review report, require:
 
 ## Evidence rules
 
-- Preserve exact target identity, including branch, base, current HEAD, reviewed implementation HEAD, relevant commit range, and report-attestation head when supplied.
+- Preserve exact target identity, including branch, base, current HEAD, reviewed implementation HEAD, relevant commit range, verification capability, separate commit/push/CI-wait state, and report-attestation head when supplied.
 - Do not convert missing, failed, blocked, or unavailable checks into success.
 - Distinguish direct evidence from inference.
 - Keep findings, held items, unexplored areas, unknowns, and remaining risks explicit.
@@ -56,6 +57,7 @@ A detailed report should include, as applicable:
 - validation commands and results,
 - CI runs, jobs, and artifacts tied to the target HEAD,
 - full findings and dispositions,
+- initial independent HEAD, closure reviewed-HEAD chain, reviewer continuity, closure scope, and completeness matrix,
 - severity reclassification records or severity errata,
 - intentionally untouched areas,
 - blocked, unknown, held, and unexplored items,
@@ -74,7 +76,7 @@ When `report_type` is `independent final review report` and persistence mode is 
 - the reserved report path,
 - that the attestation commit must change no other path,
 - that the attestation SHA will be recorded externally after commit,
-- that any later Git commit invalidates completion unless a new review lifecycle is performed.
+- that any later Git commit invalidates completion unless normal fix verification and the same independent reviewer's bounded finding/CI-delta closure are performed.
 
 The report must not request changes to task tracking, design, Skills, workflows, configuration, implementation, or handoff after independent final review.
 
@@ -92,6 +94,26 @@ target_identity:
   base_ref: string | null
   current_head: full_sha | unknown
   reviewed_implementation_head: full_sha | null
+verification:
+  capability: local_execution_available | remote_ci_only | unknown
+  technical_head: full_sha | unknown
+  administrative_parent: full_sha | null
+  commit_state: commit_pending | committed | not_required | unknown
+  push_state: push_pending | pushed | not_required | unauthorized | unknown
+  ci_wait_state: ci_wait_pending | ci_wait_completed | not_required | unavailable | unknown
+independent_closure:
+  initial_independent_reviewed_head: full_sha | null
+  closure_reviewed_heads:
+    - full_sha
+  reviewer_continuity: string | null
+  closure_scope:
+    - finding_or_ci_delta: string
+  completeness_matrix:
+    - finding_id: string
+      required_action: string
+      production_path: string
+      actual_composition_fixture: string
+      focused_evidence: string
 severity_records:
   - finding_id: string
     source_severity: blocking | high | medium | low
@@ -109,7 +131,7 @@ unresolved_discrepancies:
   - string
 ```
 
-`report_attestation_head` remains null in the generated report result because the caller creates and validates that commit after generation.
+`report_attestation_head` remains null in the generated report result because the caller creates and validates that commit after generation. A generated report must use `commit_pending`, `technical_head`, and `administrative_parent` rather than require a future self-referential commit SHA.
 
 ## Boundaries
 

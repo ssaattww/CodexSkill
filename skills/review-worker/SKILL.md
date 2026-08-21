@@ -21,6 +21,7 @@ Required input includes:
 - accepted scope, requirements, and design,
 - complete changed-file set and direct dependencies,
 - current-HEAD validation and CI evidence,
+- `verification_capability` and separate commit, push, and CI evidence state,
 - previous findings and reviewed HEAD for fix verification,
 - reviewer identity and independence evidence,
 - any pre-reserved independent-final-review report path.
@@ -41,7 +42,17 @@ Preserve each source finding's severity. A severity may change only through an e
 
 Review the frozen implementation HEAD independently. The reviewer must not have implemented the change, implemented review fixes, or served as the normal reviewer. Perform an independent pass before relying on previous review conclusions.
 
-Before this mode starts, every implementation, design, workflow, configuration, task-tracking, handoff, and non-final report change must already be committed and pushed. The independent-final-review report path should be reserved before the reviewed implementation HEAD is frozen.
+Before this mode starts, every implementation, design, workflow, configuration, task-tracking, handoff, and non-final report change must already be committed. For `local_execution_available`, freeze that validated local committed HEAD without pre-review push. For `remote_ci_only`, authorized pre-review push and matching current-HEAD CI are formal route evidence. The independent-final-review report path should be reserved before the reviewed implementation HEAD is frozen.
+
+This mode performs exactly one exhaustive, independent coverage pass per task lifecycle. If its findings require a new reviewed HEAD, the same independent reviewer performs only finding- and CI-delta-limited closure verification after the completeness matrix is satisfied; it does not perform another exhaustive pass or introduce new review criteria.
+
+### Independent final closure
+
+Use this mode only with the same reviewer that completed the single exhaustive
+independent review. Review the updated immutable HEAD against the carried
+finding identities and CI delta only. Record the initial and closure reviewed
+HEADs, preserve terminal-attestation conditions, and return `incomplete` if
+the closure matrix is absent or scope expands.
 
 ## Required coverage
 
@@ -73,6 +84,21 @@ Each finding must include identity, severity, origin, location, description, imp
 
 Finding identity and severity are continuity-bearing review data. Fix verification and report consolidation must preserve them unless an explicit reclassification record is supplied. When a downstream report contains a severity transcription error, preserve the historical report and publish a current erratum identifying the source severity and the incorrect downstream value.
 
+## Finding closure readiness
+
+Before a caller requests finding-limited closure, require a completeness matrix
+for each applicable finding. Every matrix row must identify and evidence:
+
+- every required action,
+- the production path that implements it,
+- the actual composition fixture that exercises the composed behavior, and
+- focused validation evidence.
+
+If any required cell is absent, partial, blocked, or mismatched to the reviewed
+HEAD, return it as incomplete and do not start closure review. This is a
+review-evidence requirement; this runtime-neutral Skill does not schedule push
+or CI waits.
+
 ## Verdicts
 
 - `pass`: no required finding and no verdict-blocking unexplored area.
@@ -103,7 +129,7 @@ reviewed_implementation_head: full_sha
 report_attestation_head: full_sha | null
 ```
 
-Any other post-review commit invalidates completion and requires normal fix verification followed by a fresh independent final review.
+Any other post-review commit invalidates completion. Return to normal fix verification, update the reviewed HEAD, and use the same independent reviewer only for bounded finding/CI-delta closure before a new attestation decision.
 
 ## Boundaries
 
@@ -119,10 +145,13 @@ Return:
 
 - review mode,
 - `reviewed_implementation_head`,
+- `initial_independent_reviewed_head` and any closure reviewed HEAD,
+- independent-review continuity and bounded finding/CI-delta closure scope,
 - base and commit range,
 - reviewer identity and independence evidence,
 - required coverage dispositions,
 - full findings,
+- finding completeness matrix with a disposition for every required action,
 - any explicit severity reclassification records,
 - held items,
 - unexplored areas,

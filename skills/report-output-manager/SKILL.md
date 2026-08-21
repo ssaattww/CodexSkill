@@ -24,6 +24,8 @@ Do not replace these Skills with `shared/` files or duplicate their semantics lo
 - Reserve a path under the target repository's report rules before delegated section writing.
 - Pass authoritative context and complete evidence to `report-writer`.
 - Persist the complete result without changing verdict, severity, validation status, uncertainty, reviewed implementation identity, or reserved-path metadata.
+- Preserve `verification_capability` and distinct validation, commit, push, and
+  CI-wait state supplied by the caller.
 - Leave PR commenting and handoff transport to the caller unless explicitly delegated.
 
 ## Normal persistence mode
@@ -37,13 +39,14 @@ For implementation, verification, normal review, fix verification, and consolida
 
 ## Independent-final-review report-attestation mode
 
-Use this mode only after a fresh independent reviewer has passed a frozen implementation HEAD.
+Use this mode only after the one exhaustive independent reviewer has passed a frozen implementation HEAD, or that same reviewer has completed bounded finding/CI-delta closure for its updated reviewed HEAD.
 
 Before review:
 
 - reserve the exact independent-final-review report path or paths,
-- commit and push all other implementation, design, workflow, configuration, tracking, handoff, and report changes,
-- freeze the current HEAD as `reviewed_implementation_head`.
+- commit all other implementation, design, workflow, configuration, tracking, handoff, and report changes,
+- for `local_execution_available`, freeze the validated local committed HEAD without pre-review push; for `remote_ci_only`, record authorized pre-review push and matching current-HEAD CI,
+- freeze that HEAD as `reviewed_implementation_head`.
 
 After a passing verdict:
 
@@ -55,6 +58,11 @@ After a passing verdict:
 6. Record the resulting `report_attestation_head` externally in the PR body, PR comment, or handoff returned outside the branch.
 7. Do not create another repository commit.
 
+Generated reports and tracking must not require their own future commit SHA.
+Before persistence, use `commit_pending` with `technical_head` and, for an
+attestation, `administrative_parent`; record the resulting SHA only externally
+after the commit is created and validated.
+
 The completion identity is:
 
 ```yaml
@@ -62,7 +70,7 @@ reviewed_implementation_head: full_sha
 report_attestation_head: full_sha
 ```
 
-Any extra changed path, parent mismatch, second attestation commit, or later repository commit invalidates the terminal state and requires the normal review lifecycle to resume.
+Any extra changed path, parent mismatch, second attestation commit, or later repository commit invalidates the terminal state and requires normal fix verification plus same-reviewer bounded closure before a new attestation decision.
 
 ## Default path rules
 

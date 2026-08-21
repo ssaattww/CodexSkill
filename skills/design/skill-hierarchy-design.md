@@ -42,10 +42,13 @@ runtime wrapper
 
 - `work-context-manager`
   - authority、scope、target identity、development policy、validation target、current-HEAD CI evidence、write boundaryを解決する
+  - 実tool capabilityから`verification_capability`を`local_execution_available`または`remote_ci_only`として解決する
 - `implementation-worker`
   - initial implementationとreview follow-upを実行する
+  - routeに共通のvalidation evidenceを返し、runtime別のCI待機規則を保持しない
 - `review-worker`
   - initial review、fix verification、independent final reviewを実行する
+  - closure前のrequired-action completeness matrixを確認し、不足したfindingをclosure reviewへ渡さない
 - `report-writer`
   - evidenceの意味を変えずにreportと簡易PR commentを生成する
 
@@ -53,9 +56,28 @@ runtime wrapper
 
 ### Runtime wrapper
 
-Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuity、fresh independent reviewer、report path、persistence、completion gateを所有する。
+Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuity、一度だけのfresh independent reviewerと同reviewerによるbounded closure、report path、persistence、completion gateを所有する。
 
 ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persistence、chat continuity、cross-chat handoffを所有する。
+
+## Verification capabilityと状態遷移
+
+`work-context-manager`はruntime名ではなく実際のtool capabilityでrouteを決め、context、report、handoffに`verification_capability`を記録する。
+
+- `local_execution_available`: local test executorを利用できる。Codexだけでなくlocal executorを利用可能なChatGPT chatもこのrouteを使う。
+- `remote_ci_only`: local test executorを利用できない。ChatGPTだけでなくshellを利用不能なCodex runtimeもこのrouteを使う。
+
+commit、push、CI waitは別状態である。review対象を固定するcommitは両routeで必須だが、commitだけでpushまたはCI waitを意味しない。runtime-neutral coreはevidenceとreviewの意味論を扱い、Codex／ChatGPT wrapperはそれぞれ実行能力、authorized push、CI evidence取得と待機を管理する。
+
+### Local route
+
+`local_execution_available`では、変更範囲のlocal testを実行してからreview対象commitを作成し、reviewする。findingごとのreview/fix loopはlocal fix、該当local validation、commit、finding-limited closureで進め、CI完了を待たない。closure依頼前に、全required action、production実装、actual composition fixture、focused evidenceをfindingごとに揃えたcompleteness matrixを確認する。
+
+CIを発火するpush前には該当local validationをGreenにする。inner loopはfocused evidenceを再利用し、broader validationとは別に、normal cycle収束後のfinal publication candidate HEADへrepository-defined full local equivalence gateをちょうど一度実行してexact-HEAD evidenceを記録する。content deltaでcandidateが変わった場合だけ旧runをinvalidatedとして保持して再実行する。final attestation後にfinal pushを行い、PR作成または更新後にexact-head `pull_request` required CIだけをmerge gateとして一度待つ。repository policyが要求しない`push` runは待たない。
+
+### Remote CI route
+
+`remote_ci_only`ではlocal validationを実行できないため、authorized push後のmatching current-HEAD CIを正式なverification evidenceとして待機できる。matching runが不在、未完了、または失敗なら成功扱いにせず、reportとhandoffへ記録する。review前commit、closure前completeness matrix、final attestation後のexact-head `pull_request` required CIは両routeの共通gateである。
 
 共通動作を複数Skillから同一fileとして参照しない。共通動作は独立Skillとして定義し、wrapperまたは他のSkillがSkill名で呼び出す。
 
@@ -133,8 +155,9 @@ Codexでも独立最終レビューを必須とし、技術レビューの意味
 6. required findingがある場合はimplementation flowへ戻す。
 7. fix後は原則として同じnormal reviewerを継続利用する。
 8. `review-worker`のfix verificationでfinding解消、fix diff、直接影響、同一欠陥class、新規変更領域を確認する。
-9. normal review／fix verification report、implementation report、verification report、tracking、designを保存してcommit／pushする。
-10. required findingが解消または明示的にdispositionされるまで、bounded normal cycleを継続する。
+9. closure依頼前に、findingごとの全required action、production実装、actual composition fixture、focused evidenceをcompleteness matrixで確認する。不足があればreviewerへ渡さない。
+10. normal review／fix verification report、implementation report、verification report、tracking、designを保存してcommitする。pushとCI waitはverification routeに従う別状態であり、local routeのreview/fix loopに含めない。
+11. required findingが解消または明示的にdispositionされるまで、bounded normal cycleを継続する。
 
 元のnormal reviewerを継続できない場合は、replacement identityと理由を記録し、finding identity、criteria、reviewed HEAD、fix context、held、unexploredを完全に引き継ぐ。
 
@@ -149,13 +172,13 @@ normal review cycleが収束した後、independent final reviewのtargetをfree
 - feedback classificationと`feedback-points-manager`によるledger同期
 - repository-backed normal handoff
 - implementation、design、workflow、configuration、tracking、normal review report、fix-verification report、verification report
-- current-HEAD validationとCI evidence
+- routeに応じたcurrent-HEAD validation evidence。`remote_ci_only`ではmatching current-HEAD CIを正式evidenceとして待機でき、`local_execution_available`ではfinal attestation後のexact-head `pull_request` required CIだけをmerge gateとして一度待つ
 
-上記の処理でrepository fileが変わった場合、validation、report、tracking、commit／pushを行い、normal reviewまたはfix verificationへ戻る。新しいrepository writeが残った状態でfreezeしてはならない。
+上記の処理でrepository fileが変わった場合、validation、report、tracking、commitを行い、verification routeに従ってpushし、normal reviewまたはfix verificationへ戻る。新しいrepository writeが残った状態でfreezeしてはならない。
 
 ### 独立最終レビュー
 
-pre-freeze gateを通過し、全ての非final変更がcommit／pushされた後に、independent-final-review report pathを予約し、その時点のcurrent HEADを`reviewed implementation HEAD`として固定する。
+pre-freeze gateを通過し、全ての非final変更がcommitされた後に、independent-final-review report pathを予約する。`local_execution_available`ではvalidated local committed HEADをpushせずに、`remote_ci_only`ではauthorized pre-review pushとmatching current-HEAD CIをformal evidenceとして、そのHEADを`reviewed implementation HEAD`に固定する。
 
 fresh reviewerは次を満たす。
 
@@ -170,7 +193,7 @@ fresh reviewerは次を満たす。
 - 過去review結論を読む前に独立passを行うこと
 - normal review reportとは別にindependent final review reportを作ること
 
-独立最終レビューでrequired findingまたは新しいrepository write obligationが出た場合はterminal stateを無効化し、implementationまたはpre-freeze処理へ戻る。HEAD更新後はnormal reviewerでfix verificationを行い、さらに別のfresh reviewerで独立最終レビューをやり直す。
+独立最終レビューはtask lifecycleで一度だけの全coverage passである。required findingまたは新しいrepository write obligationが出た場合はterminal stateを無効化し、implementationとnormal reviewerのfix verificationへ戻る。HEAD更新後は最初の独立reviewerが、completeness matrixを満たしたfinding／CI-deltaだけをbounded closureとして確認し、新しい観点や再度の全coverage passを行わない。
 
 normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身のreviewだけでは完了条件を満たさない。
 
@@ -189,6 +212,8 @@ normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身の
 - report-attestation commit以後にrepository commitを作らない
 - 親またはwrapperがallowlist diffを検証し、結果をPR bodyまたはPR commentへ記録する
 
+report-attestation commit後のfinal push、PR作成または更新、exact-head `pull_request` required CI待機は、report-attestation後にGit HEADを変更しないmerge gateであり、attestationを無効化しない。local routeではこの一回だけを待ち、`push` runはrepository policyが要求しない限り待たない。
+
 完了identityは次のpairで表す。
 
 ```yaml
@@ -196,7 +221,7 @@ reviewed_implementation_head: full_sha
 report_attestation_head: full_sha | null
 ```
 
-report-attestation commitは新しいimplementation contentへverdictを転用するものではない。条件外のpost-review commitが1件でも発生した場合、完了状態を無効化し、normal fix verificationとfresh independent final reviewをやり直す。
+report-attestation commitは新しいimplementation contentへverdictを転用するものではない。条件外のpost-review commitが1件でも発生した場合、完了状態を無効化し、normal fix verificationと同一independent reviewerのbounded finding／CI-delta closureへ戻る。
 
 attestation後に許可するのはGit HEADを変更しない処理だけである。
 
@@ -395,21 +420,24 @@ Release時の共通file複製とrepository相対link書換は行わない。
 7. 対象repositoryがTDDを要求する場合は`tdd-executor`を実行する。
 8. `implementation-executor`から`implementation-worker`を呼び出して実装する。
 9. focused validationと必要なfull validationを実行する。
-10. `report-output-manager`から`report-writer`を呼び出してimplementation／verification reportを保存する。
-11. `progress-sync-manager`でreportとtrackingを同期し、全非final変更をcommit／pushする。
-12. `review-enforcer`から`review-worker`を呼び出して通常review cycleを完了する。
-13. fixがあれば実装、validation、report、tracking、commit／push、normal fix verificationを繰り返す。
+10. `report-output-manager`から`report-writer`を呼び出してimplementation／verification reportを保存する。reportとtrackingは自己を含む将来のcommit SHAを要求せず、pre-commit stateは`commit_pending`としてtechnical HEADとadministrative parentを区別する。
+11. `progress-sync-manager`でreportとtrackingを同期し、全非final変更をcommitする。
+12. `review-enforcer`から`review-worker`を呼び出して通常review cycleを完了する。review前commitは必須であり、closure依頼前にrequired-action completeness matrixを完了する。
+13. fixがあれば実装、routeに応じたvalidation、report、tracking、commit、normal fix verificationを繰り返す。local routeではCI完了を待たず、CI-triggering push前に該当local validationをGreenにする。
 14. normal cycle収束後、end-of-Issue Skill-gap decisionを行う。
 15. current scopeで必要な`skill-authoring-wrapper`処理を実行し、feedback classification、feedback ledger、normal handoffを保存する。
-16. steps 14から15でrepositoryが変わった場合、validation、report、tracking、commit／push、normal fix verificationを再実施する。
+16. steps 14から15でrepositoryが変わった場合、validation、report、tracking、commit、verification routeに従うpush、normal fix verificationを再実施する。
 17. 全pre-freeze変更を含むnormal cycleが収束したことを確認し、independent-final-review report pathを予約する。
 18. current HEADをreviewed implementation HEADとしてfreezeする。
 19. 別fresh reviewerによる独立最終reviewを実施する。
-20. repository changeが必要になった場合はfreezeを無効化し、normal cycleへ戻る。
+20. repository changeが必要になった場合はterminal stateを無効化し、normal cycleと同一independent reviewerのbounded finding／CI-delta closureへ戻る。
 21. passing reportを保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成し、allowlist diffを検証する。
-22. PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
-23. attestation後にrepository-writing Skillを呼ばず、repository commitを追加しない。final handoffはinlineまたはbranch外でtransportする。
-24. mergeは利用者が行う。
+22. report-attestation commitをfinal pushする。
+23. authorized PRを作成または更新する。
+24. publication後にexact-head `pull_request` required CIをmerge gateとして一度待つ。`remote_ci_only`ではroute内のmatching current-HEAD CIも正式verification evidenceとして扱う。
+25. PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
+24. attestation後にrepository-writing Skillを呼ばず、repository commitを追加しない。final handoffはinlineまたはbranch外でtransportする。
+25. mergeは利用者が行う。
 
 ## Skill一覧
 
@@ -428,7 +456,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `work-context-manager` | authority、scope、target identity、policy、validation、CI、write boundaryを解決する | runtime非依存Skillとして実行 |
+| `work-context-manager` | authority、scope、target identity、policy、validation、CI、`verification_capability`、write boundaryを解決する | runtime非依存Skillとして実行 |
 | `implementation-worker` | initial implementationとreview follow-upを実施する | runtime非依存Skillとして実行 |
 | `review-worker` | initial review、fix verification、independent final reviewとattestation条件を返す | runtime非依存Skillとして実行 |
 | `report-writer` | evidence-faithfulなreport、簡易PR comment、persistence metadataを生成する | runtime非依存Skillとして実行 |
@@ -492,6 +520,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - reviewは詳細reportへ記録する。
 - CIは対象current HEAD SHAに紐づくrunだけを使用する。
 - 別SHAのrunを代用しない。
+- report、tracking、handoffは自己を含む将来のcommit SHAを要求しない。`commit_pending`、technical HEAD、administrative parentを区別する。
 - reportとhandoffを混同しない。
 - handoffはtyped projectionとversioned raw source payloadでcore Skill outputを欠落なくtransportする。
 - unknown、blocked、held、unexplored、失敗結果を消さない。

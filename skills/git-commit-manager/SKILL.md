@@ -25,14 +25,16 @@ Before running this skill, gather:
 - staged or candidate file set
 - review evidence
 - validation results or explicit non-validation state
+- commit purpose and state: `review_target`, `final_task`, `normal_report`, or `report_attestation`
 
 ## Rules
 
 - Keep commit scope aligned to the current task.
 - Avoid mixing unrelated work.
-- Default to one commit for the current task.
-- Split one task into multiple commits only when `git-workflow-manager` has determined that the task contains independently reviewable sub-units or when the user explicitly requests split history.
-- Make sure verification and review results exist before final task commit.
+- Default to one implementation commit for the current task.
+- Additional commits are permitted when their purpose is a review target, normal report, or the one allowed report attestation; this is a lifecycle exception, not an independently reviewable task split.
+- Split implementation content into multiple commits only when `git-workflow-manager` has determined that the task contains independently reviewable sub-units or when the user explicitly requests split history.
+- Apply the purpose-specific gates below instead of requiring a review outcome for every commit.
 - Stage intentionally; do not include noise or irrelevant generated files.
 - Default to a multi-line commit message, not a subject-only commit.
 - Write commit messages in Japanese unless the repository or the user explicitly requests another language.
@@ -40,12 +42,26 @@ Before running this skill, gather:
 
 ## Pre-commit checks
 
-Confirm:
+For every commit, confirm:
 
 - task scope is correct
-- tests or validation have run as required
-- review outcome exists
 - tracking updates are included if they are part of the task
+
+Then apply its purpose gate:
+
+- `review_target`: relevant local validation and scope evidence exist; a review
+  outcome is not required because this commit fixes the target before review.
+- `final_task`: required validation and normal review or finding-closure
+  outcome exist for the included implementation scope.
+- `normal_report`: the report faithfully records available implementation or
+  review evidence; it must not require its own future SHA.
+- `report_attestation`: one exhaustive independent review has passed, or its
+  same-reviewer bounded closure has passed for the updated reviewed HEAD; first
+  parent, reserved-path allowlist, and no-later-commit conditions are explicit. This is
+  the only post-review commit and its SHA is recorded externally after commit.
+
+Keep commit, push, and CI-wait state distinct. `local_execution_available`
+does not make a review-target or normal-report commit an automatic push.
 
 ## Commit message format
 
