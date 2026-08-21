@@ -41,7 +41,7 @@ Use the same normal review chat for initial review and fix verification when ava
 
 ## Normal review flow
 
-1. Invoke `work-context-manager` for the current PR HEAD, requirements, design, previous findings, reports, tracking, and matching evidence.
+1. Invoke `work-context-manager` for the current committed review target, requirements, design, previous findings, reports, tracking, and matching evidence.
 2. Invoke `review-worker` for initial review or fix verification.
 3. Invoke `report-writer` and persist the detailed report before the branch is considered ready for independent final review.
 4. Invoke `chat-handoff-manager` with the complete review output; do not omit findings, coverage, held, unexplored, or reviewed-HEAD evidence.
@@ -53,18 +53,18 @@ Use the same normal review chat for initial review and fix verification when ava
 
 ## Independent final review flow
 
-Before starting the fresh independent-final-review chat:
+Before starting the one fresh independent-final-review chat:
 
-- all implementation, design, workflow, configuration, task-tracking, handoff, and non-final report changes must be committed and pushed,
+- all implementation, design, workflow, configuration, task-tracking, handoff, and non-final report changes must be committed; local route freezes the validated local committed HEAD without pre-review push, while remote-CI-only records authorized pre-review push and matching current-HEAD CI,
 - the independent-final-review report path or paths must be reserved,
-- the current PR HEAD must be frozen as `reviewed_implementation_head`.
+- the route-selected committed HEAD must be frozen as `reviewed_implementation_head`.
 
 Then:
 
 1. Invoke `work-context-manager` for the frozen implementation HEAD and matching evidence.
 2. Validate that this chat is independent from implementation, review fixes, and normal review.
 3. Invoke `review-worker` in `independent final review` mode.
-4. If the verdict requires a fix, do not persist a passing attestation. Return to the normal implementation and fix-verification lifecycle.
+4. If the verdict requires a fix, do not persist a passing attestation. Return to normal implementation and fix verification, then reuse this same independent chat only for finding/CI-delta closure against the updated reviewed HEAD; do not begin another exhaustive independent review.
 5. When the verdict passes, invoke `report-writer` with the pre-reserved report path and the reviewed implementation HEAD.
 6. Persist at most one report-attestation commit. Its first parent must be the reviewed implementation HEAD, and its diff may change only the reserved independent-final-review report path or paths.
 7. Validate and record the attestation diff. Treat the completion identity as `reviewed implementation HEAD + report-attestation HEAD`.
@@ -72,7 +72,7 @@ Then:
 9. Post or update the concise PR comment after the attestation commit; PR comments and PR body changes do not change Git HEAD.
 10. Invoke `chat-handoff-manager` and return the final packet inline or transport it outside the PR branch. Do not commit a handoff after the report-attestation head.
 
-Any other post-review repository commit invalidates completion and requires normal fix verification followed by another fresh independent final review.
+Any other post-review repository commit invalidates completion and requires normal fix verification followed by same-reviewer bounded finding/CI-delta closure.
 
 ## Boundaries
 

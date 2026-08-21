@@ -69,8 +69,8 @@ Before running this Skill, establish:
 18. Call `feedback-points-manager` for reusable process feedback, Skillization state, or a follow-up Issue. Persist any repository-backed normal handoff, feedback ledger, report, or tracking change now.
 19. If steps 16 through 18 changed any repository file, run route-appropriate validation, update reports and tracking, commit, and return to the normal review or fix-verification cycle. Repeat until the normal cycle converges with all end-of-Issue and feedback changes included.
 20. Ensure every non-final repository change is committed. Before final push on `local_execution_available`, run the repository-defined full local gate; do not substitute inner-loop focused validation. Reserve the independent-final-review report path, then freeze the current HEAD as the reviewed implementation HEAD.
-21. Call `review-enforcer` with a fresh independent reviewer against that frozen HEAD.
-22. If the independent review discovers any required repository change, invalidate the frozen state and return to implementation, validation, reporting, tracking, feedback or Skill-action processing as applicable, followed by normal fix verification and another fresh independent final review.
+21. Call `review-enforcer` with one fresh independent reviewer against that frozen HEAD for the single exhaustive pass.
+22. If that review discovers required repository change, invalidate the terminal state and return to implementation, validation, reporting, tracking, feedback or Skill-action processing as applicable, followed by normal fix verification and the same reviewer's bounded finding/CI-delta closure against the updated reviewed HEAD.
 23. When independent final review passes, persist its detailed report through `report-output-manager` as at most one report-attestation commit. The commit's first parent must be the reviewed implementation HEAD and its changed paths must be limited to the pre-reserved independent-final-review report path or paths.
 24. Validate the report-attestation diff, make the final authorized push, and wait once for exact-head required `pull_request` CI as the merge gate. On `remote_ci_only`, matching current-HEAD CI may also be formal route evidence. Do not wait for an unrequired `push` run. Update the PR body, concise PR comment, review request, or external Issue only after the attestation commit because those operations do not change Git HEAD.
 25. Do not commit task, design, Skill, workflow, configuration, feedback, handoff, report, or implementation changes after the attestation head. Return the final handoff inline or outside the reviewed PR branch.
@@ -87,7 +87,7 @@ An independent-final-review verdict remains attached to its reviewed implementat
 - an automated or explicit diff check confirms that no executable, Skill, design, workflow, configuration, task-tracking, feedback, handoff, or product file changed,
 - no later repository commit exists.
 
-The completion identity is the pair `reviewed implementation HEAD + validated report-attestation HEAD`. Any other post-review commit invalidates completion and requires normal fix verification followed by another fresh independent final review.
+The completion identity is the pair `reviewed implementation HEAD + validated report-attestation HEAD`. Any other post-review commit invalidates completion and requires normal fix verification followed by the same independent reviewer's bounded finding/CI-delta closure.
 
 After the freeze, only operations that do not change Git HEAD are permitted: PR body or comment updates, review requests, external Issue creation or update, and branch-external or inline transport. Discovery of a required repository write invalidates the terminal state and returns the workflow to the normal cycle.
 

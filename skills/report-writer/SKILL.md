@@ -74,7 +74,7 @@ When `report_type` is `independent final review report` and persistence mode is 
 - the reserved report path,
 - that the attestation commit must change no other path,
 - that the attestation SHA will be recorded externally after commit,
-- that any later Git commit invalidates completion unless a new review lifecycle is performed.
+- that any later Git commit invalidates completion unless normal fix verification and the same independent reviewer's bounded finding/CI-delta closure are performed.
 
 The report must not request changes to task tracking, design, Skills, workflows, configuration, implementation, or handoff after independent final review.
 

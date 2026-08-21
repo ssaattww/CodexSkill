@@ -39,13 +39,14 @@ For implementation, verification, normal review, fix verification, and consolida
 
 ## Independent-final-review report-attestation mode
 
-Use this mode only after a fresh independent reviewer has passed a frozen implementation HEAD.
+Use this mode only after the one exhaustive independent reviewer has passed a frozen implementation HEAD, or that same reviewer has completed bounded finding/CI-delta closure for its updated reviewed HEAD.
 
 Before review:
 
 - reserve the exact independent-final-review report path or paths,
-- commit and push all other implementation, design, workflow, configuration, tracking, handoff, and report changes,
-- freeze the current HEAD as `reviewed_implementation_head`.
+- commit all other implementation, design, workflow, configuration, tracking, handoff, and report changes,
+- for `local_execution_available`, freeze the validated local committed HEAD without pre-review push; for `remote_ci_only`, record authorized pre-review push and matching current-HEAD CI,
+- freeze that HEAD as `reviewed_implementation_head`.
 
 After a passing verdict:
 
@@ -69,7 +70,7 @@ reviewed_implementation_head: full_sha
 report_attestation_head: full_sha
 ```
 
-Any extra changed path, parent mismatch, second attestation commit, or later repository commit invalidates the terminal state and requires the normal review lifecycle to resume.
+Any extra changed path, parent mismatch, second attestation commit, or later repository commit invalidates the terminal state and requires normal fix verification plus same-reviewer bounded closure before a new attestation decision.
 
 ## Default path rules
 

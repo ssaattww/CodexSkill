@@ -41,8 +41,8 @@ Use these sub-skills as needed:
 - Do not treat local implementation as the endpoint.
 - Prefer branch-based work.
 - Prefer PR-based submission.
-- Default to `1 task -> 1 commit`.
-- Allow multiple commits for one task only when the task clearly contains independently reviewable sub-units or when the user explicitly wants a split history.
+- Default to `1 task -> 1 implementation commit`.
+- Allow multiple implementation commits only when the task clearly contains independently reviewable sub-units or when the user explicitly wants a split history. Lifecycle commits with purpose `review_target`, `normal_report`, or the one allowed `report_attestation` are explicit exceptions and do not change task scope.
 - Treat commit-count policy as owned here; `git-commit-manager` should follow this skill's decision instead of inventing a separate default.
 - Keep commits understandable and scoped.
 - Require a committed review target before review, but do not make each normal

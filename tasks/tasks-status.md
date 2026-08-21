@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
-  - Status: 設計・Skill実装・local static validation完了、通常review待ち
+  - Status: 通常review finding `I62-NR-001`〜`003`のfollow-up実装中
   - Phase: Phase 8
   - Estimate: M
   - Depends on: Issue #58、Issue #61
@@ -19,6 +19,10 @@
     - commit、push、CI waitを別の状態遷移として扱う
     - finding closure前にrequired action、production path、fixture、evidenceの完全性を確認する
     - terminal attestation後のexact-head pull-request CIだけをlocal routeのmerge gateとして待つ
+    - local routeはvalidated local committed HEADをpre-review pushせずfreeze／one-time independent full review／attestation後にfinal push、PR作成または更新、exact-head CI waitへ進む
+    - remote-CI-onlyだけがauthorized pre-review pushとmatching current-HEAD CIをformal verificationに使う
+    - independent full reviewは一度だけとし、以後は同一reviewerのfinding／CI-delta closureに限定する
+    - review-target、final task、normal report、report-attestation commitのpurpose gateが循環なく区別される
     - runtime-neutral core SkillとCodex／ChatGPT wrapperの責務が重複しない
     - workflow設計、Skill hierarchy、関連Skill contractが同期している
     - repository validation、Markdown check、通常review、独立reviewが成功する
@@ -37,11 +41,13 @@
     - `skills/chat-handoff-manager/SKILL.md`
     - `skills/review-enforcer/SKILL.md`
     - `skills/git-workflow-manager/SKILL.md`
+    - `skills/git-commit-manager/SKILL.md`
     - `skills/progress-sync-manager/SKILL.md`
     - `skills/report-output-manager/SKILL.md`
     - `skills/report-writer/SKILL.md`
     - `reports/issue-62-design-update-20260821183448.md`
     - `reports/issue-62-skill-implementation-20260821184240.md`
+    - `reports/issue-62-normal-review-followup-20260821190259.md`
   - Verification:
     - TDDはCodexSkill repository policyにより`not applicable`
     - `git diff --check`は成功

@@ -351,9 +351,9 @@ pre-freeze gate通過後、independent-final-review report pathを予約し、�
 
 実装、review fix、normal reviewを行っていない新規chatで、frozen HEADを`review-worker`の`independent final review`として独立確認する。過去reviewの結論は独立pass後に照合する。
 
-独立最終レビューでfindingまたはrepository write obligationが出た場合、freezeを無効化してnormal implementation／fix-verification flowへ戻る。
+独立最終レビューは一度だけの全coverage passである。findingまたはrepository write obligationが出た場合、terminal stateを無効化してnormal implementation／fix-verification flowへ戻り、同じindependent review chatがcompleteness matrixを満たしたfinding／CI-deltaだけをbounded closureとして確認する。新規chatによる再度の全coverage passは行わない。
 
-passing reportをrepositoryへ保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成する。attestation後はPR body／PR commentなどGit HEADを変えない操作だけを行い、final handoffをinlineまたはbranch外で返す。repository commitを追加しない。final pushとexact-head `pull_request` required CIの一回だけのmerge-gate待機はGit HEADを変更しないため許可され、`local_execution_available`ではこのCI待機をnormal review／fix loopへ持ち込まない。
+passing reportをrepositoryへ保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成する。attestation後はPR body／PR commentなどGit HEADを変えない操作だけを行い、final handoffをinlineまたはbranch外で返す。repository commitを追加しない。final push、PR作成または更新、exact-head `pull_request` required CIの一回だけのmerge-gate待機はGit HEADを変更しないため許可され、`local_execution_available`ではこのCI待機をnormal review／fix loopへ持ち込まない。
 
 ## 最終review reportの終端規則
 
@@ -369,7 +369,7 @@ report-attestation commitは次を全て満たす。
 - attestation後にrepository commitを作らない
 - wrapperがallowlist diffを検証し、PR commentへ結果を記録する
 
-完了identityは`reviewed implementation HEAD + report-attestation HEAD`とする。条件外のpost-review commitまたはattestation後のrepository-writing Skill実行はverdictを無効化し、normal fix verificationとfresh independent final reviewを要求する。
+完了identityは`reviewed implementation HEAD + report-attestation HEAD`とする。条件外のpost-review commitまたはattestation後のrepository-writing Skill実行はverdictを無効化し、normal fix verificationと同一independent reviewerのbounded finding／CI-delta closureを要求する。
 
 ## Codex review flowとの共通性
 

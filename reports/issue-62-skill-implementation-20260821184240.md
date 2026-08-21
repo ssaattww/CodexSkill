@@ -15,7 +15,7 @@
 
 ## 対象外
 
-- 対象外: 新規Skill作成、TDD用Red／Green test、Git commit／push／PR、review verdict、Issue #58／#61の別scope実装
+- 対象外: 新規Skill作成、TDD用Red／Green test、Git commit／push／PR、review verdict。Issue #61のone-time independent review／bounded closure要件はIssue #62 acceptanceとして同期対象に含める。
 
 ## 実行コマンド
 

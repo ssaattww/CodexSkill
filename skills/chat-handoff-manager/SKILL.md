@@ -154,7 +154,7 @@ implementation:
     - string
 
 review:
-  mode: initial_review | fix_verification | independent_final_review | not_applicable
+  mode: initial_review | fix_verification | independent_final_review | independent_final_closure | not_applicable
   reviewed_head: full_sha | unknown
   reviewer:
     identity: string | unknown
@@ -307,6 +307,7 @@ The packet must record:
 
 - `review.reviewed_head`: the implementation HEAD reviewed by the independent reviewer,
 - `review.reviewer`: identity and independence evidence,
+- `review.mode` and reviewed-head chain for the one exhaustive independent pass and any same-reviewer bounded closure,
 - `review.reserved_report_paths`: paths reserved before the review,
 - `review.report_attestation`: the complete allowlist and validation gate,
 - `report.attestation_head`: the validated report-only commit, when one exists.

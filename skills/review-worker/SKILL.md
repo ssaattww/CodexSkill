@@ -42,7 +42,17 @@ Preserve each source finding's severity. A severity may change only through an e
 
 Review the frozen implementation HEAD independently. The reviewer must not have implemented the change, implemented review fixes, or served as the normal reviewer. Perform an independent pass before relying on previous review conclusions.
 
-Before this mode starts, every implementation, design, workflow, configuration, task-tracking, handoff, and non-final report change must already be committed and pushed. The independent-final-review report path should be reserved before the reviewed implementation HEAD is frozen.
+Before this mode starts, every implementation, design, workflow, configuration, task-tracking, handoff, and non-final report change must already be committed. For `local_execution_available`, freeze that validated local committed HEAD without pre-review push. For `remote_ci_only`, authorized pre-review push and matching current-HEAD CI are formal route evidence. The independent-final-review report path should be reserved before the reviewed implementation HEAD is frozen.
+
+This mode performs exactly one exhaustive, independent coverage pass per task lifecycle. If its findings require a new reviewed HEAD, the same independent reviewer performs only finding- and CI-delta-limited closure verification after the completeness matrix is satisfied; it does not perform another exhaustive pass or introduce new review criteria.
+
+### Independent final closure
+
+Use this mode only with the same reviewer that completed the single exhaustive
+independent review. Review the updated immutable HEAD against the carried
+finding identities and CI delta only. Record the initial and closure reviewed
+HEADs, preserve terminal-attestation conditions, and return `incomplete` if
+the closure matrix is absent or scope expands.
 
 ## Required coverage
 
@@ -119,7 +129,7 @@ reviewed_implementation_head: full_sha
 report_attestation_head: full_sha | null
 ```
 
-Any other post-review commit invalidates completion and requires normal fix verification followed by a fresh independent final review.
+Any other post-review commit invalidates completion. Return to normal fix verification, update the reviewed HEAD, and use the same independent reviewer only for bounded finding/CI-delta closure before a new attestation decision.
 
 ## Boundaries
 
@@ -135,6 +145,8 @@ Return:
 
 - review mode,
 - `reviewed_implementation_head`,
+- `initial_independent_reviewed_head` and any closure reviewed HEAD,
+- independent-review continuity and bounded finding/CI-delta closure scope,
 - base and commit range,
 - reviewer identity and independence evidence,
 - required coverage dispositions,

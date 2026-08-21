@@ -38,15 +38,16 @@ After the normal cycle converges:
 - finish every implementation, design, workflow, configuration, tracking, feedback-ledger, normal handoff, and non-final report change,
 - finish the parent-owned end-of-Issue Skill-gap decision and execute any in-scope Skill update,
 - reserve the independent-final-review report path or paths,
-- commit and push those changes,
-- freeze the current PR HEAD as `reviewed_implementation_head`,
+- commit those changes,
+- for `local_execution_available`, freeze the validated local committed HEAD without pre-review push; for `remote_ci_only`, complete authorized pre-review push and matching current-HEAD CI,
+- freeze that HEAD as `reviewed_implementation_head`,
 - start a different fresh reviewer sub-agent.
 
 The independent reviewer must differ from the implementation agent and normal reviewer, must not have implemented fixes, and should use `fork_turns: "none"` unless a bounded exception is justified.
 
 ## Required flow
 
-1. Invoke `work-context-manager` for the current PR HEAD and matching evidence.
+1. Invoke `work-context-manager` for the current committed HEAD and matching evidence.
 2. Run applicable Markdown and repository gates.
 3. Dispatch a normal reviewer sub-agent that invokes `review-worker` in the selected mode.
 4. Invoke `report-writer` and persist through `report-output-manager`.
@@ -65,14 +66,14 @@ The independent reviewer must differ from the implementation agent and normal re
 10. If step 9 creates or discovers any repository change, require route-appropriate validation, commit, and another normal review or fix-verification round. Do not freeze the target yet.
 11. Only after the normal cycle converges again with all pre-freeze work included, ensure every non-final repository change is committed. On the local route, require the repository-defined full local gate before final push. Reserve the independent-final-review report path, and freeze the implementation HEAD.
 12. Dispatch a fresh independent final reviewer against that frozen implementation HEAD.
-13. If the verdict or any newly discovered obligation requires a repository change, invalidate the frozen state and return to implementation or pre-freeze finalization followed by normal fix verification.
+13. If the one exhaustive independent review finds required changes, invalidate the terminal state, return to implementation and normal fix verification, then reuse that same independent reviewer only for finding/CI-delta closure against the updated reviewed HEAD. Do not spawn another fresh exhaustive reviewer or add new review criteria.
 14. When the verdict passes, invoke `report-writer` and `report-output-manager` in report-attestation mode.
 15. Persist at most one report-attestation commit whose first parent is the reviewed implementation HEAD and whose changed paths are limited to the pre-reserved independent-final-review report path or paths.
 16. Validate the attestation diff, make the final authorized push, and wait once for exact-head required `pull_request` CI. Do not wait for an unrequired `push` run.
 17. After the attestation commit, permit only operations that do not change Git HEAD: PR body or comment updates, review requests, external Issue operations, and inline or branch-external handoff transport.
 18. Do not call any repository-writing Skill after attestation and do not commit any later handoff, tracking, design, Skill, workflow, configuration, feedback, report, or implementation change.
 
-Any other post-review commit invalidates completion and requires normal fix verification followed by another fresh independent final review.
+Any other post-review commit invalidates completion and requires normal fix verification followed by same-reviewer bounded finding/CI-delta closure.
 
 ## Pre-freeze gate
 

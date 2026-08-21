@@ -56,7 +56,7 @@ runtime wrapper
 
 ### Runtime wrapper
 
-Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuity、fresh independent reviewer、report path、persistence、completion gateを所有する。
+Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuity、一度だけのfresh independent reviewerと同reviewerによるbounded closure、report path、persistence、completion gateを所有する。
 
 ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persistence、chat continuity、cross-chat handoffを所有する。
 
@@ -178,7 +178,7 @@ normal review cycleが収束した後、independent final reviewのtargetをfree
 
 ### 独立最終レビュー
 
-pre-freeze gateを通過し、全ての非final変更がcommit／pushされた後に、independent-final-review report pathを予約し、その時点のcurrent HEADを`reviewed implementation HEAD`として固定する。
+pre-freeze gateを通過し、全ての非final変更がcommitされた後に、independent-final-review report pathを予約する。`local_execution_available`ではvalidated local committed HEADをpushせずに、`remote_ci_only`ではauthorized pre-review pushとmatching current-HEAD CIをformal evidenceとして、そのHEADを`reviewed implementation HEAD`に固定する。
 
 fresh reviewerは次を満たす。
 
@@ -193,7 +193,7 @@ fresh reviewerは次を満たす。
 - 過去review結論を読む前に独立passを行うこと
 - normal review reportとは別にindependent final review reportを作ること
 
-独立最終レビューでrequired findingまたは新しいrepository write obligationが出た場合はterminal stateを無効化し、implementationまたはpre-freeze処理へ戻る。HEAD更新後はnormal reviewerでfix verificationを行い、さらに別のfresh reviewerで独立最終レビューをやり直す。
+独立最終レビューはtask lifecycleで一度だけの全coverage passである。required findingまたは新しいrepository write obligationが出た場合はterminal stateを無効化し、implementationとnormal reviewerのfix verificationへ戻る。HEAD更新後は最初の独立reviewerが、completeness matrixを満たしたfinding／CI-deltaだけをbounded closureとして確認し、新しい観点や再度の全coverage passを行わない。
 
 normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身のreviewだけでは完了条件を満たさない。
 
@@ -212,7 +212,7 @@ normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身の
 - report-attestation commit以後にrepository commitを作らない
 - 親またはwrapperがallowlist diffを検証し、結果をPR bodyまたはPR commentへ記録する
 
-report-attestation commit後のfinal pushとexact-head `pull_request` required CI待機は、report-attestation後にGit HEADを変更しないmerge gateであり、attestationを無効化しない。local routeではこの一回だけを待ち、`push` runはrepository policyが要求しない限り待たない。
+report-attestation commit後のfinal push、PR作成または更新、exact-head `pull_request` required CI待機は、report-attestation後にGit HEADを変更しないmerge gateであり、attestationを無効化しない。local routeではこの一回だけを待ち、`push` runはrepository policyが要求しない限り待たない。
 
 完了identityは次のpairで表す。
 
@@ -221,7 +221,7 @@ reviewed_implementation_head: full_sha
 report_attestation_head: full_sha | null
 ```
 
-report-attestation commitは新しいimplementation contentへverdictを転用するものではない。条件外のpost-review commitが1件でも発生した場合、完了状態を無効化し、normal fix verificationとfresh independent final reviewをやり直す。
+report-attestation commitは新しいimplementation contentへverdictを転用するものではない。条件外のpost-review commitが1件でも発生した場合、完了状態を無効化し、normal fix verificationと同一independent reviewerのbounded finding／CI-delta closureへ戻る。
 
 attestation後に許可するのはGit HEADを変更しない処理だけである。
 
@@ -430,10 +430,10 @@ Release時の共通file複製とrepository相対link書換は行わない。
 17. 全pre-freeze変更を含むnormal cycleが収束したことを確認し、independent-final-review report pathを予約する。
 18. current HEADをreviewed implementation HEADとしてfreezeする。
 19. 別fresh reviewerによる独立最終reviewを実施する。
-20. repository changeが必要になった場合はfreezeを無効化し、normal cycleへ戻る。
+20. repository changeが必要になった場合はterminal stateを無効化し、normal cycleと同一independent reviewerのbounded finding／CI-delta closureへ戻る。
 21. passing reportを保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成し、allowlist diffを検証する。
 22. report-attestation commitをfinal pushし、exact-head `pull_request` required CIをmerge gateとして一度待つ。`remote_ci_only`ではroute内のmatching current-HEAD CIも正式verification evidenceとして扱う。
-23. PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
+23. final push後にPRを作成または更新し、PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
 24. attestation後にrepository-writing Skillを呼ばず、repository commitを追加しない。final handoffはinlineまたはbranch外でtransportする。
 25. mergeは利用者が行う。
 
