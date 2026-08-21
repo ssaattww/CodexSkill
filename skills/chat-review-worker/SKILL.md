@@ -68,7 +68,7 @@ Then:
 5. When the verdict passes, invoke `report-writer` with the pre-reserved report path and the reviewed implementation HEAD.
 6. Persist at most one report-attestation commit. Its first parent must be the reviewed implementation HEAD, and its diff may change only the reserved independent-final-review report path or paths.
 7. Validate and record the attestation diff. Treat the completion identity as `reviewed implementation HEAD + report-attestation HEAD`.
-8. Make the final authorized push and wait once for exact-head required `pull_request` CI. For `remote_ci_only`, matching current-HEAD CI can be formal route evidence; do not wait for an unrequired `push` run.
+8. Make the final authorized push, then create or update the PR with the current-chat GitHub connector for that exact HEAD. Wait once after publication for exact-head required `pull_request` CI. For `remote_ci_only`, matching current-HEAD CI can be formal route evidence; do not wait for an unrequired `push` run.
 9. Post or update the concise PR comment after the attestation commit; PR comments and PR body changes do not change Git HEAD.
 10. Invoke `chat-handoff-manager` and return the final packet inline or transport it outside the PR branch. Do not commit a handoff after the report-attestation head.
 

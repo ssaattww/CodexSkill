@@ -19,7 +19,7 @@
     - commit、push、CI waitを別の状態遷移として扱う
     - finding closure前にrequired action、production path、fixture、evidenceの完全性を確認する
     - terminal attestation後のexact-head pull-request CIだけをlocal routeのmerge gateとして待つ
-    - local routeはvalidated local committed HEADをpre-review pushせずfreeze／one-time independent full review／attestation後にfinal push、PR作成または更新、exact-head CI waitへ進む
+    - local routeはvalidated local committed HEADをpre-review pushせずfreeze／one-time independent full review／attestation後にfinal push、authorized PR作成または更新、exact-head CI waitの順で進む
     - remote-CI-onlyだけがauthorized pre-review pushとmatching current-HEAD CIをformal verificationに使う
     - independent full reviewは一度だけとし、以後は同一reviewerのfinding／CI-delta closureに限定する
     - review-target、final task、normal report、report-attestation commitのpurpose gateが循環なく区別される

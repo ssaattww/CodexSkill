@@ -59,6 +59,9 @@ verification:
   ci_wait:
     state: pending | completed | not_required | unavailable | unknown
     required_for: route_verification | merge_gate | not_required | unknown
+  final_publication:
+    sequence: final_push_then_authorized_pr_create_or_update_then_exact_head_pull_request_ci_wait | not_applicable | unknown
+    pr_action: create | update | not_required | unauthorized | unknown
 
 authoritative_requirements:
   - source: user_instruction | repository_instruction | issue | task | design | pr | report | handoff | other
@@ -315,6 +318,9 @@ The packet must record:
   administrative parent, commit, push, and CI-wait state. Do not require a
   packet or report to contain its own future commit SHA; use `commit_pending`
   until a commit exists.
+- `verification.final_publication`: the terminal sequence of final push,
+  authorized PR creation or update, then exact-head required `pull_request` CI
+  wait when it is the merge gate.
 
 ## Completion condition
 

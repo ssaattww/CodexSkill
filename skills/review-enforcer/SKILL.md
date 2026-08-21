@@ -69,7 +69,7 @@ The independent reviewer must differ from the implementation agent and normal re
 13. If the one exhaustive independent review finds required changes, invalidate the terminal state, return to implementation and normal fix verification, then reuse that same independent reviewer only for finding/CI-delta closure against the updated reviewed HEAD. Do not spawn another fresh exhaustive reviewer or add new review criteria.
 14. When the verdict passes, invoke `report-writer` and `report-output-manager` in report-attestation mode.
 15. Persist at most one report-attestation commit whose first parent is the reviewed implementation HEAD and whose changed paths are limited to the pre-reserved independent-final-review report path or paths.
-16. Validate the attestation diff, make the final authorized push, and wait once for exact-head required `pull_request` CI. Do not wait for an unrequired `push` run.
+16. Validate the attestation diff, make the final authorized push, then invoke `git-pr-submitter` or the authorized equivalent to create or update the PR for that exact HEAD. Wait once after publication for exact-head required `pull_request` CI. Do not wait for an unrequired `push` run.
 17. After the attestation commit, permit only operations that do not change Git HEAD: PR body or comment updates, review requests, external Issue operations, and inline or branch-external handoff transport.
 18. Do not call any repository-writing Skill after attestation and do not commit any later handoff, tracking, design, Skill, workflow, configuration, feedback, report, or implementation change.
 
