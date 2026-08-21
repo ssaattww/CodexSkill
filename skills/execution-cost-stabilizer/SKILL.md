@@ -25,6 +25,7 @@ Before running this skill, identify:
 - current rerun or retry pressure
 - parallelism candidates
 - reasoning-effort choices under consideration
+- `verification_capability`, local validation availability, and CI workflow triggers
 
 ## Focus areas
 
@@ -42,6 +43,13 @@ Control:
 - Prefer narrow scopes over large retries.
 - Choose reasoning effort proportionate to task complexity.
 - Reuse existing evidence and reports before rerunning expensive steps.
+- Stop a proposed local-route inner loop that uses CI waiting when relevant
+  local execution is available; require the route to be corrected first.
+- For `local_execution_available`, distinguish focused inner-loop validation
+  from the repository-defined full local gate required before final push.
+- Detect and record when one push triggers both `push` and `pull_request` CI
+  for the same HEAD. Do not wait for redundant runs; propose a repository Issue
+  only when the duplication is a repository workflow concern.
 
 ## Outputs
 

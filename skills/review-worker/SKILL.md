@@ -21,6 +21,7 @@ Required input includes:
 - accepted scope, requirements, and design,
 - complete changed-file set and direct dependencies,
 - current-HEAD validation and CI evidence,
+- `verification_capability` and separate commit, push, and CI evidence state,
 - previous findings and reviewed HEAD for fix verification,
 - reviewer identity and independence evidence,
 - any pre-reserved independent-final-review report path.
@@ -73,6 +74,21 @@ Each finding must include identity, severity, origin, location, description, imp
 
 Finding identity and severity are continuity-bearing review data. Fix verification and report consolidation must preserve them unless an explicit reclassification record is supplied. When a downstream report contains a severity transcription error, preserve the historical report and publish a current erratum identifying the source severity and the incorrect downstream value.
 
+## Finding closure readiness
+
+Before a caller requests finding-limited closure, require a completeness matrix
+for each applicable finding. Every matrix row must identify and evidence:
+
+- every required action,
+- the production path that implements it,
+- the actual composition fixture that exercises the composed behavior, and
+- focused validation evidence.
+
+If any required cell is absent, partial, blocked, or mismatched to the reviewed
+HEAD, return it as incomplete and do not start closure review. This is a
+review-evidence requirement; this runtime-neutral Skill does not schedule push
+or CI waits.
+
 ## Verdicts
 
 - `pass`: no required finding and no verdict-blocking unexplored area.
@@ -123,6 +139,7 @@ Return:
 - reviewer identity and independence evidence,
 - required coverage dispositions,
 - full findings,
+- finding completeness matrix with a disposition for every required action,
 - any explicit severity reclassification records,
 - held items,
 - unexplored areas,

@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-07-30
+- Updated: 2026-08-21
 
 ## Phase 1: 契約・設計
 
@@ -96,3 +96,18 @@
   - passing reportを保存する場合だけ予約済みpathを変更する1回のreport-attestation commitを作成する
   - report-attestation diffをallowlist検証する
   - attestation後にrepository commitまたはrepository-writing Skillを実行しない
+
+## Phase 8: Runtime別verification経路の分離
+
+- Status: In Progress
+- Notes:
+  - Issue #62を対象とする
+  - local execution可能時はlocal test、review対象commit、reviewの順で進め、review中にCI完了を待たない
+  - remote-CI-only時はmatching current-HEAD CIをverification routeとして使用する
+  - commit、push、CI waitを独立した状態遷移として設計する
+  - 設計更新、関連Skill contract更新、local validation、通常review、独立review、PR作成を行う
+  - CodexSkill repository policyによりTDDは適用しない
+  - 設計3文書と関連14 Skillのcontract更新を完了した
+  - `git diff --check`と2つのSkill hierarchy設計一致は成功した
+  - repository validator／bundle buildはlocal Python runtime不在、Markdown lintはrepo-local配線不在のため`unsupported`として記録した
+  - 次はreview対象commitを作成し、通常reviewを一度の全範囲検査として実施する

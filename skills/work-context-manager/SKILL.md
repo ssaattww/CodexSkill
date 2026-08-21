@@ -46,6 +46,7 @@ Resolve as much as the available evidence permits:
 - applicable findings and reviewed HEAD,
 - development method and testing order required by the target project,
 - validation commands, workflow entry points, and required failure diagnostics,
+- actual local-execution capability and the resulting verification route,
 - matching current-HEAD CI runs, jobs, and artifacts,
 - report and handoff naming rules,
 - allowed and forbidden writes,
@@ -76,6 +77,19 @@ Make these explicit when applicable:
 
 Use only CI evidence whose `head_sha` matches the target HEAD when current-HEAD evidence is required. A missing matching run is not success.
 
+## Verification capability
+
+Resolve `verification_capability` from tools actually available to the current
+runtime, not from its name:
+
+- `local_execution_available`: a usable local test or validation executor is
+  available.
+- `remote_ci_only`: no usable local executor is available.
+
+Record the evidence for that decision. Keep commit, push, and CI wait as
+separate states. This core Skill resolves the route and evidence requirements;
+the runtime wrapper owns authorized push and any CI waiting behavior.
+
 ## Output contract
 
 Return a structured context containing:
@@ -89,6 +103,15 @@ branch: string | unknown
 base_ref: string | null
 current_head: full_sha | unknown
 reviewed_head: full_sha | null
+verification_capability: local_execution_available | remote_ci_only | unknown
+verification_capability_evidence:
+  - string
+execution_state:
+  technical_head: full_sha | unknown
+  administrative_parent: full_sha | null
+  commit: pending | completed | not_required | unknown
+  push: pending | completed | not_required | unauthorized | unknown
+  ci_wait: pending | completed | not_required | unavailable | unknown
 scope:
   - string
 non_goals:

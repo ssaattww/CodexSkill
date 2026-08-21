@@ -35,6 +35,7 @@ Update as relevant:
 - overall progress sections
 - report references
 - PR references if tracked
+- verification capability and separately recorded commit, push, and CI-wait state
 
 If `tasks-status.md` or `phases-status.md` must be created during sync, include a top-of-file rule stating that the file may be updated only through `task-breakdown-planner`, `task-consistency-manager`, or `progress-sync-manager`.
 
@@ -72,6 +73,12 @@ Ensure it reflects:
 ## Strong rule
 
 Do not leave tracking updates as optional end-of-day cleanup. Update close to the work that changed the state.
+
+Do not require a report or tracking record to name its own future commit SHA.
+Before commit, record `commit_pending`, the current `technical_head`, and an
+`administrative_parent` when applicable. Record a resulting commit SHA only in
+metadata that is written after that commit exists; never create an extra commit
+solely to self-reference it.
 
 ## Outputs
 

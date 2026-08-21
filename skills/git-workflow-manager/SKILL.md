@@ -25,6 +25,7 @@ Before running this skill, gather:
 - branch context
 - commit readiness
 - PR readiness including review and validation evidence
+- verification capability and the separate commit, push, and CI-wait states
 
 ## Workflow stages
 
@@ -44,6 +45,15 @@ Use these sub-skills as needed:
 - Allow multiple commits for one task only when the task clearly contains independently reviewable sub-units or when the user explicitly wants a split history.
 - Treat commit-count policy as owned here; `git-commit-manager` should follow this skill's decision instead of inventing a separate default.
 - Keep commits understandable and scoped.
+- Require a committed review target before review, but do not make each normal
+  review or finding-closure commit an automatic push.
+- For `local_execution_available`, allow converged local review commits to be
+  pushed together only after validation relevant to the pushed changes; require
+  the repository-defined full local gate before final push.
+- Keep CI waiting separate from publication. After attestation, wait once only
+  for exact-head required `pull_request` CI unless repository policy explicitly
+  requires a `push` run. For `remote_ci_only`, matching current-HEAD CI after
+  authorized push is formal verification evidence.
 - Make PRs carry enough evidence to review and merge safely.
 - Do not open or update a PR without linking the relevant issue in the PR body.
 - If the current commit closes or hands off a skill/process improvement loop that came from `feedback-points`, make sure the corresponding issue has been created or confirmed through `feedback-points-manager` before treating the loop as handed off.

@@ -44,6 +44,22 @@ target:
   reviewed_head: full_sha | null
   commit_range: string | null
 
+verification:
+  capability: local_execution_available | remote_ci_only | unknown
+  capability_evidence:
+    - string
+  technical_head: full_sha | unknown
+  administrative_parent: full_sha | null
+  commit:
+    state: commit_pending | committed | not_required | unknown
+    review_target_sha: full_sha | null
+  push:
+    state: pending | pushed | not_required | unauthorized | unknown
+    head_sha: full_sha | unknown
+  ci_wait:
+    state: pending | completed | not_required | unavailable | unknown
+    required_for: route_verification | merge_gate | not_required | unknown
+
 authoritative_requirements:
   - source: user_instruction | repository_instruction | issue | task | design | pr | report | handoff | other
     reference: string
@@ -259,7 +275,7 @@ transport:
 
 - Populate the typed projection for every available field defined above.
 - Also preserve each producing core Skill's complete, versioned output under `source_payloads`; typed projection does not replace the raw source payload.
-- Preserve every available field required by the producing core Skill's output contract, including development policy, planned validation, required failure diagnostics, blocked state, failure diagnostics, reviewer identity, reviewer independence, reserved report paths, and exact report-attestation conditions.
+- Preserve every available field required by the producing core Skill's output contract, including development policy, planned validation, required failure diagnostics, blocked state, `verification_capability`, separate commit/push/CI-wait state, failure diagnostics, reviewer identity, reviewer independence, reserved report paths, and exact report-attestation conditions.
 - Preserve exact finding identity, origin, location, impact, evidence, required action, and reviewed HEAD.
 - Preserve required coverage dispositions, held items, unexplored areas, validation assessment, intentionally untouched areas, commands, tests, CI artifacts, implementation commits, report paths, and PR comment references.
 - Use `extensions` for runtime or future fields that are not yet represented in the typed projection.
@@ -294,6 +310,10 @@ The packet must record:
 - `review.reserved_report_paths`: paths reserved before the review,
 - `review.report_attestation`: the complete allowlist and validation gate,
 - `report.attestation_head`: the validated report-only commit, when one exists.
+- `verification`: capability evidence plus distinct technical head,
+  administrative parent, commit, push, and CI-wait state. Do not require a
+  packet or report to contain its own future commit SHA; use `commit_pending`
+  until a commit exists.
 
 ## Completion condition
 

@@ -30,6 +30,23 @@ All four must be installed. Do not replace them with repository-external shared 
 - Persist the handoff under target-repository rules, or return the complete packet for copy and paste.
 - The user chooses the next chat and merge action.
 
+## Verification-route execution
+
+Use the capability resolved by `work-context-manager`, rather than assuming a
+route from ChatGPT alone.
+
+- `local_execution_available`: run relevant local validation before a
+  review-target commit; keep normal review/fix loops local and do not wait for
+  CI. Validate the pushed change before any CI-triggering push, run the
+  repository-defined full local gate before final push, and after attestation
+  wait once only for exact-head required `pull_request` CI.
+- `remote_ci_only`: after an authorized push, wait for matching current-HEAD
+  CI as formal verification evidence and record absent, pending, or failed
+  evidence honestly.
+
+Commit, push, and CI wait are separate states. Do not put CI-wait semantics in
+`implementation-worker`.
+
 ## Modes
 
 - `initial implementation`
@@ -47,4 +64,7 @@ Pass the selected mode and resolved context to `implementation-worker`.
 
 ## Completion condition
 
-Complete when the required Skills have produced context, implementation evidence, report output, and a transportable handoff; authorized repository and PR updates are complete; final HEAD and matching CI evidence or explicit absence are recorded; and no merge was performed.
+Complete when the required Skills have produced context, implementation
+evidence, report output, and a transportable handoff; the selected verification
+route and separate commit, push, and CI states are recorded; authorized
+repository and PR updates are complete; and no merge was performed.

@@ -30,6 +30,31 @@ core Skillが作業の意味論を保持する。wrapperはChatGPT固有の権�
 
 wrapperとcore Skillの依存は、同一fileへのpath参照ではなく、install済みSkill名による呼び出しとして表現する。
 
+## Verification capabilityと状態遷移
+
+`work-context-manager`は実際に利用可能なtool capabilityを確認し、次のいずれかをcontext、report、handoffへ記録する。runtime名は補助情報であり、route選択の根拠にしない。
+
+- `local_execution_available`: local test executorを使用できる。Codexに限らず、local executorが提供されたChatGPT chatもこのrouteを使う。
+- `remote_ci_only`: local test executorを使用できない。ChatGPTに限らず、shell等を使用できないCodex runtimeもこのrouteを使う。
+
+commit、push、CI waitは別の状態である。review対象を固定するcommitは両routeで必須だが、commitだけでpushまたはCI waitを意味しない。
+
+### `local_execution_available`
+
+1. 変更範囲のlocal testまたはrepository-defined required local validationをGreenにする。
+2. review対象を固定するcommitを作成し、normal reviewを実施する。
+3. findingがあれば、local fix、該当local validation、commit、同じnormal reviewerによるfinding-limited closureを反復する。このreview/fix loopではCI完了を待たない。
+4. closure依頼前のcompleteness matrixで各findingの全required action、production実装、actual composition fixture、focused evidenceを確認する。
+5. CIを発火するpush前に、そのpushに含まれる変更範囲の該当local validationをGreenにする。local gate失敗中はCI-triggering pushを行わない。
+6. normal cycle収束後、final push前にrepository-defined full local gateをGreenにする。inner loopのfocused testはこのfull gateの代用にしない。
+7. independent final reviewと許可された一回のreport-attestation commitを完了してからfinal pushする。attestation後のexact-head `pull_request` required CIだけをmerge gateとして一度待つ。repository policyが要求しない`push` runは待たない。
+
+### `remote_ci_only`
+
+local validationを実行できないため、authorized push後のcurrent HEADと一致するCIを正式なverification evidenceとして待機できる。matching runが不在、未完了、または失敗ならlocal Greenとして扱わず、handoffとreportへ待機または失敗状態を記録する。review前commit、finding closure前matrix、final attestation後のexact-head `pull_request` required CIという共通gateは維持する。
+
+runtime-neutral coreはvalidation evidence、frozen HEAD、finding completenessを扱う。Codex wrapperはlocal executorを使える場合のlocal route、ChatGPT wrapperはcurrent chatの実tool capabilityとconnector権限に応じたrouteの実行、authorized push、CI evidenceの取得と待機を所有する。
+
 ## 対象Skill
 
 ### ChatGPT runtime wrapper
@@ -56,6 +81,7 @@ core SkillはCodex親、Codex sub-agent、ChatGPT chatのいずれにも依存�
 
 - user instruction、repository instruction、Issue、task、design、PR、report、handoffのauthorityを解決する
 - accepted scope、non-goal、target identity、development policy、validation target、current-HEAD CI evidenceを解決する
+- 実runtimeのtool capabilityから`verification_capability`を`local_execution_available`または`remote_ci_only`として解決し、runtime名だけでは決めない
 - planned validationとrequired failure diagnosticsを明示する
 - blocked、unknown、held、unexploredを区別する
 - allowed writeとforbidden writeを明示する
@@ -68,6 +94,7 @@ core SkillはCodex親、Codex sub-agent、ChatGPT chatのいずれにも依存�
 - 対象Projectのdevelopment／testing policyに従う
 - accepted scope内で最小の一貫した変更を実施する
 - focused validationと必要なbroader validationの証拠を返す
+- validation、commit、push、CI waitを別状態として扱う。CI待機規則はruntime wrapperが選んだverification routeに従い、coreへruntime別の待機規則を重複実装しない
 - failure diagnosticsとblocked itemsを構造化して返す
 - 自分の実装へreview verdictを出さない
 - mergeしない
@@ -78,6 +105,7 @@ core SkillはCodex親、Codex sub-agent、ChatGPT chatのいずれにも依存�
 - 全変更file、直接依存、要件、設計、current HEAD固有の検証証拠を確認する
 - reviewer identity、continuity、independence evidenceを返す
 - finding、coverage、held、unexplored、verdictを返す
+- finding closureの依頼前に、findingごとの全required action、production実装、actual composition fixture、focused evidenceを揃えたcompleteness matrixを確認する。不足があればclosure reviewを開始しない
 - independent final review時はreserved report pathとattestation条件を返す
 - product code、test、workflow、configurationを変更しない
 - findingを自分で実装しない
@@ -89,6 +117,7 @@ core SkillはCodex親、Codex sub-agent、ChatGPT chatのいずれにも依存�
 - repository上のevidenceを忠実に表現する
 - technical finding、severity、test結果、CI結論を発明しない
 - unknown、blocked、held、unexplored、失敗結果を消さない
+- trackingまたはreportに、そのfileを含む将来のcommit SHAを自己参照として要求しない。commit前のadministrative stateは`commit_pending`等で明示し、technical HEADとadministrative parentを区別する
 - 保存先と永続化はcallerへ委ねる
 - mergeしない
 
@@ -103,7 +132,7 @@ core SkillはCodex親、Codex sub-agent、ChatGPT chatのいずれにも依存�
 3. `report-writer`
 4. `chat-handoff-manager`
 
-wrapperはcurrent chatの権限、GitHub connector、commit／push／PR操作、report保存、PR簡易コメント投稿を管理する。
+wrapperはcurrent chatの権限、GitHub connector、commit／push／PR操作、report保存、PR簡易コメント投稿を管理する。`remote_ci_only`ではmatching current-HEAD CIをverification evidenceとして待機し、local executorが実際に利用可能な場合は`local_execution_available`へ切り替えてlocal routeを使う。
 
 ### `chat-review-worker`
 
@@ -242,7 +271,7 @@ https://github.com/ssaattww/CodexSkill
 
 RevMemの実装はTDDを基本とし、先にテストを追加して失敗を確認してから実装してください。このTDD方針と診断artifact workflowの追加方針はRevMemの実装作業に適用し、参照先のCodexSkillリポジトリには適用しません。
 
-変更は、レビュー可能な小さな論理単位でcommit/pushしてください。
+変更は、レビュー可能な小さな論理単位でcommitしてください。pushは独立した状態であり、`local_execution_available`では該当local validationをGreenにしてから行い、normal review／fix loopのCI待機を要求しません。`remote_ci_only`ではauthorized push後のmatching current-HEAD CIをverification evidenceとして待機してください。
 
 作業完了時は、詳細reportをrepositoryへ保存してください。それとは別に、変更内容と検証結果を要約した簡易reportをPRコメントへ投稿してください。
 
@@ -308,7 +337,7 @@ PR #<number>の修正確認をしてください。
 - current scopeで必要なSkill update
 - feedback classificationとfeedback ledger
 - repository-backed normal handoff
-- current-HEAD validationとCI evidence
+- routeに応じたcurrent-HEAD validation evidence。`remote_ci_only`ではmatching current-HEAD CI evidenceを完了条件とし、`local_execution_available`ではfinal attestation後のexact-head `pull_request` required CIだけをmerge gateとして一度待つ
 
 これらの処理でrepositoryが変わった場合はnormal review／fix verificationへ戻る。全pre-freeze変更を含むnormal cycleが収束するまでHEADをfreezeしない。
 
@@ -324,7 +353,7 @@ pre-freeze gate通過後、independent-final-review report pathを予約し、�
 
 独立最終レビューでfindingまたはrepository write obligationが出た場合、freezeを無効化してnormal implementation／fix-verification flowへ戻る。
 
-passing reportをrepositoryへ保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成する。attestation後はPR body／PR commentなどGit HEADを変えない操作だけを行い、final handoffをinlineまたはbranch外で返す。repository commitを追加しない。
+passing reportをrepositoryへ保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成する。attestation後はPR body／PR commentなどGit HEADを変えない操作だけを行い、final handoffをinlineまたはbranch外で返す。repository commitを追加しない。final pushとexact-head `pull_request` required CIの一回だけのmerge-gate待機はGit HEADを変更しないため許可され、`local_execution_available`ではこのCI待機をnormal review／fix loopへ持ち込まない。
 
 ## 最終review reportの終端規則
 
@@ -351,8 +380,9 @@ Codexでも同じ`review-worker`を使用し、独立最終レビューを必須
 - `review-enforcer`が専用reviewer sub-agentを起動する。
 - initial reviewとfix verificationは、原則として同じreviewerを継続利用する。
 - finding identity、review criteria、reviewed HEAD、fix context、held、unexploredを維持する。
+- closure依頼前にfindingごとの全required action、production実装、actual composition fixture、focused evidenceをcompleteness matrixで確認し、不足があればreviewerへ渡さない。
 - required findingがある場合はimplementation flowへ戻す。
-- normal cycleのreport、tracking、design、implementation、validationはindependent final review前にcommit／pushする。
+- normal cycleのreport、tracking、design、implementation、validationはindependent final review前にcommitする。pushとCI waitはverification routeに従う別状態であり、local routeではreview/fix loopに含めない。
 - Skill decision、feedback ledger、normal handoffをpre-freeze gateへ含める。
 
 ### 独立最終レビュー
@@ -380,10 +410,12 @@ normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身の
 - typed projectionとversioned `source_payloads`を両方保持する
 - source core Skillのcomplete outputをraw payloadとして保持する
 - development policy、planned validation、required failure diagnostics、blocked stateを保持する
+- verification_capability、routeごとのvalidation evidence、commit／push／CI waitの個別状態を保持する
 - implementation failure diagnosticsとblocked itemsを保持する
 - reviewer identity、reviewer continuity、independence evidenceを保持する
 - reserved report paths、attestation allowed flag、required first parent、allowed paths、forbidden path classes、validation resultを保持する
 - full findingのidentity、severity、origin、location、description、impact、evidence、required actionを保持する
+- finding closure前のcompleteness matrixを保持する
 - required coverage、held、unexplored、reviewed HEAD、requirements、intentionally untouched、test、CI artifact、implementation commit、report／comment referenceを保持する
 - schema version 1／2のoriginal packetをraw sourceとして保存し、mapping不能fieldを捨てない
 - 欠落fieldはunknownとして理由を記録し、安全な継続ができない場合はblocked／incompleteとする
@@ -392,6 +424,7 @@ normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身の
 - 一意に特定できない場合だけ利用者へpathまたはpacket本文を求める
 - 前workerの権限は次chatへ自動継承しない
 - CI evidenceはpacketのtarget HEADと一致させる
+- report、tracking、handoffは自己を含む将来のcommit SHAを要求しない。pre-commit stateは`commit_pending`として表現し、technical HEADとadministrative parentを区別する
 - unknownを推測で補完しない
 - final independent review後のhandoffはinlineまたはPR branch外でtransportする
 
@@ -443,6 +476,7 @@ core Skillとwrapperはいずれもmergeを行わず、利用者がmerge判断�
 - handoffがtyped projectionとraw source payloadでlosslessにtransportする
 - Project Instruction例が維持されている
 - current HEAD固有CI規則が反映されている
+- verification capability別のlocal／remote CI route、commit／push／CI waitの状態分離、closure前completeness matrixが反映されている
 - reportとhandoffが別成果物として維持されている
 - attestation後にrepository-writing Skillを呼ばない
 - core Skill、wrapper、sub-agent、親agentはmergeしない

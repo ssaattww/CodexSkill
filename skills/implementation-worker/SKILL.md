@@ -13,7 +13,9 @@ Implement one accepted scope and return implementation evidence to the caller.
 
 Use the output of `work-context-manager`. Do not infer runtime permissions, persistence, delegation, or merge authority.
 
-Required context includes scope, non-goals, requirements, target identity, write boundary, development policy, validation targets, and applicable findings.
+Required context includes scope, non-goals, requirements, target identity,
+`verification_capability`, write boundary, development policy, validation
+targets, and applicable findings.
 
 ## Modes
 
@@ -42,6 +44,10 @@ Required context includes scope, non-goals, requirements, target identity, write
 7. Preserve or inspect logs, test results, standard output, standard error, and artifacts for failures.
 8. Return changed files, intentionally untouched areas, commands, results, commits, final HEAD, matching CI evidence, unknowns, and risks.
 
+Keep validation, review-target commit, push, and CI evidence or wait state
+separate. Record the evidence supplied by the caller, but do not define or
+perform runtime-specific push or CI-wait routing in this runtime-neutral Skill.
+
 ## Testing policy
 
 The target repository determines whether work is TDD, test-after, validation-only, or another method. Do not manufacture Red/Green evidence. CodexSkill repository maintenance is non-TDD unless the user explicitly changes that policy.
@@ -64,9 +70,10 @@ Return:
 - intentionally untouched areas,
 - validation commands and results,
 - failure diagnostics and artifacts,
-- commit identities,
-- final HEAD SHA,
-- matching CI run or explicit absence,
+- verification capability and validation evidence,
+- review-target commit identity or explicit pending state,
+- push state and matching CI evidence or explicit absence,
+- final technical HEAD SHA and administrative parent when applicable,
 - blocked items, unknowns, and remaining risks,
 - next required action.
 

@@ -45,7 +45,11 @@ Use the same normal review chat for initial review and fix verification when ava
 2. Invoke `review-worker` for initial review or fix verification.
 3. Invoke `report-writer` and persist the detailed report before the branch is considered ready for independent final review.
 4. Invoke `chat-handoff-manager` with the complete review output; do not omit findings, coverage, held, unexplored, or reviewed-HEAD evidence.
-5. Required fixes return to the implementation chat. After fixes, validation, report, tracking, commit, and push, reuse the same normal review chat when available.
+5. Required fixes return to the implementation chat. Before closure review,
+   require the per-finding required-action / production-path / actual
+   composition-fixture / focused-evidence matrix. After fixes, route-appropriate
+   validation, report, tracking, and a review-target commit, reuse the same
+   normal review chat when available. Do not require local-route CI waiting.
 
 ## Independent final review flow
 
@@ -64,8 +68,9 @@ Then:
 5. When the verdict passes, invoke `report-writer` with the pre-reserved report path and the reviewed implementation HEAD.
 6. Persist at most one report-attestation commit. Its first parent must be the reviewed implementation HEAD, and its diff may change only the reserved independent-final-review report path or paths.
 7. Validate and record the attestation diff. Treat the completion identity as `reviewed implementation HEAD + report-attestation HEAD`.
-8. Post or update the concise PR comment after the attestation commit; PR comments and PR body changes do not change Git HEAD.
-9. Invoke `chat-handoff-manager` and return the final packet inline or transport it outside the PR branch. Do not commit a handoff after the report-attestation head.
+8. Make the final authorized push and wait once for exact-head required `pull_request` CI. For `remote_ci_only`, matching current-HEAD CI can be formal route evidence; do not wait for an unrequired `push` run.
+9. Post or update the concise PR comment after the attestation commit; PR comments and PR body changes do not change Git HEAD.
+10. Invoke `chat-handoff-manager` and return the final packet inline or transport it outside the PR branch. Do not commit a handoff after the report-attestation head.
 
 Any other post-review repository commit invalidates completion and requires normal fix verification followed by another fresh independent final review.
 

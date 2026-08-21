@@ -25,6 +25,25 @@ The parent may delegate execution through `codex-delegation-executor`, but the d
 - Return all implementation evidence to the parent.
 - Use `report-output-manager` for persistence after implementation evidence is available.
 
+## Verification-route execution
+
+Use `verification_capability` resolved by `work-context-manager`.
+
+- For `local_execution_available`, run relevant local validation before the
+  review-target commit. Normal review and fix-verification loops use local
+  fix, relevant local validation, commit, and review; do not wait for CI.
+  Before a CI-triggering push, rerun validation relevant to the pushed change.
+  Before the final push, require the repository-defined full local gate. After
+  report attestation, wait once only for exact-head required `pull_request` CI
+  as the merge gate; do not wait for an unrequired `push` run.
+- For `remote_ci_only`, after an authorized push, obtain or wait for matching
+  current-HEAD CI as formal verification evidence. Missing, incomplete, or
+  failed CI remains explicit evidence, never local Green.
+
+Commit, push, and CI wait are distinct states. Pass their evidence to the core
+worker and report path without adding runtime-specific wait rules to
+`implementation-worker`.
+
 ## Boundaries
 
 - Do not re-plan the task.

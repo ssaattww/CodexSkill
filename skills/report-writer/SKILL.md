@@ -32,7 +32,7 @@ For an independent-final-review report, require:
 
 ## Evidence rules
 
-- Preserve exact target identity, including branch, base, current HEAD, reviewed implementation HEAD, relevant commit range, and report-attestation head when supplied.
+- Preserve exact target identity, including branch, base, current HEAD, reviewed implementation HEAD, relevant commit range, verification capability, separate commit/push/CI-wait state, and report-attestation head when supplied.
 - Do not convert missing, failed, blocked, or unavailable checks into success.
 - Distinguish direct evidence from inference.
 - Keep findings, held items, unexplored areas, unknowns, and remaining risks explicit.
@@ -92,6 +92,13 @@ target_identity:
   base_ref: string | null
   current_head: full_sha | unknown
   reviewed_implementation_head: full_sha | null
+verification:
+  capability: local_execution_available | remote_ci_only | unknown
+  technical_head: full_sha | unknown
+  administrative_parent: full_sha | null
+  commit_state: commit_pending | committed | not_required | unknown
+  push_state: pending | pushed | not_required | unauthorized | unknown
+  ci_wait_state: pending | completed | not_required | unavailable | unknown
 severity_records:
   - finding_id: string
     source_severity: blocking | high | medium | low
@@ -109,7 +116,7 @@ unresolved_discrepancies:
   - string
 ```
 
-`report_attestation_head` remains null in the generated report result because the caller creates and validates that commit after generation.
+`report_attestation_head` remains null in the generated report result because the caller creates and validates that commit after generation. A generated report must use `commit_pending`, `technical_head`, and `administrative_parent` rather than require a future self-referential commit SHA.
 
 ## Boundaries
 

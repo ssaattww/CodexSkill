@@ -2,9 +2,53 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-07-30
+- Updated: 2026-08-21
 
 ## In Progress
+
+- T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
+  - Status: 設計・Skill実装・local static validation完了、通常review待ち
+  - Phase: Phase 8
+  - Estimate: M
+  - Depends on: Issue #58、Issue #61
+  - Exit Criteria:
+    - work contextが実際のtool capabilityから`local_execution_available`または`remote_ci_only`を解決する
+    - local routeがlocal test、review対象commit、reviewの順で進み、review中にCI完了を待たない
+    - local routeのCI-triggering push前に変更範囲のlocal validationがGreenである
+    - remote-CI-only routeがmatching current-HEAD CIを正式なverification evidenceとして扱う
+    - commit、push、CI waitを別の状態遷移として扱う
+    - finding closure前にrequired action、production path、fixture、evidenceの完全性を確認する
+    - terminal attestation後のexact-head pull-request CIだけをlocal routeのmerge gateとして待つ
+    - runtime-neutral core SkillとCodex／ChatGPT wrapperの責務が重複しない
+    - workflow設計、Skill hierarchy、関連Skill contractが同期している
+    - repository validation、Markdown check、通常review、独立reviewが成功する
+    - commit、push、PR作成が完了する
+  - Output:
+    - `design/chat-worker-skill-design.md`
+    - `design/skill-hierarchy-design.md`
+    - `skills/design/skill-hierarchy-design.md`
+    - `skills/work-context-manager/SKILL.md`
+    - `skills/implementation-worker/SKILL.md`
+    - `skills/development-orchestrator/SKILL.md`
+    - `skills/execution-cost-stabilizer/SKILL.md`
+    - `skills/implementation-executor/SKILL.md`
+    - `skills/chat-implementation-worker/SKILL.md`
+    - `skills/chat-review-worker/SKILL.md`
+    - `skills/chat-handoff-manager/SKILL.md`
+    - `skills/review-enforcer/SKILL.md`
+    - `skills/git-workflow-manager/SKILL.md`
+    - `skills/progress-sync-manager/SKILL.md`
+    - `skills/report-output-manager/SKILL.md`
+    - `skills/report-writer/SKILL.md`
+    - `reports/issue-62-design-update-20260821183448.md`
+    - `reports/issue-62-skill-implementation-20260821184240.md`
+  - Verification:
+    - TDDはCodexSkill repository policyにより`not applicable`
+    - `git diff --check`は成功
+    - 2つのSkill hierarchy設計は一致
+    - repository validator／bundle buildはlocal Python runtime不在のため`unsupported`
+    - Markdown lintは`tools/lint/`と`package.json`不在のため`unsupported`
+    - 通常review、独立review、PR作成はpending
 
 - T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
   - Status: normal fix verification pass、pre-freeze最終HEAD検証待ち
