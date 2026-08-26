@@ -31,8 +31,9 @@ Before running this skill, identify:
 - task kind, work class, uncertainty, change radius, criticality, repetition, decomposability, and context need
 - explicit user or repository model, reasoning, budget, availability, or fork constraints
 - whether `codex-delegation-executor` considered multi-agent decomposition and its disposition
+- user-approval evidence when `Sol xhigh` or `Sol max` is under consideration
 
-When a caller already supplied a complete delegation assessment, reuse it. Otherwise derive the missing selection inputs from the bounded task and record that derivation. Do not require routine user confirmation of an automatically selected implementation model.
+When a caller already supplied a complete delegation assessment, reuse it. Otherwise derive the missing selection inputs from the bounded task and record that derivation. Do not require routine user confirmation of automatically selected profiles below the expensive-profile approval gate.
 
 ## Run this skill
 
@@ -48,16 +49,18 @@ Run this skill whenever:
 1. define the exact task type and why a `sub-agent` is being used
 2. define the scope, non-goals, expected outputs, and write ownership
 3. classify the task signals required by [references/agent-profile-selection.md](references/agent-profile-selection.md)
-4. select and record one `dispatch_profile`, or return independently separable work to `codex-delegation-executor` before dispatch
-5. read [references/spawn-agent-model-overrides.md](references/spawn-agent-model-overrides.md) and resolve the requested profile into an applied runtime profile
-6. identify which skill files the `sub-agent` must read
-7. call `report-output-manager` and decide the report path before dispatch
-8. create the report file before dispatch using the standard template
-9. tell the `sub-agent` to read the specified skill files before executing
-10. tell the `sub-agent` to read that exact report file first and fill only the intended blank sections or placeholder values
-11. require commands run, changed files, outcome, unresolved risks, and dispatch-profile evidence in the report
-12. dispatch with the applied model and reasoning effort as actual tool-call arguments and the selected fork policy
-13. do not treat the delegated task as complete until the report exists, the runtime application status is recorded, and the parent has reviewed the result
+4. select and record one ordinary `dispatch_profile`, return independently separable work to `codex-delegation-executor`, or create an approval-gated `proposed_profile`
+5. if the proposed profile is `Sol xhigh` or `Sol max`, present the proposal and cost notice to the user and stop before dispatch unless explicit current-task approval already exists
+6. after approval, promote the approved proposal to `requested`; after rejection, recompute with `Sol xhigh` and `Sol max` excluded
+7. read [references/spawn-agent-model-overrides.md](references/spawn-agent-model-overrides.md) and resolve the approved requested profile into an applied runtime profile
+8. identify which skill files the `sub-agent` must read
+9. call `report-output-manager` and decide the report path before dispatch
+10. create the report file before dispatch using the standard template
+11. tell the `sub-agent` to read the specified skill files before executing
+12. tell the `sub-agent` to read that exact report file first and fill only the intended blank sections or placeholder values
+13. require commands run, changed files, outcome, unresolved risks, and dispatch-profile evidence in the report
+14. dispatch with the applied model and reasoning effort as actual tool-call arguments and the selected fork policy
+15. do not treat the delegated task as complete until the report exists, the runtime application status is recorded, and the parent has reviewed the result
 
 Read the report template from `report-output-manager` when creating the file:
 
@@ -75,15 +78,32 @@ Select the model tier and reasoning effort independently.
 - choose the highest floor required by task kind, uncertainty, change radius, and criticality
 - preserve explicit user and repository overrides according to the precedence in the reference
 
-For review work, apply these minimum defaults unless a higher floor is required:
+### Expensive Sol approval gate
+
+`Sol xhigh` and `Sol max` are not automatic dispatch profiles.
+
+When either becomes the calculated profile:
+
+- keep it in `proposed_profile`, not `requested`
+- explain why `Sol high` is insufficient
+- tell the user that the higher reasoning effort increases execution cost
+- ask for explicit approval to use the proposed profile
+- stop the workflow before spawning that agent
+- do not treat repository policy, a prior unrelated approval, silence, or inferred preference as approval
+
+An explicit current-task instruction from the user that directly requests `Sol xhigh` or `Sol max` satisfies the gate. If the user rejects the proposal, recompute a non-gated profile; normally the upper automatic fallback is `Sol high`.
+
+This gate applies to all task kinds, including independent final review and release audit, and has priority over repository policy and automatic selection.
+
+For review work, use these defaults:
 
 - initial normal review: Sol with `high`
 - focused fix verification: Terra with `high`
-- independent final review or release audit: Sol with `xhigh`
+- independent final review or release audit: propose Sol with `xhigh`, then stop for explicit user approval before dispatch
 
 For investigation, do not use Luna for open-ended or root-cause work. A deterministic evidence-collection task may use Luna, but a failure or conflicting evidence must be reclassified before retrying.
 
-Record both `requested` and `applied` profiles. A full-history fork inherits the parent profile; runtime rejection or fallback is a capability state, not evidence that the requested override was applied.
+Record `proposed`, `requested`, and `applied` distinctly when the approval gate is relevant. A full-history fork inherits the parent profile; runtime rejection or fallback is a capability state, not evidence that the requested override was applied.
 
 ## Required prompt content
 
@@ -132,9 +152,10 @@ When a relevant skill exists, do not paraphrase it loosely as the only guidance.
 
 ## Report rules
 
-- Every sub-agent task must produce a file under `reports/`.
+- Every dispatched sub-agent task must produce a file under `reports/`.
 - The parent agent should create the report file before dispatch whenever feasible.
-- The report must be created before the parent workflow treats the task as complete.
+- The report must be created before the parent workflow treats a dispatched task as complete.
+- An approval-gated proposal may be recorded before a child report exists because no child has been dispatched yet; record it in the parent-owned lifecycle evidence.
 - The parent should pre-populate the standard headings and placeholders so the `sub-agent` edits a fixed structure instead of rewriting the document.
 - If the `sub-agent` cannot write the report directly, the parent must write it immediately from the returned evidence.
 - Do not ask a sub-agent for ad hoc investigation, review, or implementation without a report path.
@@ -145,7 +166,7 @@ When a relevant skill exists, do not paraphrase it loosely as the only guidance.
 - Report text should be written in Japanese unless the user explicitly requests another language.
 - The `sub-agent` must preserve the existing report format: no heading renames, no section reordering, no blank-line cleanup, and no whole-file replacement.
 - Existing non-empty parent text in the report is immutable unless the parent explicitly marks it as editable.
-- Record all profile-selection inputs, requested and applied profile, selection source, reasons, constraints, fork policy, application status, and any escalation or fallback.
+- Record all profile-selection inputs, proposal and approval evidence when relevant, requested and applied profile, selection source, reasons, constraints, fork policy, application status, and any escalation or fallback.
 
 ## Standard report sections
 
@@ -175,10 +196,11 @@ Include:
 - outcome
 - unresolved risks or follow-up items
 - dispatch-profile evidence and runtime application status
+- when applicable, `Sol xhigh` / `Sol max` proposal and explicit approval evidence
 
 ## Outputs
 
-After this skill runs, there should be:
+After this skill runs for a dispatched task, there should be:
 
 - a dispatched sub-agent task with explicit scope
 - a pre-created report path under `reports/`
@@ -186,22 +208,34 @@ After this skill runs, there should be:
 - a requested and actually applied model, reasoning effort, and fork policy
 - report-backed evidence for the delegated work
 
+When the expensive Sol approval gate is pending, the output is instead:
+
+- a recorded `proposed_profile`
+- cost and justification notice
+- `application_status: awaiting_user_approval`
+- no dispatch using that profile
+
 ## Completion condition
 
-This skill is complete only when:
+This skill is complete for a dispatched task only when:
 
 - the sub-agent task has been dispatched with the required prompt content
+- any required `Sol xhigh` or `Sol max` approval was obtained before dispatch
 - the requested profile has either been applied or recorded as an explicit inherited, fallback, or capability-gap state
 - the report file exists in the expected location
 - the report contains the dispatch-profile evidence
 - the parent has reviewed the resulting report and underlying evidence
+
+An approval-gated task is intentionally incomplete while awaiting user approval.
 
 ## Rules
 
 - Keep sub-agent tasks small and concrete.
 - Prefer one bounded request over one broad speculative request.
 - Reuse existing reports before dispatching duplicate work.
-- Use `execution-cost-stabilizer` before `max`, multi-agent decomposition, wasteful reruns, or excessive parallelism.
+- Use `execution-cost-stabilizer` before proposing `max`, multi-agent decomposition, wasteful reruns, or excessive parallelism.
+- Never dispatch `Sol xhigh` or `Sol max` without explicit current-task user approval.
+- Do not silently downgrade an approval-gated proposal merely to avoid asking the user; present the proposal and stop first. After rejection, recompute the profile.
 - Do not make a sub-agent run `codex exec`, nested Codex, or equivalent agent-spawning workflows inside the delegated task.
 - Do not let a sub-agent re-run `development-orchestrator` or other parent-owned workflow entry skills just because they exist in the repo; the sub-agent should execute only the delegated task and the explicitly named supporting skills.
 - Do not leave report structure up to the `sub-agent`.
@@ -210,11 +244,11 @@ This skill is complete only when:
 - For review tasks, prefer direct report editing by the reviewer and use parent-side transcription only as fallback.
 - Do not treat a model or reasoning mention in `message` as an override. Pass the applied values in the actual `spawn_agent` call.
 - Do not combine a model or reasoning override with omitted `fork_turns` or `fork_turns: "all"`; full-history forks inherit the parent execution profile.
-- Do not silently downgrade an explicit user or repository profile override.
+- Do not silently downgrade an explicit user or repository profile override, except that an unapproved repository request for `Sol xhigh` or `Sol max` remains a proposal until the user approves it.
 - Do not keep a failed deterministic task on Luna after the work has become diagnosis or judgment.
 - If runtime rejects a hidden override argument, keep fallback execution parent-owned as defined by the spawn reference. Do not ask the delegated sub-agent to run the fallback.
 - If independently separable work would justify multi-agent execution, return it to `codex-delegation-executor` before dispatch rather than overloading one sub-agent.
 
 ## Cross-cutting rule
 
-If recurring sub-agent dispatch failures, profile misclassification, or report omissions appear, call `feedback-points-manager`.
+If recurring sub-agent dispatch failures, profile misclassification, approval-gate bypasses, or report omissions appear, call `feedback-points-manager`.
