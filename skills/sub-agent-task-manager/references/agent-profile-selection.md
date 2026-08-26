@@ -20,6 +20,26 @@ Use only reasoning effort values supported by the selected runtime model. For th
 
 Do not use pricing as the primary selector. Use task nature, uncertainty, change radius, and criticality first, then choose the least expensive profile that satisfies the resulting floor.
 
+## Mandatory user-approval gate for expensive Sol profiles
+
+`Sol xhigh` and `Sol max` are approval-gated profiles. They are never selected or dispatched automatically.
+
+When automatic classification, repository policy, escalation, or another Skill concludes that either profile is appropriate:
+
+1. classify it only as a `proposed_profile`
+2. explain why `Sol high` is insufficient and what benefit the higher effort is expected to provide
+3. state that `Sol xhigh` or `Sol max` has higher execution cost
+4. present the proposed profile to the user
+5. stop the dispatch flow before creating or invoking the sub-agent with that profile
+6. wait for explicit user approval
+7. only after approval, promote the proposal to `requested` and continue runtime application
+
+An explicit user instruction in the current task that directly requests `Sol xhigh` or `Sol max` counts as approval. A repository policy, previous approval for another task, inferred preference, or silence does not count.
+
+If the user rejects the proposal, recompute the profile with `Sol xhigh` and `Sol max` excluded. Normally the highest automatic fallback is `Sol high`, but classification must still be recomputed rather than silently copying the rejected proposal.
+
+This gate has higher precedence than repository policy and automatic selection. It also applies to review and release-audit tasks.
+
 ## Selection inputs
 
 Record these signals before choosing a profile:
@@ -33,6 +53,7 @@ Record these signals before choosing a profile:
 - `decomposability`: `single`, `sequential_dependencies`, or `independent_workstreams`
 - `context_need`: `fresh`, `bounded_history`, or `full_history`
 - explicit user or repository model, effort, budget, and availability constraints
+- approval state when `Sol xhigh` or `Sol max` is proposed
 
 `criticality: high` includes security, authorization, privacy, destructive data handling, schema or data migration, concurrency, compatibility, public API, release, deployment, and other changes where an incorrect result has a large or difficult-to-reverse impact.
 
@@ -84,7 +105,7 @@ Do not downgrade a Sol-floor task merely because the expected edit is small. Cha
 
 ## Task defaults
 
-Use these defaults after applying the floors above:
+Use these defaults after applying the floors above. A value marked `proposal` is not dispatchable until the user approves it.
 
 | Task | Default profile | Escalation |
 | --- | --- | --- |
@@ -92,11 +113,11 @@ Use these defaults after applying the floors above:
 | deterministic build or test execution | Luna `medium` | Reclassify failure diagnosis as investigation |
 | ordinary bounded implementation | Terra `medium` | Terra `high` for cross-module or multi-factor work |
 | localized debugging with a concrete hypothesis | Terra `high` | Sol `high` when the hypothesis fails or layers interact |
-| design or requirement interpretation | Sol `high` | Sol `max` only for one exceptionally hard, inseparable decision |
-| open-ended or cross-layer investigation | Sol `high` | Sol `max` for one exceptionally hard, inseparable root cause |
-| initial normal review | Sol `high` | Sol `xhigh` for high-criticality scope |
+| design or requirement interpretation | Sol `high` | propose Sol `max`; stop for user approval |
+| open-ended or cross-layer investigation | Sol `high` | propose Sol `max`; stop for user approval |
+| initial normal review | Sol `high` | propose Sol `xhigh`; stop for user approval |
 | focused fix verification | Terra `high` | Sol `high` when the original finding or changed scope is high-criticality |
-| independent final review or release audit | Sol `xhigh` | Sol `max` only when one inseparable proof obligation dominates |
+| independent final review or release audit | propose Sol `xhigh` | stop for user approval; propose Sol `max` only for one inseparable proof obligation |
 
 Do not use `none` by default for delegated development work. It may be used only for an explicitly deterministic operation that requires no technical judgment and has a complete mechanical validator.
 
@@ -107,14 +128,14 @@ Choose reasoning effort independently from model tier:
 - `low`: exact, low-risk transformations with explicit expected output
 - `medium`: ordinary bounded implementation or deterministic evidence work
 - `high`: multiple interacting conditions, careful debugging, design, or review
-- `xhigh`: exhaustive or high-stakes review and audit with a bounded scope
-- `max`: one exceptionally difficult, non-decomposable problem where deeper reasoning is more useful than splitting the task
+- `xhigh`: exhaustive or high-stakes review and audit with a bounded scope; when paired with Sol, user approval is mandatory
+- `max`: one exceptionally difficult, non-decomposable problem where deeper reasoning is more useful than splitting the task; when paired with Sol, user approval is mandatory
 
-Do not use `max` as a generic quality setting. Before selecting it, call `execution-cost-stabilizer` and record why Terra or Sol at `high` or `xhigh` is insufficient.
+Do not use `max` as a generic quality setting. Before proposing it, call `execution-cost-stabilizer` and record why Sol `high` or an independently decomposed plan is insufficient.
 
 ## Multi-agent decision
 
-Return the task to `codex-delegation-executor` for decomposition instead of selecting a single `max` task when all of the following hold:
+Return the task to `codex-delegation-executor` for decomposition instead of proposing a single `max` task when all of the following hold:
 
 - there are at least two independently executable workstreams
 - each workstream can have explicit scope, non-goals, evidence, and report ownership
@@ -128,18 +149,23 @@ Each decomposed task receives its own profile. Do not assign one shared profile 
 
 Apply precedence in this order:
 
-1. explicit user instruction
-2. authoritative repository policy
-3. runtime capability and model availability
-4. automatic selection rules in this reference
+1. explicit current-task user instruction, including explicit approval for `Sol xhigh` or `Sol max`
+2. mandatory user-approval gate for an unapproved `Sol xhigh` or `Sol max` proposal
+3. authoritative repository policy
+4. runtime capability and model availability
+5. automatic selection rules in this reference
 
 An override may pin the model, effort, or both. Continue to classify the task and record when the override is below the automatically calculated floor. Do not silently replace an explicit override. Report the mismatch and follow the governing authority.
 
-Separate the requested profile from the applied profile:
+A repository policy that requests `Sol xhigh` or `Sol max` creates a proposal but cannot satisfy the approval gate.
+
+## Dispatch profile schema
+
+For ordinary profiles:
 
 ```yaml
 dispatch_profile:
-  schema_version: 1
+  schema_version: 2
   selection_source: automatic | user_override | repository_policy
   task_kind: review
   signals:
@@ -153,23 +179,49 @@ dispatch_profile:
   requested:
     model_tier: sol
     model: gpt-5.6-sol
-    reasoning_effort: xhigh
+    reasoning_effort: high
     fork_turns: none
     parallelism_mode: single_agent
   applied:
     model: gpt-5.6-sol
-    reasoning_effort: xhigh
+    reasoning_effort: high
     fork_turns: none
   application_status: applied | inherited_parent_profile | fallback_applied | capability_gap
-  reasons:
-    - independent final review
-    - high-criticality cross-module scope
+  approval:
+    required: false
+    status: not_required
+  reasons: []
   constraints: []
-  escalation_triggers:
-    - evidence conflict expands the review scope
+  escalation_triggers: []
 ```
 
-When the selected model or effort is unavailable or rejected, follow [spawn-agent-model-overrides.md](spawn-agent-model-overrides.md). Never claim the requested profile was applied without actual runtime evidence.
+For approval-gated profiles, keep the candidate out of `requested` until approval:
+
+```yaml
+dispatch_profile:
+  schema_version: 2
+  selection_source: automatic | repository_policy
+  proposed_profile:
+    model_tier: sol
+    model: gpt-5.6-sol
+    reasoning_effort: xhigh | max
+    fork_turns: none
+    parallelism_mode: single_agent
+  requested: null
+  applied: null
+  application_status: awaiting_user_approval
+  approval:
+    required: true
+    status: pending | approved | rejected
+    approved_by: null
+    approval_evidence: null
+  reasons:
+    - why Sol high is insufficient
+  cost_notice:
+    - higher reasoning effort increases execution cost
+```
+
+After explicit approval, copy the approved proposal into `requested`, record approval evidence, and only then follow [spawn-agent-model-overrides.md](spawn-agent-model-overrides.md). Never claim the requested profile was applied without actual runtime evidence.
 
 ## Fork policy
 
@@ -187,6 +239,7 @@ Recompute the profile when new evidence changes uncertainty, change radius, crit
 - A task that becomes cleanly separable returns to `codex-delegation-executor` for decomposition.
 - Raise reasoning effort when the problem is unchanged but needs more careful analysis.
 - Raise model tier when the nature of the problem changes or the current model lacks the required judgment capability.
+- If escalation reaches Sol `xhigh` or Sol `max`, convert it to a proposal and stop for user approval instead of dispatching.
 
 Avoid blind retry loops. Record the reason for every profile escalation or fallback and reuse existing evidence.
 
@@ -201,6 +254,9 @@ Every dispatched task report must record:
 - runtime rejection or fallback, if any
 - reclassification or escalation, if any
 - whether multi-agent decomposition was considered and why it was or was not used
+- for `Sol xhigh` or `Sol max`, the proposal, cost notice, approval status, and explicit approval evidence
+
+A proposal that is still awaiting approval is a stopped workflow state, not a dispatched task.
 
 ## References
 
