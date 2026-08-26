@@ -71,7 +71,7 @@ write_boundary:
       reason: agent assignment architectureと選定規則の設計正本。
     - path_or_operation: reports/issue-13-adaptive-agent-assignment-*
       reason: implementation reportとlossless handoffの保存先。
-    - path_or_operation: PR #65 metadata and comments
+    - path_or_operation: "PR #65 metadata and comments"
       reason: PR作成、検証結果、handoffを利用者へ提示する。
   forbidden:
     - path_or_operation: main branch direct update
@@ -79,8 +79,8 @@ write_boundary:
     - path_or_operation: tasks/tasks-status.md manual edit
       reason: repository contract上、指定されたtask tracking Skillだけが更新する。
     - path_or_operation: unrelated repository files
-      reason: Issue #13 scope外の変更を避ける。
-    - path_or_operation: merge PR #65
+      reason: "Issue #13 scope外の変更を避ける。"
+    - path_or_operation: "merge PR #65"
       reason: mergeは利用者が実施する。
 
 scope:
@@ -240,7 +240,7 @@ implementation:
     - executor decisionとper-task profile selectionを別責務にした。
     - Ultra相当をmulti-agent strategyとして定義し、reasoning_effortから除外した。
     - explicit override、full-history inheritance、runtime rejection、fallbackをlossless evidenceとして残す。
-    - Issue #13をcloseするDraft PR #65を作成した。mergeは行っていない。
+    - "Issue #13をcloseするDraft PR #65を作成した。mergeは行っていない。"
 
 review:
   mode: not_applicable
@@ -341,7 +341,7 @@ source_payloads:
       authority:
         - user request
         - root AGENTS.md
-        - Issue #13
+        - "Issue #13"
         - Project Instruction
         - uploaded ChatGPT worker Skills
       development_policy:
@@ -359,7 +359,7 @@ source_payloads:
           - adaptive assignment design
           - implementation report
           - handoff transport
-          - PR #65 metadata and comment
+          - "PR #65 metadata and comment"
         forbidden:
           - direct main update
           - unrelated files
@@ -387,7 +387,7 @@ source_payloads:
         - merge
       authoritative_requirements:
         - user-requested article-based agent assignment
-        - Issue #13 model policy gap
+        - "Issue #13 model policy gap"
         - CodexSkill non-TDD policy
         - exact-head CI rule
       changes:
@@ -763,7 +763,7 @@ next_action:
   type: external_owner
   target_skill: none
   mode: review_and_merge_decision
-  summary: PR #65のfinal exact-head CIと差分をreviewし、利用者がmerge可否を判断する。
+  summary: "PR #65のfinal exact-head CIと差分をreviewし、利用者がmerge可否を判断する。"
   instructions:
     - PR bodyと簡易PR commentに記録されるfinal HEAD SHAを基準にする。
     - workflow runのhead_shaがPR current HEADと一致することを確認する。
