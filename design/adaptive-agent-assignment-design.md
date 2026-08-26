@@ -4,7 +4,7 @@
 
 delegated taskの性質に応じて、sub-agentへ適切なモデル、推論強度、fork方式を割り当てる。
 
-単純なfile数や一律のreviewer設定ではなく、工程、判断負荷、不確実性、変更半径、重要度、反復性、分割可能性を評価する。選定結果と実際にruntimeへ適用されたprofileを分離し、割当理由とfallbackをreportへ残す。
+単純なfile数や一律のreviewer設定ではなく、工程、判断負荷、不確実性、変更半径、重要度、反復性、分割可能性を評価する。選定結果と実際にruntimeへ適用されたprofileを分離し、割当理由、承認状態、fallbackをreportへ残す。
 
 本設計はIssue #13の「sub-agentの使用モデルがSkillへ定義されていない」という問題を解消する。
 
@@ -15,15 +15,11 @@ delegated taskの性質に応じて、sub-agentへ適切なモデル、推論強
 - `codex-delegation-executor`によるmain agentとsub-agentのexecutor選択
 - `sub-agent-task-manager`によるbounded taskとreport契約
 - `spawn-agent-model-overrides.md`によるhidden model overrideの適用方法
-- `development-orchestrator`によるimplementation modelの事前ユーザー確認
+- `development-orchestrator`によるworkflow lifecycle管理
 
-一方、taskの性質からmodelとreasoning effortを選ぶ中央規則がなかった。そのため、callerごとにprofileが固定または手動選択され、次を区別できなかった。
+一方、taskの性質からmodelとreasoning effortを選ぶ中央規則がなかった。そのため、callerごとにprofileが固定または手動選択され、機械的作業、通常実装、判断中心作業、難しい単一問題、独立workstream分割を区別できなかった。
 
-- 既に手順が決まった反復作業
-- 通常のbounded implementation
-- 要件、設計、難しいdebug、reviewのような判断中心作業
-- 一つの難問へ深く取り組む場合
-- 複数の独立workstreamへ分割する場合
+また、`Sol xhigh`と`Sol max`は実行コストが高いため、品質要件だけで自動選定すると意図せず高コストなdispatchが発生する。そこで、この2 profileは自動選定の最終結果ではなく、ユーザー承認が必要なproposalとして扱う。
 
 ## 設計原則
 
@@ -45,6 +41,27 @@ delegated taskの性質に応じて、sub-agentへ適切なモデル、推論強
 
 モデルtierを上げる条件とreasoning effortを上げる条件を混同しない。
 
+### `Sol xhigh` / `Sol max`はapproval-gated
+
+`Sol xhigh`と`Sol max`は自動dispatchしない。
+
+selectorがどちらかを必要と判断した場合は、次の状態遷移にする。
+
+```text
+automatic classification
+  -> proposed_profile = Sol xhigh | Sol max
+  -> userへ理由とcost noticeを提示
+  -> STOP
+      |-- approve -> requestedへ昇格 -> runtime application
+      `-- reject  -> xhigh/maxを除外して再計算
+```
+
+approval前は`requested`と`applied`を空にする。repository policy、過去の別taskでの承認、沈黙、推測したユーザー嗜好はapprovalとして扱わない。
+
+現在taskでユーザーが明示的に`Sol xhigh`または`Sol max`を指定している場合のみ、その指示自体をapproval evidenceとして扱える。
+
+このgateはreviewやrelease auditを含む全task kindへ適用し、repository policyとautomatic selectionより優先する。
+
 ### Ultraをreasoning effortにしない
 
 参考記事のUltra相当は、単一agentの推論強度ではなく、独立workstreamへ分割し親が統合するmulti-agent戦略として扱う。
@@ -59,15 +76,15 @@ delegated taskの性質に応じて、sub-agentへ適切なモデル、推論強
 
 大きなdiffでも、手順と期待結果が完全に決まりdeterministic validatorがある反復処理ならLuna候補になりうる。
 
-### requestedとappliedを分離する
+### proposed / requested / appliedを分離する
 
-runtime制約により、選択したprofileがそのまま適用されない場合がある。
+profile stateは次の3段階を区別する。
 
-- full-history forkはparent profileを継承する
-- hidden overrideがbackendでrejectされる可能性がある
-- runtimeでmodelが利用不能な場合がある
+- `proposed_profile`: cost gateなどによりまだ選択確定していない候補
+- `requested`: 承認済みまたは通常自動選定され、runtimeへ要求するprofile
+- `applied`: runtimeへ実際に適用されたprofile
 
-reportでは`requested`と`applied`、`application_status`を別に記録し、未適用profileを適用済みとしない。
+full-history fork、hidden override rejection、runtime model unavailableなどにより`requested`と`applied`が異なる場合がある。未承認proposalを`requested`または`applied`として記録してはならない。
 
 ## 責務配置
 
@@ -75,7 +92,8 @@ reportでは`requested`と`applied`、`application_status`を別に記録し、�
 
 - workflow開始時にroutineなimplementation model確認を要求しない
 - userまたはrepositoryが明示したoverrideやbudget制約だけを取得する
-- executor、assessment、requested/applied profileをlifecycle evidenceとして保持する
+- `Sol xhigh` / `Sol max` proposalが出た場合はuser confirmation boundaryとしてworkflowを停止する
+- executor、assessment、proposal/approval、requested/applied profileをlifecycle evidenceとして保持する
 
 ### `codex-delegation-executor`
 
@@ -95,14 +113,16 @@ reportでは`requested`と`applied`、`application_status`を別に記録し、�
 ### `sub-agent-task-manager`
 
 - 各bounded taskのmodel tier、reasoning effort、fork policyを選ぶ
+- `Sol xhigh` / `Sol max`ではproposalを生成し、approvalがない限りdispatchしない
 - explicit overrideの優先順位を適用する
-- requested profileをruntimeへ適用する
+- approved requested profileをruntimeへ適用する
 - applied profileとfallbackをreportへ記録する
 - taskが独立分割可能になった場合はdispatch前に`codex-delegation-executor`へ戻す
 
 ### `execution-cost-stabilizer`
 
-- `max`またはmulti-agentを使う前に、再実行、過剰parallelism、evidence再利用を確認する
+- `max` proposalまたはmulti-agentを使う前に、再実行、過剰parallelism、evidence再利用を確認する
+- `Sol xhigh` / `Sol max` proposalのcost rationaleを支援する
 - costだけを理由に必要なmodel floorを下げない
 
 ## 処理flow
@@ -126,6 +146,12 @@ codex-delegation-executor
           |-- model tier selection
           |-- reasoning effort selection
           |-- fork policy selection
+          |
+          |-- Sol xhigh/max ?
+          |       |-- yes -> proposal + cost notice -> USER APPROVAL STOP
+          |       `-- no  -> requested
+          |
+          |-- approved proposal -> requested
           |-- requested -> applied resolution
           |-- report pre-creation
           v
@@ -147,6 +173,9 @@ constraints:
   user_override: null
   repository_policy: null
   runtime_availability: known | unknown
+approval:
+  required: false
+  status: not_required | pending | approved | rejected
 ```
 
 非自明な分類にはsource evidenceを付ける。不明な場合は低く見積もらず、uncertaintyを上げる。
@@ -176,18 +205,33 @@ constraints:
 | open-ended or cross-layer investigation | Sol `high` |
 | initial normal review | Sol `high` |
 | focused fix verification | Terra `high` |
-| independent final review / release audit | Sol `xhigh` |
+| independent final review / release audit | propose Sol `xhigh`, then stop for approval |
 
 失敗したdeterministic verificationは同じLuna taskとして再実行せず、investigationへ再分類する。
 
+### `xhigh` gate
+
+Sol `xhigh`が適切と判断された場合、selectorは次を実行する。
+
+- `proposed_profile`へSol `xhigh`を設定
+- Sol `high`では不足する理由を記録
+- higher effortによるexecution cost増加をユーザーへ伝える
+- explicit approvalがなければdispatchを停止
+
+承認後のみ`requested`へ昇格する。
+
 ### `max` gate
 
-`max`は次を全て満たす場合だけ使用する。
+Sol `max`は次を全て満たす場合だけproposal可能とする。
 
 - 一つの問題が主要blockerである
 - workstreamへ安全に分割できない
-- `high`または`xhigh`で不足する具体的理由がある
+- Sol `high`では不足する具体的理由がある
 - `execution-cost-stabilizer`でscopeとevidence再利用を確認した
+- ユーザーへcost notice付きで提案する
+- explicit approvalを得るまでdispatchしない
+
+`xhigh`を先に実行する必要はない。task evidenceから直接`max`候補になりうるが、いずれの場合もapproval gateは必須である。
 
 ### multi-agent gate
 
@@ -200,49 +244,70 @@ constraints:
 - parent synthesisが定義されている
 - parallelismの実益がある
 
-各taskは別々にprofile選定する。
+各taskは別々にprofile選定する。分割後の個別taskがSol `xhigh`またはSol `max`候補なら、そのtaskごとにapproval gateを通す。
 
 ## override優先順位
 
-1. 明示的なuser instruction
-2. authoritative repository policy
-3. runtime capabilityとmodel availability
-4. automatic selection
+1. 明示的なcurrent-task user instruction
+2. 未承認Sol `xhigh` / `Sol max`に対するmandatory user-approval gate
+3. authoritative repository policy
+4. runtime capabilityとmodel availability
+5. automatic selection
 
 explicit overrideがautomatic floorを下回る場合も、silentに置換しない。mismatchを記録し、governing authorityに従う。
 
-model tierだけが指定された場合はreasoning effortを自動選定できる。reasoning effortだけが指定された場合はmodel tierを自動選定できる。
+repository policyがSol `xhigh`またはSol `max`を要求していても、それはproposalの根拠にはなるがuser approvalの代替にはならない。
 
 ## dispatch profile schema
 
+通常profile:
+
 ```yaml
 dispatch_profile:
-  schema_version: 1
+  schema_version: 2
   selection_source: automatic | user_override | repository_policy
   task_kind: review
-  signals:
-    work_class: judgment_heavy
-    uncertainty: high
-    change_radius: cross_module
-    criticality: high
-    repetition: single
-    decomposability: single
-    context_need: fresh
   requested:
     model_tier: sol
     model: gpt-5.6-sol
-    reasoning_effort: xhigh
+    reasoning_effort: high
     fork_turns: none
-    parallelism_mode: single_agent
   applied:
     model: gpt-5.6-sol
-    reasoning_effort: xhigh
+    reasoning_effort: high
     fork_turns: none
   application_status: applied | inherited_parent_profile | fallback_applied | capability_gap
-  reasons: []
-  constraints: []
-  escalation_triggers: []
+  approval:
+    required: false
+    status: not_required
 ```
+
+approval待ちprofile:
+
+```yaml
+dispatch_profile:
+  schema_version: 2
+  selection_source: automatic | repository_policy
+  proposed_profile:
+    model_tier: sol
+    model: gpt-5.6-sol
+    reasoning_effort: xhigh | max
+    fork_turns: none
+  requested: null
+  applied: null
+  application_status: awaiting_user_approval
+  approval:
+    required: true
+    status: pending
+    approved_by: null
+    approval_evidence: null
+  reasons:
+    - why Sol high is insufficient
+  cost_notice:
+    - higher reasoning effort increases execution cost
+```
+
+承認後はapproval evidenceを保存し、approved proposalを`requested`へ昇格してからruntime applicationへ進む。
 
 ## fork制約
 
@@ -250,6 +315,7 @@ dispatch_profile:
 - bounded historyだけ必要なら明示的なpositive partial fork
 - full-history forkはparent profileを継承し、`inherited_parent_profile`として記録
 - model specializationを優先する場合は、必要contextをtask-local promptへ明示してfresh spawnする
+- approvalはfork制約を上書きしない
 
 ## 再分類とescalation
 
@@ -258,6 +324,7 @@ dispatch_profile:
 - 問題自体は同じだが慎重さが不足する場合: reasoning effortを上げる
 - 問題の性質または必要判断能力が変わる場合: model tierを上げる
 - 独立workstreamが判明した場合: multi-agent分割判断へ戻る
+- escalation結果がSol `xhigh`またはSol `max`ならproposalへ変換し、user approval stopへ入る
 - runtime rejectionの場合: spawn適用contractに従いrequested/appliedを分離する
 
 理由のないretry escalationは禁止する。
@@ -266,44 +333,23 @@ dispatch_profile:
 
 ### formatting対象が多数ある
 
-- mechanical
-- low uncertainty
-- local
-- ordinary
-- high volume
-
 選定: Luna `low`。validator解釈が必要ならLuna `medium`。
 
 ### accepted designに基づく通常実装
-
-- bounded technical
-- lowからmedium uncertainty
-- localまたはcross-module
-- ordinary
 
 選定: Terra `medium`。module間regression reasoningが必要ならTerra `high`。
 
 ### intermittent concurrency failureの原因調査
 
-- judgment heavy
-- high uncertainty
-- cross-moduleまたはcross-system
-- high criticality
-
-選定: Sol `high`。一つの非分割root causeへ深い証明が必要な場合だけSol `max`。
+通常はSol `high`。一つの非分割root causeへ深い証明が必要でSol `high`では不足すると判断した場合はSol `max`を提案し、ユーザー承認まで停止する。
 
 ### independent final review
 
-- judgment heavy
-- high uncertainty
-- scopeに応じたchange radius
-- release criticality
-
-選定: Sol `xhigh`。過去review conclusionを引き継がないfresh spawnを使う。
+release-criticalな独立final reviewではSol `xhigh`を候補として提案する。Sol `high`との差とcost noticeを提示し、ユーザー承認前にはreviewerをdispatchしない。
 
 ### frontend、backend、migrationが独立している
 
-単一のSol `max`へまとめない。write ownershipとdependencyを確認し、3 bounded taskへ分割する。各taskは個別にTerraまたはSolを選定し、parentが統合する。
+単一のSol `max`へまとめない。write ownershipとdependencyを確認し、3 bounded taskへ分割する。各taskは個別にLuna、Terra、Solを選定し、parentが統合する。
 
 ## 既存設計との関係
 
@@ -323,7 +369,7 @@ CodexSkill repositoryの方針に従いTDDは適用しない。
 - `python3 scripts/build_chatgpt_worker_skills.py --output chatgpt-worker-skills.zip`
 - active relative Markdown link検証
 - current PR HEAD SHAと一致するGitHub Actions runの確認
-- selected/applied profile、Ultraとreasoning effort、full-history forkのcontract review
+- proposed/requested/applied profile、approval gate、Ultraとreasoning effort、full-history forkのcontract review
 
 ## 非対象
 
