@@ -1,0 +1,785 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: initial implementation
+  generated_at: 2026-08-26T13:21:38+09:00
+
+repository: ssaattww/CodexSkill
+issue_or_pr: "Issue #13 / PR #65"
+task_id: "Issue #13"
+branch: feat/adaptive-agent-assignment
+base_ref: main
+target:
+  current_head: 8731e75427aacada40db2fe1a2ceb8376d797266
+  reviewed_head: null
+  commit_range: 2ea9522d494b2b37c1d8aabb340a3113cfd18240...8731e75427aacada40db2fe1a2ceb8376d797266
+
+authoritative_requirements:
+  - source: user_instruction
+    reference: "https://qiita.com/azarashin/items/0a37ec8cce7c75d7f5eb"
+    summary: 参考記事を基に適切なagentを割り当てる仕組みを実装し、PR作成まで行う。
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: CodexSkill repositoryの保守へTDDを適用せず、既存validatorとdistribution buildで検証する。
+  - source: issue
+    reference: "https://github.com/ssaattww/CodexSkill/issues/13"
+    summary: sub-agentの使用modelをtask種別に応じて定義する。
+  - source: repository_instruction
+    reference: Project Instruction
+    summary: repository操作、Issue、PR、PR commentにはGitHub connectorを使用し、詳細reportと簡易PR commentを残し、mergeしない。
+  - source: repository_instruction
+    reference: Project Instruction CI rule
+    summary: PR current HEAD SHAとworkflow runのhead_shaが一致するrunだけをCI evidenceとして使用する。
+
+development_policy:
+  method: non-TDD repository maintenance
+  testing_order: implementation後にrepository Skill validator、active-link validation、ChatGPT worker ZIP buildを実行する。
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - python3 scripts/verify_skill_repository.py
+    - python3 scripts/build_chatgpt_worker_skills.py --output chatgpt-worker-skills.zip
+    - python3 -m zipfile -l chatgpt-worker-skills.zip
+  required_failure_diagnostics:
+    - test result
+    - standard output
+    - standard error
+    - failure investigation logs and artifacts when validation fails
+blocked: []
+
+authorized_actions:
+  - read_repository
+  - edit_documentation
+  - edit_configuration
+  - write_handoff
+  - write_report
+  - create_branch
+  - commit
+  - push
+  - create_pr
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: skills/sub-agent-task-manager/**
+      reason: per-task profile selectionとspawn application contractの更新対象。
+    - path_or_operation: skills/codex-delegation-executor/SKILL.md
+      reason: executor selectionとmulti-agent decompositionの責務owner。
+    - path_or_operation: skills/development-orchestrator/SKILL.md
+      reason: routine model confirmationをautomatic profile selectionへ接続する。
+    - path_or_operation: design/adaptive-agent-assignment-design.md
+      reason: agent assignment architectureと選定規則の設計正本。
+    - path_or_operation: reports/issue-13-adaptive-agent-assignment-*
+      reason: implementation reportとlossless handoffの保存先。
+    - path_or_operation: PR #65 metadata and comments
+      reason: PR作成、検証結果、handoffを利用者へ提示する。
+  forbidden:
+    - path_or_operation: main branch direct update
+      reason: 変更はfeature branchとPR経由で提出する。
+    - path_or_operation: tasks/tasks-status.md manual edit
+      reason: repository contract上、指定されたtask tracking Skillだけが更新する。
+    - path_or_operation: unrelated repository files
+      reason: Issue #13 scope外の変更を避ける。
+    - path_or_operation: merge PR #65
+      reason: mergeは利用者が実施する。
+
+scope:
+  - bounded taskの性質からLuna、Terra、Solのmodel tierを選ぶ中央contractを追加する。
+  - model tierとreasoning effortを独立に選択する。
+  - uncertainty、change radius、criticality、repetition、decomposability、context needをassessmentする。
+  - requested profileとruntimeへ実際に適用されたprofileを分離する。
+  - full-history fork、runtime rejection、fallback、capability gapをreport evidenceへ残す。
+  - Ultra相当をreasoning effortではなくmulti-agent decompositionとして扱う。
+  - existing delegation architectureへ接続し、新規Skillを増やさない。
+non_goals:
+  - Codex runtime本体へのmodel router実装。
+  - runtime model availability APIの新設。
+  - model価格だけに基づくrouting。
+  - explicit userまたはrepository overrideのsilent変更。
+  - full-history forkへ異なるmodelを強制すること。
+  - reasoning_effortとしてultraを追加すること。
+  - task tracking fileの手動更新。
+  - merge。
+
+files:
+  changed:
+    - path: skills/sub-agent-task-manager/references/agent-profile-selection.md
+      purpose: model tier、reasoning effort、task default、override、fork、escalation、evidence schemaの中央reference。
+    - path: skills/sub-agent-task-manager/SKILL.md
+      purpose: per-task profile selectionとactual runtime applicationをrequired flowへ追加。
+    - path: skills/sub-agent-task-manager/references/spawn-agent-model-overrides.md
+      purpose: selectionとapplicationを分離し、requested/applied、full-history、fallbackを定義。
+    - path: skills/codex-delegation-executor/SKILL.md
+      purpose: delegation assessmentとmulti-agent decomposition gateを追加。
+    - path: skills/development-orchestrator/SKILL.md
+      purpose: routine implementation model confirmationをautomatic selectionへ置換。
+    - path: design/adaptive-agent-assignment-design.md
+      purpose: architecture、input schema、selection matrix、flow、examples、validation方針を記録。
+    - path: reports/issue-13-adaptive-agent-assignment-implementation-20260826.md
+      purpose: implementation、validation、CI、riskの詳細report。
+  inspected:
+    - path: AGENTS.md
+      purpose: CodexSkillのnon-TDD方針とSkill-first instructionを確認。
+    - path: tasks/tasks-status.md
+      purpose: manual task tracking update禁止とcurrent stateを確認。
+    - path: .github/workflows/release-chatgpt-worker-skills.yml
+      purpose: repository validator、ZIP build、artifact uploadが既に存在することを確認。
+    - path: scripts/verify_skill_repository.py
+      purpose: repository Skill architecture、active relative link、design synchronizationのvalidation内容を確認。
+    - path: skills/review-enforcer/SKILL.md
+      purpose: reviewer lifecycleと今回のprofile selection責務の境界を確認。
+    - path: skills/execution-cost-stabilizer/SKILL.md
+      purpose: max、parallelism、rerun costのgate ownerを確認。
+    - path: skills/skill-authoring-wrapper/references/responsibility-placement-policy.md
+      purpose: model selection責務を直接利用されうるsub-agent-task-managerへ置く判断根拠を確認。
+    - path: "https://github.com/ssaattww/CodexSkill/issues/13"
+      purpose: model assignment不足のoriginal requirementを確認。
+    - path: "https://github.com/ssaattww/CodexSkill/issues/46"
+      purpose: full-history forkとmodel override制約のrelated issueを確認。
+    - path: "https://qiita.com/azarashin/items/0a37ec8cce7c75d7f5eb"
+      purpose: Luna、Terra、Sol、Max、Ultraのtask allocation方針を確認。
+    - path: "https://developers.openai.com/api/docs/models"
+      purpose: current model IDsとsupported reasoning effortを確認。
+    - path: "https://developers.openai.com/api/docs/guides/latest-model"
+      purpose: multi-agent decomposition guidanceを確認。
+  intentionally_untouched:
+    - path_or_area: tasks/tasks-status.md
+      reason: repository contract上、指定されたtask tracking Skillだけが更新する。
+    - path_or_area: design/skill-hierarchy-design.md
+      reason: Skill topologyとdependency edgeを変更していない。
+    - path_or_area: skills/design/skill-hierarchy-design.md
+      reason: hierarchy mirrorの同期対象となるtopology変更がない。
+    - path_or_area: .github/workflows/release-chatgpt-worker-skills.yml
+      reason: CodexSkill向けvalidator、ZIP build、artifact uploadが既に存在し、RevMem専用診断artifact追加規則は適用外。
+    - path_or_area: skills/review-enforcer/SKILL.md
+      reason: reviewer lifecycleは変更せず、review modeをselector inputとして使用する。
+
+commands:
+  - command: python3 scripts/verify_skill_repository.py
+    purpose: Skill names、declared dependencies、active relative links、forbidden runtime paths、hierarchy design synchronizationを検証する。
+    exit_code: 0
+    result: passed
+    head_sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+    evidence: GitHub Actions run 32929830171 / build job 98059811771 / step Validate repository Skill architecture and active links。
+  - command: python3 scripts/build_chatgpt_worker_skills.py --output chatgpt-worker-skills.zip
+    purpose: ChatGPT wrapperとcore Skill distribution ZIPを生成する。
+    exit_code: 0
+    result: passed
+    head_sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+    evidence: GitHub Actions run 32929830171 / build job 98059811771 / step Build and verify ChatGPT wrapper and core Skill ZIP。
+  - command: python3 -m zipfile -l chatgpt-worker-skills.zip
+    purpose: generated ZIPの内容を読み取り可能であることを検証する。
+    exit_code: 0
+    result: passed
+    head_sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+    evidence: GitHub Actions run 32929830171 / build job 98059811771 / step Build and verify ChatGPT wrapper and core Skill ZIP。
+
+tests:
+  - name: CodexSkill TDD red-green cycle
+    phase: not_applicable
+    result: not_run
+    head_sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+    evidence: AGENTS.mdによりCodexSkill repository maintenanceはnon-TDD。
+  - name: repository Skill architecture and active-link validation
+    phase: verification
+    result: passed
+    head_sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+    evidence: workflow run 32929830171、build job 98059811771。
+  - name: ChatGPT worker Skill ZIP build and listing
+    phase: verification
+    result: passed
+    head_sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+    evidence: workflow run 32929830171、build job 98059811771。
+
+ci:
+  required: true
+  workflow: Validate and release ChatGPT worker skills
+  run_id: 32929830171
+  head_sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+  conclusion: success
+  artifacts:
+    - id: 9592803602
+      name: chatgpt-worker-skills-32929830171
+      purpose: validator通過後に生成されたChatGPT worker Skill ZIP。digest sha256:e5a835c0af6afcd6b9573d563e66ea36ce8ca037e451731eab04318f05145448。
+
+implementation:
+  outcome: completed
+  final_head: 8731e75427aacada40db2fe1a2ceb8376d797266
+  commits:
+    - sha: 716594ca5a19e5ad5fe3e718cd445ab4559811f8
+      purpose: adaptive profile selection referenceを追加。
+    - sha: 52a9b63dd4a119aa9410133ec4e0e7e07d3f1183
+      purpose: sub-agent-task-managerへautomatic profile selectionを追加。
+    - sha: 76b49304cdb9d3a54f3d202a6b072584431612e2
+      purpose: spawn application contractをrequested/appliedへ分離。
+    - sha: df3d44be01c9b7022909bd7a2ce614733c820f07
+      purpose: delegation assessmentとmulti-agent decomposition gateを追加。
+    - sha: abf889a0e4955069a3901c99973ee401d1226ce2
+      purpose: orchestratorのroutine model confirmationをautomatic selectionへ置換。
+    - sha: 18694e6bdfd15301afbaf57b2e6596fe52d239e7
+      purpose: 適応型agent割当設計を追加。
+    - sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+      purpose: detailed implementation reportを追加。
+  addressed_findings: []
+  failure_diagnostics:
+    - type: test_result
+      location: GitHub Actions run 32929830171
+      summary: repository validatorとZIP buildは成功し、test failureはない。
+    - type: standard_output
+      location: GitHub Actions build job 98059811771
+      summary: 全verification stepがsuccessで完了した。failure stdoutはない。
+    - type: standard_error
+      location: GitHub Actions build job 98059811771
+      summary: failure stderrはない。
+    - type: artifact
+      location: GitHub Actions artifact 9592803602
+      summary: validation済みChatGPT worker Skill ZIPがuploadされた。
+  blocked_items: []
+  summary:
+    - task特性をmodel tier、reasoning effort、fork policyへ写像する中央contractを追加した。
+    - executor decisionとper-task profile selectionを別責務にした。
+    - Ultra相当をmulti-agent strategyとして定義し、reasoning_effortから除外した。
+    - explicit override、full-history inheritance、runtime rejection、fallbackをlossless evidenceとして残す。
+    - Issue #13をcloseするDraft PR #65を作成した。mergeは行っていない。
+
+review:
+  mode: not_applicable
+  reviewed_head: unknown
+  reviewer:
+    identity: unknown
+    role: not_applicable
+    continuity:
+      previous_reviewer_identity: null
+      changed: false
+      reason: null
+    independence:
+      implemented_change: unknown
+      implemented_review_fix: unknown
+      served_as_normal_reviewer: unknown
+      inherited_conversation: unknown
+      evidence:
+        - chat-implementation-workerはindependent review verdictを生成しない。
+  verdict: not_applicable
+  required_coverage:
+    - criterion: independent implementation review
+      disposition: not_applicable
+      evidence: このhandoffはimplementation workerの成果であり、次actionをexternal reviewとする。
+  validation_assessment:
+    - item: exact-head CI for packet target
+      result: supported
+      evidence: workflow run 32929830171のhead_shaがpacket target 8731e75427aacada40db2fe1a2ceb8376d797266と一致し、conclusion success。
+  reserved_report_paths: []
+  report_attestation:
+    allowed: not_applicable
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence:
+      - independent final reviewとreport-attestationは実施していない。
+  summary:
+    - implementation evidenceは作成済み。
+    - independent review verdictは未生成であり、PR reviewが次action。
+
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/issue-13-adaptive-agent-assignment-implementation-20260826.md
+  reviewed_head: null
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - requirements、scope、design、changed files、commits、exact-head CI、risks、next actionを日本語で記録した。
+    - report blob SHAは98c3ed9ad669ecf787611e4345605416d81e13aa。
+
+findings: []
+held: []
+unexplored:
+  - area: hidden collaboration.spawn_agent model/reasoning overrideのlive integration
+    blocker: CodexSkillはSkill contract repositoryであり、CIにspawn fixtureが存在しない。
+    remaining_risk: runtimeがhidden overrideをrejectする可能性がある。
+    verdict_impact: requested/applied分離、parent-owned fallback、capability_gap記録で安全に扱う。implementation completionは妨げない。
+unknown:
+  - field_or_fact: 各accountまたはruntimeで実際に利用可能なmodel一覧
+    reason: runtime availability APIは本repositoryに存在しない。availability failureはapplication_statusへ記録する契約とした。
+not_applicable:
+  - field_or_area: TDD red-green evidence
+    reason: AGENTS.mdによりCodexSkill repository maintenanceはnon-TDD。
+  - field_or_area: independent review verdict
+    reason: chat-implementation-workerはreview verdictを生成しない。
+  - field_or_area: report-attestation commit
+    reason: independent final reviewは実施していない。
+  - field_or_area: merge
+    reason: mergeは利用者が行う。
+remaining_risks:
+  - GPT model familyまたはsupported reasoning effortが将来変更された場合、current mappingの更新が必要になる。
+  - hidden spawn overrideがruntimeでrejectされる可能性があり、その場合はrequested/applied分離とfallback evidenceが必要になる。
+  - automatic classificationはSkill instructionに基づくjudgmentであり、runtime classifier codeではない。
+  - このpacketを保存するtransport commit後はPR HEADが変わるため、final exact-head CIを別途確認し、PR commentへ記録する必要がある。
+
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      task:
+        issue: 13
+        pr: 65
+        mode: initial implementation
+      target:
+        branch: feat/adaptive-agent-assignment
+        base_ref: main
+        base_head: 2ea9522d494b2b37c1d8aabb340a3113cfd18240
+        current_head: 8731e75427aacada40db2fe1a2ceb8376d797266
+        commit_range: 2ea9522d494b2b37c1d8aabb340a3113cfd18240...8731e75427aacada40db2fe1a2ceb8376d797266
+      authority:
+        - user request
+        - root AGENTS.md
+        - Issue #13
+        - Project Instruction
+        - uploaded ChatGPT worker Skills
+      development_policy:
+        method: non-TDD repository maintenance
+        testing_order: implementation then repository validator and distribution build
+        governing_source: AGENTS.md
+      verification_capability: remote_ci_only
+      validation_targets:
+        - repository Skill architecture and active links
+        - ChatGPT worker ZIP build and listing
+        - exact-head pull_request workflow run
+      write_boundary:
+        allowed:
+          - relevant Skill files
+          - adaptive assignment design
+          - implementation report
+          - handoff transport
+          - PR #65 metadata and comment
+        forbidden:
+          - direct main update
+          - unrelated files
+          - manual tasks/tasks-status.md edit
+          - merge
+      blocked: []
+      unknown:
+        - runtime model availability per account
+  - source_skill: implementation-worker
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      mode: initial implementation
+      scope:
+        - adaptive per-task agent profile selection
+        - delegation assessment
+        - multi-agent decomposition gate
+        - requested/applied runtime evidence
+        - design and report persistence
+      non_goals:
+        - runtime router implementation
+        - model availability API
+        - price-only optimization
+        - task status manual update
+        - merge
+      authoritative_requirements:
+        - user-requested article-based agent assignment
+        - Issue #13 model policy gap
+        - CodexSkill non-TDD policy
+        - exact-head CI rule
+      changes:
+        - path: skills/sub-agent-task-manager/references/agent-profile-selection.md
+          outcome: added
+        - path: skills/sub-agent-task-manager/SKILL.md
+          outcome: updated
+        - path: skills/sub-agent-task-manager/references/spawn-agent-model-overrides.md
+          outcome: updated
+        - path: skills/codex-delegation-executor/SKILL.md
+          outcome: updated
+        - path: skills/development-orchestrator/SKILL.md
+          outcome: updated
+        - path: design/adaptive-agent-assignment-design.md
+          outcome: added
+        - path: reports/issue-13-adaptive-agent-assignment-implementation-20260826.md
+          outcome: added
+      intentionally_untouched:
+        - tasks/tasks-status.md
+        - design/skill-hierarchy-design.md
+        - skills/design/skill-hierarchy-design.md
+        - .github/workflows/release-chatgpt-worker-skills.yml
+        - skills/review-enforcer/SKILL.md
+      model_selection_contract:
+        luna: low-uncertainty local ordinary deterministic mechanical or high-volume work
+        terra: ordinary bounded technical work
+        sol: requirement design open investigation cross-system high-criticality and review work
+        reasoning_effort:
+          low: exact low-risk transformation
+          medium: ordinary bounded implementation or deterministic evidence
+          high: multi-factor debugging design or review
+          xhigh: bounded exhaustive high-stakes review or audit
+          max: one exceptionally difficult non-decomposable problem
+        ultra: multi-agent decomposition strategy; never a reasoning_effort value
+      validation:
+        head_sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+        workflow_run: 32929830171
+        conclusion: success
+        commands:
+          - python3 scripts/verify_skill_repository.py
+          - python3 scripts/build_chatgpt_worker_skills.py --output chatgpt-worker-skills.zip
+          - python3 -m zipfile -l chatgpt-worker-skills.zip
+        artifact:
+          id: 9592803602
+          name: chatgpt-worker-skills-32929830171
+      commits:
+        - 716594ca5a19e5ad5fe3e718cd445ab4559811f8
+        - 52a9b63dd4a119aa9410133ec4e0e7e07d3f1183
+        - 76b49304cdb9d3a54f3d202a6b072584431612e2
+        - df3d44be01c9b7022909bd7a2ce614733c820f07
+        - abf889a0e4955069a3901c99973ee401d1226ce2
+        - 18694e6bdfd15301afbaf57b2e6596fe52d239e7
+        - 8731e75427aacada40db2fe1a2ceb8376d797266
+      failure_diagnostics:
+        test_result: no failure
+        standard_output: no failure output
+        standard_error: no failure output
+        artifact: validation ZIP uploaded
+      blocked: []
+      unknown:
+        - live hidden spawn override integration
+        - per-runtime model availability
+      risks:
+        - model catalog drift
+        - hidden override rejection
+        - judgment-based classification
+      outcome: completed
+      next_action: persist handoff, verify its exact final HEAD CI, update PR body/comment, mark ready for review
+  - source_skill: report-writer
+    output_contract_version: unknown
+    content_type: text/markdown
+    payload: |
+      # Issue #13 適応型agent割当 実装レポート
+
+      ## メタデータ
+
+      - repository: `ssaattww/CodexSkill`
+      - Issue: `#13 sub-agentの使用モデル`
+      - PR: `#65 feat: task特性に応じてsub-agent profileを自動選定する`
+      - branch: `feat/adaptive-agent-assignment`
+      - base: `main`
+      - base HEAD: `2ea9522d494b2b37c1d8aabb340a3113cfd18240`
+      - implementation HEAD: `18694e6bdfd15301afbaf57b2e6596fe52d239e7`
+      - report persistence: repository file
+      - report commit SHA: commit後にのみ確定するため本文には記載しない。final PR HEADとexact-head CIはPR commentへ記録する。
+
+      ## 目的
+
+      参考記事のLuna、Terra、Solの役割分担をCodexSkillの既存delegation flowへ取り込み、bounded taskの性質に応じて次を自動選定する。
+
+      - model tier
+      - reasoning effort
+      - fork policy
+      - single-agent executionとmulti-agent decompositionの区別
+
+      modelをpromptへ書くだけでなく、requested profileとruntimeへ実際に適用されたprofileを分離し、選定理由、制約、fallbackをreport evidenceとして残す。
+
+      ## authoritative requirements
+
+      - user instruction: 参考記事を基に適切なagentを割り当てる仕組みを実装し、PR作成まで行う。
+      - repository instruction: root `AGENTS.md`に従いCodexSkill保守へTDDを適用しない。
+      - Issue #13: 機械的実装、設計・調査、reviewで使用modelを分けるSkill契約が不足している。
+      - project instruction: GitHub connectorでrepository、Issue、PRを操作し、詳細reportをrepositoryへ保存し、簡易reportをPR commentへ投稿する。mergeは行わない。
+      - CI instruction: PR current HEAD SHAとworkflow runの`head_sha`が一致するrunだけを使用する。
+
+      ## 参考資料
+
+      - https://qiita.com/azarashin/items/0a37ec8cce7c75d7f5eb
+      - https://developers.openai.com/api/docs/models
+      - https://developers.openai.com/api/docs/guides/latest-model
+
+      OpenAI公式model catalogに基づき、current model IDを`gpt-5.6-luna`、`gpt-5.6-terra`、`gpt-5.6-sol`として定義した。reasoning effortは`none`、`low`、`medium`、`high`、`xhigh`、`max`をnormalization対象とした。
+
+      参考記事のUltra相当はreasoning effortではなく、独立workstreamを複数agentへ分割するexecution strategyとして扱った。
+
+      ## scope
+
+      - `sub-agent-task-manager`へper-task profile selection責務を追加
+      - model tierとreasoning effortを別軸で選ぶ中央matrixを追加
+      - Luna、Terra、Solのtask floorとtask defaultを追加
+      - uncertainty、change radius、criticality、repetition、decomposability、context needのassessmentを追加
+      - `codex-delegation-executor`へsingle-agentとmulti-agent decompositionのgateを追加
+      - `development-orchestrator`のroutineなimplementation model確認を廃止
+      - explicit userまたはrepository overrideの優先順位を追加
+      - requested profileとapplied profileを分離
+      - full-history fork、runtime rejection、fallback、capability gapの記録契約を追加
+      - 適応型agent割当の設計書を追加
+
+      ## non-goals
+
+      - Codex runtime本体へのmodel router実装
+      - runtime model availability APIの追加
+      - model価格だけに基づくrouting
+      - explicit overrideのsilent変更
+      - full-history forkへ異なるmodelを強制すること
+      - `reasoning_effort: ultra`の追加
+      - task tracking fileの手動更新
+      - merge
+
+      ## 責務配置
+
+      ### `codex-delegation-executor`
+
+      次を所有する。
+
+      - main agent、single sub-agent、multi-agentのexecutor decision
+      - task assessment
+      - independent workstreamの分割gate
+      - parent synthesis
+
+      modelとreasoning effortの中央defaultは持たない。
+
+      ### `sub-agent-task-manager`
+
+      次を所有する。
+
+      - bounded taskごとのmodel tier選定
+      - reasoning effort選定
+      - fork policy選定
+      - requested profileのspawn適用
+      - applied profileとfallbackのreport evidence
+
+      この配置により、`sub-agent-task-manager`が直接使われる経路でもmodel selectionが欠落しない。
+
+      ### `development-orchestrator`
+
+      routineなmodel確認を要求せず、明示overrideまたはbudget constraintだけをworkflow inputとして保持する。
+
+      ## 選定規則
+
+      ### model tier
+
+      - Luna: low uncertainty、local、ordinary criticality、deterministic、mechanicalまたはhigh-volume
+      - Terra: ordinary bounded implementation、focused verification、具体的仮説があるlocalized investigation、focused fix verification
+      - Sol: requirement、design、open-ended investigation、cross-system、高criticality、initial review、independent final review、release audit
+
+      複数条件が該当する場合は最も高いfloorを使う。diff行数よりchange radiusとimpactを優先する。
+
+      ### reasoning effort
+
+      - `low`: exactかつ低riskの変換
+      - `medium`: ordinary bounded implementationまたはdeterministic evidence
+      - `high`: 複数条件、debug、design、review
+      - `xhigh`: boundedで網羅性または重要度が高いreview・audit
+      - `max`: 一つの非常に難しく分割不能な問題
+
+      `max`はgeneric quality settingとして使わず、`execution-cost-stabilizer`を通す。
+
+      ### multi-agent
+
+      次を全て満たす場合だけ分割する。
+
+      - independent workstreamが2件以上
+      - 各taskへscope、non-goals、evidence、report ownerを定義できる
+      - write ownershipが重複しない、またはread-only
+      - blocking dependencyがない
+      - parent synthesisが定義されている
+      - parallelismの実益がある
+
+      各taskは別々にprofileを選ぶ。
+
+      ## changed files
+
+      - `skills/sub-agent-task-manager/references/agent-profile-selection.md`
+        - model tier、reasoning effort、task default、override、fork、escalation、evidence schemaを追加
+      - `skills/sub-agent-task-manager/SKILL.md`
+        - per-task profile selectionとactual runtime applicationをrequired flowへ追加
+      - `skills/sub-agent-task-manager/references/spawn-agent-model-overrides.md`
+        - selectionとapplicationを分離し、requested/applied、full-history、fallbackを追加
+      - `skills/codex-delegation-executor/SKILL.md`
+        - delegation assessmentとmulti-agent decomposition gateを追加
+      - `skills/development-orchestrator/SKILL.md`
+        - routineなimplementation model確認をautomatic selectionへ置換
+      - `design/adaptive-agent-assignment-design.md`
+        - architecture、input schema、selection matrix、flow、examples、validation方針を追加
+
+      ## intentionally untouched
+
+      - `tasks/tasks-status.md`
+        - repository契約上、指定されたtask管理Skillだけが更新するため手動変更しない。
+      - `design/skill-hierarchy-design.md`
+      - `skills/design/skill-hierarchy-design.md`
+        - Skill hierarchy topologyとdependency edgeは変更していない。新規Skillも追加していないため同期pairは変更しない。
+      - `.github/workflows/release-chatgpt-worker-skills.yml`
+        - CodexSkillには既にrepository validator、ZIP build、artifact uploadを行うPR workflowが存在する。RevMem向け診断artifact追加規則は本repositoryへ適用しない。
+      - `skills/review-enforcer/SKILL.md`
+        - reviewer lifecycleは変更せず、review modeをbounded task inputとしてselectorが使用する。
+
+      ## commits
+
+      - `716594ca5a19e5ad5fe3e718cd445ab4559811f8`: adaptive profile selection reference追加
+      - `52a9b63dd4a119aa9410133ec4e0e7e07d3f1183`: `sub-agent-task-manager`へautomatic selection追加
+      - `76b49304cdb9d3a54f3d202a6b072584431612e2`: spawn application contract更新
+      - `df3d44be01c9b7022909bd7a2ce614733c820f07`: delegation assessmentとmulti-agent gate追加
+      - `abf889a0e4955069a3901c99973ee401d1226ce2`: orchestratorのroutine model confirmation置換
+      - `18694e6bdfd15301afbaf57b2e6596fe52d239e7`: 適応型agent割当設計追加
+
+      ## development policy
+
+      - method: non-TDD repository maintenance
+      - testing order: implementation後にrepository validatorとdistribution buildを実行
+      - governing source: root `AGENTS.md`
+      - TDD: not applicable
+      - Red/Green evidence: 作成していない
+
+      ## validation route
+
+      - verification capability: `remote_ci_only`
+      - 理由: repository参照・更新はGitHub connectorを使用し、local checkoutを作らずGitHub Actionsをformal validation evidenceとして使用した。
+
+      ## validation evidence for implementation HEAD
+
+      対象HEAD: `18694e6bdfd15301afbaf57b2e6596fe52d239e7`
+
+      - workflow: `Validate and release ChatGPT worker skills`
+      - run ID: `32929673352`
+      - run number: `159`
+      - event route: pull request
+      - run head SHA: `18694e6bdfd15301afbaf57b2e6596fe52d239e7`
+      - conclusion: `success`
+      - build job ID: `98059362580`
+
+      成功step:
+
+      - Checkout target HEAD without write credentials
+      - Validate repository Skill architecture and active links
+      - Build and verify ChatGPT wrapper and core Skill ZIP
+      - Upload validation artifact
+
+      このrunはimplementation HEADと一致する。reportとhandoff追加後はPR HEADが変わるため、このrunをfinal HEADの代用にはしない。final exact-head runはPR commentへ記録する。
+
+      ## failure diagnostics
+
+      - test failure: なし
+      - standard output failure: なし
+      - standard error failure: なし
+      - failure artifact inspection: not applicable
+      - workflow artifact: validation成功時にChatGPT worker ZIPがuploadされた。failure investigationは不要だった。
+
+      ## contract review
+
+      次を差分で確認した。
+
+      - model tierとreasoning effortが別のdecisionとして記述されている
+      - `reasoning_effort: ultra`を生成しない
+      - multi-agent decompositionは`codex-delegation-executor`が所有する
+      - per-task profileは`sub-agent-task-manager`が所有する
+      - user/repository overrideをsilentに変更しない
+      - requested profileをapplied profileとして無条件copyしない
+      - full-history forkはparent profile継承として記録する
+      - runtime rejectionはfallbackまたはcapability gapとして記録する
+      - failed deterministic verificationをinvestigationへ再分類する
+      - existing report、review、nested Codex禁止契約を維持する
+
+      ## blocked / unknown / unexplored
+
+      - blocked: なし
+      - unknown: 実行時に各accountまたはruntimeで利用可能なmodel一覧を取得するAPIは本repositoryに存在しない。
+      - unexplored: hidden `collaboration.spawn_agent` overrideのlive integration test。CodexSkillはSkill contract repositoryであり、CIにspawn fixtureは存在しない。
+
+      ## remaining risks
+
+      - GPT model familyまたはsupported reasoning effortが将来変更された場合、current model mappingの更新が必要になる。
+      - hidden spawn overrideがruntimeでrejectされる可能性は残る。その場合はrequested/appliedを分離し、parent-owned fallbackまたはcapability gapを記録する。
+      - automatic classificationはSkill instructionに基づくjudgmentであり、runtime classifier codeではない。non-obvious classificationにはevidence記録を必須化した。
+      - final report/handoff commitについては、新しいPR HEADに紐づくworkflow runを別途確認する必要がある。
+
+      ## outcome
+
+      Issue #13のmodel assignment不足に対し、既存delegation architectureを維持したまま、task特性からLuna、Terra、Solとreasoning effortを選ぶ中央contractを実装した。
+
+      PR #65を作成済み。mergeは行わない。
+
+      ## next action
+
+      - reportとhandoffをrepositoryへpersistする。
+      - final PR HEADと一致するworkflow runだけを確認する。
+      - PR bodyをfinal stateへ更新し、変更内容と検証結果の簡易reportをPR commentへ投稿する。
+      - PRをready for reviewへ変更する。
+  - source_skill: chat-implementation-worker
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      wrapper_mode: initial implementation
+      repository_operations:
+        connector: GitHub
+        branch_created: feat/adaptive-agent-assignment
+        pull_request_created: 65
+        report_persisted: reports/issue-13-adaptive-agent-assignment-implementation-20260826.md
+        handoff_path: reports/issue-13-adaptive-agent-assignment-handoff-20260826.yaml
+        merge_performed: false
+      current_source_head: 8731e75427aacada40db2fe1a2ceb8376d797266
+      exact_head_ci:
+        run_id: 32929830171
+        head_sha: 8731e75427aacada40db2fe1a2ceb8376d797266
+        conclusion: success
+      pending_wrapper_actions:
+        - verify exact-head CI after handoff transport commit
+        - update PR body with final evidence
+        - post concise PR comment
+        - mark PR ready for review
+      blocked: []
+
+extensions:
+  - namespace: openai.agent_assignment.sources
+    payload:
+      article: https://qiita.com/azarashin/items/0a37ec8cce7c75d7f5eb
+      model_catalog: https://developers.openai.com/api/docs/models
+      latest_model_guidance: https://developers.openai.com/api/docs/guides/latest-model
+      normalized_models:
+        luna: gpt-5.6-luna
+        terra: gpt-5.6-terra
+        sol: gpt-5.6-sol
+      normalized_reasoning_effort:
+        - none
+        - low
+        - medium
+        - high
+        - xhigh
+        - max
+      ultra_interpretation: multi-agent decomposition strategy
+  - namespace: github.persistence
+    payload:
+      pull_request: https://github.com/ssaattww/CodexSkill/pull/65
+      source_head: 8731e75427aacada40db2fe1a2ceb8376d797266
+      source_head_ci_run: 32929830171
+      source_head_ci_artifact: 9592803602
+      report_blob_sha: 98c3ed9ad669ecf787611e4345605416d81e13aa
+      transport_commit_head: unknown until this packet is committed
+      final_exact_head_ci: must be recorded in PR comment after transport commit
+
+next_action:
+  type: external_owner
+  target_skill: none
+  mode: review_and_merge_decision
+  summary: PR #65のfinal exact-head CIと差分をreviewし、利用者がmerge可否を判断する。
+  instructions:
+    - PR bodyと簡易PR commentに記録されるfinal HEAD SHAを基準にする。
+    - workflow runのhead_shaがPR current HEADと一致することを確認する。
+    - detailed implementation reportとこのhandoffを参照する。
+    - implementation workerはindependent review verdictを生成していないため、必要なreviewを別途実施する。
+    - mergeは利用者が行う。
+  required_attachments_or_references:
+    - https://github.com/ssaattww/CodexSkill/pull/65
+    - reports/issue-13-adaptive-agent-assignment-implementation-20260826.md
+    - reports/issue-13-adaptive-agent-assignment-handoff-20260826.yaml
+  requested_authorized_actions:
+    - read_repository
+    - comment_pr
+
+transport:
+  method: repository_file
+  packet_path: reports/issue-13-adaptive-agent-assignment-handoff-20260826.yaml
+  packet_url: https://github.com/ssaattww/CodexSkill/blob/feat/adaptive-agent-assignment/reports/issue-13-adaptive-agent-assignment-handoff-20260826.yaml
+  transport_note: Packet targetとCI evidenceはtransport commit直前のsource HEAD 8731e75427aacada40db2fe1a2ceb8376d797266へ結び付く。このpacket自体を追加したfinal PR HEADとそのexact-head CIはGitHub PR commentへ記録する。current permissionsは次chatへ自動移送されない。
