@@ -47,7 +47,7 @@ Before running this Skill, establish:
 - active `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`,
 - repository state needed to select one task.
 
-When no explicit dispatch override exists, do not ask the user to choose an implementation sub-agent model routinely. `codex-delegation-executor` and `sub-agent-task-manager` derive a profile from the bounded task.
+When no explicit dispatch override exists, do not ask the user to choose an implementation sub-agent model routinely. `codex-delegation-executor` and `sub-agent-task-manager` derive a profile from the bounded task. The exception is an approval-gated `Sol xhigh` or `Sol max` proposal: those profiles require explicit current-task user approval before dispatch.
 
 ## Required flow
 
@@ -62,16 +62,16 @@ When no explicit dispatch override exists, do not ask the user to choose an impl
 9. Call `task-consistency-manager`.
 10. Call `design-doc-maintainer` when design impact exists.
 11. If and only if the target repository explicitly requires TDD for the selected work, call `tdd-executor`. Otherwise record TDD as not applicable with the governing source and continue.
-12. Call `codex-delegation-executor` to classify the task, choose an executor, and decide whether independently bounded workstreams justify multi-agent decomposition. For each selected sub-agent task, `sub-agent-task-manager` selects and applies the model, reasoning effort, and fork policy. The selected `implementation-executor` invokes `work-context-manager` and `implementation-worker` for implementation or review follow-up.
+12. Call `codex-delegation-executor` to classify the task, choose an executor, and decide whether independently bounded workstreams justify multi-agent decomposition. For each selected sub-agent task, `sub-agent-task-manager` selects the model, reasoning effort, and fork policy. If it proposes `Sol xhigh` or `Sol max`, present the proposal and cost rationale to the user and stop the lifecycle before dispatch until explicit approval is received. The selected `implementation-executor` invokes `work-context-manager` and `implementation-worker` for implementation or review follow-up.
 13. Route validation, commit, push, and CI waiting by `verification_capability`. For `local_execution_available`, reuse focused inner-loop evidence before review-target commits, keep normal review/fix loops local without CI waits, and keep broader validation distinct from the full local equivalence gate. For `remote_ci_only`, use matching current-HEAD CI after authorized push as formal verification evidence.
 14. Before review, create or update implementation and verification reports through `report-output-manager`, synchronize task and phase tracking, and create the review-target commit. Do not require a local-route review round to push or wait for CI.
-15. Call `review-enforcer` for the normal review cycle. Persist normal review and fix-verification reports before selecting the independent-final-review target. Required fixes return through `implementation-executor`, followed by route-appropriate validation, report and tracking synchronization, commit, and another normal fix-verification round.
+15. Call `review-enforcer` for the normal review cycle. Persist normal review and fix-verification reports before selecting the independent-final-review target. Required fixes return through `implementation-executor`, followed by route-appropriate validation, report and tracking synchronization, commit, and another normal fix-verification round. Any `Sol xhigh` or `Sol max` review proposal remains subject to the same explicit approval stop.
 16. After the normal cycle converges, make the parent-owned end-of-Issue Skill-gap decision: `no skill action needed`, `update an existing skill`, or `propose a new skill`.
 17. When the chosen Skill action should be executed in the current scope, call `skill-authoring-wrapper` now. Otherwise record the action as follow-up work before the final-review freeze.
 18. Call `feedback-points-manager` for reusable process feedback, Skillization state, or a follow-up Issue. Persist any repository-backed normal handoff, feedback ledger, report, or tracking change now.
 19. If steps 16 through 18 changed any repository file, run route-appropriate validation, update reports and tracking, commit, and return to the normal review or fix-verification cycle. Repeat until the normal cycle converges with all end-of-Issue and feedback changes included.
 20. Ensure every non-final repository change is committed. After normal convergence, run the repository-defined full local equivalence gate exactly once for the final publication candidate HEAD; record its exact-HEAD identity, retain invalidated prior runs, and rerun only if a content delta changes that candidate. Do not substitute inner-loop focused or broader validation. Reserve the independent-final-review report path, then freeze the current HEAD as the reviewed implementation HEAD.
-21. Call `review-enforcer` with one fresh independent reviewer against that frozen HEAD for the single exhaustive pass.
+21. Call `review-enforcer` with one fresh independent reviewer against that frozen HEAD for the single exhaustive pass. If profile selection proposes `Sol xhigh` or `Sol max`, do not dispatch the reviewer until the user explicitly approves that cost-gated profile.
 22. If that review discovers required repository change, invalidate the terminal state and return to implementation, validation, reporting, tracking, feedback or Skill-action processing as applicable, followed by normal fix verification and the same independent reviewer's bounded finding/CI-delta closure against the updated reviewed HEAD.
 23. When independent final review passes, persist its detailed report through `report-output-manager` as at most one report-attestation commit. The commit's first parent must be the reviewed implementation HEAD and its changed paths must be limited to the pre-reserved independent-final-review report path or paths.
 24. Validate the report-attestation diff, make the final authorized push, then invoke `git-pr-submitter` or the authorized equivalent to create or update the PR for that exact HEAD. Wait once after publication for exact-head required `pull_request` CI as the merge gate. On `remote_ci_only`, matching current-HEAD CI may also be formal route evidence. Do not wait for an unrequired `push` run. Update the PR body, concise PR comment, review request, or external Issue only after the attestation commit because those operations do not change Git HEAD.
@@ -83,12 +83,14 @@ When no explicit dispatch override exists, do not ask the user to choose an impl
 The workflow must preserve the distinction between:
 
 - executor choice and multi-agent decomposition, owned by `codex-delegation-executor`
-- per-task model, reasoning effort, and fork policy, owned by `sub-agent-task-manager`
-- explicit user or repository overrides, which take precedence over automatic selection
+- per-task model, reasoning effort, fork policy, and expensive-profile proposal state, owned by `sub-agent-task-manager`
+- explicit user or repository overrides, subject to the mandatory user-approval gate for `Sol xhigh` and `Sol max`
 
-The parent records the delegation assessment, requested profile, applied profile, and runtime application status in the relevant report. It does not infer success from a model name written in the child prompt.
+The parent records the delegation assessment, proposed profile when applicable, approval evidence, requested profile, applied profile, and runtime application status in the relevant report. It does not infer success from a model name written in the child prompt.
 
-A dispatch classification must be recomputed when investigation or implementation changes the task kind, uncertainty, change radius, or criticality. A failed deterministic verification becomes investigation; independently separable work returns to `codex-delegation-executor`; a full-history fork that prevents an override is recorded as an inherited-parent-profile constraint.
+`Sol xhigh` and `Sol max` are a user-confirmation boundary for cost optimization. If either profile is proposed, the parent must tell the user why `Sol high` is insufficient, disclose that the higher effort increases execution cost, and stop before dispatch. Repository policy cannot waive this confirmation. Explicit current-task user instruction requesting the profile counts as approval; prior unrelated approval or silence does not.
+
+A dispatch classification must be recomputed when investigation or implementation changes the task kind, uncertainty, change radius, or criticality. A failed deterministic verification becomes investigation; independently separable work returns to `codex-delegation-executor`; a full-history fork that prevents an override is recorded as an inherited-parent-profile constraint. If the user rejects an expensive-profile proposal, recompute with `Sol xhigh` and `Sol max` excluded rather than silently dispatching the rejected profile.
 
 ## Report-attestation terminal rule
 
@@ -119,7 +121,8 @@ After the freeze, only operations that do not change Git HEAD are permitted: PR 
 - If any of those actions changes the repository, require validation and normal review before freezing again.
 - Do not leave substantial local Skill changes without an explicit caller.
 - Do not choose parent versus sub-agent implementation outside `codex-delegation-executor`.
-- Do not hardcode or require routine user confirmation of an implementation sub-agent model when no explicit override exists.
+- Do not hardcode or require routine user confirmation of an implementation sub-agent model when no explicit override exists, except for the mandatory `Sol xhigh` / `Sol max` approval gate.
+- Never dispatch `Sol xhigh` or `Sol max` without explicit current-task user approval.
 - Do not bypass `sub-agent-task-manager` profile selection for delegated work.
 - Treat design editing, test authoring, code authoring, documentation, configuration, and workflow editing as implementation work owned through the applicable executor.
 - Do not call `tdd-executor` merely because code or tests may change. Call it only when the target repository explicitly requires TDD.
@@ -139,7 +142,7 @@ After this Skill runs, the workflow has:
 - the governing target-project development and testing policy,
 - a concrete route through applicable wrapper and core Skills,
 - an executor and multi-agent decomposition decision,
-- a delegation assessment plus requested and applied dispatch profile for every sub-agent task,
+- a delegation assessment plus proposal/approval evidence when applicable and requested/applied dispatch profile for every dispatched sub-agent task,
 - resolved `verification_capability` and separate commit, push, and CI-wait evidence,
 - implementation and validation evidence or an explicit blocking condition,
 - review, report, tracking, Skill-action, feedback, commit, and PR state,
@@ -154,6 +157,7 @@ A task cycle is complete only when:
 - TDD was applied only when required and otherwise recorded as not applicable,
 - normal review and independent final review are complete,
 - delegated work records the selected and actually applied dispatch profile,
+- any `Sol xhigh` or `Sol max` dispatch has explicit current-task user approval evidence,
 - required non-final reports, tracking, Skill decisions, feedback classification, feedback-ledger updates, and normal handoffs were committed before independent final review,
 - any repository change discovered during pre-freeze finalization returned through validation and normal review,
 - any post-review repository write is exactly one validated report-attestation commit,
