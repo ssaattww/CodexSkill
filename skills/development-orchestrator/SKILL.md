@@ -41,11 +41,13 @@ Before running this Skill, establish:
 - repository-root `AGENTS.md` and its Skill-first constraints,
 - the user's intended work when it is not already explicit,
 - the target repository's development and testing policy,
-- the user-confirmed model for implementation sub-agent work when delegation may occur,
+- any explicit user or repository model, reasoning, budget, availability, or fork override for delegated work,
 - current `tasks-status.md` and `phases-status.md`,
 - recent relevant `reports/`,
 - active `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`,
 - repository state needed to select one task.
+
+When no explicit dispatch override exists, do not ask the user to choose an implementation sub-agent model routinely. `codex-delegation-executor` and `sub-agent-task-manager` derive a profile from the bounded task.
 
 ## Required flow
 
@@ -54,13 +56,13 @@ Before running this Skill, establish:
 3. If the local Skill repository is clean and behind its intended source, update it before continuing.
 4. If it is dirty, diverged, or unsafe to update automatically, stop and resolve that state explicitly before trusting the workflow.
 5. For a resumed or restarted session, call `restart-handover-manager` to reconstruct the current position.
-6. At the first applicable user confirmation, confirm the implementation sub-agent model. When the intended work is not explicit, also read [start intake policy](references/start-intake-policy.md) and establish the work target.
+6. At the first applicable user confirmation, establish the intended work and any explicit dispatch override or budget constraint. When the intended work is not explicit, also read [start intake policy](references/start-intake-policy.md) and establish the work target. Do not request routine confirmation of an automatically selected implementation model.
 7. Invoke `work-context-manager` to resolve authority, current state, scope candidates, policy, validation targets, and write boundaries.
 8. Select exactly one next task from the resolved context.
 9. Call `task-consistency-manager`.
 10. Call `design-doc-maintainer` when design impact exists.
 11. If and only if the target repository explicitly requires TDD for the selected work, call `tdd-executor`. Otherwise record TDD as not applicable with the governing source and continue.
-12. Call `codex-delegation-executor` to choose an executor. The selected `implementation-executor` invokes `work-context-manager` and `implementation-worker` for implementation or review follow-up.
+12. Call `codex-delegation-executor` to classify the task, choose an executor, and decide whether independently bounded workstreams justify multi-agent decomposition. For each selected sub-agent task, `sub-agent-task-manager` selects and applies the model, reasoning effort, and fork policy. The selected `implementation-executor` invokes `work-context-manager` and `implementation-worker` for implementation or review follow-up.
 13. Route validation, commit, push, and CI waiting by `verification_capability`. For `local_execution_available`, reuse focused inner-loop evidence before review-target commits, keep normal review/fix loops local without CI waits, and keep broader validation distinct from the full local equivalence gate. For `remote_ci_only`, use matching current-HEAD CI after authorized push as formal verification evidence.
 14. Before review, create or update implementation and verification reports through `report-output-manager`, synchronize task and phase tracking, and create the review-target commit. Do not require a local-route review round to push or wait for CI.
 15. Call `review-enforcer` for the normal review cycle. Persist normal review and fix-verification reports before selecting the independent-final-review target. Required fixes return through `implementation-executor`, followed by route-appropriate validation, report and tracking synchronization, commit, and another normal fix-verification round.
@@ -70,11 +72,23 @@ Before running this Skill, establish:
 19. If steps 16 through 18 changed any repository file, run route-appropriate validation, update reports and tracking, commit, and return to the normal review or fix-verification cycle. Repeat until the normal cycle converges with all end-of-Issue and feedback changes included.
 20. Ensure every non-final repository change is committed. After normal convergence, run the repository-defined full local equivalence gate exactly once for the final publication candidate HEAD; record its exact-HEAD identity, retain invalidated prior runs, and rerun only if a content delta changes that candidate. Do not substitute inner-loop focused or broader validation. Reserve the independent-final-review report path, then freeze the current HEAD as the reviewed implementation HEAD.
 21. Call `review-enforcer` with one fresh independent reviewer against that frozen HEAD for the single exhaustive pass.
-22. If that review discovers required repository change, invalidate the terminal state and return to implementation, validation, reporting, tracking, feedback or Skill-action processing as applicable, followed by normal fix verification and the same reviewer's bounded finding/CI-delta closure against the updated reviewed HEAD.
+22. If that review discovers required repository change, invalidate the terminal state and return to implementation, validation, reporting, tracking, feedback or Skill-action processing as applicable, followed by normal fix verification and the same independent reviewer's bounded finding/CI-delta closure against the updated reviewed HEAD.
 23. When independent final review passes, persist its detailed report through `report-output-manager` as at most one report-attestation commit. The commit's first parent must be the reviewed implementation HEAD and its changed paths must be limited to the pre-reserved independent-final-review report path or paths.
 24. Validate the report-attestation diff, make the final authorized push, then invoke `git-pr-submitter` or the authorized equivalent to create or update the PR for that exact HEAD. Wait once after publication for exact-head required `pull_request` CI as the merge gate. On `remote_ci_only`, matching current-HEAD CI may also be formal route evidence. Do not wait for an unrequired `push` run. Update the PR body, concise PR comment, review request, or external Issue only after the attestation commit because those operations do not change Git HEAD.
 25. Do not commit task, design, Skill, workflow, configuration, feedback, handoff, report, or implementation changes after the attestation head. Return the final handoff inline or outside the reviewed PR branch.
 26. Return to task confirmation. Starting another task begins a new lifecycle and must not append commits to the completed attestation pair.
+
+## Dispatch-profile policy
+
+The workflow must preserve the distinction between:
+
+- executor choice and multi-agent decomposition, owned by `codex-delegation-executor`
+- per-task model, reasoning effort, and fork policy, owned by `sub-agent-task-manager`
+- explicit user or repository overrides, which take precedence over automatic selection
+
+The parent records the delegation assessment, requested profile, applied profile, and runtime application status in the relevant report. It does not infer success from a model name written in the child prompt.
+
+A dispatch classification must be recomputed when investigation or implementation changes the task kind, uncertainty, change radius, or criticality. A failed deterministic verification becomes investigation; independently separable work returns to `codex-delegation-executor`; a full-history fork that prevents an override is recorded as an inherited-parent-profile constraint.
 
 ## Report-attestation terminal rule
 
@@ -105,7 +119,8 @@ After the freeze, only operations that do not change Git HEAD are permitted: PR 
 - If any of those actions changes the repository, require validation and normal review before freezing again.
 - Do not leave substantial local Skill changes without an explicit caller.
 - Do not choose parent versus sub-agent implementation outside `codex-delegation-executor`.
-- Do not dispatch implementation sub-agent work before the user-confirmed model is known.
+- Do not hardcode or require routine user confirmation of an implementation sub-agent model when no explicit override exists.
+- Do not bypass `sub-agent-task-manager` profile selection for delegated work.
 - Treat design editing, test authoring, code authoring, documentation, configuration, and workflow editing as implementation work owned through the applicable executor.
 - Do not call `tdd-executor` merely because code or tests may change. Call it only when the target repository explicitly requires TDD.
 - CodexSkill repository maintenance is non-TDD unless the user explicitly changes that repository policy.
@@ -123,6 +138,8 @@ After this Skill runs, the workflow has:
 - a structured context from `work-context-manager`,
 - the governing target-project development and testing policy,
 - a concrete route through applicable wrapper and core Skills,
+- an executor and multi-agent decomposition decision,
+- a delegation assessment plus requested and applied dispatch profile for every sub-agent task,
 - resolved `verification_capability` and separate commit, push, and CI-wait evidence,
 - implementation and validation evidence or an explicit blocking condition,
 - review, report, tracking, Skill-action, feedback, commit, and PR state,
@@ -136,6 +153,7 @@ A task cycle is complete only when:
 - target-project-required tests and validation are recorded,
 - TDD was applied only when required and otherwise recorded as not applicable,
 - normal review and independent final review are complete,
+- delegated work records the selected and actually applied dispatch profile,
 - required non-final reports, tracking, Skill decisions, feedback classification, feedback-ledger updates, and normal handoffs were committed before independent final review,
 - any repository change discovered during pre-freeze finalization returned through validation and normal review,
 - any post-review repository write is exactly one validated report-attestation commit,
@@ -145,6 +163,7 @@ A task cycle is complete only when:
 
 ## What this Skill must not do
 
+- Do not contain the detailed agent profile selection matrix.
 - Do not contain detailed TDD instructions.
 - Do not contain detailed Git instructions beyond the lifecycle boundary needed to keep review finite.
 - Do not contain detailed review criteria.
