@@ -23,11 +23,17 @@
 
 - selection inputs (parent, pre-dispatch):
 - selection source (parent, pre-dispatch):
+- observed decomposability (parent, pre-dispatch):
+- decomposition policy / disposition (parent, pre-dispatch):
 - proposed profile (parent, pre-dispatch if applicable):
 - approval status / evidence (parent):
 - requested profile (parent, pre-dispatch):
-- applied profile (parent, post-runtime evidence only):
+- agent role / default-role plan (parent, pre-dispatch):
+- role config evidence / profile effect (parent, pre-dispatch):
+- planned runtime profile after known role constraints (parent, pre-dispatch):
+- applied profile (parent, post-runtime exact evidence only; null when unverified):
 - application status (parent, post-runtime evidence only):
+- runtime profile observability (parent, post-runtime):
 - reviewer continuity (parent, if applicable):
 - fork policy (parent):
 - reasons / constraints (parent):
