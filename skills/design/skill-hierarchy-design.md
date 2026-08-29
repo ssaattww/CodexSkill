@@ -56,7 +56,7 @@ runtime wrapper
 
 ### Runtime wrapper
 
-Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuity、一度だけのfresh independent reviewerと同reviewerによるbounded closure、report path、persistence、completion gateを所有する。
+Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuity、一度だけのfresh independent reviewerと同reviewerによるbounded closure、report path reservation identity、phase-specific report persistence、completion gateを所有する。
 
 ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persistence、chat continuity、cross-chat handoffを所有する。
 
@@ -105,17 +105,23 @@ development-orchestrator [親]
 │  │  └─ implementation-worker
 │  ├─ design-executor
 │  ├─ sub-agent-task-manager [verification]
-│  └─ report-output-manager [wrapper]
+│  └─ report-output-manager [normal persistence]
 │     ├─ work-context-manager
 │     └─ report-writer
 ├─ review-enforcer [wrapper]
 │  ├─ work-context-manager
 │  ├─ markdown-word-checker
-│  ├─ sub-agent-task-manager [normal reviewer]
+│  ├─ sub-agent-task-manager [normal reviewer / normal_persistence]
 │  │  └─ review-worker
-│  ├─ sub-agent-task-manager [fresh independent final reviewer]
+│  ├─ report-output-manager [normal-review persistence]
+│  │  ├─ work-context-manager
+│  │  └─ report-writer
+│  ├─ report-output-manager [independent reservation-only]
+│  │  └─ work-context-manager
+│  ├─ sub-agent-task-manager [fresh independent final reviewer / deferred_attestation / reuse reservation]
 │  │  └─ review-worker
-│  └─ report-output-manager
+│  └─ report-output-manager [passing attestation persistence]
+│     ├─ work-context-manager
 │     └─ report-writer
 ├─ progress-sync-manager
 ├─ git-workflow-manager
@@ -178,7 +184,9 @@ normal review cycleが収束した後、independent final reviewのtargetをfree
 
 ### 独立最終レビュー
 
-pre-freeze gateを通過し、全ての非final変更がcommitされた後に、independent-final-review report pathを予約する。`local_execution_available`ではvalidated local committed HEADをpushせずに、`remote_ci_only`ではauthorized pre-review pushとmatching current-HEAD CIをformal evidenceとして、そのHEADを`reviewed implementation HEAD`に固定する。
+pre-freeze gateを通過し、全ての非final変更がcommitされた後に、`review-enforcer`が`report-output-manager`のreservation-only phaseを一度だけ実行する。exact independent-final-review report pathをmetadataとして予約し、`reservation_owner: review-enforcer`、stable `reservation_identity`、reserved path、reservation evidence、`reservation_state: metadata_only`を記録する。ここでは`report-writer`を呼ばず、repository report fileを作成・編集しない。
+
+その後、`local_execution_available`ではvalidated local committed HEADをpushせずに、`remote_ci_only`ではauthorized pre-review pushとmatching current-HEAD CIをformal evidenceとして、そのHEADを`reviewed implementation HEAD`に固定する。
 
 fresh reviewerは次を満たす。
 
@@ -187,13 +195,17 @@ fresh reviewerは次を満たす。
 - review fixを実装していないこと
 - 原則`fork_turns: "none"`で起動すること
 - frozen reviewed implementation HEADを対象とすること
-- 要件、設計、final diff、全変更file、直接依存、tracking、report、current HEAD固有validation evidenceを読むこと
+- 要件、設計、final diff、全変更file、直接依存、tracking、normal report、current HEAD固有validation evidenceを読むこと
 - reviewer identityとindependence evidenceを記録すること
 - `review-worker`のindependent final reviewを実行すること
 - 過去review結論を読む前に独立passを行うこと
-- normal review reportとは別にindependent final review reportを作ること
+- `review-enforcer`が予約した`pre_reserved_report_path`と`reservation_identity`を`sub-agent-task-manager`からmetadataとして受け取ること
+- そのreservationを再作成せず、reserved repository report fileを作成・編集しないこと
+- findings、coverage、commands/evidence、verdict、risks、unexploredをstructured evidenceとしてparentへ返すこと
 
-独立最終レビューはtask lifecycleで一度だけの全coverage passである。required findingまたは新しいrepository write obligationが出た場合はterminal stateを無効化し、implementationとnormal reviewerのfix verificationへ戻る。HEAD更新後は最初の独立reviewerが、completeness matrixを満たしたfinding／CI-deltaだけをbounded closureとして確認し、新しい観点や再度の全coverage passを行わない。
+`sub-agent-task-manager`はindependent-final dispatch時に予約を作成しない。`review-enforcer`から渡されたpre-freeze reservation identityを検証・継承し、欠落・曖昧・post-freeze reservationであればdispatchをblockする。
+
+独立最終レビューはtask lifecycleで一度だけの全coverage passである。required findingまたは新しいrepository write obligationが出た場合はterminal stateを無効化し、implementationとnormal reviewerのfix verificationへ戻る。HEAD更新後は最初の独立reviewerが、同じreservation identityを保持したまま、completeness matrixを満たしたfinding／CI-deltaだけをbounded closureとして確認し、新しい観点や再度の全coverage passを行わない。passing verdict前にreserved report fileを作らない。
 
 normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身のreviewだけでは完了条件を満たさない。
 
@@ -201,12 +213,14 @@ normal reviewだけ、同じreviewerによる再reviewだけ、親agent自身の
 
 独立最終レビューのtechnical verdictは`reviewed implementation HEAD`へ結び付ける。
 
-詳細reportをrepositoryへ保存する必要がある場合、次の条件を全て満たす1回だけの`report-attestation commit`を許可する。
+passing verdict後に詳細reportをrepositoryへ保存する場合だけ、`report-output-manager`のattestation-persistence phaseで`report-writer`を呼び、review開始前に予約した同じpathへreportを初めてmaterializeする。次の条件を全て満たす1回だけの`report-attestation commit`を許可する。
 
-- independent-final-review report pathはreview開始前に予約済みである
+- independent-final-review report pathはreview開始前に`review-enforcer`が一度だけmetadata予約している
+- stable `reservation_identity`がreview dispatch、bounded closure、attestation persistenceで同一である
+- passing verdict前にreserved report fileを作成・編集していない
 - report-attestation commitのfirst parentはreviewed implementation HEADである
 - reviewed implementation HEADの後に存在するcommitはこの1件だけである
-- diffは予約済みindependent-final-review report pathだけを変更する
+- diffはreservation identityに結び付くindependent-final-review report pathだけを変更する
 - reportはreviewed implementation HEADとadministrative attestationであることを明記する
 - executable、Skill、design、workflow、configuration、tracking、feedback、handoff、product fileを変更しない
 - report-attestation commit以後にrepository commitを作らない
@@ -427,17 +441,17 @@ Release時の共通file複製とrepository相対link書換は行わない。
 14. normal cycle収束後、end-of-Issue Skill-gap decisionを行う。
 15. current scopeで必要な`skill-authoring-wrapper`処理を実行し、feedback classification、feedback ledger、normal handoffを保存する。
 16. steps 14から15でrepositoryが変わった場合、validation、report、tracking、commit、verification routeに従うpush、normal fix verificationを再実施する。
-17. 全pre-freeze変更を含むnormal cycleが収束したことを確認し、independent-final-review report pathを予約する。
+17. 全pre-freeze変更を含むnormal cycleが収束したことを確認し、`review-enforcer`が`report-output-manager` reservation-only phaseを一度だけ実行してindependent-final-review report pathとstable reservation identityをmetadata予約する。report fileは作らない。
 18. current HEADをreviewed implementation HEADとしてfreezeする。
-19. 別fresh reviewerによる独立最終reviewを実施する。
-20. repository changeが必要になった場合はterminal stateを無効化し、normal cycleと同一independent reviewerのbounded finding／CI-delta closureへ戻る。
-21. passing reportを保存する場合は、予約済みreport pathだけを変更する1回のreport-attestation commitを作成し、allowlist diffを検証する。
+19. `sub-agent-task-manager`へpre-reserved path／reservation identityを渡し、再予約せず、別fresh reviewerによる独立最終reviewを`deferred_attestation`で実施する。reviewerはrepository report fileを編集せずstructured evidenceをparentへ返す。
+20. repository changeが必要になった場合はterminal stateを無効化し、normal cycleと同一independent reviewerのbounded finding／CI-delta closureへ戻る。同じreservation identityを保持し、passing verdict前にreportをpersistしない。
+21. passing reportを保存する場合だけ、`report-output-manager` attestation-persistence phaseで`report-writer`を呼び、予約済みreport pathへ初めてmaterializeする。予約pathだけを変更する1回のreport-attestation commitを作成し、allowlist diffを検証する。
 22. report-attestation commitをfinal pushする。
 23. authorized PRを作成または更新する。
 24. publication後にexact-head `pull_request` required CIをmerge gateとして一度待つ。`remote_ci_only`ではroute内のmatching current-HEAD CIも正式verification evidenceとして扱う。
-25. PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、validation evidenceを記録する。
-24. attestation後にrepository-writing Skillを呼ばず、repository commitを追加しない。final handoffはinlineまたはbranch外でtransportする。
-25. mergeは利用者が行う。
+25. PR body／PR commentへreviewed implementation HEAD、report-attestation HEAD、reservation identity、validation evidenceを記録する。
+26. attestation後にrepository-writing Skillを呼ばず、repository commitを追加しない。final handoffはinlineまたはbranch外でtransportする。
+27. mergeは利用者が行う。
 
 ## Skill一覧
 
@@ -446,8 +460,8 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
 | `development-orchestrator` | task選定から設計、実装、検証、レビュー、Git提出、pre-freeze gate、final attestation boundaryまでを統括する | 親が実行 |
-| `codex-delegation-executor` | 実作業の委譲先と実行profileを決める | 親が実行 |
-| `sub-agent-task-manager` | sub-agentのscope、model、reasoning、fork、report契約を固定する | 親が実行 |
+| `codex-delegation-executor` | 実作業の委譲先、executor、decomposition policy／dispositionを決め、sub-agent evidenceを統合する | 親が実行 |
+| `sub-agent-task-manager` | sub-agentのscope、model、reasoning、fork、role plan、runtime observability、report persistence契約を固定する | 親が実行 |
 | `execution-cost-stabilizer` | retry、parallelism、実行コストを安定化する | 親が実行 |
 | `feedback-autonomy-boundary-manager` | 自律継続と利用者確認の境界を決める | 親が実行 |
 | `skill-authoring-wrapper` | core Skill／runtime wrapperをrepository標準へ揃える | 親が実行 |
@@ -484,7 +498,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `review-enforcer` | reviewer identity、通常review cycle、pre-freeze gate、独立最終review、report-attestation gateを管理するCodex wrapper | 親が実行、reviewはsub-agent |
+| `review-enforcer` | reviewer identity、通常review cycle、pre-freeze reservation、独立最終review、report-attestation gateを管理するCodex wrapper | 親が実行、reviewはsub-agent |
 | `markdown-word-checker` | Markdown lintと表記ルールを検証する | 親が実行 |
 | `feedback-coding-standards-enforcer` | coding standardを検証する | 親が実行 |
 | `feedback-issue-intake-fallback-manager` | Issue取得失敗時に要件を確保する | 親が実行 |
@@ -498,7 +512,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | `git-commit-manager` | scoped commitを作成する | 親が実行 |
 | `git-pr-submitter` | PRを作成または更新する | 親が実行 |
 | `git-review-followup-manager` | review findingをimplementation flowへ戻す | 親が実行 |
-| `report-output-manager` | report path／persistence／report-attestationを管理し、`report-writer`を呼び出すCodex wrapper | 親が実行 |
+| `report-output-manager` | normal persistence、independent reservation-only、passing attestation persistenceをphase別に管理するCodex wrapper | 親が実行 |
 
 ### ChatGPT runtime wrapper
 
@@ -517,7 +531,9 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - implementationは自分の変更へreview verdictを出さない。
 - reviewerはfindingを実装しない。
 - finding identityとsource severityを維持し、severity変更はsource／new severity、理由、承認主体を明示する。
-- reviewは詳細reportへ記録する。
+- reviewは詳細reportへ記録する。ただしindependent-final `deferred_attestation`ではpassing verdict前にrepository reportを作成せず、structured evidenceをparentが保持し、passing後に同一reservation identityのpathへattestationとしてpersistする。
+- sub-agentのexact final model／reasoningがparent-visibleでないruntimeでは、successful spawnだけを根拠に`applied`を断定しない。`requested`、role plan、planned runtime profile、profile observabilityとexplicit unverified stateを保持する。
+- independent-final report reservationは`review-enforcer`がfreeze前に一度だけ所有し、`sub-agent-task-manager`はそのreservation identityを検証・継承して再予約しない。
 - CIは対象current HEAD SHAに紐づくrunだけを使用する。
 - 別SHAのrunを代用しない。
 - report、tracking、handoffは自己を含む将来のcommit SHAを要求しない。`commit_pending`、technical HEAD、administrative parentを区別する。
