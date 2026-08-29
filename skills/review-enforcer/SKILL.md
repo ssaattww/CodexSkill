@@ -27,7 +27,7 @@ Do not replace these Skills with `shared/` files or duplicate their semantics lo
 
 Every newly created reviewer sub-agent must be dispatched through `sub-agent-task-manager` as one identity-bearing reviewer execution.
 
-- `review-enforcer` owns reviewer identity, continuity, independence, review mode, one-reviewer execution policy, report persistence mode, and lifecycle state.
+- `review-enforcer` owns reviewer identity, continuity, independence, review mode, one-reviewer execution policy, independent-final report reservation identity, report persistence mode, and lifecycle state.
 - `sub-agent-task-manager` owns per-task model, reasoning effort, fork policy, role/default-role planning, expensive-profile approval gating, runtime-profile evidence, and dispatch.
 - Every new reviewer task created by this Skill must set `decomposition_policy: forbidden` and `parallelism_mode: single_agent`.
 - `decomposability` remains a truthful observed signal. Do not force it to `single` merely because execution decomposition is forbidden.
@@ -57,15 +57,19 @@ Use `report_persistence_mode: normal_persistence`.
 
 Use `report_persistence_mode: deferred_attestation`.
 
-- call `report-output-manager` in reservation-only phase before freeze
+`review-enforcer` is the single reservation owner for this mode.
+
+- call `report-output-manager` in reservation-only phase before freeze exactly once for the independent lifecycle
 - reserve the exact independent-final-review report path as metadata only
+- record `reservation_owner: review-enforcer`, a stable `reservation_identity`, the reserved path, reservation timing/evidence, and `reservation_state: metadata_only`
 - do not invoke `report-writer` during reservation
 - do not create, pre-populate, or edit the repository report path before/during independent review
+- pass the existing `pre_reserved_report_path` and reservation evidence to `sub-agent-task-manager`; it must validate/reuse that reservation and must not reserve another path
 - the independent reviewer returns structured review evidence to the parent instead of editing a report file
 - the parent retains reviewer output and dispatch-profile evidence outside frozen repository content
-- only after a passing verdict may `report-writer` and `report-output-manager` materialize that evidence into the reserved path as the single report-attestation commit
+- only after a passing verdict may `report-writer` and `report-output-manager` materialize that evidence into the same reserved path as the single report-attestation commit
 
-If the independent review finds required changes, keep its evidence as parent-owned lifecycle state, invalidate terminal state, return through implementation and normal fix verification, and later reuse the same independent reviewer for bounded closure without creating the reserved report file. Persist only after that independent lifecycle reaches a passing verdict.
+If the independent review finds required changes, keep its evidence and the same reservation identity as parent-owned lifecycle state, invalidate terminal state, return through implementation and normal fix verification, and later reuse the same independent reviewer for bounded closure without creating the reserved report file or creating a second reservation. Persist only after that independent lifecycle reaches a passing verdict.
 
 ## Codex reviewer lifecycle
 
@@ -81,11 +85,12 @@ After the normal cycle converges:
 
 - finish every implementation, design, workflow, configuration, tracking, feedback-ledger, normal handoff, and non-final report change,
 - finish the parent-owned end-of-Issue Skill-gap decision and execute any in-scope Skill update,
-- reserve the independent-final-review report path or paths without creating those files,
+- call `report-output-manager` reservation-only phase and reserve the independent-final-review report path or paths without creating those files,
+- record the reservation owner/identity/path as lifecycle evidence,
 - commit all other changes,
 - for `local_execution_available`, freeze the validated local committed HEAD without pre-review push; for `remote_ci_only`, complete authorized pre-review push and matching current-HEAD CI,
 - freeze that HEAD as `reviewed_implementation_head`,
-- ask `sub-agent-task-manager` to prepare one different fresh reviewer sub-agent with decomposition forbidden and deferred attestation.
+- ask `sub-agent-task-manager` to prepare one different fresh reviewer sub-agent with decomposition forbidden, deferred attestation, and the exact pre-reserved report identity.
 
 The independent reviewer must differ from the implementation agent and normal reviewer, must not have implemented fixes, must remain one reviewer for the entire independent lifecycle, and should use `fork_turns: "none"` unless a bounded exception is justified.
 
@@ -104,13 +109,13 @@ If independent-final-review profile or role planning proposes Sol `xhigh` or Sol
 9. After each fix, require route-appropriate validation, report/tracking synchronization, and a review-target commit before another normal-review round. On `local_execution_available`, do not wait for CI in this loop; on `remote_ci_only`, record matching current-HEAD CI after authorized push when required for formal verification.
 10. After convergence, verify that the parent completed end-of-Issue Skill-gap decision, any in-scope `skill-authoring-wrapper` work, feedback classification/ledger synchronization, normal handoff persistence, reports, and tracking.
 11. If step 10 creates/discovers repository change, require route-appropriate validation, commit, and another normal review/fix-verification round. Do not freeze yet.
-12. Only after normal convergence with all pre-freeze work included, ensure every non-final repository change is committed. On local route, require the repository-defined full local gate before final push. Call `report-output-manager` reservation-only phase to reserve independent-final-review report path as metadata, then freeze implementation HEAD.
+12. Only after normal convergence with all pre-freeze work included, ensure every non-final repository change is committed. On local route, require the repository-defined full local gate before final push. Call `report-output-manager` reservation-only phase exactly once; record `reservation_owner: review-enforcer`, stable `reservation_identity`, `pre_reserved_report_path`, reservation evidence, and `reservation_state: metadata_only`; then freeze implementation HEAD.
 13. Classify the independent-review task truthfully, including observed `decomposability`; set `decomposition_policy: forbidden`, `parallelism_mode: single_agent`, and relevant disposition.
-14. Ask `sub-agent-task-manager` to select/plan one fresh independent final reviewer using `report_persistence_mode: deferred_attestation`. If expensive-profile approval or role-profile safety is unresolved, stop before spawn. After approval/safe planning, dispatch that one reviewer without creating the reserved report file.
-15. Retain structured findings, coverage, commands/evidence, verdict, risks, unexplored areas, truthful decomposability/policy evidence, and runtime-profile observability evidence as parent-owned lifecycle evidence.
-16. If the one exhaustive independent review finds required changes, invalidate terminal state, return to implementation and normal fix verification, then reuse the same independent reviewer only for finding/CI-delta closure against updated reviewed HEAD. Preserve original runtime-profile/observability evidence; do not spawn another fresh exhaustive reviewer, execute multi-agent review, add new review criteria, or create reserved report file.
-17. When the independent lifecycle reaches a passing verdict, call `report-output-manager` attestation-persistence phase; only then invoke `report-writer` with retained complete evidence and the pre-reserved path.
-18. Persist at most one report-attestation commit whose first parent is reviewed implementation HEAD and changed paths are limited to pre-reserved independent-final-review report paths.
+14. Ask `sub-agent-task-manager` to select/plan one fresh independent final reviewer using `report_persistence_mode: deferred_attestation` **and pass the existing `pre_reserved_report_path`, `reservation_owner`, `reservation_identity`, and reservation evidence from step 12**. The task manager must validate/reuse this reservation and must not call reservation-only phase again. If expensive-profile approval, role-profile safety, or reservation identity is unresolved, stop before spawn. After approval/safe planning, dispatch that one reviewer without creating the reserved report file.
+15. Retain structured findings, coverage, commands/evidence, verdict, risks, unexplored areas, truthful decomposability/policy evidence, reservation identity, and runtime-profile observability evidence as parent-owned lifecycle evidence.
+16. If the one exhaustive independent review finds required changes, invalidate terminal state, return to implementation and normal fix verification, then reuse the same independent reviewer only for finding/CI-delta closure against updated reviewed HEAD. Preserve original runtime-profile/observability and reservation evidence; do not spawn another fresh exhaustive reviewer, execute multi-agent review, add new review criteria, create reserved report file, or create a second reservation.
+17. When the independent lifecycle reaches a passing verdict, call `report-output-manager` attestation-persistence phase with the same reservation identity; only then invoke `report-writer` with retained complete evidence and the pre-reserved path.
+18. Persist at most one report-attestation commit whose first parent is reviewed implementation HEAD and changed paths are limited to the path(s) bound to that reservation identity.
 19. Validate attestation diff, make final authorized push, then invoke `git-pr-submitter` or authorized equivalent for that exact HEAD. Wait once after publication for exact-head required `pull_request` CI. Do not wait for unrequired `push` run.
 20. After attestation commit, permit only operations that do not change Git HEAD: PR body/comment updates, review requests, external Issue operations, and inline/branch-external handoff transport.
 21. Do not call repository-writing Skills after attestation and do not commit later handoff/tracking/design/Skill/workflow/configuration/feedback/report/implementation changes.
@@ -127,12 +132,12 @@ The independent-final-review target must not be frozen until all of the followin
 - any selected in-scope Skill update,
 - feedback classification and any feedback ledger write,
 - repository-backed normal handoff,
-- independent-final-review report-path reservation as metadata only, with no file created yet,
+- exactly one independent-final-review report-path reservation owned by `review-enforcer`, with stable reservation identity, metadata-only state, and no file created yet,
 - current-HEAD validation evidence and verification-route disposition.
 
 For `remote_ci_only`, matching current-HEAD CI may be formal evidence; for local route, do not require CI completion before attestation.
 
-A newly discovered repository write after this gate invalidates it and returns workflow to normal cycle. Creating/editing reserved independent-final-review report before passing verdict also invalidates the gate.
+A newly discovered repository write after this gate invalidates it and returns workflow to normal cycle. Creating/editing reserved independent-final-review report before passing verdict or replacing the reservation identity after freeze also invalidates the gate.
 
 ## Report-attestation gate
 
@@ -140,7 +145,7 @@ A report-attestation head is acceptable only when:
 
 - exactly one commit follows reviewed implementation HEAD,
 - commit first parent is reviewed implementation HEAD,
-- only pre-reserved independent-final-review report paths changed,
+- only report paths bound to the pre-freeze reservation identity changed,
 - those paths did not exist/change during frozen independent review,
 - report names reviewed implementation HEAD and identifies commit as administrative attestation,
 - no executable, Skill, design, workflow, configuration, tracking, feedback, handoff, or product path changed,
@@ -150,13 +155,13 @@ Technical verdict remains attached to reviewed implementation HEAD. Attestation 
 
 ## Codex responsibilities
 
-- Parent owns reviewer identity, continuity, independence, single-reviewer execution policy, truthful decomposability evidence, report-path reservation, retained independent evidence, pre-freeze gating, lifecycle gating, attestation validation, and integration.
-- `sub-agent-task-manager` owns every new reviewer spawn/profile/role plan/runtime observability evidence and must honor no-decomposition/report-persistence constraints.
+- Parent owns reviewer identity, continuity, independence, single-reviewer execution policy, truthful decomposability evidence, independent-final report-path reservation owner/identity, retained independent evidence, pre-freeze gating, lifecycle gating, attestation validation, and integration.
+- `sub-agent-task-manager` owns every new reviewer spawn/profile/role plan/runtime observability evidence and must honor no-decomposition/report-persistence constraints while reusing the caller-supplied deferred reservation.
 - Parent review cannot replace reviewer sub-agent work.
 - Do not cancel a reviewer merely because it is slow.
 - Reviewers do not implement findings.
 - Do not reuse a verdict from an earlier implementation HEAD.
-- Do not create more than one report-attestation commit.
+- Do not create more than one independent-final reservation or report-attestation commit.
 - Do not permit a repository-writing Skill after attestation.
 - Do not merge.
 
@@ -166,6 +171,7 @@ Return:
 
 - normal review and fix-verification evidence,
 - pre-freeze gate evidence,
+- independent-final reservation owner, identity, exact path(s), timing/evidence, and metadata-only state,
 - independent-final-review evidence retained outside frozen repository until attestation,
 - reviewed implementation HEAD,
 - report-attestation head or explicit absence,
@@ -179,7 +185,7 @@ Return:
 
 ## Completion condition
 
-Complete only when required Skills produced normal-review and independent-final-review evidence; every new reviewer went through `sub-agent-task-manager` under single-agent execution policy without falsifying decomposability; any required initial/role-adjusted Sol `xhigh`/`max` approval preceded reviewer spawn; runtime-profile observability uncertainty is preserved; reused reviewers preserved original profile evidence; independent reviewer did not write reserved report path before passing; all non-final repository changes and mandatory end-of-Issue/feedback work preceded frozen reviewed implementation HEAD; no unresolved required finding or verdict-invalidating unexplored area remains; and either no report commit was required or exactly one validated report-attestation head exists with no later repository commit/writing Skill. No merge is performed.
+Complete only when required Skills produced normal-review and independent-final-review evidence; every new reviewer went through `sub-agent-task-manager` under single-agent execution policy without falsifying decomposability; any required initial/role-adjusted Sol `xhigh`/`max` approval preceded reviewer spawn; runtime-profile observability uncertainty is preserved; reused reviewers preserved original profile evidence; exactly one pre-freeze independent-final reservation identity was created by `review-enforcer` and reused by the task manager; the independent reviewer did not write reserved report path before passing; all non-final repository changes and mandatory end-of-Issue/feedback work preceded frozen reviewed implementation HEAD; no unresolved required finding or verdict-invalidating unexplored area remains; and either no report commit was required or exactly one validated report-attestation head exists with no later repository commit/writing Skill. No merge is performed.
 
 ## Cross-cutting rule
 
