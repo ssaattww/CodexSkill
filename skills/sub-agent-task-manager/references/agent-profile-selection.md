@@ -54,6 +54,7 @@ Record these signals before choosing a profile:
 - `context_need`: `fresh`, `bounded_history`, or `full_history`
 - explicit user or repository model, effort, budget, and availability constraints
 - approval state when `Sol xhigh` or `Sol max` is proposed
+- existing agent identity and its applied profile when the caller requests continuity reuse
 
 `criticality: high` includes security, authorization, privacy, destructive data handling, schema or data migration, concurrency, compatibility, public API, release, deployment, and other changes where an incorrect result has a large or difficult-to-reverse impact.
 
@@ -83,7 +84,7 @@ Use Terra for ordinary bounded technical work, including:
 - implementation from accepted requirements with a bounded change radius
 - focused verification whose commands and expected evidence are known
 - localized investigation with a concrete hypothesis
-- focused fix verification against already identified findings
+- a newly created reviewer dedicated only to focused fix verification when continuity reuse is unavailable
 - cross-module work whose behavior is still well specified and whose risk is ordinary
 
 Raise Terra from `medium` to `high` when the task spans modules, has several interacting conditions, or needs careful regression reasoning but does not require Sol.
@@ -105,7 +106,7 @@ Do not downgrade a Sol-floor task merely because the expected edit is small. Cha
 
 ## Task defaults
 
-Use these defaults after applying the floors above. A value marked `proposal` is not dispatchable until the user approves it.
+Use these defaults after applying the floors above. A value marked `proposal` is not dispatchable until the user approves it. Defaults apply only when a new sub-agent is being created; continuity reuse preserves the existing agent profile instead of reselecting a default.
 
 | Task | Default profile | Escalation |
 | --- | --- | --- |
@@ -116,10 +117,25 @@ Use these defaults after applying the floors above. A value marked `proposal` is
 | design or requirement interpretation | Sol `high` | propose Sol `max`; stop for user approval |
 | open-ended or cross-layer investigation | Sol `high` | propose Sol `max`; stop for user approval |
 | initial normal review | Sol `high` | propose Sol `xhigh`; stop for user approval |
-| focused fix verification | Terra `high` | Sol `high` when the original finding or changed scope is high-criticality |
+| focused fix verification, new reviewer only | Terra `high` | Sol `high` when the original finding or changed scope is high-criticality |
 | independent final review or release audit | propose Sol `xhigh` | stop for user approval; propose Sol `max` only for one inseparable proof obligation |
 
 Do not use `none` by default for delegated development work. It may be used only for an explicitly deterministic operation that requires no technical judgment and has a complete mechanical validator.
+
+## Reviewer continuity rule
+
+When `review-enforcer` requests reuse of an already-running normal reviewer or independent reviewer, continuity takes precedence over the task default table.
+
+- do not spawn a replacement merely to apply the focused fix-verification default
+- do not reselect Terra `high`, Sol `high`, `xhigh`, or `max` for the existing agent
+- preserve the model, reasoning effort, and fork context that were actually applied when that reviewer was created
+- record `application_status: reused_existing_agent_profile`
+- record the reviewer identity and the original applied profile as continuity evidence
+- record the continued review mode, such as `fix_verification` or `finding_ci_delta_closure`
+
+Reusing an already-approved `Sol xhigh` or `Sol max` reviewer in the same review lifecycle does not create a new expensive-profile selection. The original approval evidence remains attached to that reviewer. A new reviewer, a replacement reviewer, or a new task lifecycle must pass profile selection and any applicable approval gate again.
+
+If the original applied profile is unknown, do not invent it. Record the evidence gap and let `review-enforcer` decide whether continuity can be trusted or a replacement reviewer must be created through the normal selection path.
 
 ## Reasoning-effort rules
 
@@ -151,9 +167,10 @@ Apply precedence in this order:
 
 1. explicit current-task user instruction, including explicit approval for `Sol xhigh` or `Sol max`
 2. mandatory user-approval gate for an unapproved `Sol xhigh` or `Sol max` proposal
-3. authoritative repository policy
-4. runtime capability and model availability
-5. automatic selection rules in this reference
+3. reviewer continuity reuse of an existing agent and its actually applied profile
+4. authoritative repository policy
+5. runtime capability and model availability
+6. automatic selection rules in this reference
 
 An override may pin the model, effort, or both. Continue to classify the task and record when the override is below the automatically calculated floor. Do not silently replace an explicit override. Report the mismatch and follow the governing authority.
 
@@ -161,7 +178,7 @@ A repository policy that requests `Sol xhigh` or `Sol max` creates a proposal bu
 
 ## Dispatch profile schema
 
-For ordinary profiles:
+For ordinary newly dispatched profiles:
 
 ```yaml
 dispatch_profile:
@@ -221,6 +238,28 @@ dispatch_profile:
     - higher reasoning effort increases execution cost
 ```
 
+For continuity reuse:
+
+```yaml
+dispatch_profile:
+  schema_version: 2
+  selection_source: continuity_reuse
+  task_kind: review
+  requested: null
+  applied:
+    model: <original applied model>
+    reasoning_effort: <original applied effort>
+    fork_turns: <original fork policy>
+  application_status: reused_existing_agent_profile
+  continuity:
+    reviewer_identity: <existing reviewer>
+    continued_mode: fix_verification | finding_ci_delta_closure
+    original_profile_evidence: <report or spawn evidence>
+  approval:
+    required: false
+    status: inherited_from_original_dispatch | not_required
+```
+
 After explicit approval, copy the approved proposal into `requested`, record approval evidence, and only then follow [spawn-agent-model-overrides.md](spawn-agent-model-overrides.md). Never claim the requested profile was applied without actual runtime evidence.
 
 ## Fork policy
@@ -229,10 +268,11 @@ After explicit approval, copy the approved proposal into `requested`, record app
 - Use an explicit positive partial fork only when the required history is bounded and identified.
 - A full-history fork inherits the parent execution profile. Record `application_status: inherited_parent_profile` and do not claim that a different requested model was applied.
 - Prefer fresh context plus explicit task-local inputs over a full-history fork when specialization matters.
+- Continuity reuse keeps the existing agent context and is not represented as a new fork operation.
 
 ## Reclassification and escalation
 
-Recompute the profile when new evidence changes uncertainty, change radius, criticality, or task kind.
+Recompute the profile when new evidence changes uncertainty, change radius, criticality, or task kind and a new agent would be dispatched.
 
 - A failed deterministic verification becomes investigation; do not keep retrying it as Luna work.
 - A localized implementation that exposes architectural ambiguity becomes Sol work.
@@ -240,6 +280,7 @@ Recompute the profile when new evidence changes uncertainty, change radius, crit
 - Raise reasoning effort when the problem is unchanged but needs more careful analysis.
 - Raise model tier when the nature of the problem changes or the current model lacks the required judgment capability.
 - If escalation reaches Sol `xhigh` or Sol `max`, convert it to a proposal and stop for user approval instead of dispatching.
+- Do not recompute the profile merely because an existing reviewer moved from initial review to fix verification or bounded closure.
 
 Avoid blind retry loops. Record the reason for every profile escalation or fallback and reuse existing evidence.
 
@@ -255,6 +296,7 @@ Every dispatched task report must record:
 - reclassification or escalation, if any
 - whether multi-agent decomposition was considered and why it was or was not used
 - for `Sol xhigh` or `Sol max`, the proposal, cost notice, approval status, and explicit approval evidence
+- for reviewer continuity, existing reviewer identity, original applied profile evidence, continued mode, and `application_status: reused_existing_agent_profile`
 
 A proposal that is still awaiting approval is a stopped workflow state, not a dispatched task.
 
