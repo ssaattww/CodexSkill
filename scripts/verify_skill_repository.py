@@ -55,6 +55,7 @@ WRAPPER_DEPENDENCIES = {
     },
     "review-enforcer": {
         "work-context-manager",
+        "sub-agent-task-manager",
         "review-worker",
         "report-writer",
         "report-output-manager",
