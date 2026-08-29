@@ -4,9 +4,9 @@
 
 Codex向け親／sub-agent flowと、利用者が親となるChatGPT chat worker flowを一元的に定義する。
 
-実装、レビュー、レポート生成の意味論は親runtimeに依存しないcore Skillとして定義し、CodexとChatGPTはruntime wrapperからそれらを呼び出す。
+実装、レビュー、レポート生成の意味論は親runtimeに依存しないcore Skillとして定義し、canonical task trackingの更新はruntime-neutralなtask tracking Skillとして定義する。CodexとChatGPTはruntime wrapperから必要なSkillを呼び出す。
 
-この設計書をSkill hierarchyの正本とし、`skills/design/skill-hierarchy-design.md`と同一内容に保つ。
+この設計書をSkill hierarchyの正本とし、`skills/design/skill-hierarchy-design.md`と同一内容に保つ。Issue #59固有のtask tracking追加契約は`design/issue-59-chatgpt-task-tracking-extension.md`にも記録し、本設計書の該当箇所と一致させる。
 
 ## 実行方式
 
@@ -15,7 +15,7 @@ Codex向け親／sub-agent flowと、利用者が親となるChatGPT chat worker
 - `利用者が親としてChatGPT chatで実行`: 利用者が独立chatを起動し、そのchatが指定wrapper Skillを直接実行する。
 - `runtime非依存Skillとして実行`: 親またはwrapperから渡されたcontextを使用し、Codex親、sub-agent、ChatGPT chat固有の制御を持たずに実作業を行う。
 
-ChatGPT wrapperは別workerまたはsub-agentを起動しない。Codex向けwrapperとChatGPT向けwrapperは別の実行系として扱うが、実装、レビュー、レポートの意味論は同じcore Skillを使用する。
+ChatGPT wrapperは別workerまたはsub-agentを起動しない。Codex向けwrapperとChatGPT向けwrapperは別の実行系として扱うが、実装、レビュー、レポートの意味論は同じcore Skillを使用する。task tracking Skill自身もsub-agent起動を要求せず、canonical tracking writeを所有するauthorized callerが実行する。
 
 ## Skill依存アーキテクチャ
 
@@ -25,6 +25,11 @@ ChatGPT wrapperは別workerまたはsub-agentを起動しない。Codex向けwra
 ├─ implementation-worker
 ├─ review-worker
 └─ report-writer
+
+runtime-neutral task tracking Skill
+├─ task-breakdown-planner
+├─ task-consistency-manager
+└─ progress-sync-manager
 
 runtime wrapper
 ├─ Codex
@@ -41,7 +46,7 @@ runtime wrapper
 ### Core Skill
 
 - `work-context-manager`
-  - authority、scope、target identity、development policy、validation target、current-HEAD CI evidence、write boundaryを解決する
+  - authority、scope、target identity、development policy、validation target、current-HEAD CI evidence、canonical tracking path、write boundaryを解決する
 - `implementation-worker`
   - initial implementationとreview follow-upを実行する
 - `review-worker`
@@ -51,11 +56,22 @@ runtime wrapper
 
 全core SkillはCodex親、Codex sub-agent、ChatGPT親chatのいずれにも依存しない。
 
+### Task tracking Skill
+
+- `task-breakdown-planner`
+  - canonical tracking pathを使い、work itemをtask／phase、dependencies、exit criteriaへ分解する
+- `task-consistency-manager`
+  - canonical trackingと実scopeを照合し、実装開始前およびscope変更時の整合を保証する
+- `progress-sync-manager`
+  - implementation、validation、review、commit／PR、blocked、完了状態をcanonical trackingへ同期する
+
+3 Skillは`work-context-manager`が解決したrepository-relative pathを完全一致で使用し、configured pathをbasenameへ置換または推測しない。Codex標準flowでは通常parent、ChatGPT implementation flowではcurrent chatがauthorized callerとなる。
+
 ### Runtime wrapper
 
 Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuity、fresh independent reviewer、report path、persistence、completion gateを所有する。
 
-ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persistence、chat continuity、cross-chat handoffを所有する。
+ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persistence、chat continuity、cross-chat handoffを所有する。`chat-implementation-worker`はtask tracking Skillをcurrent chatで直接実行し、tracking更新ロジックをwrapperへ複製しない。
 
 共通動作を複数Skillから同一fileとして参照しない。共通動作は独立Skillとして定義し、wrapperまたは他のSkillがSkill名で呼び出す。
 
@@ -213,7 +229,10 @@ attestation後にrepository writeの必要性が判明した場合はterminal st
 利用者 [親]
 ├─ Chat A: chat-implementation-worker [initial implementation]
 │  ├─ work-context-manager
+│  ├─ task-consistency-manager
+│  ├─ task-breakdown-planner [必要時のみ]
 │  ├─ implementation-worker
+│  ├─ progress-sync-manager
 │  ├─ report-writer
 │  └─ chat-handoff-manager
 ├─ Chat B: chat-review-worker [initial review]
@@ -238,7 +257,7 @@ initial reviewとfix verificationは同じnormal review chatを継続する。in
 Issue #<number>を開始してください。
 ```
 
-`chat-implementation-worker`がrepository stateと権限を管理し、`work-context-manager`と`implementation-worker`を呼び出す。
+`chat-implementation-worker`がrepository stateと権限を管理し、`work-context-manager`でcanonical tracking pathを解決する。`task-consistency-manager`でtrackingを確認し、必要時だけ`task-breakdown-planner`で分割・補完して再確認した後、`implementation-worker`を呼び出す。実装結果は`progress-sync-manager`でcanonical trackingへ同期する。
 
 ### 初回レビュー
 
@@ -254,7 +273,7 @@ PR #<number>を初回レビューしてください。
 レビュー結果に対応してください。
 ```
 
-初回実装chatを継続し、`implementation-worker`のreview follow-upでfinding、直接原因、影響境界、同一欠陥classだけを修正する。
+初回実装chatを継続し、`implementation-worker`のreview follow-upでfinding、直接原因、影響境界、同一欠陥classだけを修正する。新しいtaskまたはtracking state変更が発生した場合はcanonical pathを使ってtask tracking Skillを実行する。
 
 ### 修正確認
 
@@ -290,7 +309,13 @@ ChatGPTへ登録するwrapper Skillは次の4つである。
 - `review-worker`
 - `report-writer`
 
-GitHub Releaseでは、8 Skillをそれぞれ独立したroot directoryとして含む単一ZIPを配布する。
+必須task tracking Skillは次の3つである。
+
+- `task-breakdown-planner`
+- `task-consistency-manager`
+- `progress-sync-manager`
+
+GitHub Releaseでは、11 Skillをそれぞれ独立したroot directoryとして含む単一ZIPを配布する。
 
 ```text
 chatgpt-worker-skills.zip
@@ -301,12 +326,15 @@ chatgpt-worker-skills.zip
 ├─ work-context-manager/
 ├─ implementation-worker/
 ├─ review-worker/
-└─ report-writer/
+├─ report-writer/
+├─ task-breakdown-planner/
+├─ task-consistency-manager/
+└─ progress-sync-manager/
 ```
 
 各directoryには少なくとも`SKILL.md`が存在し、front matterの`name`とdirectory名を一致させる。
 
-このZIPをChatGPTへuploadし、wrapperと依存core Skillを一括登録する。
+このZIPをChatGPTへuploadし、wrapper、依存core Skill、task tracking Skillを一括登録する。
 
 ## Handoff
 
@@ -315,7 +343,8 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 - reportとhandoffを別成果物とする
 - schema version 3を使用する
 - typed projectionとversioned `source_payloads`の両方を保持する
-- source core Skillのcomplete outputをraw payloadとして保持し、typed fieldに表現できない情報を失わない
+- source core Skillと実行されたtask tracking Skillのcomplete outputをraw payloadとして保持し、typed fieldに表現できない情報を失わない
+- canonical task／phase tracking path、task state、phase、dependencies、exit criteria、blockers、pending actionを保持する
 - development policy、planned validation、required failure diagnostics、blocked stateを保持する
 - implementation failure diagnosticsとblocked itemsを保持する
 - reviewer identity、reviewer continuity、independence evidenceを保持する
@@ -342,7 +371,7 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 - `opened`、`synchronize`、`reopened`では実PR HEAD SHAをcheckoutする
 - build jobは`contents: read`だけを持ち、checkout credentialを保持しない
 - `scripts/verify_skill_repository.py`で全Skillのfront matter、Skill名依存、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
-- 全`chat-*` wrapperと必須core Skillを検出する
+- 全`chat-*` wrapper、必須core Skill、必須task tracking Skillを検出する
 - missing Skill、front matter name不一致、symlink、Skill外shared参照を拒否する
 - 単一`chatgpt-worker-skills.zip`を作成する
 - ZIP rootが検出Skill集合と一致することを確認する
@@ -388,7 +417,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 1. workflow開始時にCodexSkillの鮮度を確認する。
 2. 再開時は`restart-handover-manager`で状態を復元する。
-3. `work-context-manager`でauthority、scope、target identity、development policy、validation target、write boundaryを解決する。
+3. `work-context-manager`でauthority、scope、target identity、development policy、validation target、canonical tracking path、write boundaryを解決する。
 4. `development-orchestrator`がtaskを選択する。
 5. `task-consistency-manager`でtrackingを同期する。
 6. 設計影響があれば`design-doc-maintainer`を実行する。
@@ -428,7 +457,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `work-context-manager` | authority、scope、target identity、policy、validation、CI、write boundaryを解決する | runtime非依存Skillとして実行 |
+| `work-context-manager` | authority、scope、target identity、policy、validation、CI、canonical tracking path、write boundaryを解決する | runtime非依存Skillとして実行 |
 | `implementation-worker` | initial implementationとreview follow-upを実施する | runtime非依存Skillとして実行 |
 | `review-worker` | initial review、fix verification、independent final reviewとattestation条件を返す | runtime非依存Skillとして実行 |
 | `report-writer` | evidence-faithfulなreport、簡易PR comment、persistence metadataを生成する | runtime非依存Skillとして実行 |
@@ -437,9 +466,9 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `task-breakdown-planner` | issueをtaskとphaseへ分解する | 親が実行 |
-| `task-consistency-manager` | task、phase、実scopeを同期する | 親が実行 |
-| `progress-sync-manager` | report、tracking、実結果を同期する | 親が実行 |
+| `task-breakdown-planner` | canonical pathを使ってissueをtaskとphaseへ分解する | runtime非依存Skillとしてauthorized callerが実行 |
+| `task-consistency-manager` | canonical task／phaseと実scopeを同期する | runtime非依存Skillとしてauthorized callerが実行 |
+| `progress-sync-manager` | canonical tracking、report、実結果を同期する | runtime非依存Skillとしてauthorized callerが実行 |
 | `restart-handover-manager` | recorded stateから再開位置を復元する | 親が実行 |
 | `handover-memo-writer` | 別chat向けhandover memoを作成する | 親が実行 |
 
@@ -476,15 +505,16 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `chat-implementation-worker` | ChatGPT上の初回実装とreview follow-upを統括する | 利用者が親としてChatGPT chatで実行 |
+| `chat-implementation-worker` | ChatGPT上の初回実装とreview follow-up、canonical task tracking flowを統括する | 利用者が親としてChatGPT chatで実行 |
 | `chat-review-worker` | ChatGPT上のinitial、fix verification、independent final review、report-attestationを統括する | 利用者が親としてChatGPT chatで実行 |
 | `chat-report-writer` | ChatGPT上のsource discovery、report永続化、PR commentを統括する | 利用者が親としてChatGPT chatで実行 |
-| `chat-handoff-manager` | 独立chat間のlossless typed／raw handoff packetを生成する | ChatGPT wrapperから呼び出す |
+| `chat-handoff-manager` | 独立chat間のlossless typed／raw handoff packetとtask tracking stateを生成する | ChatGPT wrapperから呼び出す |
 
 ## 共通規則
 
 - 対象repositoryのProject Instructionを優先する。
 - 解決可能なrepository stateを利用者へ再質問しない。
+- canonical tracking pathはProject／repository authorityから解決し、configured pathをbasenameへ置換または推測しない。
 - CodexSkill repository自身にはTDDを適用しない。
 - implementationは自分の変更へreview verdictを出さない。
 - reviewerはfindingを実装しない。
@@ -493,9 +523,9 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - CIは対象current HEAD SHAに紐づくrunだけを使用する。
 - 別SHAのrunを代用しない。
 - reportとhandoffを混同しない。
-- handoffはtyped projectionとversioned raw source payloadでcore Skill outputを欠落なくtransportする。
+- handoffはtyped projectionとversioned raw source payloadでcore Skillおよび実行されたtask tracking Skill outputを欠落なくtransportする。
 - unknown、blocked、held、unexplored、失敗結果を消さない。
-- core Skillとwrapperは自directory外のshared fileへ依存しない。
+- core Skill、task tracking Skill、wrapperは自directory外のshared fileへ依存しない。
 - dependency Skillが存在しない場合、wrapperは処理を複製せずmissing dependencyとして停止する。
 - end-of-Issue Skill decision、feedback ledger、normal handoff、report、trackingをindependent final review前に確定する。
 - pre-freeze処理でrepositoryが変わった場合はnormal reviewへ戻る。
@@ -511,7 +541,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - ChatGPT Project Instruction例を変更する場合は`design/chatgpt-project-instruction-example.md`を更新する。
 - review lifecycle変更時は`review-worker`、`review-enforcer`、`chat-review-worker`、`report-writer`、`report-output-manager`、本設計書、専用設計書を同時更新する。
 - handoff schema変更時は`chat-handoff-manager`、ChatGPT wrapper、両設計書、Issue／trackingを同期する。
-- core Skill dependency変更時はCodex wrapper、ChatGPT wrapper、Release builder、repository validator、両設計書を同時更新する。
+- core Skill dependencyまたはChatGPT配布task tracking dependency変更時はCodex wrapper、ChatGPT wrapper、Release builder、repository validator、両設計書を同時更新する。
 - `scripts/verify_skill_repository.py`でactive Markdown link、Skill依存、front matter、symlink、削除済みshared runtime path、hierarchy design同期を検証する。
 - workflow trigger変更時はforbidden pathだけの変更でもvalidatorが起動するcoverageを両設計書とPR説明へ同期する。
 - 既存設計書の変更時は、構成変更と無関係な節を削除せず、矛盾する箇所だけを置換する。
