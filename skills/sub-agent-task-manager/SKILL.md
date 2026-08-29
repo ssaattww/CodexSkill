@@ -11,7 +11,7 @@ Standardize how work is handed to a sub-agent.
 
 Make every sub-agent task bounded, auditable, proportionately resourced, and report-backed.
 
-This Skill owns per-task model-tier, reasoning-effort, fork-policy selection, role/default-role call planning, and runtime-profile evidence for newly dispatched sub-agents. It does not decide whether the parent should delegate or how independent workstreams should be decomposed; `codex-delegation-executor` owns those decisions unless the caller explicitly forbids decomposition. Existing reviewer continuity is preserved by `review-enforcer` and is not treated as a new spawn.
+This Skill owns per-task model-tier, reasoning-effort, fork-policy selection, role/default-role call planning, and runtime-profile evidence for newly dispatched sub-agents. It does not decide whether the parent should delegate or how independent workstreams should be decomposed; `codex-delegation-executor` owns those decisions unless the caller explicitly forbids decomposition. Existing reviewer continuity and independent-final report-path reservation are owned by `review-enforcer` and are not treated as new spawn-side decisions.
 
 ## Execution owner
 
@@ -35,11 +35,14 @@ Before running this skill, identify:
 - authoritative role/default-role configuration evidence when that role can change model or reasoning
 - whether `codex-delegation-executor` considered multi-agent decomposition and its disposition
 - report persistence mode: `normal_persistence` or `deferred_attestation`
+- for `deferred_attestation`, `pre_reserved_report_path`, `reservation_owner`, `reservation_identity`, and evidence that the reservation was created before the reviewed implementation HEAD was frozen without creating/editing the repository file
 - user-approval evidence when `Sol xhigh` or `Sol max` is under consideration
 
 When a caller already supplied a complete delegation assessment, reuse it. Otherwise derive the missing selection inputs from the bounded task and record that derivation. Do not require routine user confirmation of automatically selected profiles below the expensive-profile approval gate.
 
 `decomposability` is an observed task signal. `decomposition_policy` is an execution constraint. If the caller forbids decomposition, preserve the observed signal and record `decomposition_disposition: prohibited_by_caller_policy`; do not rewrite the signal to `single`.
+
+For independent-final `deferred_attestation`, `review-enforcer` is the reservation owner. This Skill must receive and reuse its pre-freeze reservation. Missing, ambiguous, post-freeze, or already-materialized reservation evidence is a lifecycle blocker; do not create a second reservation to compensate.
 
 ## Run this skill
 
@@ -65,17 +68,17 @@ Do not create a new reviewer merely because an existing reviewer moves from init
 8. derive `role_plan` and `planned_runtime_profile`; if the role changes or locks model/reasoning, return the plan through the selector and re-run floor/approval checks before spawn
 9. if role/default-role profile impact cannot be inspected well enough to guarantee the expensive-profile gate, record a role-profile capability gap and stop before dispatch
 10. keep `applied: null` while planning; identify which skill files the `sub-agent` must read
-11. call `report-output-manager` in the correct phase:
-    - for `normal_persistence`, use normal persistence, reserve the path, and create the standard report file before dispatch
-    - for `deferred_attestation`, use the independent-final reservation phase only; reserve the exact path as metadata, do not invoke `report-writer`, and do not create/pre-populate/edit the repository report file
+11. resolve report handling without creating duplicate reservations:
+    - for `normal_persistence`, call `report-output-manager` normal-persistence phase, reserve the path, and create the standard report file before dispatch
+    - for independent-final `deferred_attestation`, do **not** call reservation-only phase here; validate and inherit the exact `pre_reserved_report_path` / `reservation_identity` supplied by `review-enforcer`, verify `reservation_owner: review-enforcer`, verify the path was reserved pre-freeze as metadata only, and verify the repository file still does not exist or has not changed
 12. for `normal_persistence`, pre-populate the fixed report structure and parent-owned `Dispatch profile` fields available before spawn
 13. tell the `sub-agent` to read the specified skill files before executing and give it the report instructions for the selected persistence mode
 14. dispatch using the `requested` model/reasoning values and explicit `agent_type` when applicable; when using the runtime default role, omit `agent_type` but preserve that default role in `role_plan`; when full-history inheritance is required, follow the spawn reference
 15. after spawn/fallback, inspect parent-visible runtime evidence; record exact `applied` only when a trustworthy final profile snapshot or equivalent exact proof is observable
 16. if spawn succeeds but final model/reasoning is hidden, keep `applied: null`, record `application_status: spawn_succeeded_profile_unverified`, and preserve `profile_observability: final_profile_hidden`
 17. for `normal_persistence`, update parent-owned `Dispatch profile` fields with post-call evidence and require the child or parent to complete remaining report sections
-18. for `deferred_attestation`, retain reviewer output and dispatch-profile evidence as parent-owned lifecycle evidence without writing the reserved report path; only the caller's passing-verdict attestation flow may persist it later
-19. do not treat the delegated task as complete until the applicable report/evidence contract, runtime application/observability status, and parent adjudication are satisfied
+18. for `deferred_attestation`, retain reviewer output, inherited reservation identity, and dispatch-profile evidence as parent-owned lifecycle evidence without writing the reserved report path; only `review-enforcer`'s passing-verdict attestation flow may persist it later
+19. do not treat the delegated task as complete until the applicable report/evidence contract, runtime application/observability status, reservation identity, and parent adjudication are satisfied
 
 Read the report template from `report-output-manager` only when `normal_persistence` applies:
 
@@ -156,10 +159,10 @@ The parent owns the complete `Dispatch profile` section because the child cannot
 
 For `deferred_attestation`, also include:
 
-- reserved report path as metadata only
+- the inherited `pre_reserved_report_path`, `reservation_owner`, and `reservation_identity` as metadata only
 - explicit instruction that the reserved repository report file does not yet exist and must not be created or edited by the reviewer
 - instruction to return structured findings, coverage, commands/evidence, verdict, risks, and unexplored areas to the parent
-- instruction that the parent will retain this output until passing-verdict attestation decides whether it may be persisted
+- instruction that the parent will retain this output until `review-enforcer`'s passing-verdict attestation decides whether it may be persisted
 
 For review tasks also include:
 
@@ -190,14 +193,14 @@ When a relevant skill exists, tell the `sub-agent` to read the actual `SKILL.md`
 ## Report rules
 
 - Every dispatched ordinary sub-agent task must produce a file under `reports/` using `normal_persistence`.
-- An independent-final reviewer using `deferred_attestation` is the intentional exception: reserve the path before freeze, but do not create/edit the repository file until passing-verdict attestation.
+- An independent-final reviewer using `deferred_attestation` is the intentional exception: `review-enforcer` reserves the path before freeze; this Skill reuses that exact reservation and does not create/edit/re-reserve the repository file until passing-verdict attestation.
 - The parent should create the normal-persistence report file before dispatch whenever feasible.
 - An approval-gated proposal or pre-dispatch capability gap may be recorded before a child report exists because no child was dispatched.
 - The parent should pre-populate standard headings and parent-owned `Dispatch profile` fields.
 - The fixed `Dispatch profile` section is parent-owned. The child must not attest to hidden spawn arguments, role application, or final runtime profile.
 - If a normal-persistence child cannot write child-owned sections directly, the parent must write them immediately from returned evidence.
 - For normal review/fix verification, built-in review results must be materialized before the task is complete.
-- For deferred-attestation independent final review, retain the result as parent-owned evidence and do not materialize it until passing-verdict attestation.
+- For deferred-attestation independent final review, retain the result and reservation identity as parent-owned evidence and do not materialize it until passing-verdict attestation.
 - Do not stop/replace an in-flight reviewer merely because it is slow unless the user explicitly says to stop.
 - Report text should be Japanese unless the user requests another language.
 - Normal-persistence children must preserve report structure and existing parent text.
@@ -249,6 +252,7 @@ For every dispatched task, retain:
 - truthful decomposability plus decomposition policy/disposition
 - requested and role-adjusted planning evidence
 - exact applied profile when observable, otherwise explicit unverified state
+- report persistence mode and reservation identity when deferred
 - when applicable, Sol `xhigh` / Sol `max` proposal and approval evidence
 - when applicable, reviewer continuity evidence
 
@@ -266,7 +270,8 @@ After this skill runs for a normal-persistence dispatched task, there should be:
 
 For a deferred-attestation independent reviewer, there should be:
 
-- one dispatched reviewer with explicit scope and reserved report-path metadata
+- one dispatched reviewer with explicit scope
+- one inherited pre-freeze report reservation owned by `review-enforcer`; no second reservation
 - no repository report file created/edited by the reviewer
 - requested/role-plan/runtime-observability evidence retained by the parent
 - structured review evidence retained by the parent for later attestation/fix-loop handling
@@ -295,7 +300,7 @@ A normal-persistence dispatched task completes only when:
 - parent-owned dispatch evidence and child-owned task evidence are complete
 - parent reviewed the result/evidence
 
-For a deferred-attestation independent reviewer, dispatch work completes when the reviewer returns, runtime profile observability state is recorded, structured review evidence is retained by the parent, and the reserved path remains unwritten. Repository report persistence completes later only through passing-verdict report attestation.
+For a deferred-attestation independent reviewer, dispatch work completes when the inherited pre-freeze reservation identity is validated, no duplicate reservation was created, the reviewer returns, runtime profile observability state is recorded, structured review evidence is retained by the parent, and the reserved path remains unwritten. Repository report persistence completes later only through `review-enforcer`'s passing-verdict report attestation.
 
 An approval-gated or pre-dispatch role-capability-gap task is intentionally incomplete.
 
@@ -317,7 +322,8 @@ An approval-gated or pre-dispatch role-capability-gap task is intentionally inco
 - Full-history behavior, role application, rejection, and fallback must follow the spawn reference.
 - If independently separable work would justify multi-agent execution and decomposition is allowed, return it to `codex-delegation-executor`; if decomposition is forbidden, preserve the decomposability observation and record the suppression.
 - Never create/edit an independent-final reserved report path before passing-verdict attestation.
+- Never create a second deferred-attestation reservation when `review-enforcer` already supplied the pre-freeze reservation; ambiguity is a blocker, not a reason to re-reserve.
 
 ## Cross-cutting rule
 
-If recurring sub-agent dispatch failures, profile misclassification, approval-gate bypasses, role-profile uncertainty, report omissions, or attestation-boundary violations appear, call `feedback-points-manager`.
+If recurring sub-agent dispatch failures, profile misclassification, approval-gate bypasses, role-profile uncertainty, report omissions, duplicate reservations, or attestation-boundary violations appear, call `feedback-points-manager`.
