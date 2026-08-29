@@ -17,8 +17,8 @@ Use independent Skills rather than repository-external shared files:
 
 - `work-context-manager` resolves authority, scope, target identity, policy, validation evidence, and write boundaries.
 - `implementation-executor` is the Codex wrapper that invokes `implementation-worker`.
-- `report-output-manager` owns report phases and invokes `report-writer` only when content generation/persistence is allowed.
-- `review-enforcer` is the Codex wrapper that invokes `review-worker`.
+- `report-output-manager` owns normal report phases used before the terminal independent-review lifecycle. Independent-final reservation and attestation are invoked only by `review-enforcer`.
+- `review-enforcer` is the Codex wrapper that invokes `review-worker` and owns the independent-final terminal lifecycle from report reservation through final exact-head CI.
 
 If a required Skill is unavailable, stop with a missing dependency. Do not reproduce its rules locally and do not fall back to `shared/` files.
 
@@ -28,7 +28,8 @@ The target repository owns its development method and testing order. This orches
 
 Run this Skill as: `parent`.
 
-- This Skill owns task selection, lifecycle routing, and final workflow decisions.
+- This Skill owns task selection, lifecycle routing, pre-freeze readiness, and final workflow decisions.
+- `review-enforcer` exclusively owns independent-final report reservation, reviewed-HEAD freeze, independent reviewer lifecycle, report attestation, final publication, and exact-head merge-gate CI.
 - End-of-Issue Skill-gap reflection is parent work, not sub-agent work.
 - This Skill owns the start-of-workflow check that repository-local Skills are current enough to trust.
 - Restart and handover flows re-enter through this Skill.
@@ -70,13 +71,30 @@ When no explicit dispatch override exists, do not ask the user to choose an impl
 17. When chosen Skill action should execute in current scope, call `skill-authoring-wrapper`. Otherwise record follow-up before final-review freeze.
 18. Call `feedback-points-manager` for reusable process feedback, Skillization state, or follow-up Issue. Persist any repository-backed normal handoff, feedback ledger, report, or tracking change now.
 19. If steps 16 through 18 changed repository files, run route-appropriate validation, update reports/tracking, commit, and return to normal review/fix-verification cycle. Repeat until normal cycle converges with all end-of-Issue/feedback changes included.
-20. Ensure every non-final repository change is committed. After normal convergence, run repository-defined full local equivalence gate exactly once for final publication candidate HEAD; record exact-HEAD identity, retain invalidated prior runs, and rerun only if content delta changes candidate. Reserve independent-final-review report path through `report-output-manager` reservation-only phase; do not invoke `report-writer` or create report file. Freeze current HEAD as reviewed implementation HEAD.
-21. Call `review-enforcer` with one fresh independent reviewer against frozen HEAD for single exhaustive pass. If profile/role planning proposes Sol `xhigh`/`max`, do not dispatch until user explicitly approves. If role-profile safety is unresolved, stop with capability gap.
-22. If review discovers required repository change, invalidate terminal state and return to implementation, validation, reporting, tracking, feedback, or Skill-action processing as applicable, followed by normal fix verification and same independent reviewer's bounded finding/CI-delta closure against updated reviewed HEAD.
-23. When independent final review passes, call `report-output-manager` attestation-persistence phase; only then invoke `report-writer` to persist detailed report as at most one report-attestation commit. First parent must be reviewed implementation HEAD and changed paths limited to pre-reserved independent-final-review report paths.
-24. Validate report-attestation diff, make final authorized push, then invoke `git-pr-submitter` or authorized equivalent to create/update PR for exact HEAD. Wait once after publication for exact-head required `pull_request` CI as merge gate. On `remote_ci_only`, matching current-HEAD CI may also be formal route evidence. Do not wait for unrequired `push` run. Update PR body/comment/review request/external Issue only after attestation commit because these do not change Git HEAD.
-25. Do not commit task, design, Skill, workflow, configuration, feedback, handoff, report, or implementation changes after attestation head. Return final handoff inline/outside reviewed PR branch.
-26. Return to task confirmation. Starting another task begins a new lifecycle and must not append commits to completed attestation pair.
+20. Ensure every non-final repository change is committed. After normal convergence, run the repository-defined full local equivalence gate exactly once for the final publication candidate HEAD; record exact-HEAD identity, retain invalidated prior runs, and rerun only if a content delta changes the candidate. **Do not reserve an independent-final report path and do not freeze the reviewed implementation HEAD here.** Mark the lifecycle as `pre_freeze_ready` and pass the completed pre-freeze evidence to `review-enforcer`.
+21. Continue the same `review-enforcer` lifecycle for independent final review. `review-enforcer` alone performs the exactly-once reservation-only phase, records `reservation_owner: review-enforcer` and the stable reservation identity, freezes `reviewed_implementation_head`, selects/dispatches the fresh independent reviewer, retains structured evidence, handles same-reviewer bounded closure, persists at most one report-attestation commit, validates the attestation diff, performs the final authorized push/PR publication, and waits once for exact-head required `pull_request` CI. If profile/role planning proposes Sol `xhigh`/`max`, surface the proposal and stop before dispatch until the user explicitly approves. If role-profile safety is unresolved, stop with capability gap.
+22. If `review-enforcer` returns a required repository-change disposition, invalidate terminal readiness and execute only the requested implementation, validation, reporting, tracking, feedback, or Skill-action work. Commit the changes, complete normal fix verification, then return to the **same** `review-enforcer` independent lifecycle so it can reuse its reviewer/reservation evidence as defined by that Skill. Do not create a second reservation or a new terminal owner.
+23. When `review-enforcer` returns a passing terminal result, consume its completion evidence: `reviewed_implementation_head`, reservation identity/path evidence, independent reviewer verdict/coverage, `report_attestation_head` or explicit absence, attestation allowlist validation, final push state, PR publication state, and exact-head CI state. **Do not call `report-output-manager` attestation-persistence phase, create another attestation commit, invoke `git-pr-submitter` again, push again, or wait for CI again.**
+24. After terminal completion, allow only Git-HEAD-neutral caller work that is not already represented by the returned evidence, such as a concise PR comment, review request, external Issue update, or inline/branch-external handoff transport. Do not duplicate final publication or CI waiting already owned by `review-enforcer`.
+25. Do not commit task, design, Skill, workflow, configuration, feedback, handoff, report, or implementation changes after the attestation head. Return final handoff inline/outside reviewed PR branch.
+26. Return to task confirmation. Starting another task begins a new lifecycle and must not append commits to the completed attestation pair.
+
+## Independent-final terminal ownership
+
+The independent-final terminal lifecycle has exactly one owner: `review-enforcer`.
+
+`development-orchestrator` owns only readiness before that boundary and consumption after it. It must not directly invoke any of these terminal operations:
+
+- independent-final `report-output-manager` reservation-only phase,
+- reviewed implementation HEAD freeze,
+- independent reviewer identity/lifecycle management,
+- report-attestation persistence,
+- report-attestation commit creation or allowlist validation,
+- final push,
+- final PR creation/update,
+- exact-head required `pull_request` CI wait.
+
+A returned `review-enforcer` terminal result is authoritative lifecycle evidence. Repeating any terminal operation after that result risks a second reservation, a second attestation commit, duplicate publication, or duplicate CI gating and is prohibited.
 
 ## Dispatch-profile policy
 
@@ -96,18 +114,20 @@ A dispatch classification must be recomputed when investigation/implementation c
 
 ## Report-attestation terminal rule
 
+`review-enforcer` owns application of this terminal rule. `development-orchestrator` consumes and checks the returned evidence but does not re-execute the rule.
+
 An independent-final-review verdict remains attached to its reviewed implementation HEAD. A later Git HEAD may be accepted only as a report-attestation head when all conditions below hold:
 
 - exactly one commit follows reviewed implementation HEAD,
 - its first parent is reviewed implementation HEAD,
-- only independent-final-review report path(s) reserved before review are changed,
+- only independent-final-review report path(s) reserved by the `review-enforcer` pre-freeze reservation identity are changed,
 - report identifies reviewed implementation HEAD and states commit is administrative attestation rather than reviewed implementation,
 - automated/explicit diff check confirms no executable, Skill, design, workflow, configuration, task-tracking, feedback, handoff, or product file changed,
 - no later repository commit exists.
 
-Completion identity is `reviewed implementation HEAD + validated report-attestation HEAD`. Any other post-review commit invalidates completion and requires normal fix verification followed by same independent reviewer's bounded finding/CI-delta closure.
+Completion identity is `reviewed implementation HEAD + validated report-attestation HEAD`. Any other post-review commit invalidates completion and requires normal fix verification followed by same independent reviewer's bounded finding/CI-delta closure under `review-enforcer`.
 
-After freeze, only operations that do not change Git HEAD are permitted: PR body/comment updates, review requests, external Issue operations, and branch-external/inline transport. Discovery of required repository write invalidates terminal state and returns workflow to normal cycle.
+After terminal completion, only operations that do not change Git HEAD are permitted: PR body/comment updates not already performed, review requests, external Issue operations, and branch-external/inline transport. Discovery of required repository write invalidates terminal state and returns workflow to normal cycle through `review-enforcer`.
 
 ## Core rules
 
@@ -119,8 +139,8 @@ After freeze, only operations that do not change Git HEAD are permitted: PR body
 - Do not enter workflow on stale local Skills when safe latest synchronization was available.
 - Do not trust workflow entry until `AGENTS.md` contains required Skill-first constraints or user has been explicitly notified.
 - Do not skip parent-owned end-of-Issue Skill-gap reflection.
-- Complete Skill action decisions, feedback classification/ledger synchronization, normal handoff persistence, reports, and tracking before freezing independent-final-review target.
-- If any of those actions changes repository, require validation and normal review before freezing again.
+- Complete Skill action decisions, feedback classification/ledger synchronization, normal handoff persistence, reports, and tracking before independent-final terminal lifecycle begins.
+- If any of those actions changes repository, require validation and normal review before entering terminal lifecycle again.
 - Do not leave substantial local Skill changes without explicit caller.
 - Do not choose parent versus sub-agent implementation outside `codex-delegation-executor`.
 - Do not hardcode or routinely confirm implementation sub-agent model when no explicit override exists, except mandatory Sol `xhigh`/`max` gate.
@@ -135,6 +155,8 @@ After freeze, only operations that do not change Git HEAD are permitted: PR body
 - Do not make delegated tasks re-enter this orchestration Skill unless orchestration analysis itself was delegated.
 - Do not use deleted or repository-external `shared/` contracts as fallback.
 - Stop/re-plan when required work is missing from task tracking.
+- Do not reserve the independent-final report path or freeze the reviewed implementation HEAD outside `review-enforcer`.
+- Do not call attestation persistence, create a second report-attestation commit, repeat final push/PR publication, or wait for final exact-head CI after `review-enforcer` has completed those operations.
 - After report attestation, do not call any Skill that can write to reviewed repository branch.
 
 ## Outputs
@@ -150,8 +172,8 @@ After this Skill runs, workflow has:
 - requested profile, role/default-role plan, planned runtime profile, runtime observability, and exact applied profile when observable or explicit unverified/capability state for every dispatched sub-agent task,
 - resolved `verification_capability` and separate commit/push/CI-wait evidence,
 - implementation/validation evidence or explicit blocking condition,
-- review/report/tracking/Skill-action/feedback/commit/PR state,
-- reviewed implementation HEAD and, when repository persistence is required, validated report-attestation head.
+- review/report/tracking/Skill-action/feedback state,
+- `review-enforcer` terminal evidence including the single reservation identity, reviewed implementation HEAD, report-attestation head or explicit absence, attestation validation, final publication state, and exact-head CI state.
 
 ## Completion condition
 
@@ -163,11 +185,12 @@ A task cycle is complete only when:
 - normal review and independent final review are complete,
 - delegated work records requested/role-plan evidence and either exact applied profile or an explicit unverified/inherited/fallback/capability state,
 - any initial/role-adjusted Sol `xhigh`/`max` dispatch has explicit current-task approval evidence,
-- required non-final reports/tracking/Skill decisions/feedback/normal handoffs were committed before independent final review,
+- required non-final reports/tracking/Skill decisions/feedback/normal handoffs were committed before independent-final terminal lifecycle,
 - any repository change discovered during pre-freeze finalization returned through validation/normal review,
-- any post-review repository write is exactly one validated report-attestation commit,
+- `review-enforcer` created exactly one independent-final reservation identity and, when persistence was required, at most one validated report-attestation commit,
+- this Skill did not repeat reservation, attestation persistence, final push, PR publication, or exact-head CI waiting after consuming `review-enforcer` completion,
 - no repository-writing Skill ran after attestation head,
-- commit/PR actions are complete,
+- terminal PR/CI evidence is complete or explicitly blocked,
 - no merge was performed.
 
 ## What this Skill must not do
