@@ -109,6 +109,19 @@ Project Instructionのcanonical task tracking path `tasks/tasks-status.md`と既
 - T-002の現在の配布構成表記だけを4 wrapper + 4 core + 3 task tracking Skillへ同期し、Issue #53のreview履歴は変更していない
 - `tasks/phases-status.md`へPhase 8を追加し、F-60-01からF-60-04の対応状態とcurrent-HEAD validation待ちを記録した
 
+## Repository validator同期
+
+再点検で`scripts/build_chatgpt_worker_skills.py`は11 Skillを必須packageとしていた一方、`scripts/verify_skill_repository.py`の`REQUIRED_RELEASE_SKILLS`と`chat-implementation-worker` dependency contractが8 Skill時点のままであることを確認した。
+
+正本設計との不一致を残さないため、repository validatorへ次を追加した。
+
+- required release Skill: `task-breakdown-planner`
+- required release Skill: `task-consistency-manager`
+- required release Skill: `progress-sync-manager`
+- `chat-implementation-worker` required dependencyとして上記3 Skillを検証
+
+これにより、3 Skillがrepositoryから欠落した場合、または`chat-implementation-worker`がSkill名で依存を宣言しない場合にrepository validationが失敗する。
+
 ## Base比較
 
 PR base `aa3c1462ece21dce82f644788b9cbc36a38e76a7` とtracking同期HEAD `ed5785a0b1d80d69e2fe3d1d388d128a0763c3b9` のcompareでは、設計差分は次の規模に収まっている。
@@ -122,6 +135,7 @@ PR base `aa3c1462ece21dce82f644788b9cbc36a38e76a7` とtracking同期HEAD `ed5785
 ## 主要変更file
 
 - `scripts/build_chatgpt_worker_skills.py`
+- `scripts/verify_skill_repository.py`
 - `skills/work-context-manager/SKILL.md`
 - `skills/task-breakdown-planner/SKILL.md`
 - `skills/task-consistency-manager/SKILL.md`
