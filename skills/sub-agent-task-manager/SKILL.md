@@ -11,7 +11,7 @@ Standardize how work is handed to a sub-agent.
 
 Make every sub-agent task bounded, auditable, proportionately resourced, and report-backed.
 
-This Skill owns per-task model-tier, reasoning-effort, and fork-policy selection. It does not decide whether the parent should delegate or how independent workstreams should be decomposed; `codex-delegation-executor` owns those decisions.
+This Skill owns per-task model-tier, reasoning-effort, and fork-policy selection for newly dispatched sub-agents. It does not decide whether the parent should delegate or how independent workstreams should be decomposed; `codex-delegation-executor` owns those decisions. Existing reviewer continuity is preserved by `review-enforcer` and is not treated as a new spawn.
 
 ## Execution owner
 
@@ -39,14 +39,17 @@ When a caller already supplied a complete delegation assessment, reuse it. Other
 
 Run this skill whenever:
 
-- a skill requires sub-agent execution
-- `codex-delegation-executor` chooses a `sub-agent`
-- independent review or verification is required
+- a skill requires a new sub-agent execution
+- `codex-delegation-executor` chooses a new `sub-agent`
+- `review-enforcer` needs a new normal, replacement, or independent reviewer
+- independent verification is required through a new sub-agent
 - a bounded implementation or investigation task is handed off
+
+Do not create a new reviewer merely because an existing reviewer moves from initial review to fix verification or bounded closure. `review-enforcer` owns that reuse and preserves the original applied profile.
 
 ## Required flow
 
-1. define the exact task type and why a `sub-agent` is being used
+1. define the exact task type and why a new `sub-agent` is being used
 2. define the scope, non-goals, expected outputs, and write ownership
 3. classify the task signals required by [references/agent-profile-selection.md](references/agent-profile-selection.md)
 4. select and record one ordinary `dispatch_profile`, return independently separable work to `codex-delegation-executor`, or create an approval-gated `proposed_profile`
@@ -58,7 +61,7 @@ Run this skill whenever:
 10. create the report file before dispatch using the standard template
 11. tell the `sub-agent` to read the specified skill files before executing
 12. tell the `sub-agent` to read that exact report file first and fill only the intended blank sections or placeholder values
-13. require commands run, changed files, outcome, unresolved risks, and dispatch-profile evidence in the report
+13. require commands run, changed files, outcome, unresolved risks, and every field in the fixed `Dispatch profile` section to be completed in the report
 14. dispatch with the applied model and reasoning effort as actual tool-call arguments and the selected fork policy
 15. do not treat the delegated task as complete until the report exists, the runtime application status is recorded, and the parent has reviewed the result
 
@@ -95,11 +98,13 @@ An explicit current-task instruction from the user that directly requests `Sol x
 
 This gate applies to all task kinds, including independent final review and release audit, and has priority over repository policy and automatic selection.
 
-For review work, use these defaults:
+For newly created review agents, use these defaults:
 
 - initial normal review: Sol with `high`
-- focused fix verification: Terra with `high`
+- focused fix verification when continuity reuse is unavailable: Terra with `high`
 - independent final review or release audit: propose Sol with `xhigh`, then stop for explicit user approval before dispatch
+
+When `review-enforcer` reuses an existing normal or independent reviewer, do not apply these new-agent defaults. Preserve the original applied profile and record `application_status: reused_existing_agent_profile` in the review evidence.
 
 For investigation, do not use Luna for open-ended or root-cause work. A deterministic evidence-collection task may use Luna, but a failure or conflicting evidence must be reclassified before retrying.
 
@@ -107,7 +112,7 @@ Record `proposed`, `requested`, and `applied` distinctly when the approval gate 
 
 ## Required prompt content
 
-Every sub-agent request must include:
+Every new sub-agent request must include:
 
 - task purpose
 - exact scope
@@ -120,6 +125,7 @@ Every sub-agent request must include:
 - report path
 - instruction to read the pre-created report file first and preserve its heading order, spacing, and existing filled text
 - instruction to fill only blank sections or placeholder values instead of rewriting the full report
+- instruction to complete the fixed `Dispatch profile` placeholders without adding, removing, or reordering report sections
 - required final output shape
 
 The selected model and reasoning effort belong only in actual spawn parameters. Do not rely on model names written in the prompt to configure execution. The prompt may state task-local cost or quality constraints, but it must not claim an unapplied runtime profile.
@@ -157,6 +163,7 @@ When a relevant skill exists, do not paraphrase it loosely as the only guidance.
 - The report must be created before the parent workflow treats a dispatched task as complete.
 - An approval-gated proposal may be recorded before a child report exists because no child has been dispatched yet; record it in the parent-owned lifecycle evidence.
 - The parent should pre-populate the standard headings and placeholders so the `sub-agent` edits a fixed structure instead of rewriting the document.
+- The standard template includes a fixed `Dispatch profile` section. Do not require profile evidence outside that fixed structure.
 - If the `sub-agent` cannot write the report directly, the parent must write it immediately from the returned evidence.
 - Do not ask a sub-agent for ad hoc investigation, review, or implementation without a report path.
 - For review tasks, the built-in review result must be materialized into the report file before the task is considered complete.
@@ -166,7 +173,7 @@ When a relevant skill exists, do not paraphrase it loosely as the only guidance.
 - Report text should be written in Japanese unless the user explicitly requests another language.
 - The `sub-agent` must preserve the existing report format: no heading renames, no section reordering, no blank-line cleanup, and no whole-file replacement.
 - Existing non-empty parent text in the report is immutable unless the parent explicitly marks it as editable.
-- Record all profile-selection inputs, proposal and approval evidence when relevant, requested and applied profile, selection source, reasons, constraints, fork policy, application status, and any escalation or fallback.
+- Record all profile-selection inputs, proposal and approval evidence when relevant, requested and applied profile, selection source, reasons, constraints, fork policy, application status, and any escalation or fallback in the fixed `Dispatch profile` section.
 
 ## Standard report sections
 
@@ -177,11 +184,25 @@ Use these sections in order:
 - `## sub-agentを使う理由`
 - `## 対象範囲`
 - `## 対象外`
+- `## Dispatch profile`
 - `## 実行コマンド`
 - `## 対象ファイル`
 - `## 指摘事項`
 - `## 結果`
 - `## リスク`
+
+The fixed `Dispatch profile` section contains placeholders for:
+
+- selection inputs
+- selection source
+- proposed profile
+- approval status / evidence
+- requested profile
+- applied profile
+- application status
+- reviewer continuity
+- fork policy
+- reasons / constraints
 
 ## Minimum report contents
 
@@ -197,6 +218,7 @@ Include:
 - unresolved risks or follow-up items
 - dispatch-profile evidence and runtime application status
 - when applicable, `Sol xhigh` / `Sol max` proposal and explicit approval evidence
+- when applicable, reviewer continuity evidence and `reused_existing_agent_profile`
 
 ## Outputs
 
@@ -223,7 +245,7 @@ This skill is complete for a dispatched task only when:
 - any required `Sol xhigh` or `Sol max` approval was obtained before dispatch
 - the requested profile has either been applied or recorded as an explicit inherited, fallback, or capability-gap state
 - the report file exists in the expected location
-- the report contains the dispatch-profile evidence
+- the report contains the fixed `Dispatch profile` evidence
 - the parent has reviewed the resulting report and underlying evidence
 
 An approval-gated task is intentionally incomplete while awaiting user approval.
