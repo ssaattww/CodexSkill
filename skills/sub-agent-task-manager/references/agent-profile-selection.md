@@ -2,7 +2,7 @@
 
 Use this reference before dispatching every bounded `sub-agent` task.
 
-The selector chooses a model tier, reasoning effort, and fork policy separately. It also decides whether the work should remain one bounded task or return to `codex-delegation-executor` for multi-agent decomposition.
+The selector chooses a model tier, reasoning effort, and fork policy separately. It may return decomposable work to `codex-delegation-executor` only when the caller permits decomposition. Identity-sensitive reviewer tasks from `review-enforcer` are caller-locked to one agent and must remain `decomposability: single`.
 
 ## Current model family
 
@@ -16,7 +16,7 @@ Use the following runtime model IDs when they are available:
 
 Use only reasoning effort values supported by the selected runtime model. For the GPT-5.6 family, the normalized values are `none`, `low`, `medium`, `high`, `xhigh`, and `max`.
 
-`Ultra` is not a `reasoning_effort` value. Treat it as a multi-agent execution strategy for independently separable workstreams. `codex-delegation-executor` owns that decomposition decision; this reference selects the profile for each resulting bounded task.
+`Ultra` is not a `reasoning_effort` value. Treat it as a multi-agent execution strategy for independently separable workstreams. `codex-delegation-executor` owns that decomposition decision when decomposition is allowed; this reference selects the profile for each resulting bounded task.
 
 Do not use pricing as the primary selector. Use task nature, uncertainty, change radius, and criticality first, then choose the least expensive profile that satisfies the resulting floor.
 
@@ -51,12 +51,15 @@ Record these signals before choosing a profile:
 - `criticality`: `ordinary` or `high`
 - `repetition`: `single` or `high_volume`
 - `decomposability`: `single`, `sequential_dependencies`, or `independent_workstreams`
+- `decomposition_policy`: `allowed` or `forbidden`
 - `context_need`: `fresh`, `bounded_history`, or `full_history`
 - explicit user or repository model, effort, budget, and availability constraints
 - approval state when `Sol xhigh` or `Sol max` is proposed
 - existing agent identity and its applied profile when the caller requests continuity reuse
 
 `criticality: high` includes security, authorization, privacy, destructive data handling, schema or data migration, concurrency, compatibility, public API, release, deployment, and other changes where an incorrect result has a large or difficult-to-reverse impact.
+
+When `decomposition_policy: forbidden`, preserve `decomposability: single` even if the scope contains several review areas. This is required for `review-enforcer` reviewer identity and one-pass lifecycle guarantees.
 
 ## Model-tier rules
 
@@ -151,13 +154,15 @@ Do not use `max` as a generic quality setting. Before proposing it, call `execut
 
 ## Multi-agent decision
 
-Return the task to `codex-delegation-executor` for decomposition instead of proposing a single `max` task when all of the following hold:
+Return the task to `codex-delegation-executor` for decomposition only when `decomposition_policy: allowed` and all of the following hold:
 
 - there are at least two independently executable workstreams
 - each workstream can have explicit scope, non-goals, evidence, and report ownership
 - write ownership does not overlap, or the tasks are read-only
 - a parent synthesis step is defined
 - parallel execution provides material value after applying `execution-cost-stabilizer`
+
+Do not return a caller-locked task for decomposition. In particular, every reviewer task from `review-enforcer` has `decomposition_policy: forbidden` and remains one reviewer regardless of review breadth.
 
 Each decomposed task receives its own profile. Do not assign one shared profile merely because the tasks run together.
 
@@ -168,9 +173,10 @@ Apply precedence in this order:
 1. explicit current-task user instruction, including explicit approval for `Sol xhigh` or `Sol max`
 2. mandatory user-approval gate for an unapproved `Sol xhigh` or `Sol max` proposal
 3. reviewer continuity reuse of an existing agent and its actually applied profile
-4. authoritative repository policy
-5. runtime capability and model availability
-6. automatic selection rules in this reference
+4. caller-owned decomposition prohibition
+5. authoritative repository policy
+6. runtime capability and model availability
+7. automatic selection rules in this reference
 
 An override may pin the model, effort, or both. Continue to classify the task and record when the override is below the automatically calculated floor. Do not silently replace an explicit override. Report the mismatch and follow the governing authority.
 
@@ -178,11 +184,11 @@ A repository policy that requests `Sol xhigh` or `Sol max` creates a proposal bu
 
 ## Dispatch profile schema
 
-For ordinary newly dispatched profiles:
+For an ordinary newly dispatched profile before the spawn call:
 
 ```yaml
 dispatch_profile:
-  schema_version: 2
+  schema_version: 3
   selection_source: automatic | user_override | repository_policy
   task_kind: review
   signals:
@@ -192,6 +198,7 @@ dispatch_profile:
     criticality: high
     repetition: single
     decomposability: single
+    decomposition_policy: forbidden
     context_need: fresh
   requested:
     model_tier: sol
@@ -199,11 +206,8 @@ dispatch_profile:
     reasoning_effort: high
     fork_turns: none
     parallelism_mode: single_agent
-  applied:
-    model: gpt-5.6-sol
-    reasoning_effort: high
-    fork_turns: none
-  application_status: applied | inherited_parent_profile | fallback_applied | capability_gap
+  applied: null
+  application_status: pending_runtime_result
   approval:
     required: false
     status: not_required
@@ -212,11 +216,25 @@ dispatch_profile:
   escalation_triggers: []
 ```
 
+`requested` is the pre-spawn instruction. `applied` is not known yet.
+
+After the call, fill `applied` and replace `pending_runtime_result` using actual runtime evidence:
+
+```yaml
+applied:
+  model: <actual model or inherited parent model>
+  reasoning_effort: <actual effort or inherited parent effort>
+  fork_turns: <actual fork policy>
+application_status: applied | inherited_parent_profile | fallback_applied | capability_gap
+```
+
+Never copy `requested` into `applied` merely because the call was attempted.
+
 For approval-gated profiles, keep the candidate out of `requested` until approval:
 
 ```yaml
 dispatch_profile:
-  schema_version: 2
+  schema_version: 3
   selection_source: automatic | repository_policy
   proposed_profile:
     model_tier: sol
@@ -242,7 +260,7 @@ For continuity reuse:
 
 ```yaml
 dispatch_profile:
-  schema_version: 2
+  schema_version: 3
   selection_source: continuity_reuse
   task_kind: review
   requested: null
@@ -266,7 +284,7 @@ After explicit approval, copy the approved proposal into `requested`, record app
 
 - Use `fork_turns: "none"` for a fresh specialist when applying a model or reasoning override.
 - Use an explicit positive partial fork only when the required history is bounded and identified.
-- A full-history fork inherits the parent execution profile. Record `application_status: inherited_parent_profile` and do not claim that a different requested model was applied.
+- A full-history fork inherits the parent execution profile. Preserve the requested specialization as unapplied evidence and record `application_status: inherited_parent_profile` only from the actual inheritance path.
 - Prefer fresh context plus explicit task-local inputs over a full-history fork when specialization matters.
 - Continuity reuse keeps the existing agent context and is not represented as a new fork operation.
 
@@ -276,7 +294,7 @@ Recompute the profile when new evidence changes uncertainty, change radius, crit
 
 - A failed deterministic verification becomes investigation; do not keep retrying it as Luna work.
 - A localized implementation that exposes architectural ambiguity becomes Sol work.
-- A task that becomes cleanly separable returns to `codex-delegation-executor` for decomposition.
+- A task that becomes cleanly separable returns to `codex-delegation-executor` only when decomposition is allowed.
 - Raise reasoning effort when the problem is unchanged but needs more careful analysis.
 - Raise model tier when the nature of the problem changes or the current model lacks the required judgment capability.
 - If escalation reaches Sol `xhigh` or Sol `max`, convert it to a proposal and stop for user approval instead of dispatching.
@@ -286,15 +304,16 @@ Avoid blind retry loops. Record the reason for every profile escalation or fallb
 
 ## Evidence requirement
 
-Every dispatched task report must record:
+Every dispatched task lifecycle must record:
 
 - all selection inputs
-- requested and applied profile
+- requested profile before spawn
+- applied profile only after runtime evidence exists
 - selection source and rationale
 - fork policy
-- runtime rejection or fallback, if any
+- runtime rejection, inheritance, or fallback, if any
 - reclassification or escalation, if any
-- whether multi-agent decomposition was considered and why it was or was not used
+- whether multi-agent decomposition was allowed, considered, and used
 - for `Sol xhigh` or `Sol max`, the proposal, cost notice, approval status, and explicit approval evidence
 - for reviewer continuity, existing reviewer identity, original applied profile evidence, continued mode, and `application_status: reused_existing_agent_profile`
 
