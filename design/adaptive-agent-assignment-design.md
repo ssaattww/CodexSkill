@@ -16,10 +16,13 @@ delegated taskの性質に応じて、sub-agentへ適切なモデル、推論強
 - `sub-agent-task-manager`によるbounded taskとreport契約
 - `spawn-agent-model-overrides.md`によるhidden model overrideの適用方法
 - `development-orchestrator`によるworkflow lifecycle管理
+- `review-enforcer`によるnormal reviewer continuityとindependent final reviewer lifecycle
 
 一方、taskの性質からmodelとreasoning effortを選ぶ中央規則がなかった。そのため、callerごとにprofileが固定または手動選択され、機械的作業、通常実装、判断中心作業、難しい単一問題、独立workstream分割を区別できなかった。
 
 また、`Sol xhigh`と`Sol max`は実行コストが高いため、品質要件だけで自動選定すると意図せず高コストなdispatchが発生する。そこで、この2 profileは自動選定の最終結果ではなく、ユーザー承認が必要なproposalとして扱う。
+
+reviewでは別の制約もある。initial reviewとfix verificationで同じreviewerを再利用する場合、fix verificationのtask defaultへmodelを切り替える新規spawnは存在しない。このため、新規reviewerのprofile選定と既存reviewerのcontinuity reuseを明確に分離する。
 
 ## 設計原則
 
@@ -86,6 +89,17 @@ profile stateは次の3段階を区別する。
 
 full-history fork、hidden override rejection、runtime model unavailableなどにより`requested`と`applied`が異なる場合がある。未承認proposalを`requested`または`applied`として記録してはならない。
 
+### reviewer continuityは新規profile選定ではない
+
+既存normal reviewerまたはindependent reviewerをfix verification／finding closureで再利用するときは、新しいagentを作らない。
+
+- original reviewerのapplied model、reasoning effort、fork contextを維持する
+- task default tableを再適用しない
+- `application_status: reused_existing_agent_profile`を記録する
+- reviewer identity、original applied profile evidence、continued review modeをcontinuity evidenceとして残す
+- 同一review lifecycleで既に承認済みの`Sol xhigh` / `Sol max` reviewerを再利用する場合は新しい高コストprofile選定ではないため再承認を要求しない
+- replacement reviewerまたは新しいtask lifecycleは新規dispatchとしてprofile selectionとapproval gateを通す
+
 ## 責務配置
 
 ### `development-orchestrator`
@@ -112,12 +126,21 @@ full-history fork、hidden override rejection、runtime model unavailableなど�
 
 ### `sub-agent-task-manager`
 
-- 各bounded taskのmodel tier、reasoning effort、fork policyを選ぶ
+- 新規bounded taskのmodel tier、reasoning effort、fork policyを選ぶ
 - `Sol xhigh` / `Sol max`ではproposalを生成し、approvalがない限りdispatchしない
 - explicit overrideの優先順位を適用する
 - approved requested profileをruntimeへ適用する
 - applied profileとfallbackをreportへ記録する
 - taskが独立分割可能になった場合はdispatch前に`codex-delegation-executor`へ戻す
+- fixed report templateの`Dispatch profile` sectionへselection／approval／requested／applied／application statusを記録させる
+
+### `review-enforcer`
+
+- reviewer identity、normal reviewer continuity、independent reviewer independenceを所有する
+- 新しく作るnormal reviewer、replacement reviewer、independent reviewerは必ず`sub-agent-task-manager`経由でdispatchする
+- `Sol xhigh` / `Sol max` proposalが返った場合はreviewer spawn前にparentへstopを返す
+- fix verification／finding closureで既存reviewerを再利用するときはoriginal applied profileを維持する
+- reuse時は`reused_existing_agent_profile`として証跡化し、新しいprofileを適用したと主張しない
 
 ### `execution-cost-stabilizer`
 
@@ -158,6 +181,21 @@ codex-delegation-executor
       collaboration.spawn_agent
 ```
 
+reviewer作成も同じselectorを通す。
+
+```text
+review-enforcer
+  |-- new normal / replacement / independent reviewer
+  |       v
+  |   sub-agent-task-manager
+  |       |-- expensive proposal -> USER APPROVAL STOP before spawn
+  |       `-- approved/ordinary -> spawn reviewer
+  |
+  `-- existing reviewer continuity
+          `-- no spawn / no reselection
+              application_status = reused_existing_agent_profile
+```
+
 ## 選定入力
 
 ```yaml
@@ -176,6 +214,9 @@ constraints:
 approval:
   required: false
   status: not_required | pending | approved | rejected
+continuity:
+  existing_agent: null
+  original_applied_profile: null
 ```
 
 非自明な分類にはsource evidenceを付ける。不明な場合は低く見積もらず、uncertaintyを上げる。
@@ -194,6 +235,8 @@ approval:
 
 ### task default
 
+新規agentを作るときだけ次のdefaultを使う。既存reviewer reuseではoriginal applied profileを維持する。
+
 | task | default |
 | --- | --- |
 | exact repetitive transformation | Luna `low` |
@@ -204,7 +247,7 @@ approval:
 | design / requirement interpretation | Sol `high` |
 | open-ended or cross-layer investigation | Sol `high` |
 | initial normal review | Sol `high` |
-| focused fix verification | Terra `high` |
+| focused fix verification, new reviewer only | Terra `high` |
 | independent final review / release audit | propose Sol `xhigh`, then stop for approval |
 
 失敗したdeterministic verificationは同じLuna taskとして再実行せず、investigationへ再分類する。
@@ -250,9 +293,10 @@ Sol `max`は次を全て満たす場合だけproposal可能とする。
 
 1. 明示的なcurrent-task user instruction
 2. 未承認Sol `xhigh` / `Sol max`に対するmandatory user-approval gate
-3. authoritative repository policy
-4. runtime capabilityとmodel availability
-5. automatic selection
+3. existing reviewer continuity reuse
+4. authoritative repository policy
+5. runtime capabilityとmodel availability
+6. automatic selection
 
 explicit overrideがautomatic floorを下回る場合も、silentに置換しない。mismatchを記録し、governing authorityに従う。
 
@@ -307,7 +351,45 @@ dispatch_profile:
     - higher reasoning effort increases execution cost
 ```
 
+reviewer continuity:
+
+```yaml
+dispatch_profile:
+  schema_version: 2
+  selection_source: continuity_reuse
+  task_kind: review
+  requested: null
+  applied:
+    model: <original applied model>
+    reasoning_effort: <original applied effort>
+    fork_turns: <original fork policy>
+  application_status: reused_existing_agent_profile
+  continuity:
+    reviewer_identity: <existing reviewer>
+    continued_mode: fix_verification | finding_ci_delta_closure
+    original_profile_evidence: <report or spawn evidence>
+```
+
 承認後はapproval evidenceを保存し、approved proposalを`requested`へ昇格してからruntime applicationへ進む。
+
+## report schema
+
+全てのdispatched sub-agent reportは固定の`## Dispatch profile` sectionを持つ。
+
+最低限、次のplaceholderをtemplateで事前作成する。
+
+- selection inputs
+- selection source
+- proposed profile
+- approval status / evidence
+- requested profile
+- applied profile
+- application status
+- reviewer continuity
+- fork policy
+- reasons / constraints
+
+childはreport構造を変更せず、これらのblank fieldだけを埋める。これによりfixed-format制約とdispatch-profile evidence必須制約を両立する。
 
 ## fork制約
 
@@ -316,16 +398,18 @@ dispatch_profile:
 - full-history forkはparent profileを継承し、`inherited_parent_profile`として記録
 - model specializationを優先する場合は、必要contextをtask-local promptへ明示してfresh spawnする
 - approvalはfork制約を上書きしない
+- reviewer continuity reuseは新規forkではない
 
 ## 再分類とescalation
 
-新しいevidenceがtask kind、不確実性、変更半径、重要度を変えた場合、profileを再計算する。
+新しいevidenceがtask kind、不確実性、変更半径、重要度を変え、新しいagentを作る場合はprofileを再計算する。
 
 - 問題自体は同じだが慎重さが不足する場合: reasoning effortを上げる
 - 問題の性質または必要判断能力が変わる場合: model tierを上げる
 - 独立workstreamが判明した場合: multi-agent分割判断へ戻る
 - escalation結果がSol `xhigh`またはSol `max`ならproposalへ変換し、user approval stopへ入る
 - runtime rejectionの場合: spawn適用contractに従いrequested/appliedを分離する
+- existing reviewerがinitial reviewからfix verificationへ移るだけではprofileを再計算しない
 
 理由のないretry escalationは禁止する。
 
@@ -343,9 +427,13 @@ dispatch_profile:
 
 通常はSol `high`。一つの非分割root causeへ深い証明が必要でSol `high`では不足すると判断した場合はSol `max`を提案し、ユーザー承認まで停止する。
 
+### normal reviewとfix verification
+
+initial normal reviewerは新規dispatchとして通常Sol `high`を選ぶ。finding修正後に同じreviewerを再利用する場合、focused fix verificationのTerra `high` defaultへ切り替えず、元のSol `high`を維持して`reused_existing_agent_profile`を記録する。
+
 ### independent final review
 
-release-criticalな独立final reviewではSol `xhigh`を候補として提案する。Sol `high`との差とcost noticeを提示し、ユーザー承認前にはreviewerをdispatchしない。
+release-criticalな独立final reviewではSol `xhigh`を候補として提案する。Sol `high`との差とcost noticeを提示し、ユーザー承認前にはreviewerをdispatchしない。承認後に作ったindependent reviewerをfinding closureで再利用する場合は、そのoriginal applied profileを継続する。
 
 ### frontend、backend、migrationが独立している
 
@@ -356,6 +444,7 @@ release-criticalな独立final reviewではSol `xhigh`を候補として提案�
 Skill hierarchyのtopologyは変更しない。
 
 - `codex-delegation-executor`から`sub-agent-task-manager`へ委譲する既存関係を維持する
+- `review-enforcer`配下のnew reviewer dispatchは既存hierarchyどおり`sub-agent-task-manager`を通す
 - model overrideの実applicationは既存referenceを拡張する
 - 新規runtime wrapperまたはcore Skillは追加しない
 
@@ -370,6 +459,9 @@ CodexSkill repositoryの方針に従いTDDは適用しない。
 - active relative Markdown link検証
 - current PR HEAD SHAと一致するGitHub Actions runの確認
 - proposed/requested/applied profile、approval gate、Ultraとreasoning effort、full-history forkのcontract review
+- review-enforcerからnew reviewerが`sub-agent-task-manager`を通ることのcontract review
+- reviewer continuityがoriginal applied profileを保持することのcontract review
+- fixed `Dispatch profile` report templateとSkill section orderingの整合確認
 
 ## 非対象
 
@@ -388,6 +480,8 @@ CodexSkill repositoryの方針に従いTDDは適用しない。
 - [Agent profile selection](../skills/sub-agent-task-manager/references/agent-profile-selection.md)
 - [Spawn-agent model overrides](../skills/sub-agent-task-manager/references/spawn-agent-model-overrides.md)
 - [Development Orchestrator](../skills/development-orchestrator/SKILL.md)
+- [Review Enforcer](../skills/review-enforcer/SKILL.md)
+- [Sub-agent report template](../skills/report-output-manager/references/sub-agent-report-template.md)
 - [Execution Cost Stabilizer](../skills/execution-cost-stabilizer/SKILL.md)
 
 ## 参考資料
