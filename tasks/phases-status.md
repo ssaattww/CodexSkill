@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-07-30
+- Updated: 2026-08-29
 
 ## Phase 1: 契約・設計
 
@@ -96,3 +96,21 @@
   - passing reportを保存する場合だけ予約済みpathを変更する1回のreport-attestation commitを作成する
   - report-attestation diffをallowlist検証する
   - attestation後にrepository commitまたはrepository-writing Skillを実行しない
+
+## Phase 8: Issue #59 ChatGPT task tracking Skill配布
+
+- Status: In Progress
+- Notes:
+  - `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager`をChatGPT配布ZIPの必須rootへ追加した
+  - 3 Skillをparent-onlyからauthorized caller実行のruntime-neutral contractへ変更し、ChatGPT current chatからsub-agentなしで実行可能にした
+  - `work-context-manager`がcanonical task／phase tracking pathをauthorityから解決し、configured pathをbasenameへ置換または推測しないcontractを追加した
+  - `chat-handoff-manager` schema version 3へtask tracking path、state、phase、dependencies、exit criteria、blockers、pending actionのtyped projectionを追加した
+  - task tracking Skillのcomplete outputをhandoff `source_payloads`へ保持するcontractを追加した
+  - 初回reviewは`F-60-01`、`F-60-02` blocking、`F-60-03`、`F-60-04` highの4件でfailとなった
+  - `F-60-04`対応として無関係に削除していた既存設計を復元し、正本設計のIssue #59影響箇所だけを11 Skill構成へ同期した
+  - `design/skill-hierarchy-design.md`と`skills/design/skill-hierarchy-design.md`を同一blobへ同期した
+  - canonical task trackingへT-003として本Issueを登録した
+  - CodexSkill repository policyによりTDDは`not applicable`
+  - current implementation HEADに一致するrepository validator、11 Skill ZIP build、artifactを確認する
+  - 同じnormal review continuityで`F-60-01`から`F-60-04`のfix verificationを行う
+  - mergeは利用者が行う
