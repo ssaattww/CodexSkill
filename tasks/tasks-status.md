@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-07-30
+- Updated: 2026-08-29
 
 ## In Progress
 
@@ -29,7 +29,7 @@
     - `source_payloads`が4 core Skillのcomplete outputをfield名と構造を変えず保持する
     - `report-writer` payloadが`complete_body`全文と`severity_records`を保持する
     - Project Instruction例の対象固有リポジトリ名は最初の対象URLだけで指定し、後続instructionでは一般名で参照する
-    - 4 ChatGPT wrapperと4 core Skillが独立root directoryとして単一ZIPへ含まれる
+    - 4 ChatGPT wrapper、4 core Skill、3 task tracking Skillが独立root directoryとして単一ZIPへ含まれる
     - repository-wide validatorがfront matter、Skill dependency、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
     - PRとmain pushのworkflow triggerが`shared/**`だけの変更でもrepository validatorを実行する
     - PR buildがread-onlyかつ実PR HEAD SHAをcheckoutし、main反映後のrelease jobだけがwrite権限を持つ
@@ -118,6 +118,49 @@
     - artifact `chatgpt-worker-skills-6fb76ce5f4cf3e358c5d70c5139a024d9495186f`、ID `8741787240`、digest `sha256:03286426413470e9a9ad64ed13e003cfb562a8e87b978f3ab4d8a7e4c2e09eb9`
     - 本pre-freeze follow-upとtracking更新後HEADのmatching workflow／artifactを確認する
     - fresh independent final reviewは未実施
+
+- T-003: Issue #59でChatGPT配布ZIPへtask tracking Skillを同封し、canonical tracking contractを整合する
+  - Status: review follow-up実装済み、normal fix verification待ち
+  - Phase: Phase 8
+  - Estimate: M
+  - Depends on: T-002
+  - Exit Criteria:
+    - `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager`がChatGPT登録用ZIPへ含まれる
+    - 4 wrapper、4 core Skill、3 task tracking Skillの11 root構成をbuilderと正本設計が一致して定義する
+    - 3 task tracking Skillがauthorized callerで実行でき、ChatGPT current chatからsub-agentなしで利用できる
+    - `work-context-manager`がcanonical `tracking.task_path`とoptional `tracking.phase_path`をauthorityから解決する
+    - task tracking Skillがconfigured pathをbasenameへ置換または推測しない
+    - `chat-handoff-manager`がtask tracking path、state、phase、dependencies、exit criteria、blockers、pending actionをtyped projectionとして保持する
+    - 実行されたtask tracking Skillのcomplete outputをhandoff `source_payloads`へ保持する
+    - `design/chat-worker-skill-design.md`と2つのskill hierarchy designがIssue #59影響箇所だけを更新し、Release、review continuity、pre-freeze、attestationなど無関係な既存契約を維持する
+    - `design/skill-hierarchy-design.md`と`skills/design/skill-hierarchy-design.md`がbyte-identicalである
+    - current implementation HEAD固有のrepository validator、11 Skill ZIP build、artifact生成が成功する
+    - `F-60-01`から`F-60-04`がnormal fix verificationでresolvedになる
+    - mergeを行わない
+  - Output:
+    - `scripts/build_chatgpt_worker_skills.py`
+    - `skills/work-context-manager/SKILL.md`
+    - `skills/task-breakdown-planner/SKILL.md`
+    - `skills/task-consistency-manager/SKILL.md`
+    - `skills/progress-sync-manager/SKILL.md`
+    - `skills/chat-implementation-worker/SKILL.md`
+    - `skills/chat-handoff-manager/SKILL.md`
+    - `design/chat-worker-skill-design.md`
+    - `design/skill-hierarchy-design.md`
+    - `skills/design/skill-hierarchy-design.md`
+    - `design/issue-59-chatgpt-task-tracking-extension.md`
+    - `reports/issue-59-chatgpt-task-skills-20260806.md`
+    - `reports/issue-59-normal-review-20260807053500.md`
+    - `reports/issue-59-review-followup-20260807054100.md`
+  - Review Findings:
+    - `F-60-01` blocking: task tracking Skillのparent-only／sub-agent contract不整合へ対応済み、fix verification待ち
+    - `F-60-02` blocking: canonical tracking path contract不足へ対応済み、fix verification待ち
+    - `F-60-03` high: handoff typed task tracking state不足へ対応済み、fix verification待ち
+    - `F-60-04` high: 設計書の無関係な大量削除を復元し、正本のIssue #59影響箇所だけを同期済み、fix verification待ち
+  - Verification:
+    - TDDはCodexSkill repository policyにより`not applicable`
+    - current HEAD一致のGitHub Actions runを確認する。別SHAのrunは代用しない
+    - normal fix verificationは未実施
 
 ## Backlog
 
