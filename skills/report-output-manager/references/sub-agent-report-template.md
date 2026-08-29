@@ -17,6 +17,19 @@
 
 - 対象外:
 
+## Dispatch profile
+
+- selection inputs:
+- selection source:
+- proposed profile:
+- approval status / evidence:
+- requested profile:
+- applied profile:
+- application status:
+- reviewer continuity:
+- fork policy:
+- reasons / constraints:
+
 ## 実行コマンド
 
 - 実行コマンド:
