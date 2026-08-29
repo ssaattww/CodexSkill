@@ -19,16 +19,18 @@
 
 ## Dispatch profile
 
-- selection inputs:
-- selection source:
-- proposed profile:
-- approval status / evidence:
-- requested profile:
-- applied profile:
-- application status:
-- reviewer continuity:
-- fork policy:
-- reasons / constraints:
+<!-- This section is parent-owned. The child must not infer or rewrite hidden runtime state. -->
+
+- selection inputs (parent, pre-dispatch):
+- selection source (parent, pre-dispatch):
+- proposed profile (parent, pre-dispatch if applicable):
+- approval status / evidence (parent):
+- requested profile (parent, pre-dispatch):
+- applied profile (parent, post-runtime evidence only):
+- application status (parent, post-runtime evidence only):
+- reviewer continuity (parent, if applicable):
+- fork policy (parent):
+- reasons / constraints (parent):
 
 ## 実行コマンド
 
