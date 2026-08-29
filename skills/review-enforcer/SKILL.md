@@ -14,17 +14,30 @@ Act as the Codex runtime wrapper for review without redefining review semantics,
 Invoke:
 
 1. `work-context-manager`
-2. `review-worker`
-3. `report-writer`
-4. `report-output-manager`
+2. `sub-agent-task-manager`
+3. `review-worker`
+4. `report-writer`
+5. `report-output-manager`
 
 Do not replace these Skills with `shared/` files or duplicate their semantics locally.
+
+## Reviewer dispatch contract
+
+Every newly created reviewer sub-agent must be dispatched through `sub-agent-task-manager`.
+
+- `review-enforcer` owns reviewer identity, continuity, independence, review mode, and lifecycle state.
+- `sub-agent-task-manager` owns per-task model, reasoning effort, fork policy, expensive-profile approval gating, runtime application, and dispatch-profile evidence.
+- If `sub-agent-task-manager` produces an unapproved `Sol xhigh` or `Sol max` `proposed_profile`, return that proposal to the parent and stop before spawning the reviewer.
+- Do not bypass the proposal stop by directly spawning a reviewer from this Skill.
+- A reviewer that already exists is reused directly for continuity; reuse is not a new profile selection or new spawn.
+
+When an existing reviewer is reused, preserve its originally applied execution profile. Record `application_status: reused_existing_agent_profile`, the original applied profile, the reviewer identity, and the review mode being continued. Do not claim that a new default such as Terra `high` was applied to an already-running Sol reviewer.
 
 ## Codex reviewer lifecycle
 
 ### Normal review cycle
 
-Use one dedicated reviewer sub-agent for initial review and fix verification while available. Preserve finding identity, reviewed HEAD, selected criteria, held and unexplored items, and fix context.
+Use one dedicated reviewer sub-agent for initial review and fix verification while available. Create that reviewer through `sub-agent-task-manager`. Preserve finding identity, reviewed HEAD, selected criteria, held and unexplored items, fix context, reviewer identity, and the originally applied reviewer profile.
 
 Persist normal-review and fix-verification reports, synchronize tracking, and
 commit all resulting repository changes before selecting the
@@ -41,18 +54,20 @@ After the normal cycle converges:
 - commit those changes,
 - for `local_execution_available`, freeze the validated local committed HEAD without pre-review push; for `remote_ci_only`, complete authorized pre-review push and matching current-HEAD CI,
 - freeze that HEAD as `reviewed_implementation_head`,
-- start a different fresh reviewer sub-agent.
+- ask `sub-agent-task-manager` to prepare a different fresh reviewer sub-agent.
 
 The independent reviewer must differ from the implementation agent and normal reviewer, must not have implemented fixes, and should use `fork_turns: "none"` unless a bounded exception is justified.
+
+If independent-final-review profile selection proposes `Sol xhigh` or `Sol max`, stop before reviewer creation and return the proposal to the user. Continue only after explicit current-task approval. If the user rejects the proposal, let `sub-agent-task-manager` recompute the profile with the rejected expensive profiles excluded.
 
 ## Required flow
 
 1. Invoke `work-context-manager` for the current committed HEAD and matching evidence.
 2. Run applicable Markdown and repository gates.
-3. Dispatch a normal reviewer sub-agent that invokes `review-worker` in the selected mode.
+3. Ask `sub-agent-task-manager` to select and apply the profile for a new normal reviewer and dispatch that reviewer to invoke `review-worker` in the selected mode. If an expensive Sol proposal is awaiting approval, stop before spawn and return the proposal to the parent.
 4. Invoke `report-writer` and persist through `report-output-manager`.
 5. Return required findings to the implementation flow.
-6. Reuse the normal reviewer for fix verification when available.
+6. Reuse the normal reviewer for fix verification when available. Reuse the existing agent and its original applied profile; do not create a new profile or claim that the focused-fix default replaced the running reviewer's profile. Record `application_status: reused_existing_agent_profile`.
 7. Before requesting finding closure, require a finding-by-finding completeness
    matrix covering every required action, production path, actual composition
    fixture, and focused evidence. Do not dispatch closure review while any cell
@@ -65,8 +80,8 @@ The independent reviewer must differ from the implementation agent and normal re
 9. After convergence, verify that the parent has completed the end-of-Issue Skill-gap decision, any in-scope `skill-authoring-wrapper` work, feedback classification and ledger synchronization, normal handoff persistence, reports, and tracking.
 10. If step 9 creates or discovers any repository change, require route-appropriate validation, commit, and another normal review or fix-verification round. Do not freeze the target yet.
 11. Only after the normal cycle converges again with all pre-freeze work included, ensure every non-final repository change is committed. On the local route, require the repository-defined full local gate before final push. Reserve the independent-final-review report path, and freeze the implementation HEAD.
-12. Dispatch a fresh independent final reviewer against that frozen implementation HEAD.
-13. If the one exhaustive independent review finds required changes, invalidate the terminal state, return to implementation and normal fix verification, then reuse that same independent reviewer only for finding/CI-delta closure against the updated reviewed HEAD. Do not spawn another fresh exhaustive reviewer or add new review criteria.
+12. Ask `sub-agent-task-manager` to select the profile for a fresh independent final reviewer against that frozen implementation HEAD. If it returns an unapproved `Sol xhigh` or `Sol max` proposal, stop before spawn; after approval, dispatch the reviewer through `sub-agent-task-manager`.
+13. If the one exhaustive independent review finds required changes, invalidate the terminal state, return to implementation and normal fix verification, then reuse that same independent reviewer only for finding/CI-delta closure against the updated reviewed HEAD. Preserve the reviewer's original applied profile and record `application_status: reused_existing_agent_profile`; do not spawn another fresh exhaustive reviewer or add new review criteria.
 14. When the verdict passes, invoke `report-writer` and `report-output-manager` in report-attestation mode.
 15. Persist at most one report-attestation commit whose first parent is the reviewed implementation HEAD and whose changed paths are limited to the pre-reserved independent-final-review report path or paths.
 16. Validate the attestation diff, make the final authorized push, then invoke `git-pr-submitter` or the authorized equivalent to create or update the PR for that exact HEAD. Wait once after publication for exact-head required `pull_request` CI. Do not wait for an unrequired `push` run.
@@ -106,7 +121,8 @@ The technical verdict remains attached to the reviewed implementation HEAD. The 
 
 ## Codex responsibilities
 
-- Parent owns reviewer identity, sub-agent dispatch, report path reservation, pre-freeze gating, lifecycle gating, attestation validation, and integration.
+- Parent owns reviewer identity, continuity, independence, report path reservation, pre-freeze gating, lifecycle gating, attestation validation, and integration.
+- `sub-agent-task-manager` owns every new reviewer spawn and its dispatch profile.
 - Parent review cannot replace reviewer sub-agent work.
 - Do not cancel a reviewer merely because it is slow.
 - Reviewers do not implement findings.
@@ -126,13 +142,15 @@ Return:
 - report-attestation head or explicit absence,
 - attestation allowlist validation,
 - reviewer identity and independence evidence,
-- full findings, coverage, held and unexplored items, validation assessment, verdict, remaining risks, and next action.
+- reviewer dispatch-profile evidence, including any expensive-profile proposal and approval evidence,
+- reviewer continuity evidence, including `reused_existing_agent_profile` when applicable,
+- full findings, coverage, held and unexplored items, validation assessment, verdict, remaining risks, and next action,
 - finding completeness matrix and verification capability with separate commit,
   push, and CI-wait evidence.
 
 ## Completion condition
 
-Complete only when the required Skills have produced normal review and independent-final-review evidence, all non-final repository changes and mandatory end-of-Issue or feedback work preceded the frozen reviewed implementation HEAD, no unresolved required finding or verdict-invalidating unexplored area remains, and either no report commit was required or exactly one validated report-attestation head exists with no later repository commit or repository-writing Skill execution. No merge is performed.
+Complete only when the required Skills have produced normal review and independent-final-review evidence, every newly created reviewer went through `sub-agent-task-manager`, any required `Sol xhigh` or `Sol max` approval preceded reviewer spawn, reused reviewers preserved their original applied profile, all non-final repository changes and mandatory end-of-Issue or feedback work preceded the frozen reviewed implementation HEAD, no unresolved required finding or verdict-invalidating unexplored area remains, and either no report commit was required or exactly one validated report-attestation head exists with no later repository commit or repository-writing Skill execution. No merge is performed.
 
 ## Cross-cutting rule
 
