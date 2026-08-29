@@ -11,7 +11,7 @@ Standardize how work is handed to a sub-agent.
 
 Make every sub-agent task bounded, auditable, proportionately resourced, and report-backed.
 
-This Skill owns per-task model-tier, reasoning-effort, and fork-policy selection for newly dispatched sub-agents. It does not decide whether the parent should delegate or how independent workstreams should be decomposed; `codex-delegation-executor` owns those decisions unless the caller explicitly locks a task to one agent. Existing reviewer continuity is preserved by `review-enforcer` and is not treated as a new spawn.
+This Skill owns per-task model-tier, reasoning-effort, fork-policy selection, role/default-role call planning, and runtime-profile evidence for newly dispatched sub-agents. It does not decide whether the parent should delegate or how independent workstreams should be decomposed; `codex-delegation-executor` owns those decisions unless the caller explicitly forbids decomposition. Existing reviewer continuity is preserved by `review-enforcer` and is not treated as a new spawn.
 
 ## Execution owner
 
@@ -28,16 +28,18 @@ Before running this skill, identify:
 - relevant skill files the `sub-agent` must read
 - whether the `sub-agent` should inspect the repository directly beyond the parent-prepared diff or summary
 - write boundaries and validation expectations
-- task kind, work class, uncertainty, change radius, criticality, repetition, decomposability, and context need
-- explicit user or repository model, reasoning, budget, availability, or fork constraints
+- task kind, work class, uncertainty, change radius, criticality, repetition, observed decomposability, and context need
+- `decomposition_policy: allowed | forbidden` and its caller-owned reason
+- explicit user or repository model, reasoning, budget, availability, fork, or agent-role constraints
+- explicit `agent_type` when one is required, otherwise the effective default-role context
+- authoritative role/default-role configuration evidence when that role can change model or reasoning
 - whether `codex-delegation-executor` considered multi-agent decomposition and its disposition
-- whether the caller explicitly forbids decomposition and requires one agent
 - report persistence mode: `normal_persistence` or `deferred_attestation`
 - user-approval evidence when `Sol xhigh` or `Sol max` is under consideration
 
 When a caller already supplied a complete delegation assessment, reuse it. Otherwise derive the missing selection inputs from the bounded task and record that derivation. Do not require routine user confirmation of automatically selected profiles below the expensive-profile approval gate.
 
-If the caller owns an identity-sensitive lifecycle and explicitly sets `decomposition_policy: forbidden`, preserve `decomposability: single` and do not return that task for multi-agent decomposition.
+`decomposability` is an observed task signal. `decomposition_policy` is an execution constraint. If the caller forbids decomposition, preserve the observed signal and record `decomposition_disposition: prohibited_by_caller_policy`; do not rewrite the signal to `single`.
 
 ## Run this skill
 
@@ -49,63 +51,65 @@ Run this skill whenever:
 - independent verification is required through a new sub-agent
 - a bounded implementation or investigation task is handed off
 
-Do not create a new reviewer merely because an existing reviewer moves from initial review to fix verification or bounded closure. `review-enforcer` owns that reuse and preserves the original applied profile.
+Do not create a new reviewer merely because an existing reviewer moves from initial review to fix verification or bounded closure. `review-enforcer` owns that reuse and preserves the original profile/observability evidence.
 
 ## Required flow
 
 1. define the exact task type and why a new `sub-agent` is being used
-2. define the scope, non-goals, expected outputs, write ownership, decomposition policy, and report persistence mode
-3. classify the task signals required by [references/agent-profile-selection.md](references/agent-profile-selection.md)
+2. define scope, non-goals, expected outputs, write ownership, decomposition policy, report persistence mode, and applicable explicit/default agent role
+3. classify truthful task signals required by [references/agent-profile-selection.md](references/agent-profile-selection.md), including observed `decomposability` separately from `decomposition_policy`
 4. select and record one ordinary `dispatch_profile`, return independently separable work to `codex-delegation-executor` only when decomposition is allowed, or create an approval-gated `proposed_profile`
 5. if the proposed profile is `Sol xhigh` or `Sol max`, present the proposal and cost notice to the user and stop before dispatch unless explicit current-task approval already exists
 6. after approval, promote the approved proposal to `requested`; after rejection, recompute with `Sol xhigh` and `Sol max` excluded
-7. read [references/spawn-agent-model-overrides.md](references/spawn-agent-model-overrides.md) and prepare the runtime call plan from `requested`, model availability, and fork constraints; do not populate `applied` before runtime evidence exists
-8. identify which skill files the `sub-agent` must read
-9. call `report-output-manager` and determine report handling:
-   - for `normal_persistence`, reserve the path and create the standard report file before dispatch
-   - for `deferred_attestation`, reserve the exact path only; do not create, pre-populate, or edit the repository report file before or during review
-10. for `normal_persistence`, pre-populate the fixed report structure and parent-owned `Dispatch profile` fields before dispatch
-11. tell the `sub-agent` to read the specified skill files before executing
-12. give the child the report instructions for the selected persistence mode
-13. dispatch using the `requested` model and reasoning effort as actual tool-call arguments when an override is permitted; when full-history inheritance is required, omit the incompatible override as defined by the spawn reference
-14. after the spawn call or fallback attempt, record `applied` and `application_status` from actual runtime evidence, inheritance, rejection, or fallback; never infer `applied` from `requested`
-15. for `normal_persistence`, update the parent-owned `Dispatch profile` fields with the post-call runtime evidence and require the child or parent to complete the remaining report sections
-16. for `deferred_attestation`, retain the reviewer output and dispatch-profile evidence as parent-owned lifecycle evidence without writing the reserved report path; only the caller's passing-verdict attestation flow may persist it later
-17. do not treat the delegated task as complete until the applicable report/evidence contract, runtime application status, and parent adjudication are satisfied
+7. read [references/spawn-agent-model-overrides.md](references/spawn-agent-model-overrides.md) and prepare the runtime call plan from `requested`, model availability, fork constraints, and explicit/default agent-role configuration
+8. derive `role_plan` and `planned_runtime_profile`; if the role changes or locks model/reasoning, return the plan through the selector and re-run floor/approval checks before spawn
+9. if role/default-role profile impact cannot be inspected well enough to guarantee the expensive-profile gate, record a role-profile capability gap and stop before dispatch
+10. keep `applied: null` while planning; identify which skill files the `sub-agent` must read
+11. call `report-output-manager` in the correct phase:
+    - for `normal_persistence`, use normal persistence, reserve the path, and create the standard report file before dispatch
+    - for `deferred_attestation`, use the independent-final reservation phase only; reserve the exact path as metadata, do not invoke `report-writer`, and do not create/pre-populate/edit the repository report file
+12. for `normal_persistence`, pre-populate the fixed report structure and parent-owned `Dispatch profile` fields available before spawn
+13. tell the `sub-agent` to read the specified skill files before executing and give it the report instructions for the selected persistence mode
+14. dispatch using the `requested` model/reasoning values and explicit `agent_type` when applicable; when using the runtime default role, omit `agent_type` but preserve that default role in `role_plan`; when full-history inheritance is required, follow the spawn reference
+15. after spawn/fallback, inspect parent-visible runtime evidence; record exact `applied` only when a trustworthy final profile snapshot or equivalent exact proof is observable
+16. if spawn succeeds but final model/reasoning is hidden, keep `applied: null`, record `application_status: spawn_succeeded_profile_unverified`, and preserve `profile_observability: final_profile_hidden`
+17. for `normal_persistence`, update parent-owned `Dispatch profile` fields with post-call evidence and require the child or parent to complete remaining report sections
+18. for `deferred_attestation`, retain reviewer output and dispatch-profile evidence as parent-owned lifecycle evidence without writing the reserved report path; only the caller's passing-verdict attestation flow may persist it later
+19. do not treat the delegated task as complete until the applicable report/evidence contract, runtime application/observability status, and parent adjudication are satisfied
 
-Read the report template from `report-output-manager` when `normal_persistence` applies:
+Read the report template from `report-output-manager` only when `normal_persistence` applies:
 
 - [../report-output-manager/references/sub-agent-report-template.md](../report-output-manager/references/sub-agent-report-template.md)
 
 ## Profile-selection contract
 
-Select the model tier and reasoning effort independently.
+Select model tier and reasoning effort independently.
 
 - use Luna only for low-uncertainty, local, ordinary-criticality, deterministic work
 - use Terra for ordinary bounded technical work
 - use Sol for judgment-heavy, ambiguous, high-criticality, cross-system, design, difficult debugging, and review work
-- use `max` only for one exceptionally difficult, non-decomposable problem
+- use `max` only for one exceptionally difficult, intrinsically non-decomposable problem; caller policy forbidding decomposition does not satisfy that condition
 - treat multi-agent or article-described `Ultra` execution as a decomposition strategy owned by `codex-delegation-executor`, never as a `reasoning_effort` value
 - choose the highest floor required by task kind, uncertainty, change radius, and criticality
 - preserve explicit user and repository overrides according to the precedence in the reference
-- honor a caller-owned `decomposition_policy: forbidden`; such a task stays one agent even when its review scope is broad
+- honor `decomposition_policy: forbidden` without falsifying observed `decomposability`
 
 ### Expensive Sol approval gate
 
 `Sol xhigh` and `Sol max` are not automatic dispatch profiles.
 
-When either becomes the calculated profile:
+When either becomes the calculated initial or role-adjusted profile:
 
 - keep it in `proposed_profile`, not `requested`
 - explain why `Sol high` is insufficient
 - tell the user that the higher reasoning effort increases execution cost
-- ask for explicit approval to use the proposed profile
-- stop the workflow before spawning that agent
-- do not treat repository policy, a prior unrelated approval, silence, or inferred preference as approval
+- ask for explicit current-task approval
+- stop before spawning that agent
+- do not treat repository policy, prior unrelated approval, silence, or inferred preference as approval
 
 An explicit current-task instruction from the user that directly requests `Sol xhigh` or `Sol max` satisfies the gate. If the user rejects the proposal, recompute a non-gated profile; normally the upper automatic fallback is `Sol high`.
 
-This gate applies to all task kinds, including independent final review and release audit, and has priority over repository policy and automatic selection.
+The same gate must be re-run when role/default-role planning raises a cheaper requested profile to Sol `xhigh` or Sol `max`.
 
 For newly created review agents, use these defaults:
 
@@ -113,11 +117,11 @@ For newly created review agents, use these defaults:
 - focused fix verification when continuity reuse is unavailable: Terra with `high`
 - independent final review or release audit: propose Sol with `xhigh`, then stop for explicit user approval before dispatch
 
-When `review-enforcer` reuses an existing normal or independent reviewer, do not apply these new-agent defaults. Preserve the original applied profile and record `application_status: reused_existing_agent_profile` in the review evidence.
+When `review-enforcer` reuses an existing normal or independent reviewer, do not apply these new-agent defaults. Preserve the original profile evidence and its observability state; record `application_status: reused_existing_agent_profile`.
 
 For investigation, do not use Luna for open-ended or root-cause work. A deterministic evidence-collection task may use Luna, but a failure or conflicting evidence must be reclassified before retrying.
 
-Record `proposed`, `requested`, and `applied` distinctly when the approval gate is relevant. `requested` is known before spawn; `applied` is a post-runtime fact. A full-history fork inherits the parent profile; runtime rejection or fallback is a capability state, not evidence that the requested override was applied.
+`requested` and `planned_runtime_profile` are pre-spawn evidence. `applied` is a post-runtime fact and may remain unknown when the runtime hides final model/reasoning metadata.
 
 ## Required prompt content
 
@@ -128,79 +132,75 @@ Every new sub-agent request must include:
 - explicit non-goals
 - explicit instruction not to run `codex exec`, nested Codex, or equivalent agent-spawning inside the sub-agent task
 - explicit instruction not to re-enter `development-orchestrator` or any other parent-owned workflow unless the parent explicitly named that workflow as part of the delegated task
-- an explicit fork policy
-- explicit decomposition policy when the caller requires a single agent
+- explicit fork policy
+- decomposition policy when the caller constrains execution
 - skill names and file paths that must be read first
 - validation commands or evidence expectations
 - report persistence mode
 - required final output shape
 
-The requested model and reasoning effort belong only in actual spawn parameters. Do not rely on model names written in the prompt to configure execution. The prompt may state task-local cost or quality constraints, but it must not claim an unapplied runtime profile.
+The requested model/reasoning and agent role belong in actual spawn planning/tool arguments, not merely the message. Do not tell the child it is running an exact final profile when the parent cannot observe that fact.
 
 ### Normal-persistence prompt additions
 
 For `normal_persistence`, also include:
 
 - report path
-- instruction to read the pre-created report file first and preserve its heading order, spacing, and existing filled text
-- instruction to fill only child-owned blank sections or placeholder values instead of rewriting the full report
-- instruction not to modify parent-owned `Dispatch profile` values, especially `requested`, `applied`, `application status`, approval, and continuity evidence
+- instruction to read the pre-created report file first and preserve heading order, spacing, and existing filled text
+- instruction to fill only child-owned blank sections/placeholders instead of rewriting the full report
+- instruction not to modify parent-owned `Dispatch profile` values
 
-The parent owns the complete `Dispatch profile` section because the child cannot observe hidden spawn arguments or runtime application evidence.
+The parent owns the complete `Dispatch profile` section because the child cannot observe hidden spawn arguments, role application, or final runtime profile state.
 
 ### Deferred-attestation prompt additions
 
 For `deferred_attestation`, also include:
 
-- the reserved report path as metadata only
+- reserved report path as metadata only
 - explicit instruction that the reserved repository report file does not yet exist and must not be created or edited by the reviewer
 - instruction to return structured findings, coverage, commands/evidence, verdict, risks, and unexplored areas to the parent
-- instruction that the parent will retain this output until the caller's report-attestation flow decides whether it may be persisted
+- instruction that the parent will retain this output until passing-verdict attestation decides whether it may be persisted
 
 For review tasks also include:
 
-- the review mode and criticality signals used by the profile selector
-- explicit instruction to perform a code review using the built-in review behavior
+- review mode and criticality signals used by the profile selector
+- explicit instruction to perform a code review using built-in review behavior
 - instruction to return findings first, ordered by severity
 - instruction to include file/line references when available
 - instruction to say explicitly when no findings were found
 - instruction to distinguish blocking normal-path problems, user-confirmation-required capability gaps, and non-blocking concerns that should only be recorded and held
-- instruction to inspect the relevant workspace directly when surrounding code context is needed, instead of relying only on a parent-prepared diff summary
+- instruction to inspect the relevant workspace directly when surrounding context is needed
 
-For normal-persistence review tasks, require direct editing of the child-owned report sections. For deferred-attestation independent review, prohibit repository report editing and require structured parent-returned evidence instead.
+For normal-persistence review tasks, require direct editing of child-owned report sections. For deferred-attestation independent review, prohibit repository report editing and require structured parent-returned evidence instead.
 
 For investigation tasks also include:
 
-- instruction to inspect the relevant workspace directly when the answer depends on surrounding code or configuration context
-- instruction not to stop at the parent-prepared excerpt when additional repository files are needed to confirm the result
-- instruction to record the checked files and concrete evidence in the report or returned structured evidence, according to persistence mode
+- instruction to inspect relevant workspace context directly
+- instruction not to stop at a parent-prepared excerpt when more repository evidence is needed
+- instruction to record checked files and concrete evidence in the report or returned structured evidence, according to persistence mode
 
 For coding tasks also include:
 
-- owned files or modules
+- owned files/modules
 - instruction not to revert unrelated changes
-- instruction to list changed files in the final response
+- instruction to list changed files in final output
 
-When a relevant skill exists, do not paraphrase it loosely as the only guidance. Tell the `sub-agent` to read the actual `SKILL.md` path and then restate only the most critical task-local constraints.
+When a relevant skill exists, tell the `sub-agent` to read the actual `SKILL.md` path; do not rely only on paraphrased guidance.
 
 ## Report rules
 
 - Every dispatched ordinary sub-agent task must produce a file under `reports/` using `normal_persistence`.
-- An independent-final reviewer using `deferred_attestation` is the intentional exception: reserve the report path before freeze, but do not create or edit that repository file until the caller has a passing verdict and enters report-attestation mode.
-- The parent agent should create the normal-persistence report file before dispatch whenever feasible.
-- An approval-gated proposal may be recorded before a child report exists because no child has been dispatched yet; record it in the parent-owned lifecycle evidence.
-- The parent should pre-populate the standard headings and parent-owned `Dispatch profile` fields so the `sub-agent` edits a fixed structure instead of rewriting the document.
-- The standard template includes a fixed `Dispatch profile` section, but that section is parent-owned. The child must not attest to hidden spawn arguments or runtime application state.
-- If a normal-persistence `sub-agent` cannot write its child-owned report sections directly, the parent must write them immediately from the returned evidence.
-- Do not ask an ordinary sub-agent for ad hoc investigation, review, or implementation without a report path.
-- For normal review and fix verification, the built-in review result must be materialized into the report file before the task is considered complete.
-- For deferred-attestation independent final review, retain the built-in result as parent-owned evidence and do not materialize it into the reserved repository path until the passing-verdict attestation step.
-- For normal review tasks, direct report editing by the reviewer is the default path; parent-side transcription is fallback only when direct editing is not possible.
-- For review tasks, a concern that does not break the intended normal path yet should still be recorded, but may be held instead of blocking release immediately.
-- For review tasks, do not stop or replace an in-flight reviewer just because waiting took too long; keep waiting until completion unless the user explicitly says to stop.
-- Report text should be written in Japanese unless the user explicitly requests another language.
-- A normal-persistence `sub-agent` must preserve the existing report format: no heading renames, no section reordering, no blank-line cleanup, and no whole-file replacement.
-- Existing non-empty parent text and all parent-owned `Dispatch profile` values are immutable to the child unless the parent explicitly marks them as editable.
+- An independent-final reviewer using `deferred_attestation` is the intentional exception: reserve the path before freeze, but do not create/edit the repository file until passing-verdict attestation.
+- The parent should create the normal-persistence report file before dispatch whenever feasible.
+- An approval-gated proposal or pre-dispatch capability gap may be recorded before a child report exists because no child was dispatched.
+- The parent should pre-populate standard headings and parent-owned `Dispatch profile` fields.
+- The fixed `Dispatch profile` section is parent-owned. The child must not attest to hidden spawn arguments, role application, or final runtime profile.
+- If a normal-persistence child cannot write child-owned sections directly, the parent must write them immediately from returned evidence.
+- For normal review/fix verification, built-in review results must be materialized before the task is complete.
+- For deferred-attestation independent final review, retain the result as parent-owned evidence and do not materialize it until passing-verdict attestation.
+- Do not stop/replace an in-flight reviewer merely because it is slow unless the user explicitly says to stop.
+- Report text should be Japanese unless the user requests another language.
+- Normal-persistence children must preserve report structure and existing parent text.
 
 ## Standard report sections
 
@@ -218,34 +218,39 @@ For `normal_persistence`, use these sections in order:
 - `## 結果`
 - `## リスク`
 
-The fixed `Dispatch profile` section is parent-owned and contains:
+The fixed parent-owned `Dispatch profile` section contains:
 
-- selection inputs
+- selection inputs, including observed decomposability and separate decomposition policy/disposition
 - selection source
 - proposed profile
-- approval status / evidence
+- approval status/evidence
 - requested profile
-- applied profile
+- explicit/default agent role plan and role-config evidence
+- planned runtime profile
+- applied profile, only when exactly observed
 - application status
+- runtime profile observability
 - reviewer continuity
 - fork policy
-- reasons / constraints
+- reasons/constraints
 
 ## Minimum evidence contents
 
 For every dispatched task, retain:
 
-- task identifier or purpose
-- why a `sub-agent` was used
+- task identifier/purpose
+- why a sub-agent was used
 - scope handled
 - commands run
-- files changed or checked
+- files changed/checked
 - findings summary or explicit `no findings`
-- outcome or verdict
-- unresolved risks or follow-up items
-- dispatch-profile requested and post-runtime applied evidence
-- when applicable, `Sol xhigh` / `Sol max` proposal and explicit approval evidence
-- when applicable, reviewer continuity evidence and `reused_existing_agent_profile`
+- outcome/verdict
+- unresolved risks/follow-up
+- truthful decomposability plus decomposition policy/disposition
+- requested and role-adjusted planning evidence
+- exact applied profile when observable, otherwise explicit unverified state
+- when applicable, Sol `xhigh` / Sol `max` proposal and approval evidence
+- when applicable, reviewer continuity evidence
 
 For deferred attestation, these remain parent-owned lifecycle evidence until persistence is permitted.
 
@@ -255,61 +260,64 @@ After this skill runs for a normal-persistence dispatched task, there should be:
 
 - a dispatched sub-agent task with explicit scope
 - a pre-created report path under `reports/`
-- a recorded delegation assessment and requested `dispatch_profile`
-- post-runtime `applied` and `application_status` evidence
-- report-backed evidence for the delegated work
+- recorded delegation assessment, requested profile, role plan, and planned runtime profile
+- post-runtime exact applied evidence or explicit unverified/inherited/fallback/capability-gap state
+- report-backed task evidence
 
 For a deferred-attestation independent reviewer, there should be:
 
-- one dispatched reviewer with explicit scope and reserved report path metadata
-- no repository report file created or edited by the reviewer
-- requested and post-runtime applied dispatch-profile evidence retained by the parent
-- structured review evidence retained by the parent for later attestation or fix-loop handling
+- one dispatched reviewer with explicit scope and reserved report-path metadata
+- no repository report file created/edited by the reviewer
+- requested/role-plan/runtime-observability evidence retained by the parent
+- structured review evidence retained by the parent for later attestation/fix-loop handling
 
-When the expensive Sol approval gate is pending, the output is instead:
+When the expensive Sol approval gate is pending, output instead includes:
 
-- a recorded `proposed_profile`
-- cost and justification notice
+- recorded `proposed_profile`
+- cost/justification notice
 - `application_status: awaiting_user_approval`
 - no dispatch using that profile
 
+When role/default-role impact cannot be resolved safely before dispatch, output instead includes:
+
+- `application_status: capability_gap`
+- role/default-role identity and missing evidence
+- no dispatch
+
 ## Completion condition
 
-This skill is complete for a normal-persistence dispatched task only when:
+A normal-persistence dispatched task completes only when:
 
-- the sub-agent task has been dispatched with the required prompt content
-- any required `Sol xhigh` or `Sol max` approval was obtained before dispatch
-- post-runtime `applied` or an explicit inherited, fallback, or capability-gap state is recorded
-- the report file exists in the expected location
-- the parent-owned `Dispatch profile` evidence and child-owned task evidence are complete
-- the parent has reviewed the resulting report and underlying evidence
+- required prompt content was used
+- any required initial or role-adjusted expensive-profile approval preceded dispatch
+- post-runtime exact applied evidence **or** an explicit unverified/inherited/fallback/capability-gap state is recorded
+- report file exists in expected location
+- parent-owned dispatch evidence and child-owned task evidence are complete
+- parent reviewed the result/evidence
 
-For a deferred-attestation independent reviewer, this Skill's dispatch work is complete when the reviewer returns, post-runtime profile evidence is recorded, the structured review evidence is retained by the parent, and the reserved path remains unwritten. Repository report persistence is completed later only through the caller's report-attestation flow after a passing verdict.
+For a deferred-attestation independent reviewer, dispatch work completes when the reviewer returns, runtime profile observability state is recorded, structured review evidence is retained by the parent, and the reserved path remains unwritten. Repository report persistence completes later only through passing-verdict report attestation.
 
-An approval-gated task is intentionally incomplete while awaiting user approval.
+An approval-gated or pre-dispatch role-capability-gap task is intentionally incomplete.
 
 ## Rules
 
 - Keep sub-agent tasks small and concrete.
 - Prefer one bounded request over one broad speculative request.
 - Reuse existing reports before dispatching duplicate work.
-- Honor `decomposition_policy: forbidden`; do not return caller-locked identity-sensitive tasks to multi-agent decomposition.
+- Honor `decomposition_policy: forbidden` without rewriting observed `decomposability`.
+- Never use a decomposition prohibition as evidence that a problem is intrinsically non-decomposable for `max` selection.
 - Use `execution-cost-stabilizer` before proposing `max`, multi-agent decomposition, wasteful reruns, or excessive parallelism.
-- Never dispatch `Sol xhigh` or `Sol max` without explicit current-task user approval.
-- Do not silently downgrade an approval-gated proposal merely to avoid asking the user; present the proposal and stop first. After rejection, recompute the profile.
-- Do not make a sub-agent run `codex exec`, nested Codex, or equivalent agent-spawning workflows inside the delegated task.
-- Do not let a sub-agent re-run `development-orchestrator` or other parent-owned workflow entry skills just because they exist in the repo; the sub-agent should execute only the delegated task and the explicitly named supporting skills.
-- Do not leave report structure up to the `sub-agent`.
-- For review and investigation tasks, prefer letting the `sub-agent` read the relevant workspace directly instead of over-constraining it to parent-curated excerpts.
-- For review tasks, prefer the model's native review behavior over inventing a custom review rubric in the prompt.
-- Do not treat a model or reasoning mention in `message` as an override. Pass the `requested` values in the actual `spawn_agent` call, not post-call `applied` values.
-- Do not combine a model or reasoning override with omitted `fork_turns` or `fork_turns: "all"`; full-history forks inherit the parent execution profile.
-- Do not silently downgrade an explicit user or repository profile override, except that an unapproved repository request for `Sol xhigh` or `Sol max` remains a proposal until the user approves it.
-- Do not keep a failed deterministic task on Luna after the work has become diagnosis or judgment.
-- If runtime rejects a hidden override argument, keep fallback execution parent-owned as defined by the spawn reference. Do not ask the delegated sub-agent to run the fallback.
-- If independently separable work would justify multi-agent execution and decomposition is allowed, return it to `codex-delegation-executor` before dispatch rather than overloading one sub-agent.
-- Never create or edit an independent-final reserved report path before the caller enters passing-verdict report-attestation mode.
+- Never dispatch Sol `xhigh` or Sol `max` without explicit current-task user approval, including when an agent role/default role raises the planned runtime profile to those efforts.
+- If role/default-role impact on model/reasoning is unknown, stop before dispatch rather than assuming the requested profile survives role application.
+- Do not make a sub-agent run nested Codex or parent-owned orchestration workflows.
+- Do not leave report structure up to the child.
+- Do not treat a model/reasoning mention in `message` as an override.
+- Pass pre-spawn `requested` values to spawn; never use post-runtime `applied` as call input.
+- Do not claim exact `applied` merely because spawn succeeded. When final profile metadata is hidden, record `spawn_succeeded_profile_unverified` with `applied: null`.
+- Full-history behavior, role application, rejection, and fallback must follow the spawn reference.
+- If independently separable work would justify multi-agent execution and decomposition is allowed, return it to `codex-delegation-executor`; if decomposition is forbidden, preserve the decomposability observation and record the suppression.
+- Never create/edit an independent-final reserved report path before passing-verdict attestation.
 
 ## Cross-cutting rule
 
-If recurring sub-agent dispatch failures, profile misclassification, approval-gate bypasses, report omissions, or attestation-boundary violations appear, call `feedback-points-manager`.
+If recurring sub-agent dispatch failures, profile misclassification, approval-gate bypasses, role-profile uncertainty, report omissions, or attestation-boundary violations appear, call `feedback-points-manager`.
