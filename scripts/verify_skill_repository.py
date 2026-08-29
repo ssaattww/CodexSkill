@@ -27,14 +27,20 @@ REQUIRED_RELEASE_SKILLS = {
     "chat-report-writer",
     "chat-review-worker",
     "implementation-worker",
+    "progress-sync-manager",
     "report-writer",
     "review-worker",
+    "task-breakdown-planner",
+    "task-consistency-manager",
     "work-context-manager",
 }
 WRAPPER_DEPENDENCIES = {
     "chat-implementation-worker": {
         "work-context-manager",
+        "task-consistency-manager",
+        "task-breakdown-planner",
         "implementation-worker",
+        "progress-sync-manager",
         "report-writer",
         "chat-handoff-manager",
     },
