@@ -78,40 +78,77 @@ canonical pathは`work-context-manager` outputをlosslessに保持し、state等
 
 対応:
 
-次の3ファイルをPR base `aa3c1462ece21dce82f644788b9cbc36a38e76a7`のblobへ完全復元した。
+最初に次の3ファイルをPR base `aa3c1462ece21dce82f644788b9cbc36a38e76a7`の内容へ復元し、無関係な大量削除を除去した。
 
 - `design/chat-worker-skill-design.md`
 - `design/skill-hierarchy-design.md`
 - `skills/design/skill-hierarchy-design.md`
 
-Issue #59固有の設計変更は、新規 `design/issue-59-chatgpt-task-tracking-extension.md` へ分離した。
+その後、正本設計と実装の矛盾を残さないため、Issue #59の影響箇所だけを最小差分で再更新した。Release publication、normal review continuity、pre-freeze、independent final review、report attestation、Codex review flow、標準作業手順、merge境界などIssue #59と無関係な既存契約は維持した。
 
-追補は次だけを規定する。
+正本設計では次だけを更新した。
 
-- ChatGPT ZIPへ3 task tracking Skillを追加し11 rootにする
-- task tracking Skillのruntime-neutral execution owner
-- canonical tracking path contract
-- ChatGPT implementation flow
-- handoff `task_tracking` projection
-- build scriptが3 Skillを必須rootへ追加すること
+- 4 wrapper + 4 core Skillへ3 task tracking Skillを加えた11 Skill配布構成
+- task tracking Skillをauthorized callerが実行するruntime-neutral contract
+- `work-context-manager`によるcanonical tracking path解決
+- `chat-implementation-worker`のtask consistency／breakdown／progress sync flow
+- handoffのtask tracking typed projectionとtask tracking raw output保持
+- Release validator／builderが必須task tracking Skillを扱うこと
+- Skill一覧上のtask tracking Skill実行方式
 
-既存のreview lifecycle、pre-freeze、attestation、Release publication、Codex review flow、merge境界は変更しない。
+Issue #59固有の詳細は`design/issue-59-chatgpt-task-tracking-extension.md`にも保持し、正本の該当箇所と整合させた。
+
+`design/skill-hierarchy-design.md`と`skills/design/skill-hierarchy-design.md`は同一blob `bd3f9f784b2d723fea828c0fe215d109cbd82182`へ同期した。
+
+## Canonical tracking同期
+
+Project Instructionのcanonical task tracking path `tasks/tasks-status.md`と既存phase path `tasks/phases-status.md`を使用した。
+
+- `tasks/tasks-status.md`へIssue #59をT-003として登録した
+- T-003はPhase 8、statusはreview follow-up実装済み／normal fix verification待ち
+- T-002の現在の配布構成表記だけを4 wrapper + 4 core + 3 task tracking Skillへ同期し、Issue #53のreview履歴は変更していない
+- `tasks/phases-status.md`へPhase 8を追加し、F-60-01からF-60-04の対応状態とcurrent-HEAD validation待ちを記録した
 
 ## Base比較
 
-PR base `aa3c1462ece21dce82f644788b9cbc36a38e76a7` と修正HEAD `4d353e939deebd3cdf929bdf237337745c9c97b7` のcompareで、以前変更していた次の3設計書はchanged file一覧から消えた。
+PR base `aa3c1462ece21dce82f644788b9cbc36a38e76a7` とtracking同期HEAD `ed5785a0b1d80d69e2fe3d1d388d128a0763c3b9` のcompareでは、設計差分は次の規模に収まっている。
 
+- `design/chat-worker-skill-design.md`: +77 / -24
+- `design/skill-hierarchy-design.md`: +52 / -22
+- `skills/design/skill-hierarchy-design.md`: +52 / -22
+
+初回対応時に発生していた約1000行規模の無関係な削除は残っていない。
+
+## 主要変更file
+
+- `scripts/build_chatgpt_worker_skills.py`
+- `skills/work-context-manager/SKILL.md`
+- `skills/task-breakdown-planner/SKILL.md`
+- `skills/task-consistency-manager/SKILL.md`
+- `skills/progress-sync-manager/SKILL.md`
+- `skills/chat-implementation-worker/SKILL.md`
+- `skills/chat-handoff-manager/SKILL.md`
 - `design/chat-worker-skill-design.md`
 - `design/skill-hierarchy-design.md`
 - `skills/design/skill-hierarchy-design.md`
+- `design/issue-59-chatgpt-task-tracking-extension.md`
+- `tasks/tasks-status.md`
+- `tasks/phases-status.md`
 
-この時点のPR差分はIssue #59固有のdesign addendum、bundle builder、wrapper／task tracking／handoff／context Skill、implementation report、normal review reportのみである。
+## 検証方針
 
-## 検証
+CodexSkill repository policyによりRed/Green TDDは`not applicable`。
 
-CodexSkill repository policyによりRed/Green TDDはnot applicable。
+本report commit後のcurrent PR HEADに一致する `Validate and release ChatGPT worker skills` workflow runだけをCI evidenceとして使用する。別SHAのrunは代用しない。
 
-最終report commit後のcurrent HEADに一致する `Validate and release ChatGPT worker skills` workflow runを確認する。別SHAのrunは代用しない。
+matching runが存在しない場合はCI未実施として扱う。
+
+## 残作業
+
+- current HEAD固有のrepository validator／11 Skill ZIP build／artifact確認
+- source finding `F-60-01`から`F-60-04`について、同じnormal review continuityでfix verificationを実施する
+
+本implementation worker自身はreview verdictを出さない。
 
 ## Merge
 
