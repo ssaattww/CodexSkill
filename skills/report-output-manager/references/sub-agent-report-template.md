@@ -17,6 +17,27 @@
 
 - 対象外:
 
+## Dispatch profile
+
+<!-- This section is parent-owned. The child must not infer or rewrite hidden runtime state. -->
+
+- selection inputs (parent, pre-dispatch):
+- selection source (parent, pre-dispatch):
+- observed decomposability (parent, pre-dispatch):
+- decomposition policy / disposition (parent, pre-dispatch):
+- proposed profile (parent, pre-dispatch if applicable):
+- approval status / evidence (parent):
+- requested profile (parent, pre-dispatch):
+- agent role / default-role plan (parent, pre-dispatch):
+- role config evidence / profile effect (parent, pre-dispatch):
+- planned runtime profile after known role constraints (parent, pre-dispatch):
+- applied profile (parent, post-runtime exact evidence only; null when unverified):
+- application status (parent, post-runtime evidence only):
+- runtime profile observability (parent, post-runtime):
+- reviewer continuity (parent, if applicable):
+- fork policy (parent):
+- reasons / constraints (parent):
+
 ## 実行コマンド
 
 - 実行コマンド:
