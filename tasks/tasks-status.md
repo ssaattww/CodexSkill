@@ -39,11 +39,13 @@
 | T-004内の単位 | Size | Status | Depends on | 終了条件 |
 | --- | --- | --- | --- | --- |
 | P66-D: 設計と説明 | M | 設計ドラフト作成済み、利用者確認待ち | 本依頼 | 構成・Windows・受け入れ設計、report、PRコメント、利用者への説明 |
-| P66-I1: Skill分割・出典 | S | 未着手 | P66-D、実装指示、取り込み条件確認 | AC-01〜03、18、20。未実装commandを案内しない |
-| P66-I2: CLIと実行基盤 | M | 未着手 | P66-I1 | AC-04〜05、13〜14。path、結果schema、timeout、非破壊性 |
-| P66-I3: 基本CAD操作 | M | 未着手 | P66-I2 | AC-06〜10、15。render／validate／exportとprofile |
+| P66-I1: Skill分割・出典 | S | 未着手 | P66-D、実装指示、取り込み条件確認 | AC-01〜03、18、20の構造・文書部分。実行を伴う確認は後続単位へ残す |
+| P66-I2: CLIと実行基盤 | M | 未着手 | P66-I1 | AC-04〜05、13〜14の基盤部分。render等との結合は後続単位で確認 |
+| P66-I3: 基本CAD操作 | M | 未着手 | P66-I2 | AC-06〜10、15と基盤の結合。render／validate／exportとprofile |
 | P66-I4: mesh解析・再構築補助 | M | 未着手 | P66-I3 | AC-11〜12、16〜17。比較の失敗分離と対応model限定 |
 | P66-I5: Windows受け入れ・提出 | M | 未着手 | P66-I4 | 全必須ACの実機証拠、設計同期、report。workerはmergeしない |
+
+各単位のAC番号は担当範囲を示す。後続実装が必要な実行項目は未実施のまま引き継ぎ、部分確認をAC全体の合格にしない。全必須ACの最終完了はP66-I5で判定する。
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
   - Status: 通常review cycle収束、独立最終review待ち
@@ -90,8 +92,7 @@
     - `reports/issue-62-design-update-20260821183448.md`
     - `reports/issue-62-skill-implementation-20260821184240.md`
     - `reports/issue-62-normal-review-followup-20260821190259.md`
-    - `reports/issue-62-normal-review-20260821185421.md`
-    - `reports/issue-62-normal-review-finding-closure-20260821190920.md`
+    - `reports/issue-62-normal-review-2019finding-closure-20260821190920.md`
     - `reports/issue-62-normal-review-followup-r2-20260821191250.md`
     - `reports/issue-62-normal-review-finding-closure-r2-20260821191456.md`
   - Verification:
@@ -191,7 +192,7 @@
   - Pre-freeze State:
     - state: pending final current-HEAD validation
     - Skill-gap decision: `update existing skill`。`review-worker`と`report-writer`へseverity continuity guardを反映済み。新規Skillは不要
-    - feedback classification: task-specific implementation／report fidelity defect。active feedback ledger追記は不要
+    - feedback classification: task-specific defectであり、active feedback ledger追記は不要
     - normal handoff: schema version 3 packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存済み
     - source payload: 4 core Skillのcomplete output、structured authority、changed-file purpose、full review evidence、`complete_body`全文、`severity_records`を保存済み
     - packet／report commit: `ab7d58dccc96b6e22a36723b885e8f44666d7007`
@@ -243,7 +244,6 @@
     - `skills/codex-delegation-executor/SKILL.md`
     - `skills/development-orchestrator/SKILL.md`
     - `skills/review-enforcer/SKILL.md`
-    - `skills/git-workflow-manager/SKILL.md`
     - `skills/design/skill-hierarchy-design.md`
     - `design/skill-hierarchy-design.md`
     - `reports/topic-spawn-agent-model-overrides-implementation-20260711194140.md`
