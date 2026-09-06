@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-004: Issue #67のAstra high承認付きエスカレーション
-  - Status: R2指摘対応済み。same normal reviewerのfix verification待ち。独立最終reviewは未開始
+  - Status: R3 required finding `PR68-R3-001`をimplementation側でaddressed。same normal reviewerのfix verification待ち。独立最終reviewは未開始
   - Scope: 既存agent割当の保守。新規phase計画は追加しない
   - Depends on: PR #65の既存適応型agent割当
   - PR: https://github.com/ssaattww/CodexSkill/pull/68
@@ -19,9 +19,9 @@
     - role、full-history継承、availability fallback、reviewer再利用でも承認を迂回しない
     - existing reviewerのidentityとreport reservation、Sol xhigh/maxの既存規則を保持する
     - 設計のA67-01〜A67-20へcontract対応を記録し、実モデル実行と混同しない
-    - schema-v3 handoffがgeneration時点のverification stateとcomplete raw source payloadをlosslessに保持する
+    - schema-v3 handoffが定義済みenumだけを使用し、generation時点のverification stateとproducer core Skillのcomplete raw outputをlosslessに保持する
     - tracking、report、handoff、PR本文がnormal review/fix lifecycleの実状態と同期する
-    - same normal reviewerがR2 required findingをfix verificationし、normal review cycleが収束する
+    - same normal reviewerが`PR68-R3-001`をfix verificationし、normal review cycleが収束する
     - current PR HEADとhead_shaが一致するCIでrepository validatorと配布ZIP検証が成功する
     - 詳細report、別handoff、簡易PR commentを保存し、mergeはしない
   - Output:
@@ -39,6 +39,10 @@
     - `reports/handoffs/issue-67-pr68-fix-verification-r2-20260906.yaml`
     - `reports/issue-67-pr68-r2-findings-followup-20260906.md`
     - `reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml`
+    - `reports/issue-67-pr68-fix-verification-r3-20260906.md`
+    - `reports/handoffs/issue-67-pr68-fix-verification-r3-20260906.yaml`
+    - `reports/issue-67-pr68-r3-finding-followup-20260906.md`
+    - `reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml`
   - Review History:
     - initial normal review on implementation HEAD `8d3f96a0ec5f01247c4092f7bb0f690168ba627e`: `pass_with_held`; `PR68-R1-001 / low` 1件、required finding 0件
     - `PR68-R1-001` fix commit: `30a7595559327308893469211080047bf485de16`。single_turnだけを複数operation再利用禁止にし、task_until_completionの同一task/scope/agent継続を明記
@@ -46,15 +50,18 @@
     - R2 new findings: `PR68-R2-001 / medium / required`、`PR68-R2-002 / medium / required`、`PR68-R2-003 / low / nonblocking`; verdict `fail`
     - R2 review report commit: `58da9092de9225b81066e3c60956363587bd2d8e`
     - R2 review handoff/evidence HEAD: `498d5b3eb16a26219cc5939bc0cc38c574f5f11e`
+    - R3 fix verification on target HEAD `7515f13e9bfc27a8c416786a39ddfaa71d31ac99`: R2-001/002/003は全件resolved。新規`PR68-R3-001 / medium / required`を検出しverdict `fail`
+    - R3 review report commit: `0acf85d6e075c1489f5f721d72b8d60037b0fc47`
+    - R3 review handoff/evidence HEAD: `54bc25ecb05c57b705f7f442335f515d7c4f52b5`
   - Current Review Follow-up:
     - `PR68-R1-001`: reviewer resolved確認済み。source severity `low`維持
-    - `PR68-R2-001`: implementation handoffへverification追加 commit `c8db6822831c1976ed264428142c80248467e86e`
-    - `PR68-R2-001`: normal-review handoffへverification追加 commit `9fabe41b83a15dcaf302c7ceac8ed1ce487a3590`
-    - `PR68-R2-001`: review-followup handoffへverificationと`report-writer.complete_body`全文復元 commit `4833bc61f7fae56d389dd4c0917cfd73bf0db7ab`
-    - `PR68-R2-002`: 本T-004をreview/fix lifecycle、finding、report/handoff、検証状態へ同期
-    - `PR68-R2-003`: PR本文の固定「最終current HEAD」表記を廃止し、最新publication HEADのexact-head CIは最新PR commentへ記録する方式へ更新
-    - R2 follow-up detailed report commit: `dc219813c35e402ac8aa8b83ce9550a41549d2d7`
-    - R2 follow-up handoff commit: `9101b117a484f5ca2bcc89322d84dd07ba9d12d8`
+    - `PR68-R2-001`: reviewer resolved確認済み。source severity `medium`維持
+    - `PR68-R2-002`: reviewer resolved確認済み。source severity `medium`維持
+    - `PR68-R2-003`: reviewer resolved確認済み。source severity `low`維持
+    - `PR68-R3-001`: R2 follow-up handoffの未定義enumとlossless producer payload不足を修正 commit `b7e03ec7c847875fa1753cea3ea8814f8006f320`
+    - R3-001 fix range `54bc25ecb05c57b705f7f442335f515d7c4f52b5...b7e03ec7c847875fa1753cea3ea8814f8006f320`: 1 commit / 対象handoff 1 fileのみ
+    - R3-001 follow-up detailed report commit: `9660cbdb09f35bdc0c5397e5950d3abefc00d7d6`
+    - R3-001 follow-up handoff commit: `1cca241331f420fce131b9447b88c38f0d0ad569`
     - reviewer closure: pending same normal reviewer fix verification; independent final reviewは開始しない
   - Verification:
     - verification_capability: `remote_ci_only`
@@ -62,7 +69,10 @@
     - R1 technical fix HEAD `30a7595559327308893469211080047bf485de16`のmatching run `34024771335`: success
     - R1 follow-up evidence HEAD `87549104916a1a04d62aa0508099c857b1844840`のmatching run `34024920108`: success
     - R2 review evidence HEAD `498d5b3eb16a26219cc5939bc0cc38c574f5f11e`のmatching run `34025568242`: success、build job `101465801846`、artifact `9986931628`
-    - R2-001 fix range `498d5b3eb16a26219cc5939bc0cc38c574f5f11e...4833bc61f7fae56d389dd4c0917cfd73bf0db7ab`: 3 commits / 3 handoff filesのみ
+    - R2 final tracking HEAD `7515f13e9bfc27a8c416786a39ddfaa71d31ac99`のmatching run `34026378145`: success、build job `101467967385`、artifact `9987175046`
+    - R3 review evidence HEAD `54bc25ecb05c57b705f7f442335f515d7c4f52b5`のmatching run `34027989571`: success、build job `101472279361`、artifact `9987667737`、digest `sha256:fa58ddd50a5948a02166908c7d1e19a5a74b7e068c90583631200ade424a211f`
+    - R3 technical fix HEAD `b7e03ec7c847875fa1753cea3ea8814f8006f320`のmatching run `34028776760`: success、build job `101474391195`、artifact `9987905877`、digest `sha256:6192d76b6f1646aba123a682a607438ca53e35868edbb1ed2ad9a4e420a66ce3`
+    - R3-001修正版handoffはPyYAML parseとcurrent schema enum／producer-output contract照合を実施しsuccess。repository CIは`reports/handoffs/*.yaml`のschema enumを自動検証しないため別証拠として保持
     - TDDはCodexSkill方針によりnot applicable。Astraの有料runtime実行は未実施
     - Markdown lintはrepository rootに`tools/`と`package.json`がないためunsupported。active relative linkはCI validator対象
     - 本tracking保存後のcurrent HEADについて、そのSHAとhead_shaが一致する新しいpull_request runだけを最終route evidenceとして確認しPR commentへ記録する。上記の旧runを代用しない
@@ -184,21 +194,6 @@
     - `design/chatgpt-project-instruction-example.md`
     - `design/skill-hierarchy-design.md`
     - `skills/design/skill-hierarchy-design.md`
-    - `reports/issue-53-independent-final-review-20260729083728.md`
-    - `reports/issue-53-core-skill-wrapper-review-followup-20260729174338.md`
-    - `reports/issue-53-fix-verification-20260729182457.md`
-    - `reports/issue-53-fix-verification-followup-20260729182800.md`
-    - `reports/issue-53-fix-verification-r2-20260729185000.md`
-    - `reports/issue-53-independent-final-review-r2-20260729185400.md`
-    - `reports/issue-53-finding-severity-erratum-20260729193100.md`
-    - `reports/issue-53-independent-final-review-r2-followup-20260729193100.md`
-    - `reports/issue-53-independent-final-review-r2-fix-verification-20260729212800.md`
-    - `reports/issue-53-normal-handoff-followup-20260730060300.md`
-    - `reports/issue-53-independent-final-review-r2-fix-verification-r2-20260730062100.md`
-    - `reports/issue-53-complete-source-payload-followup-20260730070000.md`
-    - `reports/issue-53-independent-final-review-r2-fix-verification-r3-20260730072800.md`
-    - `reports/issue-53-normal-review-pass-prefreeze-followup-20260730091000.md`
-    - `reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`
   - Review History:
     - initial independent final review: source finding 5件、verdict `fail`
     - first fix verification: `PR54-IFR-001`／`005` resolved、`002`／`003`／`004` partial、verdict `fail`
