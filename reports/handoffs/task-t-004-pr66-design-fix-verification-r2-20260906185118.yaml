@@ -1,0 +1,230 @@
+schema_version: 3
+producer:
+  skill: chat-review-worker
+  mode: fix_verification
+  generated_at: '2026-09-06T18:51:18+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #66'
+task_id: T-004
+branch: codex/openscad-windows-skill
+base_ref: main
+target:
+  current_head: a324e0cedb3086db3052468e6efc858f4f2f4327
+  reviewed_head: 90eace372722d9abdf3be541eba8e9f12433fae3
+  commit_range: d04e76346b24239f002eb4a512fedfaf4623120e..90eace372722d9abdf3be541eba8e9f12433fae3
+authoritative_requirements:
+  - source: user_instruction
+    reference: current-chat
+    summary: 'PR #66を再reviewし、前回open findingを同じnormal reviewerでfix verificationする。'
+  - source: user_instruction
+    reference: current-chat-multiview
+    summary: 'PNGは複数面から見て3D形状を理解できるものにし、不足ならfindingへ追加する。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: 'CodexSkill repository maintenanceはnon-TDD。既存validationと設計/Skill contract整合を使う。'
+  - source: review
+    reference: reports/task-t-004-pr66-design-fix-verification-20260906182935.md
+    summary: '前回fix verificationではsource finding 12件中7件closed、5件open。今回その5件を固定して再確認する。'
+development_policy:
+  method: non_tdd_repository_maintenance
+  testing_order: not_applicable
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - 'GitHub compare d04e763..90eace3'
+    - 'matching pull_request workflow for reviewed head'
+    - 'matching pull_request workflow for publication head after report/handoff persistence'
+  required_failure_diagnostics:
+    - 'review対象HEADとrun head_shaを完全一致させる'
+    - 'Windows OpenSCAD未実装事項をCI successへ変換しない'
+blocked:
+  - item: independent_final_review
+    reason: 'PR66-DR-006 remains open'
+    required_input_or_decision: 'stale active marker recoveryとAC-13を設計修正し、同じnormal reviewerで再fix verificationする'
+authorized_actions:
+  - read_repository
+  - write_report
+  - write_handoff
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: reports/task-t-004-pr66-design-fix-verification-r2-20260906185118.md
+      reason: fix verification detailed report
+    - path_or_operation: reports/handoffs/task-t-004-pr66-design-fix-verification-r2-20260906185118.yaml
+      reason: lossless normal-review handoff
+    - path_or_operation: PR #66 comment/review
+      reason: concise review result
+  forbidden:
+    - path_or_operation: design/ skills/ workflows/ tasks/ implementation
+      reason: reviewer does not implement fixes
+    - path_or_operation: merge
+      reason: user performs merge
+scope:
+  - '前回openだった5 source findingのfix verification'
+  - 'fix rangeの新規変更領域と同一欠陥classのregression確認'
+  - 'current-HEAD CI evidence確認'
+non_goals:
+  - 'OpenSCAD Skill実装'
+  - 'Windows実機受け入れの代行'
+  - '独立最終review'
+files:
+  changed:
+    - path: design/openscad-skill-design.md
+      purpose: multi-view / visual feature coverage契約
+    - path: design/openscad-runtime-design.md
+      purpose: quality gate / intermediate schema / diagnostics lifecycle契約
+    - path: design/openscad-acceptance-plan.md
+      purpose: fix verification acceptance fixtures
+    - path: reports/task-t-004-pr66-design-review-followup-r2-20260906184500.md
+      purpose: implementation-side follow-up report
+  inspected:
+    - path: reports/task-t-004-pr66-design-fix-verification-20260906182935.md
+      purpose: previous open finding identity and closure conditions
+    - path: tasks/tasks-status.md
+      purpose: canonical task state accuracy
+    - path: PR #66 body/comments
+      purpose: current review/fix state and publication evidence
+  intentionally_untouched:
+    - path_or_area: design/ skills/ workflows/ tasks/
+      reason: fix verification reviewerは修正しない
+commands:
+  - command: 'GitHub compare d04e763..90eace3'
+    purpose: fix delta確認
+    exit_code: unknown
+    result: passed
+    head_sha: 90eace372722d9abdf3be541eba8e9f12433fae3
+    evidence: '3 design files + one follow-up report only'
+  - command: 'matching pull_request workflow for reviewed head'
+    purpose: reviewed design HEAD validation
+    exit_code: 0
+    result: passed
+    head_sha: 90eace372722d9abdf3be541eba8e9f12433fae3
+    evidence: 'run 34025392743 success / build job 101465331215 / artifact 9986879054'
+tests:
+  - name: TDD
+    phase: not_applicable
+    result: not_run
+    head_sha: 90eace372722d9abdf3be541eba8e9f12433fae3
+    evidence: AGENTS.md
+ci:
+  required: true
+  workflow: .github/workflows/release-chatgpt-worker-skills.yml
+  run_id: 34025392743
+  head_sha: 90eace372722d9abdf3be541eba8e9f12433fae3
+  conclusion: success
+  artifacts:
+    - id: 9986879054
+      name: chatgpt-worker-skills-34025392743
+      size_bytes: 18678
+      digest: sha256:d4ead276eb81cdca9a6778b97aff820613de57742e268e5b79cf955e7356f3b7
+implementation:
+  outcome: partial
+  final_head: 90eace372722d9abdf3be541eba8e9f12433fae3
+  commits:
+    - sha: 03257ea1ae149eaeceaa59b0edce0b0f9b7e6708
+      purpose: multi-view / visual feature coverage contract
+    - sha: 9c15856463f6329ecf6d72008394e54095ced5b5
+      purpose: quality, schema, retention contract
+    - sha: b2e016febabc743aeed6a81e2e858eb0de82f214
+      purpose: acceptance fixtures
+    - sha: 90eace372722d9abdf3be541eba8e9f12433fae3
+      purpose: implementation-side follow-up report
+  addressed_findings:
+    - id: P66-DR-005
+      reviewed_head: 90eace372722d9abdf3be541eba8e9f12433fae3
+      disposition: addressed
+      evidence: 'compound quality gate + AC-16 small-feature counterexample'
+    - id: PR66-DR-004
+      reviewed_head: 90eace372722d9abdf3be541eba8e9f12433fae3
+      disposition: addressed
+      evidence: 'quality CLI options, ranges, dimensions/features/tolerance'
+    - id: PR66-DR-003
+      reviewed_head: 90eace372722d9abdf3be541eba8e9f12433fae3
+      disposition: addressed
+      evidence: 'versioned intermediate schemas + consumer compatibility gate + AC fixtures'
+    - id: P66-DR-006
+      reviewed_head: 90eace372722d9abdf3be541eba8e9f12433fae3
+      disposition: addressed
+      evidence: 'basic four verify views + hidden feature extra views + visual_feature_coverage'
+    - id: PR66-DR-006
+      reviewed_head: 90eace372722d9abdf3be541eba8e9f12433fae3
+      disposition: partial
+      evidence: 'ownership/retention/clean added; stale active marker recovery absent'
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+    - 'Previous 5 open source findings: 4 closed, PR66-DR-006 remains open/partial.'
+    - 'Overall original source finding set: 11 closed, 1 open.'
+review:
+  mode: fix_verification
+  reviewed_head: 90eace372722d9abdf3be541eba8e9f12433fae3
+  reviewer:
+    identity: pr66-design-review-current-chat
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: pr66-design-review-current-chat
+      changed: false
+      reason: null
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+        - 'same normal review chat used for initial review and successive fix verification'
+  verdict: fail
+  required_coverage:
+    - criterion: requirement and design conformance
+      disposition: checked_finding
+      evidence: 'only PR66-DR-006 stale-active lifecycle remains'
+    - criterion: correctness and edge cases
+      disposition: checked_finding
+      evidence: 'crash/reboot can leave active marker without live owner'
+    - criterion: scope discipline
+      disposition: checked_no_finding
+      evidence: 'fix range limited to three design docs and follow-up report'
+    - criterion: API/data/config/workflow/compatibility
+      disposition: checked_no_finding
+      evidence: 'quality CLI and intermediate schema contracts are explicit'
+    - criterion: error handling and failure diagnostics
+      disposition: checked_finding
+      evidence: 'stale active marker recovery missing'
+    - criterion: security and secret handling
+      disposition: checked_no_finding
+      evidence: 'project ownership/path/junction/no-clobber rules maintained'
+    - criterion: tests and validation adequacy
+      disposition: checked_finding
+      evidence: 'AC-13 lacks stale marker recovery fixture'
+    - criterion: current-HEAD CI
+      disposition: checked_no_finding
+      evidence: '90eace3 exact-match run 34025392743 success'
+    - criterion: reports/tracking/docs
+      disposition: checked_no_finding
+      evidence: 'PR body/follow-up report reflect second fix-verification waiting state; canonical task remains design stage'
+    - criterion: regression and maintainability
+      disposition: checked_finding
+      evidence: 'active state needs recoverable state-machine semantics'
+  findings:
+    - id: PR66-DR-006
+      severity: medium
+      origin: previous_review
+      disposition: open
+      location: 'design/openscad-runtime-design.md §4.4; design/openscad-acceptance-plan.md AC-13'
+      description: 'active marker has no owner-liveness/stale reconciliation contract after crash or reboot'
+      impact: 'abandoned diagnostic runs can become permanently undeletable, or implementation may guess unsafely and delete a live run'
+      evidence: 'auto/explicit clean both require nonactive; no lease/heartbeat/process creation identity/stale transition is defined'
+      required_action: 'define recoverable active lease/liveness validation and stale->abandoned transition; add live/stale/PID-reuse/unknown-liveness AC fixtures'
+  held_findings: []
+  unexplored:
+    - 'Windows OpenSCAD runtime and actual PNG viewing are unimplemented/not_run'
+    - 'profile/slice/optimize functional acceptance is not_run'
+  summary:
+    - '11 of 12 original source finding identities are closed.'
+    - 'PR66-DR-006 is the only remaining required finding.'
+reports:
+  detailed: reports/task-t-004-pr66-design-fix-verification-r2-20260906185118.md
+  handoff: reports/handoffs/task-t-004-pr66-design-fix-verification-r2-20260906185118.yaml
+next_action:
+  owner: implementation_worker
+  task: 'PR66-DR-006のstale active marker recoveryとAC-13を修正し、同じnormal reviewerへfix verificationを戻す'
+  do_not_merge: true
