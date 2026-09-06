@@ -18,13 +18,13 @@ Pythonは3.11以上の構文で実装し、初回の依存解決・受け入れ�
 | `scripts/openscad_lib/runtime.py` | バイナリと依存機能の探索、version、プロセス実行、timeout、ログ |
 | `scripts/openscad_lib/paths.py` | Skill root、workspace、許可済み出力先、SCAD用パス文字列 |
 | `scripts/openscad_lib/results.py` | 結果schema、run manifest、状態集約、成果物検査、shape identity |
-| `scripts/openscad_lib/project.py` | init／list／info／clean、sourceと生成物の分離 |
-| `scripts/openscad_lib/render.py` | PNG、複数view、STL、3MFの生成、評価条件の固定 |
+| `scripts/openscad_lib/project.py` | init／list／info／clean、project identity、run retention、sourceと生成物の分離 |
+| `scripts/openscad_lib/render.py` | PNG、複数view、STL、3MFの生成、評価条件とview manifestの固定 |
 | `scripts/openscad_lib/validate.py` | compile、warning分類、出力確認、要求値との照合 |
 | `scripts/openscad_lib/mesh.py` | STL読込、基本統計、mesh検査、boolean比較 |
 | `scripts/openscad_lib/profile.py` | 断面・profile抽出、穴・複数成分のtopology保持 |
 | `scripts/openscad_lib/slice.py` | 適応的な多軸slice、解析座標frame管理 |
-| `scripts/openscad_lib/optimize.py` | 対応model限定のSDF最適化、品質gate |
+| `scripts/openscad_lib/optimize.py` | 対応model限定のSDF最適化、複合品質gate |
 
 上記はSkill自身の内部moduleであり、別installable Skillでもrepository外shared dependencyでもない。`__init__.py`を置き、親repositoryのworking directoryや`PYTHONPATH`を要求しない。構文確認や内部moduleの小分けは行うが、未使用の拡張frameworkは作らない。
 
@@ -33,25 +33,29 @@ Pythonは3.11以上の構文で実装し、初回の依存解決・受け入れ�
 | Command | 入力と主option | 成果物・責務 |
 | --- | --- | --- |
 | `doctor` | `--capability basic|mesh|profile|optimize|png|3mf` | 実行環境の検出。存在／option検出と実行成功を区別 |
-| `project init` | `--name NAME`、`--root DIR` | 新規projectと必要なlocal template copy。既存projectは変更しない |
+| `project init` | `--name NAME`、`--root DIR` | 新規project、stable project ID、必要なlocal template copy。既存projectは変更しない |
 | `project list`／`info` | rootまたはproject | 読取だけ。root不在のlistは空一覧 |
-| `project clean` | project、`--apply`、`--yes` | 既定は削除候補だけ表示。明示実行時もmanifest内の生成物だけ削除 |
-| `render` | SCAD、`--views iso|multi`、`--purpose explore|verify`、`--size W,H`、`--camera VALUE`、`--define EXPR`反復 | isoは1画像、multiはiso／front／right／topの4画像。verifyはexportと同じ最終評価条件を使う |
+| `project clean` | project、`--expired-runs`または`--run-id ID`、`--apply`、`--yes` | 既定は削除候補だけ表示。current project所有のrunだけを対象にする |
+| `render` | SCAD、`--views iso|multi`、`--extra-view VIEW`反復、`--purpose explore|verify`、`--size W,H`、`--camera VALUE`、`--define EXPR`反復 | isoは1画像、multiはiso／front／right／topの4画像。verifyはexportと同じ最終評価条件を使う |
 | `validate` | SCAD、`--define EXPR`反復 | OpenSCAD compile、warning gate、非空出力の確認。必要なmesh検査は別field |
 | `export` | SCAD、`--format stl|3mf|all`、`--define EXPR`反復 | stlはbinaryを明示。allはSTL／3MF／verify PNGを要求成果物として扱う |
 | `analyze` | SCADまたはSTL、`--level basic|mesh` | basicはbbox・triangleなど。meshは閉包性・体積等を追加 |
 | `compare` | STL A／B、`--images` | 数値比較をPNG生成から独立実行。images指定時は画像も要求成果物 |
-| `profile` | STL、`--axis x|y|z|auto` | topology付きJSON、SVGまたはprofile SCAD。axis選定理由とframeを残す |
-| `slice` | STL、coarse／fine間隔 | frame、軸・slice位置・contourを含むfeature-map JSON |
-| `optimize` | STL、`--model NAME`、`--seed N`、`--samples N`、品質target | 対応modelのparameter、sampled IoU、solver状態、export後metric、生成可能時だけSCAD |
+| `profile` | STL、`--axis x|y|z|auto` | schema付きtopology JSON、SVGまたはprofile SCAD。axis選定理由とframeを残す |
+| `slice` | STL、coarse／fine間隔 | schema付きfeature-map JSON。frame、軸、slice位置、contourを持つ |
+| `optimize` | STL、`--model NAME`、`--seed N`、`--samples N`、`--min-volume-iou FLOAT`、`--dimension-tolerance-mm FLOAT`、`--quality-spec FILE` | 対応modelのparameter、sampled IoU、solver状態、export後の複合品質gate、生成可能時だけSCAD |
 
-すべての書込commandは`--workspace DIR`と`--output-dir DIR`を共通に受け付ける。workspace省略時は開始時のcwdを固定する。相対入力・出力はそのcwd基準で正規化し、内部処理中のcwd変更で意味を変えない。CLIの`--define`はOpenSCADに`-D`と式を別argv要素として渡す。公開CLIに未知のOpenSCAD optionを無条件転送するescape hatchは作らない。
+`--min-volume-iou`は`0 < value <= 1`、既定`0.95`とする。`--dimension-tolerance-mm`は有限の`0 < value <= 1000`、既定`0.20` mmとする。範囲外は入力不正／exit 2。`--quality-spec FILE`は後述の`openscad.reconstruct-quality` schema v1で、穴、slot、主要位置などcritical feature固有の期待値と許容誤差を追加する。利用者がtargetを変更した場合は入力値と根拠をresultへ保存し、黙って既定値を下げない。
+
+すべての書込commandは`--workspace DIR`と`--output-dir DIR`、run記録用の`--retain-days N`を共通に受け付ける。`--retain-days`は整数`1..3650`、既定30日。workspace省略時は開始時のcwdを固定する。相対入力・出力はそのcwd基準で正規化し、内部処理中のcwd変更で意味を変えない。CLIの`--define`はOpenSCADに`-D`と式を別argv要素として渡す。公開CLIに未知のOpenSCAD optionを無条件転送するescape hatchは作らない。
 
 旧`.sh`名との互換aliasは初回対象外。移行表と全使用例を新CLIへ統一し、存在しない旧scriptを呼ばせない。`custom`の目的はrenderのcamera／size等の明示optionで引き継ぎ、任意shell実行は提供しない。
 
 `doctor`の通常実行はpackageの自動install、設定書換え、ネットワーク接続を行わない。PNGなどの実行probeは明示選択された場合だけ小さなfixtureで行う。通常render自体が成功した場合も、そのrun内のcapability証拠にできる。`--help`にoptionがあるだけでPNG生成可能とは判定しない。
 
 `render --purpose explore`は形状探索の高速表示に限り、OpenSCADのpreview評価を許可する。`render --purpose verify`と`export --format all`のPNGは最終形状確認であり、`--render`相当の評価条件を使って`$preview=false`にする。探索PNGとverify PNGを同じ検証証拠として混用せず、resultへ`evaluation_mode: preview|render`を保存する。最終STL／3MFとverify PNGは同じsource identity、`-D` override、library closureで評価する。
+
+`render --views multi`の基本view IDは`iso`／`front`／`right`／`top`とする。`--extra-view`は`back|left|bottom|iso|front|right|top`または実装で検証済みのnamed custom viewを受け付ける。内部featureの確認にsection診断が必要な場合は、最終形状そのものと混同しないdiagnostic viewとして別ID・生成方法・source identityを記録する。
 
 ## 4. Windows固有契約
 
@@ -87,11 +91,17 @@ timeoutはcommandごとに有限の既定値を持ち、`--timeout`で変更可�
 
 失敗・timeout時はcleanupより先に、生成したhelper SCAD、process stdout／stderr、入力manifest、途中成果物の存在・hashを`.openscad/runs/<run-id>/diagnostics/`へ退避する。退避後にだけephemeral tempを削除する。退避できない場合はその保存失敗自体をresultへ記録し、存在しないdiagnostic pathを示さない。成功runでもstdout／stderrとsource identityはrun記録として保持する。
 
-### 4.4 一時ファイルと非破壊性
+### 4.4 一時ファイル、run ownership、非破壊性
 
 `/tmp`、固定名`check.stl`の共有、一律`rm -rf`を使わない。許可済み出力root内に`tempfile`でrunごとの一時directoryを作り、Windowsのfile handleを閉じてから再読込・削除する。後続processが参照するfileをopenしたまま渡さない。
 
-project名はdirectory traversal、絶対パス、Windows予約名、末尾の空白・dotを拒否する。削除直前に解決済みpathがproject配下か再確認し、symlink／junctionを辿って外部を消さない。initは存在済みdirectoryを上書きしない。cleanは新旧manifestの生成物だけを候補にし、SCAD source、入力STL、測定済みprofileを消さない。新規runは旧成果物の存在を今回の成功証拠に使わない。
+`project init`は`.openscad/project.json`へrandom UUIDのstable `project_id`を一度だけ作成する。各runは`project_id`、`run_id`、開始・終了時刻、`retention_until`、statusをresultへ保存し、run directoryの所有者を確定する。別projectのrun、manifest欠落、project ID不一致、active markerが残る実行中runを自動削除しない。
+
+runの既定retentionは完了時刻から30日で、`--retain-days 1..3650`によりそのrunだけ変更できる。write command開始時のhousekeepingは、current project所有、完了済み、`retention_until`超過、path実体検査済みのrunだけを自動pruneできる。削除前にmanifestとproject IDを再検査し、junction／symlinkでrun root外へ出るもの、形式不明なrun、実行中runはskipしてwarningを残す。これによりrunを無期限保存する契約にも、所有権を見ずに無条件削除する契約にもしない。
+
+`project clean --expired-runs`は同じexpiry ruleの候補を表示し、`--apply --yes`でcurrent project所有の期限切れrunだけを削除する。`project clean --run-id ID`はretention前でも利用者が特定runを明示削除できるが、同じproject IDと非active状態の検査を必須にする。通常のoutput cleanとrun cleanを混同せず、source、入力STL、profile、他projectのrunを削除しない。
+
+project名はdirectory traversal、絶対パス、Windows予約名、末尾の空白・dotを拒否する。削除直前に解決済みpathがproject配下か再確認し、symlink／junctionを辿って外部を消さない。initは存在済みdirectoryを上書きしない。新規runは旧成果物の存在を今回の成功証拠に使わない。
 
 書込先は文字列上のprefixだけで許可せず、各既存path componentを解決してjunction／symlinkによるworkspace外escapeがないことをpublish直前にも再確認する。入力と出力はWindows file identityまたは利用可能な同等手段で同一実体か確認し、同一実体なら拒否する。既存の同名成果物は既定で上書きせずblockedとし、明示的なreplace要求がある場合だけ、run固有staging fileの検証完了後にatomic replaceする。入力source、入力STL、profileをreplace対象にしない。
 
@@ -127,24 +137,40 @@ Modifyは正確なmesh検査を要求する場合にmesh capabilityを必要と�
 
 | Field | 内容 |
 | --- | --- |
-| `run_id`, `command`, `status`, `exit_code` | 実行識別、要求、総合状態、CLI終了値 |
+| `project_id`, `run_id`, `command`, `status`, `exit_code` | project／実行識別、要求、総合状態、CLI終了値 |
 | `inputs` | 正規化path、content hash、parameter override、単位、要求値 |
 | `source_identity` | root SCAD／STL hash、再帰的に解決できた`use`／`include`／`import`依存hash、effective override、OpenSCAD version、identity完全性 |
 | `environment` | OS、Python、OpenSCAD path／version、必要package version。全環境変数は保存しない |
 | `processes` | argv、cwd、各終了値、timeout、stdout／stderr path、`evaluation_mode` |
 | `coordinate_frames` | source frame、analysis frame、source→analysis／analysis→source変換、単位。変換しない場合もidentityを記録 |
-| `artifacts` | 今回生成したpath、kind、size、hash、検査結果、source identity／artifact parent hash |
+| `artifacts` | 今回生成したpath、kind、size、hash、検査結果、source identity／artifact parent hash、schema情報 |
 | `checks` | 名前、`passed|failed|not_requested|unsupported|not_run`、数値・根拠 |
 | `metrics` | 定義名、値、単位、method、tolerance、算出不能理由。未知はnull |
+| `retention` | 完了時刻、retain days、retention_until、自動prune可否 |
 | `errors`, `warnings` | 安定したcategory、説明、次の操作 |
 
 `source_identity`はcommand間で「同じ形状条件を検証した」ことを確認するためのfingerprintである。`use`／`include`／`import`の依存closureを再帰的にhashし、動的path等でclosureを確定できなければ`identity_complete=false`とする。その場合、別commandの結果を同一形状の証拠として自動結合しない。`width=12`でexportしたmeshをdefault `width=10`のanalysis結果と同じcandidateとして扱わない。STL等の成果物を次commandへ渡す場合はartifact hashをparent identityとして引き継ぐ。
 
-`status`は`succeeded|partial|failed|blocked`。全要求項目を満たした場合だけsucceeded／exit 0とする。引数・入力不正は2、環境・依存不足によるblockedは3、process失敗・timeoutは4、検証不合格は5、一部成果物だけ成功したpartialは6。未知の例外も診断を残し非0とする。非必須の未実施項目は明示し、optional skipだけで必須項目の成功を覆さない。
+`status`は`succeeded|partial|failed|blocked`。全要求項目を満たした場合だけsucceeded／exit 0とする。引数・入力不正は2、環境・依存不足やunsupported schemaによるblockedは3、process失敗・timeoutは4、検証不合格は5、一部成果物だけ成功したpartialは6。未知の例外も診断を残し非0とする。非必須の未実施項目は明示し、optional skipだけで必須項目の成功を覆さない。
 
 `--json`指定時のstdoutにはJSONを一つだけ出し、進捗や子process出力を混ぜない。通常は人向け要約を返し、同じresult pathを提示する。`export --format all`で3MFだけ失敗した場合はSTLの保存を報告してもoverall successにはしない。
 
-画像をモデルが見たかどうかはPythonでは分からない。CLIはPNG生成までを記録し、Skillは別の最終報告で`visual_review: passed|failed|unavailable|not_requested`、対象run ID・画像hash・所見を記録する。CLIが`visual_review=passed`を自動生成してはならない。画像を開けなければ視覚確認未実施であり、PNG存在と区別する。
+画像をモデルが見たかどうかはPythonでは分からない。CLIはPNG生成とview manifestまでを記録し、Skillは別の最終報告で`visual_review: passed|failed|unavailable|not_requested`、対象run ID・画像hash・`visual_feature_coverage`・所見を記録する。CLIが`visual_review=passed`を自動生成してはならない。画像を開けなければ視覚確認未実施であり、PNG存在と区別する。
+
+### 7.1 中間artifact schemaとconsumer契約
+
+profile、slice、再構築品質条件など、別commandがconsumeするJSONは`result.json`とは独立したversioned schema envelopeを必須にする。
+
+| Artifact | `schema_id` | 初期`schema_version` |
+| --- | --- | ---: |
+| profile topology JSON | `openscad.profile` | 1 |
+| slice feature-map JSON | `openscad.feature-map` | 1 |
+| reconstruct quality specification | `openscad.reconstruct-quality` | 1 |
+| generated view manifest | `openscad.view-manifest` | 1 |
+
+各JSONはtop-levelに`schema_id`、`schema_version`、producer version、source identity、必要なcoordinate frame参照を持つ。consumerはpayloadを読む前に`schema_id`と`schema_version`を検査し、サポート表に完全一致するversionだけをconsumeする。未知schema ID／unsupported versionはbest-effortで解釈せずblocked／exit 3、必須field欠落や型不正はinvalid input／exit 2とする。schema migrationを行う場合は明示的なmigration処理と変換前後schema versionを保存し、暗黙にv1として読むことを禁止する。
+
+producer側は新versionを出すときconsumer supportを同一変更単位で更新する。古いartifactを再利用するrunでは、consumerが検査したschema ID/versionとartifact hashをresultへ記録する。
 
 ## 8. 検証・比較の正確さ
 
@@ -178,11 +204,20 @@ profile／sliceは輪郭を「点列の集合」だけでなく、connected comp
 
 有限個のsliceにcontourがないことは、モデル全体にそのfeatureがない証明ではない。slice間隔・位置・限界を記録し、追加slice／別軸／画像照合が必要な箇所を未確定とする。bbox一致だけで再構築成功としない。
 
-### 8.4 再構築と最適化の品質gate
+### 8.4 再構築と最適化の複合品質gate
 
 SDF optimizerのsampled IoUとexport meshのvolume IoUは別metricとする。seed、sample数、bounds、solver終了状態を記録する。初期seedは0、sample数は30000とし、反復・実行時間に上限を設ける。得たparameterからSCADをcompile・exportし、source frameへ戻したmeshを元meshと比較するまで、製造用形状の一致を確定しない。
 
-`solver_succeeded`、`scad_generated`、`compile_succeeded`、`mesh_exported`、`quality_metric_available`、`quality_target_met`を別checkにする。solverが正常終了しても品質合格ではなく、SCADがcompileできても形状一致の証拠にはならない。Reconstructの既定受け入れtargetはexport meshの`volume_iou >= 0.95`とし、利用者が別targetを明示した場合だけその値を記録して使用する。targetを黙って下げない。target未達candidateは調査・中間成果物として保持できるが、Reconstruct taskをsucceededにせずvalidation failure／exit 5とする。
+`solver_succeeded`、`scad_generated`、`compile_succeeded`、`mesh_exported`、`volume_iou_target_met`、`major_dimensions_target_met`、`critical_features_target_met`を別checkにする。solverが正常終了しても品質合格ではなく、SCADがcompileできても形状一致の証拠にはならない。
+
+既定Reconstruct品質gateは次をすべて満たす場合だけpassedとする。
+
+1. export meshの`volume_iou >= 0.95`。CLIでは`--min-volume-iou`で変更可能。
+2. source meshとcandidate meshの主要bbox寸法X／Y／Zそれぞれの絶対誤差が`<= 0.20 mm`。CLIでは`--dimension-tolerance-mm`で変更可能。
+3. `required_features`の全項目が個別許容誤差内で一致すること。required featureは、利用者が明示した穴・slot・位置・径等に加え、選択した再構築手法がsourceから抽出してparameter化した穴、slot、through opening、主要profile featureを含む。
+4. analyzerが重要feature候補を検出したが分類・計測・candidate照合できない場合は`unverified_feature`として残し、taskをsucceededにしない。利用者が受け入れ範囲を明示的に狭めた場合だけ、そのfeatureをscope外とした理由をquality specと最終報告へ残す。
+
+`openscad.reconstruct-quality` v1は、`volume_iou_min`、`dimension_tolerance_mm`、`required_features[]`を持つ。各featureはstable `feature_id`、kind、source frame上の期待値、単位、tolerance、measurement methodを持つ。`--quality-spec FILE`はこのschemaを追加条件として読み、既定または自動抽出されたrequired featureを黙って削除しない。target未達candidateは調査・中間成果物として保持できるが、Reconstruct taskをsucceededにせずvalidation failure／exit 5とする。
 
 上流の`generate_scad()`は`stadium-slot`以外でgenerator未提供を示すcommentを返す。[S5] 移植版は対応modelと`can_generate_scad`を明示し、未対応modelからcommentだけのfileを成功成果物として出さない。初回のend-to-end候補は実在する`stadium-slot`に限定する。新たなmodel generatorは別の承認対象とし、汎用STL自動再構築は約束しない。
 
