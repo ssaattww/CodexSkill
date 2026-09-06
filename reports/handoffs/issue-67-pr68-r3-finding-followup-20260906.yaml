@@ -1,0 +1,558 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: review follow-up
+  generated_at: 2026-09-06T19:58:00+09:00
+repository: ssaattww/CodexSkill
+issue_or_pr: 'Issue #67 / PR #68'
+task_id: T-004
+branch: feat/issue-67-astra-approval
+base_ref: main
+target:
+  current_head: 9660cbdb09f35bdc0c5397e5950d3abefc00d7d6
+  reviewed_head: 7515f13e9bfc27a8c416786a39ddfaa71d31ac99
+  commit_range: 54bc25ecb05c57b705f7f442335f515d7c4f52b5...b7e03ec7c847875fa1753cea3ea8814f8006f320
+verification:
+  capability: remote_ci_only
+  capability_evidence:
+    - R3 review evidence HEAD 54bc25ecb05c57b705f7f442335f515d7c4f52b5 had matching successful pull_request run 34027989571.
+    - Technical fix HEAD b7e03ec7c847875fa1753cea3ea8814f8006f320 had matching successful pull_request run 34028776760, build job 101474391195, and artifact 9987905877.
+    - This packet is generated after report commit 9660cbdb09f35bdc0c5397e5950d3abefc00d7d6 and before its own commit/tracking synchronization; later CI is not backfilled.
+  technical_head: b7e03ec7c847875fa1753cea3ea8814f8006f320
+  administrative_parent: 54bc25ecb05c57b705f7f442335f515d7c4f52b5
+  commit:
+    state: committed
+    review_target_sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+  push:
+    state: pushed
+    head_sha: 9660cbdb09f35bdc0c5397e5950d3abefc00d7d6
+  ci_wait:
+    state: ci_wait_pending
+    required_for: route_verification
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
+authoritative_requirements:
+  - source: user_instruction
+    reference: current-chat
+    summary: PR #68の最新指摘へ対応する。
+  - source: repository_instruction
+    reference: Project Instruction and AGENTS.md
+    summary: GitHub connector使用、CodexSkill non-TDD、small commits、report/handoff/PR comment、exact-head CI、merge禁止。
+  - source: pr
+    reference: PRR_kwDOSFr3-88AAAABMXpu-Q
+    summary: R2 findingsはresolved。PR68-R3-001 medium requiredとしてR2 follow-up handoffのschema/lossless違反を修正する。
+development_policy:
+  method: non-TDD review follow-up
+  testing_order: focused schema/YAML validation then exact-head repository CI
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - GitHub compare 54bc25ecb05c57b705f7f442335f515d7c4f52b5...b7e03ec7c847875fa1753cea3ea8814f8006f320
+    - PyYAML parse and enum assertions against current chat-handoff-manager contract
+    - matching pull_request workflow for technical fix and final tracking HEAD
+  required_failure_diagnostics:
+    - exact run/head_sha
+    - failing job/step
+    - available logs/stdout/stderr
+    - relevant artifact
+blocked: []
+authorized_actions:
+  - read_repository
+  - edit_documentation
+  - write_report
+  - write_handoff
+  - commit
+  - push
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
+      reason: PR68-R3-001 direct fix
+    - path_or_operation: reports/issue-67-pr68-r3-finding-followup-20260906.md
+      reason: detailed follow-up report
+    - path_or_operation: reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml
+      reason: lossless handoff
+    - path_or_operation: tasks/tasks-status.md
+      reason: final lifecycle synchronization
+    - path_or_operation: PR #68 comments/body
+      reason: evidence publication
+  forbidden:
+    - path_or_operation: unrelated Skill/design/workflow/source changes
+      reason: PR68-R3-001 scope only
+    - path_or_operation: merge
+      reason: user-owned
+scope:
+  - Correct PR68-R3-001 in the R2 follow-up handoff.
+  - Preserve the historical generation-time state while using only current schema enums.
+  - Restore complete core-Skill raw outputs and move custom state into extensions/evidence.
+non_goals:
+  - live Astra execution
+  - self-issued review closure
+  - independent final review
+  - unrelated cleanup
+  - merge
+files:
+  changed:
+    - path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
+      purpose: PR68-R3-001 schema-v3/lossless correction
+    - path: reports/issue-67-pr68-r3-finding-followup-20260906.md
+      purpose: detailed R3 follow-up report
+    - path: reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml
+      purpose: current follow-up handoff
+    - path: tasks/tasks-status.md
+      purpose: final synchronization pending after packet persistence
+  inspected:
+    - path: skills/chat-handoff-manager/SKILL.md
+      purpose: typed schema and allowed enums
+    - path: skills/work-context-manager/SKILL.md
+      purpose: complete raw output contract
+    - path: skills/implementation-worker/SKILL.md
+      purpose: complete raw output contract
+    - path: skills/report-writer/SKILL.md
+      purpose: complete raw output contract
+  intentionally_untouched:
+    - path_or_area: Astra execution contracts
+      reason: R3 finding concerns handoff evidence only
+    - path_or_area: workflows
+      reason: existing validator/bundle CI is used
+commands:
+  - command: compare 54bc25e..b7e03ec
+    purpose: technical fix scope
+    exit_code: 0
+    result: passed
+    head_sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+    evidence: one commit / one changed handoff file / +248 -182
+  - command: PyYAML parse and enum assertions
+    purpose: verify R3-listed schema values and required producer fields
+    exit_code: 0
+    result: passed
+    head_sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+    evidence: implementation outcome/dispositions, review coverage, next_action, severity record types and required raw producer fields checked
+  - command: technical fix matching CI
+    purpose: repository validator and bundle validation
+    exit_code: unknown
+    result: passed
+    head_sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+    evidence: run 34028776760 / job 101474391195 / artifact 9987905877
+tests:
+  - name: TDD Red/Green
+    phase: not_applicable
+    result: not_run
+    head_sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+    evidence: CodexSkill maintenance is non-TDD
+  - name: schema-v3 handoff contract
+    phase: verification
+    result: passed
+    head_sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+    evidence: manual contract assertions and YAML parse; repository CI does not validate report handoff enums
+ci:
+  required: true
+  workflow: Validate and release ChatGPT worker skills
+  run_id: 34028776760
+  head_sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+  conclusion: success
+  artifacts:
+    - id: 9987905877
+      name: chatgpt-worker-skills-34028776760
+      purpose: repository validator/bundle validation artifact for technical fix HEAD
+implementation:
+  outcome: completed
+  final_head: b7e03ec7c847875fa1753cea3ea8814f8006f320
+  commits:
+    - sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+      purpose: make R2 follow-up handoff schema-v3/lossless compliant
+  addressed_findings:
+    - id: PR68-R3-001
+      reviewed_head: 7515f13e9bfc27a8c416786a39ddfaa71d31ac99
+      disposition: addressed
+      evidence: only the target handoff changed; enum and source-payload defects were corrected
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+    - PR68-R3-001 implementation fix is complete.
+    - same normal reviewer fix verification remains required.
+review:
+  mode: fix_verification
+  reviewed_head: 7515f13e9bfc27a8c416786a39ddfaa71d31ac99
+  reviewer:
+    identity: chatgpt-pr68-normal-review-20260906
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: chatgpt-pr68-normal-review-20260906
+      changed: false
+      reason: same normal reviewer lifecycle
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+        - R3 review submission PRR_kwDOSFr3-88AAAABMXpu-Q
+  verdict: fail
+  required_coverage:
+    - criterion: PR68-R2-001
+      disposition: checked_no_finding
+      evidence: R3 reviewer resolved source medium finding
+    - criterion: PR68-R2-002
+      disposition: checked_no_finding
+      evidence: R3 reviewer resolved source medium finding
+    - criterion: PR68-R2-003
+      disposition: checked_no_finding
+      evidence: R3 reviewer resolved source low finding
+    - criterion: PR68-R3-001
+      disposition: checked_finding
+      evidence: implementation fix exists; reviewer fix verification is pending
+  independent_closure:
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: []
+  validation_assessment:
+    - item: technical fix scope
+      result: supported
+      evidence: compare shows one target handoff file only
+    - item: schema/YAML correction
+      result: supported
+      evidence: enum and required producer-output assertions passed
+    - item: technical fix CI
+      result: supported
+      evidence: exact-head run 34028776760 success
+    - item: reviewer closure
+      result: unavailable
+      evidence: implementation worker does not self-verify
+  reserved_report_paths: []
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: 7515f13e9bfc27a8c416786a39ddfaa71d31ac99
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence:
+      - normal review cycle remains open until PR68-R3-001 is verified
+  summary:
+    - R2 findings are reviewer-resolved; PR68-R3-001 is the only current required finding.
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/issue-67-pr68-r3-finding-followup-20260906.md
+  reviewed_head: 7515f13e9bfc27a8c416786a39ddfaa71d31ac99
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - detailed R3 follow-up report persisted at 9660cbdb09f35bdc0c5397e5950d3abefc00d7d6
+    - packet/tracking/final exact-head CI are pending at generation
+findings:
+  - id: PR68-R3-001
+    severity: medium
+    origin: introduced_by_fix
+    location: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
+    description: R2 follow-up handoff used undefined schema enums and did not preserve complete current core-Skill outputs.
+    impact: strict readers can reject or ambiguously normalize the packet, and cross-chat state cannot be reconstructed losslessly.
+    evidence: PR #68 fix verification r3 review PRR_kwDOSFr3-88AAAABMXpu-Q
+    required_action: use only defined enums, move custom state to extensions/evidence, and preserve complete current work-context/implementation/report outputs.
+held: []
+unexplored:
+  - area: live Astra runtime
+    blocker: out of follow-up scope
+    remaining_risk: availability/profile/cancellation/cost remain unverified
+    verdict_impact: not evidence of runtime success
+unknown:
+  - field_or_fact: this packet commit and final tracking exact-head CI
+    reason: those writes occur after packet generation
+not_applicable:
+  - field_or_area: TDD
+    reason: CodexSkill maintenance is non-TDD
+  - field_or_area: independent final review
+    reason: normal review cycle is not converged
+remaining_risks:
+  - same normal reviewer must verify PR68-R3-001
+  - live Astra behavior remains untested
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: current-branch-contract@54bc25ecb05c57b705f7f442335f515d7c4f52b5
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      issue_or_pr: 'Issue #67 / PR #68'
+      task_id: T-004
+      mode: implementation
+      branch: feat/issue-67-astra-approval
+      base_ref: main
+      current_head: 54bc25ecb05c57b705f7f442335f515d7c4f52b5
+      reviewed_head: 7515f13e9bfc27a8c416786a39ddfaa71d31ac99
+      verification_capability: remote_ci_only
+      verification_capability_evidence:
+        - matching pull_request run 34027989571 for current head 54bc25ecb05c57b705f7f442335f515d7c4f52b5 completed successfully
+      execution_state:
+        technical_head: 7515f13e9bfc27a8c416786a39ddfaa71d31ac99
+        administrative_parent: 7515f13e9bfc27a8c416786a39ddfaa71d31ac99
+        commit: committed
+        push: pushed
+        ci_wait: ci_wait_completed
+        full_local_equivalence_gate:
+          state: unsupported
+          candidate_head: 54bc25ecb05c57b705f7f442335f515d7c4f52b5
+          invalidated_runs: []
+      scope:
+        - PR68-R3-001 handoff schema/lossless correction
+      non_goals:
+        - unrelated cleanup
+        - self-review
+        - independent final review
+        - merge
+      authoritative_requirements:
+        - source: PR #68 fix verification r3
+          reference: PRR_kwDOSFr3-88AAAABMXpu-Q
+          summary: correct enum values and preserve complete producer outputs in the R2 follow-up handoff
+      write_boundary:
+        allowed:
+          - target R2 follow-up handoff
+          - R3 follow-up report/handoff
+          - tasks/tasks-status.md
+          - PR comments/body
+        forbidden:
+          - unrelated repository changes
+          - merge
+      development_policy:
+        method: non-TDD review follow-up
+        testing_order: focused schema/YAML validation then exact-head CI
+      validation:
+        commands:
+          - compare R3 fix range
+          - PyYAML/enum assertions
+          - exact-head pull_request workflow
+        required_failure_diagnostics:
+          - exact workflow run/job/step/log/artifact on failure
+      ci:
+        matching_run: '34027989571'
+        conclusion: success
+      unknown: []
+      blocked: []
+      remaining_risks:
+        - PR68-R3-001 reviewer closure pending
+        - live Astra runtime untested
+  - source_skill: implementation-worker
+    output_contract_version: current-branch-contract@54bc25ecb05c57b705f7f442335f515d7c4f52b5
+    content_type: application/yaml
+    payload:
+      mode: review follow-up
+      accepted_scope:
+        - PR68-R3-001
+      non_goals:
+        - unrelated cleanup
+        - self-review
+        - independent final review
+        - merge
+      requirements_and_design_references:
+        - PRR_kwDOSFr3-88AAAABMXpu-Q
+        - skills/chat-handoff-manager/SKILL.md
+        - skills/work-context-manager/SKILL.md
+        - skills/implementation-worker/SKILL.md
+        - skills/report-writer/SKILL.md
+      changed_files_and_purpose:
+        - path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
+          purpose: replace undefined enums and restore complete producer outputs
+      intentionally_untouched_areas:
+        - Astra execution contracts
+        - workflows
+        - unrelated reports/handoffs
+      validation_commands_and_results:
+        - command: compare 54bc25e..b7e03ec
+          result: passed
+          evidence: one commit / one target handoff file
+        - command: PyYAML parse and enum assertions
+          result: passed
+          evidence: all R3-listed schema issues corrected
+      failure_diagnostics_and_artifacts:
+        - type: artifact
+          location: GitHub Actions artifact 9987905877
+          summary: technical fix HEAD validation artifact; no CI failure occurred
+      verification_capability: remote_ci_only
+      validation_evidence:
+        - exact-head CI run 34028776760 succeeded for technical fix HEAD
+        - schema correctness is separately supported by YAML parse and contract assertions
+      review_target_commit:
+        state: committed
+        sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+      push_state: pushed
+      matching_ci:
+        run_id: 34028776760
+        head_sha: b7e03ec7c847875fa1753cea3ea8814f8006f320
+        conclusion: success
+        evidence: build job 101474391195 and artifact 9987905877
+      final_technical_head: b7e03ec7c847875fa1753cea3ea8814f8006f320
+      administrative_parent: 54bc25ecb05c57b705f7f442335f515d7c4f52b5
+      blocked_items: []
+      unknowns:
+        - final report/handoff/tracking publication HEAD and its CI
+      remaining_risks:
+        - same normal reviewer closure pending
+      next_required_action: persist report/handoff, synchronize tracking as final repository write, verify exact-head CI, then return to same normal reviewer.
+  - source_skill: report-writer
+    output_contract_version: current-branch-contract@54bc25ecb05c57b705f7f442335f515d7c4f52b5
+    content_type: application/yaml
+    payload:
+      report_type: implementation_report
+      complete_body: |
+        # Issue #67 PR #68 R3指摘対応レポート
+
+        ## メタデータ
+
+        - 日付: 2026-09-06
+        - Repository: `ssaattww/CodexSkill`
+        - Issue: #67
+        - PR: #68
+        - Branch: `feat/issue-67-astra-approval`
+        - Base: `main`
+        - Mode: review follow-up
+        - Source finding: `PR68-R3-001 / medium / required`
+        - R3 review evidence HEAD: `54bc25ecb05c57b705f7f442335f515d7c4f52b5`
+        - Technical fix HEAD: `b7e03ec7c847875fa1753cea3ea8814f8006f320`
+        - Merge: 実施しない
+
+        ## Finding
+
+        `reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml`がcurrent `chat-handoff-manager` schema-v3 / lossless contractを満たしていなかった。
+
+        R3 reviewerが列挙した問題は次の7点。
+
+        1. `authorized_actions`に未定義の`edit_handoff` / `edit_tracking`。
+        2. `implementation.outcome: in_progress`がenum外。
+        3. `implementation.addressed_findings[].disposition`にenum外値。
+        4. `review.required_coverage[].disposition`にenum外値。
+        5. `next_action.type: implementation_then_review`がenum外。
+        6. `report-writer.severity_records[].record_type: preserved_resolved`がenum外。
+        7. `current-branch-contract`を名乗る`source_payloads`がproducer core Skillのcomplete outputを保持していない。
+
+        ## 対応
+
+        対象handoffだけを修正した。
+
+        - `authorized_actions`をcurrent schemaで定義される値へ限定した。
+        - `implementation.outcome`をgeneration時点の実態に合わせて`partial`へ変更した。
+        - `implementation.addressed_findings[].disposition`を`addressed | partial`へ正規化し、固有状態は`extensions`へ分離した。
+        - `review.required_coverage[].disposition`を`checked_no_finding | checked_finding`へ正規化した。
+        - `next_action.type`を`implementation`へ変更し、その後same normal reviewerへ戻す手順をsummary/instructionsで表現した。
+        - `report-writer.severity_records[].record_type`は`preserved`を使用し、R1のresolved状態は`extensions`のresolution evidenceへ分離した。
+        - `source_payloads`をcurrent branch contractへ合わせて補完した。
+          - `work-context-manager`: `verification_capability`、evidence、`execution_state`、commit/push/CI-wait、validation、CI、unknown/blocked/riskを保持。
+          - `implementation-worker`: verification、review-target commit、push state、matching CI明示的absence、final technical HEAD、administrative parent、unknown/risk/next actionを保持。
+          - `report-writer`: `complete_body`全文、target identity、`verification`、`independent_closure`、severity records、persistenceを保持。
+        - packetのgeneration時点に存在しない後続commit/CIは過去snapshotへ逆算して追加していない。
+
+        ## Validation
+
+        ### 差分境界
+
+        GitHub compare `54bc25ecb05c57b705f7f442335f515d7c4f52b5...b7e03ec7c847875fa1753cea3ea8814f8006f320`:
+
+        - ahead by: 1 commit
+        - changed files: 1
+        - 対象: `reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml`
+        - additions: 248
+        - deletions: 182
+
+        ### Schema / YAML
+
+        修正版packetをPyYAMLでparseし、R3で指摘されたenumをcurrent contractと照合した。`implementation.outcome=partial`、定義済みdisposition、`next_action.type=implementation`、`record_type=preserved`、3 producerのrequired fieldsと`complete_body`を確認した。
+
+        ### Technical fix HEAD CI
+
+        `b7e03ec7c847875fa1753cea3ea8814f8006f320`に一致するrun `34028776760`は`completed / success`。build job `101474391195`、artifact `9987905877`、digest `sha256:6192d76b6f1646aba123a682a607438ca53e35868edbb1ed2ad9a4e420a66ce3`。CIはhandoff enumを自動検査しないためschema validationとは別証拠として扱う。
+
+        ## Finding disposition
+
+        `PR68-R3-001 / medium / required`はimplementation側でaddressed。reviewer closureはpending。本chatはfix verification verdictを発行しない。
+
+        ## 残存事項
+
+        report/handoff保存後にT-004を最終repository writeとして同期し、そのHEAD固有CIを確認してsame normal reviewerへ戻す。independent final reviewとmergeは行わない。
+      evidence_sources:
+        - PRR_kwDOSFr3-88AAAABMXpu-Q
+        - compare 54bc25e..b7e03ec
+        - workflow run 34028776760
+        - artifact 9987905877
+      target_identity:
+        branch: feat/issue-67-astra-approval
+        base_ref: main
+        current_head: b7e03ec7c847875fa1753cea3ea8814f8006f320
+        reviewed_implementation_head: 7515f13e9bfc27a8c416786a39ddfaa71d31ac99
+      verification:
+        capability: remote_ci_only
+        technical_head: b7e03ec7c847875fa1753cea3ea8814f8006f320
+        administrative_parent: 54bc25ecb05c57b705f7f442335f515d7c4f52b5
+        commit_state: committed
+        push_state: pushed
+        ci_wait_state: ci_wait_completed
+      independent_closure:
+        initial_independent_reviewed_head: null
+        closure_reviewed_heads: []
+        reviewer_continuity: null
+        closure_scope: []
+        completeness_matrix: []
+      severity_records:
+        - finding_id: PR68-R3-001
+          source_severity: medium
+          new_severity: null
+          reason: null
+          approved_by: null
+          record_type: preserved
+      persistence:
+        mode: repository_file
+        reserved_paths:
+          - reports/issue-67-pr68-r3-finding-followup-20260906.md
+        report_attestation_head: null
+      concise_pr_comment_body: PR68-R3-001をb7e03ec7c847875fa1753cea3ea8814f8006f320で修正。対象handoffのenumをcurrent schemaへ正規化し、custom stateをextensionsへ分離、3 producerのcomplete outputを復元。technical fix HEADのrun 34028776760はsuccess。最終publication HEADはtracking同期後に別途確認する。
+      unresolved_discrepancies: []
+extensions:
+  - namespace: codexskill.pr68.r3_followup_generation
+    payload:
+      PR68-R2-001: resolved_by_normal_reviewer
+      PR68-R2-002: resolved_by_normal_reviewer
+      PR68-R2-003: resolved_by_normal_reviewer
+      PR68-R3-001: implementation_addressed_pending_normal_reviewer_fix_verification
+      fix_commit: b7e03ec7c847875fa1753cea3ea8814f8006f320
+      fix_ci_run: 34028776760
+      fix_artifact: 9987905877
+      report_commit: 9660cbdb09f35bdc0c5397e5950d3abefc00d7d6
+      packet_commit_state_at_generation: commit_pending
+      final_tracking_state_at_generation: commit_pending
+next_action:
+  type: implementation
+  target_skill: chat-implementation-worker
+  mode: review follow-up
+  summary: Persist this handoff and synchronize T-004 as the final repository write; verify exact-head CI, then return to the same normal reviewer.
+  instructions:
+    - preserve PR68-R3-001 identity and source severity medium
+    - do not self-issue review closure
+    - use only matching current-HEAD pull_request CI for final route evidence
+    - do not start independent final review before normal review convergence
+    - do not merge
+  required_attachments_or_references:
+    - PR #68
+    - reports/issue-67-pr68-r3-finding-followup-20260906.md
+    - reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml
+    - reports/issue-67-pr68-fix-verification-r3-20260906.md
+    - reports/handoffs/issue-67-pr68-fix-verification-r3-20260906.yaml
+  requested_authorized_actions:
+    - read_repository
+    - edit_documentation
+    - write_report
+    - write_handoff
+    - commit
+    - push
+    - update_pr
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml
+  packet_url: null
+  transport_note: Generation-time packet. Permissions do not transfer. Packet/tracking commits and their exact-head CI are later evidence and are not backfilled here.
