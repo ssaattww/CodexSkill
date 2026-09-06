@@ -12,6 +12,25 @@ target:
   current_head: &reviewed 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
   reviewed_head: *reviewed
   commit_range: &range 6507727986329e34e69da3680a00824eb1fbfe13...8d3f96a0ec5f01247c4092f7bb0f690168ba627e
+verification:
+  capability: remote_ci_only
+  capability_evidence:
+    - reviewed HEAD 8d3f96a0ec5f01247c4092f7bb0f690168ba627e has matching pull_request workflow run 34023404043 with completed/success.
+    - Detailed normal-review report was already persisted at commit d85fe63e764678a249ed74fc559ae61a28cdae0b; this packet itself was not yet committed at generation time, so packet-persistence exact-head CI remained pending.
+  technical_head: *reviewed
+  administrative_parent: *reviewed
+  commit:
+    state: committed
+    review_target_sha: *reviewed
+  push:
+    state: pushed
+    head_sha: d85fe63e764678a249ed74fc559ae61a28cdae0b
+  ci_wait:
+    state: ci_wait_pending
+    required_for: route_verification
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
 authoritative_requirements: &requirements
   - source: user_instruction
     reference: current-chat
@@ -337,7 +356,7 @@ source_payloads:
         | 全変更file・直接影響先 | checked_no_finding | 下記15fileと実行・再開・コスト・report・validator・workflowの接点を確認 |
         | API・data・config・workflow・互換 | checked_no_finding | dispatch schema v4のAstra拡張、既存Sol continuity、role/fork/availability、配布集合不変を確認 |
         | エラー・失敗診断 | checked_no_finding | spawn拒否・開始不明・profile不一致を成功にしない。CIは成功。診断bundle未追加は適用境界どおり |
-        | 権限・機密 | checked_no_finding | 承認をwrite/network/merge権限に転用しない。別task/agent/parentへgrant転用禁止。変更内にcredentialを確認していない |
+        | 権限・機密 | checked_no_finding | 承認をwrite/network/merge権限に転用しない。別task/agent/parentへのgrant転用禁止。変更内にcredentialを確認していない |
         | 検証の妥当性 | checked_no_finding | 構造検証と本文シナリオ照合の範囲を確認。実モデル動作テストと混同しない |
         | current-HEAD CI | checked_no_finding | run/job/artifactのhead_shaがreviewed HEADと一致し、build成功 |
         | report・tracking・文書の正確性 | checked_finding | PR68-R1-001。旧reportの生成元SHAと最終PR SHAは明示的に区別されている |
