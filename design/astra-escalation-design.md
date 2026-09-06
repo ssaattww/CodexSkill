@@ -68,7 +68,7 @@ Issue #67に対応し、既存の適応型agent割当へ`gpt-6-astra` / `high`�
               `-- task_until_completion -> 同一scope内だけ継続可能
 ```
 
-承認の確認と消費は親が直列化する。同じgrantを複数agentや複数operationへ使わない。要求送信後のtimeoutなど、実行が開始されたか不明な場合もsingle-turn grantを再利用しない。実行前のrole検査で停止しただけなら、未消費のgrantはscopeとprofileが変わらない限り保持できる。
+承認の確認と消費は親が直列化する。grantを別agentへ転用しない。`single_turn`では同じgrantを複数operationへ再利用しない。`task_until_completion`では、同一task・同一scope・同一agentに対してgrantが有効であることをoperationごとに確認したうえで継続利用できる。要求送信後のtimeoutなど、実行が開始されたか不明な場合もsingle-turn grantを再利用しない。実行前のrole検査で停止しただけなら、未消費のgrantはscopeとprofileが変わらない限り保持できる。
 
 承認拒否後にAstraを同じ判断材料だけで再提案し続けない。ユーザーの再検討指示または具体的な新証拠が必要である。拒否によってSol `xhigh/max`が自動承認されることはない。
 
