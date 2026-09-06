@@ -15,9 +15,9 @@ target:
 verification:
   capability: remote_ci_only
   capability_evidence:
-    - R2 review evidence was generated on current-PR state ending at 498d5b3eb16a26219cc5939bc0cc38c574f5f11e; fixes after that state are repository writes that require a new exact-head run before they can be treated as final route evidence.
-    - GitHub compare 498d5b3eb16a26219cc5939bc0cc38c574f5f11e...4833bc61f7fae56d389dd4c0917cfd73bf0db7ab shows exactly three commits changing only the three R2-001 handoff packets.
-    - This handoff is generated after detailed follow-up report commit dc219813c35e402ac8aa8b83ce9550a41549d2d7 and before the required final tracking synchronization, so final publication CI is intentionally pending.
+    - R2 review evidence HEAD 498d5b3eb16a26219cc5939bc0cc38c574f5f11e had matching successful pull_request run 34025568242.
+    - Technical R2 corrections ended at 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab; report commit dc219813c35e402ac8aa8b83ce9550a41549d2d7 followed.
+    - Packet/tracking commits did not yet exist at generation, so later CI is not backfilled.
   technical_head: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
   administrative_parent: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
   commit:
@@ -38,10 +38,10 @@ authoritative_requirements:
     summary: PR #68の最新指摘へ対応する。
   - source: repository_instruction
     reference: Project Instruction and AGENTS.md
-    summary: GitHub connectorを使用。CodexSkillはnon-TDD。変更を小さくcommit/pushし、詳細report、handoff、簡易PR commentを保存。current PR HEADとhead_shaが一致するrunだけを採用し、mergeしない。
-  - source: pr_review
+    summary: GitHub connector使用、CodexSkill non-TDD、small commits、report/handoff/PR comment、exact-head CI、merge禁止。
+  - source: pr
     reference: PRR_kwDOSFr3-88AAAABMXje9w
-    summary: R1はresolved。R2-001/002 medium required、R2-003 low nonblocking。normal review cycleは未収束。
+    summary: R1 resolved。R2-001/002 medium required、R2-003 low nonblocking。
 development_policy:
   method: non-TDD review follow-up
   testing_order: repository validation and exact-head CI after repository writes
@@ -49,18 +49,17 @@ development_policy:
 validation_plan:
   commands:
     - GitHub compare 498d5b3eb16a26219cc5939bc0cc38c574f5f11e...4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
-    - current branch handoff schema contract inspection
-    - matching pull_request workflow for final tracking HEAD
+    - inspect current chat-handoff-manager/work-context-manager/implementation-worker/report-writer contracts
+    - verify matching pull_request workflow after final tracking write
   required_failure_diagnostics:
-    - exact failing workflow run and head_sha
-    - failing job and step
-    - stdout/stderr or job logs available from GitHub Actions
-    - relevant workflow artifact
+    - exact run/head_sha
+    - failing job/step
+    - available logs/stdout/stderr
+    - relevant artifact
 blocked: []
 authorized_actions:
   - read_repository
-  - edit_handoff
-  - edit_tracking
+  - edit_documentation
   - write_report
   - write_handoff
   - commit
@@ -69,84 +68,81 @@ authorized_actions:
   - comment_pr
 write_boundary:
   allowed:
-    - path_or_operation: reports/handoffs/issue-67-pr68-implementation-20260906.yaml
-      reason: PR68-R2-001のschema-v3 verification補完。
-    - path_or_operation: reports/handoffs/issue-67-pr68-normal-review-20260906.yaml
-      reason: PR68-R2-001のschema-v3 verification補完。
-    - path_or_operation: reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
-      reason: PR68-R2-001のverification補完とreport-writer complete_body復元。
-    - path_or_operation: reports/issue-67-pr68-r2-findings-followup-20260906.md
-      reason: R2指摘対応詳細report。
-    - path_or_operation: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
-      reason: 本R2 follow-upのlossless handoff。
+    - path_or_operation: 3 historical handoff packets
+      reason: PR68-R2-001
+    - path_or_operation: R2 follow-up report/handoff
+      reason: evidence persistence
     - path_or_operation: tasks/tasks-status.md
-      reason: PR68-R2-002のcanonical tracking同期。
-    - path_or_operation: PR #68 body, review threads, conversation comments
-      reason: PR68-R2-003と対応証拠の外部記録。
+      reason: PR68-R2-002
+    - path_or_operation: PR #68 metadata/comments
+      reason: PR68-R2-003 and evidence
   forbidden:
-    - path_or_operation: unrelated Skill/design/workflow/source cleanup
-      reason: R2 follow-up scope外。
-    - path_or_operation: merge or auto-merge
-      reason: mergeは利用者が行う。
+    - path_or_operation: unrelated repository changes
+      reason: out of scope
+    - path_or_operation: merge
+      reason: user-owned
 scope:
-  - PR68-R2-001の3 handoff packetを現行schema v3へ適合させる。
-  - review-followup packetにreport-writer complete_body全文を復元する。
-  - PR68-R2-002としてT-004 trackingをnormal review/R1/R2 lifecycleへ同期する。
-  - PR68-R2-003としてPR本文の自己陳腐化する固定final HEAD記述を除去する。
+  - Repair R2-001 handoff verification/raw payloads.
+  - Synchronize T-004 for R2-002.
+  - Remove self-staling PR HEAD wording for R2-003.
 non_goals:
-  - Astra runtime動作の実証。
-  - review verdictの自己発行。
-  - independent final reviewの開始。
-  - unrelated cleanup。
-  - merge。
+  - live Astra execution
+  - self-issued review verdict
+  - independent final review
+  - unrelated cleanup
+  - merge
 files:
   changed:
     - path: reports/handoffs/issue-67-pr68-implementation-20260906.yaml
-      purpose: generation時点verification block追加。
+      purpose: generation-time verification
     - path: reports/handoffs/issue-67-pr68-normal-review-20260906.yaml
-      purpose: generation時点verification block追加。
+      purpose: generation-time verification
     - path: reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
-      purpose: generation時点verification block追加とreport-writer complete_body全文復元。
+      purpose: verification plus complete report body
     - path: reports/issue-67-pr68-r2-findings-followup-20260906.md
-      purpose: R2 finding対応詳細report。
+      purpose: detailed follow-up report
     - path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
-      purpose: R2 follow-up stateのschema-v3 lossless transport。
+      purpose: lossless handoff
     - path: tasks/tasks-status.md
-      purpose: 本handoff保存後にR2-002として最終repository writeで同期予定。
-  metadata_changed:
-    - path_or_operation: PR #68 body
-      purpose: R2-003の固定final HEAD表記を除去し、最新exact-head CIをPR commentへ置く方針へ変更。
+      purpose: final tracking sync pending at generation
+  inspected:
+    - path: skills/chat-handoff-manager/SKILL.md
+      purpose: schema/enums/lossless contract
+    - path: skills/work-context-manager/SKILL.md
+      purpose: producer output contract
+    - path: skills/implementation-worker/SKILL.md
+      purpose: producer output contract
+    - path: skills/report-writer/SKILL.md
+      purpose: producer output contract
   intentionally_untouched:
-    - path_or_area: Astra Skill/design contracts
-      reason: R2 findingsはhandoff/tracking/PR metadataの証跡整合であり、Astra execution contractの新規欠陥ではない。
+    - path_or_area: Astra execution Skill/design
+      reason: R2 is evidence-lifecycle only
     - path_or_area: workflows
-      reason: CodexSkill保守の既存validator/bundle workflowを使用する。
-    - path_or_area: independent-review lifecycle
-      reason: normal review cycleが未収束。
+      reason: use existing validator/bundle workflow
 commands:
-  - command: GitHub compare 498d5b3eb16a26219cc5939bc0cc38c574f5f11e...4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
-    purpose: R2-001 technical changesのscope確認。
+  - command: compare 498d5b3..4833bc6
+    purpose: R2-001 scope
     exit_code: 0
     result: passed
     head_sha: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
-    evidence: 3 commits / 3 changed files; all are the three handoff packets called out by R2-001.
+    evidence: 3 commits / 3 historical handoff files
   - command: final tracking HEAD matching CI
-    purpose: all repository writes after R2 reviewを含むcurrent HEADのroute evidence確認。
+    purpose: final route evidence
     exit_code: unknown
     result: not_run
     head_sha: unknown
-    evidence: tasks/tasks-status.mdの最終更新commit後に確認する。
+    evidence: run after tracking write
 tests:
   - name: TDD Red/Green
     phase: not_applicable
     result: not_run
     head_sha: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
-    evidence: CodexSkill repository maintenance is non-TDD.
-  - name: handoff schema/static contract correction
+    evidence: CodexSkill maintenance is non-TDD
+  - name: handoff schema/static correction
     phase: verification
     result: passed
     head_sha: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
-    evidence: three packet changes are limited to required verification fields and raw report-body restoration; reviewer fix verification remains pending.
+    evidence: technical corrections limited to called-out handoffs
 ci:
   required: true
   workflow: Validate and release ChatGPT worker skills
@@ -155,36 +151,34 @@ ci:
   conclusion: unknown
   artifacts: []
 implementation:
-  outcome: in_progress
+  outcome: partial
   final_head: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
   commits:
     - sha: c8db6822831c1976ed264428142c80248467e86e
-      purpose: add generation-time verification to implementation handoff
+      purpose: implementation handoff verification
     - sha: 9fabe41b83a15dcaf302c7ceac8ed1ce487a3590
-      purpose: add generation-time verification to normal-review handoff
+      purpose: normal-review handoff verification
     - sha: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
-      purpose: restore verification and report-writer complete body in review-followup handoff
-    - sha: dc219813c35e402ac8aa8b83ce9550a41549d2d7
-      purpose: persist R2 findings follow-up report
+      purpose: review-followup verification and complete_body
   addressed_findings:
     - id: PR68-R2-001
       reviewed_head: 87549104916a1a04d62aa0508099c857b1844840
-      disposition: addressed_by_implementation
-      evidence: three historical schema-v3 packets now carry generation-time verification; review-followup report-writer raw payload contains full complete_body.
-    - id: PR68-R2-003
-      reviewed_head: 87549104916a1a04d62aa0508099c857b1844840
-      disposition: addressed_by_metadata_update
-      evidence: PR body no longer pins an old SHA as final current HEAD; latest publication exact-head evidence is delegated to latest PR comment.
+      disposition: addressed
+      evidence: 3 historical packets corrected and complete_body restored
     - id: PR68-R2-002
       reviewed_head: 87549104916a1a04d62aa0508099c857b1844840
-      disposition: pending_final_tracking_write
-      evidence: tracking update is intentionally last repository write after this report/handoff.
+      disposition: partial
+      evidence: tracking is final write after report/handoff
+    - id: PR68-R2-003
+      reviewed_head: 87549104916a1a04d62aa0508099c857b1844840
+      disposition: addressed
+      evidence: PR body no longer pins stale final HEAD
   failure_diagnostics: []
   blocked_items: []
   summary:
-    - R2-001 repository corrections complete.
-    - R2-003 PR metadata correction complete.
-    - R2-002 tracking synchronization will be the final repository write.
+    - R2-001 and R2-003 addressed by implementation
+    - R2-002 tracking pending at generation
+    - reviewer closure pending
 review:
   mode: fix_verification
   reviewed_head: 87549104916a1a04d62aa0508099c857b1844840
@@ -194,35 +188,41 @@ review:
     continuity:
       previous_reviewer_identity: chatgpt-pr68-normal-review-20260906
       changed: false
-      reason: R2は同一normal reviewerのfix-verification lifecycle。
+      reason: same normal reviewer lifecycle
     independence:
       implemented_change: false
       implemented_review_fix: false
       served_as_normal_reviewer: true
       inherited_conversation: true
       evidence:
-        - R2 review submission preserved same normal reviewer identity and explicitly kept normal cycle open.
+        - R2 review submission PRR_kwDOSFr3-88AAAABMXje9w
   verdict: fail
   required_coverage:
     - criterion: PR68-R1-001
-      disposition: resolved
-      evidence: R2 reviewer confirmed design fix.
+      disposition: checked_no_finding
+      evidence: R2 reviewer resolved source low finding
     - criterion: PR68-R2-001
-      disposition: pending_fix_verification
-      evidence: implementation corrections c8db682, 9fabe41, 4833bc6.
+      disposition: checked_finding
+      evidence: implementation addressed; reviewer fix verification pending
     - criterion: PR68-R2-002
-      disposition: pending_tracking_write
-      evidence: final tracking update occurs after this packet persistence.
+      disposition: checked_finding
+      evidence: tracking pending at generation
     - criterion: PR68-R2-003
-      disposition: pending_fix_verification
-      evidence: PR body updated without Git HEAD mutation.
+      disposition: checked_finding
+      evidence: metadata addressed; reviewer fix verification pending
+  independent_closure:
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: []
   validation_assessment:
     - item: implementation scope
       result: supported
-      evidence: compare for R2-001 is three files only; PR body update is metadata only.
+      evidence: 3-file handoff fix range plus metadata-only PR edit
     - item: reviewer closure
       result: unavailable
-      evidence: implementation worker must not issue its own fix-verification verdict.
+      evidence: implementation worker cannot self-verify
   reserved_report_paths: []
   report_attestation:
     allowed: false
@@ -234,75 +234,74 @@ review:
     no_later_commits_required: not_applicable
     validation_status: not_applicable
     validation_evidence:
-      - normal review cycle has not converged; independent-final reservation/attestation is not active.
+      - normal review cycle not converged
   summary:
-    - R2 source verdict remains fail until same normal reviewer verifies R2 fixes.
+    - R2 source verdict remains fail until same normal reviewer verifies fixes
 report:
   report_type: implementation_report
   outcome: created
   persistence_mode: repository_file
   paths:
     - reports/issue-67-pr68-r2-findings-followup-20260906.md
-    - reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
   reviewed_head: 87549104916a1a04d62aa0508099c857b1844840
   attestation_head: null
   pr_comments: []
   summary:
-    - detailed R2 follow-up report persisted at dc219813c35e402ac8aa8b83ce9550a41549d2d7
-    - final tracking commit and final exact-head CI remain pending at packet generation.
+    - report persisted at dc219813c35e402ac8aa8b83ce9550a41549d2d7
+    - tracking and final exact-head CI pending at generation
 findings:
   - id: PR68-R1-001
     severity: low
     origin: introduced_by_change
     location: design/astra-escalation-design.md:71
-    description: approval-mode-independent grant reuse wording conflicted with task_until_completion.
-    impact: documentation ambiguity.
-    evidence: R2 reviewer marked resolved.
-    required_action: none; preserve historical identity and source severity.
+    description: grant reuse wording conflicted with task_until_completion
+    impact: documentation ambiguity
+    evidence: R2 reviewer resolved
+    required_action: preserve historical identity/severity
   - id: PR68-R2-001
     severity: medium
-    origin: introduced_by_change
+    origin: coverage_miss
     location: reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
-    description: three schema-v3 packets omitted required verification and one raw report-writer payload used a path instead of complete_body.
-    impact: handoff could lose route-verification state and raw source output across chat boundaries.
-    evidence: R2 review PRR_kwDOSFr3-88AAAABMXje9w and thread PRRT_kwDOSFr3-86fqw9b.
-    required_action: add truthful generation-time verification to all three packets and restore complete report-writer raw body.
+    description: 3 packets omitted verification and one raw report payload omitted complete_body
+    impact: lossy cross-chat evidence
+    evidence: R2 review/thread
+    required_action: repair packets and raw producer output
   - id: PR68-R2-002
     severity: medium
-    origin: introduced_by_change
+    origin: coverage_miss
     location: tasks/tasks-status.md:T-004
-    description: canonical task tracking remained at initial implementation state after review/fix lifecycle advanced.
-    impact: restart and progress decisions could use stale task state.
-    evidence: R2 review thread PRRT_kwDOSFr3-86fqw9c.
-    required_action: synchronize T-004 through R2 findings and current follow-up state.
+    description: stale canonical tracking
+    impact: restart/progress may use stale lifecycle
+    evidence: R2 review thread
+    required_action: sync T-004
   - id: PR68-R2-003
     severity: low
-    origin: introduced_by_change
+    origin: coverage_miss
     location: PR #68 body
-    description: PR body pinned an old SHA as final current HEAD.
-    impact: PR summary became stale after report/review commits.
-    evidence: R2 review body.
-    required_action: use non-self-staling wording and latest exact-head evidence in PR comments.
+    description: stale fixed current HEAD wording
+    impact: stale PR summary
+    evidence: R2 review
+    required_action: use non-self-staling wording
 held: []
 unexplored:
   - area: live Astra runtime
-    blocker: runtime execution is outside review-follow-up scope and no paid model approval was given.
-    remaining_risk: availability/profile/cancellation behavior and actual cost remain unverified.
-    verdict_impact: does not replace required normal fix verification of documentation/evidence changes.
+    blocker: out of follow-up scope
+    remaining_risk: availability/profile/cancellation/cost unverified
+    verdict_impact: not evidence of runtime success
 unknown:
-  - field_or_fact: final tracking commit SHA and its exact-head CI
-    reason: tracking is deliberately written after this report/handoff so it can reference their existing commits without self-reference.
+  - field_or_fact: final tracking commit SHA and exact-head CI
+    reason: do not self-reference future commit
 not_applicable:
   - field_or_area: TDD
-    reason: CodexSkill repository maintenance is non-TDD.
+    reason: CodexSkill maintenance non-TDD
   - field_or_area: independent final review
-    reason: normal review cycle is not converged.
+    reason: normal review not converged
 remaining_risks:
-  - same normal reviewer must verify R2-001/002/003 after final tracking update.
-  - live Astra behavior remains untested.
+  - same normal reviewer must verify R2 fixes
+  - live Astra behavior untested
 source_payloads:
   - source_skill: work-context-manager
-    output_contract_version: current-branch-contract
+    output_contract_version: current-branch-contract@54bc25ecb05c57b705f7f442335f515d7c4f52b5
     content_type: application/yaml
     payload:
       repository: ssaattww/CodexSkill
@@ -313,24 +312,38 @@ source_payloads:
       base_ref: main
       current_head: 498d5b3eb16a26219cc5939bc0cc38c574f5f11e
       reviewed_head: 87549104916a1a04d62aa0508099c857b1844840
+      verification_capability: remote_ci_only
+      verification_capability_evidence:
+        - matching pull_request run 34025568242 for 498d5b3eb16a26219cc5939bc0cc38c574f5f11e completed successfully
+      execution_state:
+        technical_head: 498d5b3eb16a26219cc5939bc0cc38c574f5f11e
+        administrative_parent: null
+        commit: committed
+        push: pushed
+        ci_wait: ci_wait_completed
+        full_local_equivalence_gate:
+          state: unsupported
+          candidate_head: 498d5b3eb16a26219cc5939bc0cc38c574f5f11e
+          invalidated_runs: []
       scope:
-        - R2-001 handoff schema/raw payload correction
-        - R2-002 tracking synchronization
+        - R2-001 handoff correction
+        - R2-002 tracking sync
         - R2-003 PR body correction
       non_goals:
         - Astra runtime execution
+        - self-review
         - independent final review
         - merge
       authoritative_requirements:
         - source: PR #68 R2 fix verification
           reference: PRR_kwDOSFr3-88AAAABMXje9w
-          summary: preserve R1 resolution and address R2-001/002/003 before normal review can converge.
+          summary: address R2-001/002/003 before normal review convergence
       write_boundary:
         allowed:
           - three historical handoff packets
           - R2 follow-up report/handoff
           - tasks/tasks-status.md
-          - PR body/comments/review-thread replies
+          - PR metadata/comments
         forbidden:
           - unrelated repository changes
           - merge
@@ -340,19 +353,20 @@ source_payloads:
       validation:
         commands:
           - compare R2-001 fix range
-          - final exact-head workflow
+          - final exact-head pull_request workflow
         required_failure_diagnostics:
-          - workflow run/job/step/log/artifact
+          - exact workflow run/job/step/log/artifact on failure
       ci:
-        matching_run: null
-        conclusion: unknown
+        matching_run: '34025568242'
+        conclusion: success
       unknown:
         - final tracking SHA and final exact-head CI
       blocked: []
       remaining_risks:
         - normal reviewer fix verification pending
+        - live Astra runtime untested
   - source_skill: implementation-worker
-    output_contract_version: current-branch-contract
+    output_contract_version: current-branch-contract@54bc25ecb05c57b705f7f442335f515d7c4f52b5
     content_type: application/yaml
     payload:
       mode: review follow-up
@@ -362,57 +376,53 @@ source_payloads:
         - PR68-R2-003
       non_goals:
         - unrelated cleanup
-        - self-issued review verdict
+        - self-review
         - independent final review
         - merge
       requirements_and_design_references:
-        - PR #68 R2 review PRR_kwDOSFr3-88AAAABMXje9w
-        - skills/chat-handoff-manager/SKILL.md current branch schema-v3 verification/source_payload contract
+        - PRR_kwDOSFr3-88AAAABMXje9w
+        - skills/chat-handoff-manager/SKILL.md
         - skills/progress-sync-manager/SKILL.md
       changed_files_and_purpose:
         - path: reports/handoffs/issue-67-pr68-implementation-20260906.yaml
-          purpose: verification block
+          purpose: generation-time verification
         - path: reports/handoffs/issue-67-pr68-normal-review-20260906.yaml
-          purpose: verification block
+          purpose: generation-time verification
         - path: reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
-          purpose: verification block and report-writer complete_body
-        - path: reports/issue-67-pr68-r2-findings-followup-20260906.md
-          purpose: detailed R2 follow-up report
-        - path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
-          purpose: lossless R2 follow-up handoff
-        - path: tasks/tasks-status.md
-          purpose: final canonical lifecycle synchronization pending after this packet
+          purpose: verification plus complete_body
       intentionally_untouched_areas:
-        - Astra execution contract Skills/design
-        - workflow implementation
+        - Astra execution Skill/design
+        - workflows
         - unrelated task history
       validation_commands_and_results:
         - command: compare 498d5b3..4833bc6
           result: passed
-          evidence: three handoff files only
+          evidence: 3 historical handoff files only
       failure_diagnostics_and_artifacts: []
-      commit_identities:
-        - sha: c8db6822831c1976ed264428142c80248467e86e
-          purpose: implementation handoff correction
-        - sha: 9fabe41b83a15dcaf302c7ceac8ed1ce487a3590
-          purpose: normal-review handoff correction
-        - sha: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
-          purpose: review-followup handoff correction
-        - sha: dc219813c35e402ac8aa8b83ce9550a41549d2d7
-          purpose: detailed report
-      final_head: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
+      verification_capability: remote_ci_only
+      validation_evidence:
+        - R2-001 fix range limited to called-out handoffs
+        - final route CI deferred until all persistence writes
+      review_target_commit:
+        state: committed
+        sha: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
+      push_state: pushed
       matching_ci:
         run_id: null
+        head_sha: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
         conclusion: unknown
-        head_sha: unknown
+        evidence: no later SHA backfilled; final route CI deferred
+      final_technical_head: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
+      administrative_parent: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
       blocked_items: []
       unknowns:
         - final tracking commit and exact-head run
       remaining_risks:
-        - reviewer closure pending
-      next_required_action: persist this handoff, update tracking as final repository write, verify that exact HEAD, reply to R2 threads and post concise PR comment.
+        - same normal reviewer closure pending
+        - live Astra runtime untested
+      next_required_action: persist report/handoff, update T-004 as final repository write, verify exact HEAD, then return to same normal reviewer.
   - source_skill: report-writer
-    output_contract_version: current-branch-contract
+    output_contract_version: current-branch-contract@54bc25ecb05c57b705f7f442335f515d7c4f52b5
     content_type: application/yaml
     payload:
       report_type: implementation_report
@@ -456,6 +466,9 @@ source_payloads:
           - `4833bc61f7fae56d389dd4c0917cfd73bf0db7ab`: review-followup handoff verification + complete body
         - Scope verification:
           - GitHub compare `498d5b3...4833bc6`は3 commits、3 handoff filesのみ。
+          - implementation handoff: +20 / -1
+          - normal-review handoff: +21 / -2
+          - review-followup handoff: +166 / -1
 
         ### PR68-R2-002
 
@@ -463,6 +476,14 @@ source_payloads:
         - Required: yes
         - 問題: `tasks/tasks-status.md`のT-004が初期実装時点のままで、normal review、R1 finding、修正、fix verification、R2 findingsを反映していなかった。
         - 対応方針: 本reportとschema-v3 handoffを保存した後、`tasks/tasks-status.md`をこのR2 follow-upの最後のrepository writeとして更新する。
+        - 更新内容:
+          - normal review `pass_with_held`と`PR68-R1-001 / low`
+          - R1 fix commit `30a7595559327308893469211080047bf485de16`
+          - R1 fix verificationでresolved確認
+          - R2 `PR68-R2-001 / medium required`、`PR68-R2-002 / medium required`、`PR68-R2-003 / low nonblocking`
+          - R2対応commit/report/handoff
+          - tracking更新直前HEADとその検証状態
+          - tracking自身のcommitは生成前に存在しないため`commit_pending`、保存後のexact-head CIはPRコメントへ記録
 
         ### PR68-R2-003
 
@@ -470,6 +491,7 @@ source_payloads:
         - Required: no
         - 問題: PR本文に過去の`8d3f96...`を「最終current HEAD」と固定しており、後続commit後に陳腐化していた。
         - 対応: PR本文から固定の「最終current HEAD」を削除し、snapshotごとのexact-head CIと、最新publication HEADの検証を最新PRコメントへ記録する方式へ変更した。
+        - Git HEADを変更しないPR metadata修正として実施した。
 
         ## Finding fidelity
 
@@ -481,33 +503,66 @@ source_payloads:
 
         ## Validation
 
-        GitHub compare `498d5b3eb16a26219cc5939bc0cc38c574f5f11e...4833bc61f7fae56d389dd4c0917cfd73bf0db7ab`は3 commits、3 handoff filesのみ。最終publication HEADのCIはtracking commit後に確認し、別SHA runを代用しない。
+        ### 変更境界
+
+        GitHub compare `498d5b3eb16a26219cc5939bc0cc38c574f5f11e...4833bc61f7fae56d389dd4c0917cfd73bf0db7ab`を確認した。
+
+        - ahead by: 3 commits
+        - changed files: 3
+        - 変更対象はR2-001で指定された3 handoff packetだけ
+
+        PR本文修正はGitHub metadataでありGit HEADを変更しない。
+
+        ### CI方針
+
+        CodexSkill repository maintenanceはnon-TDD。既存workflowのrepository validatorとbundle validationを使用する。
+
+        本report作成時点では、後続の本report、handoff、tracking commitを含む最終publication HEADはまだ存在しない。そのため、過去SHAの成功runを最終HEADのCI証拠として代用しない。tracking保存後のPR current HEADを取得し、そのSHAと`head_sha`が一致する`pull_request` runのみを最終証拠としてPRコメントへ記録する。
+
+        ## Failure diagnostics
+
+        - 今回のconnector writeで失敗は観測していない。
+        - CI失敗が発生した場合は対象HEADのrun/job/step/logとartifactを使用する。
+        - RevMem向けの診断artifact workflow追加方針はCodexSkill repositoryには適用しない。
 
         ## 残存事項
 
         - `tasks/tasks-status.md`のR2同期は本report/handoff保存後に行う。
         - tracking更新後のcurrent HEAD固有CIはそのcommit後に確認する。
         - R2 findingsのreview closureは同一normal reviewerのfix verificationに委ねる。
-        - 実Astra runtimeは未検証。
+        - 実Astra runtimeのavailability、profile適用、取消時停止能力、実費は未検証。
         - independent final reviewはnormal review cycleが再収束するまで開始しない。
         - mergeは行わない。
       evidence_sources:
-        - PR #68 R2 review PRR_kwDOSFr3-88AAAABMXje9w
-        - review thread PRRT_kwDOSFr3-86fqw9b
-        - review thread PRRT_kwDOSFr3-86fqw9c
-        - GitHub compare 498d5b3eb16a26219cc5939bc0cc38c574f5f11e...4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
+        - PRR_kwDOSFr3-88AAAABMXje9w
+        - PRRT_kwDOSFr3-86fqw9b
+        - PRRT_kwDOSFr3-86fqw9c
+        - compare 498d5b3..4833bc6
       target_identity:
         branch: feat/issue-67-astra-approval
         base_ref: main
         current_head: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
         reviewed_implementation_head: 87549104916a1a04d62aa0508099c857b1844840
+      verification:
+        capability: remote_ci_only
+        technical_head: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
+        administrative_parent: 4833bc61f7fae56d389dd4c0917cfd73bf0db7ab
+        commit_state: committed
+        push_state: pushed
+        ci_wait_state: ci_wait_pending
+      independent_closure:
+        initial_independent_reviewed_head: null
+        closure_reviewed_heads: []
+        reviewer_continuity: null
+        closure_scope: []
+        completeness_matrix: []
       severity_records:
         - finding_id: PR68-R1-001
           source_severity: low
           new_severity: null
           reason: null
           approved_by: null
-          record_type: preserved_resolved
+          record_type: preserved
         - finding_id: PR68-R2-001
           source_severity: medium
           new_severity: null
@@ -533,31 +588,42 @@ source_payloads:
         report_attestation_head: null
       concise_pr_comment_body: null
       unresolved_discrepancies: []
+extensions:
+  - namespace: codexskill.pr68.r2_followup_generation
+    payload:
+      PR68-R1-001: resolved_by_normal_reviewer_before_this_followup
+      PR68-R2-001: implementation_addressed_pending_normal_reviewer_fix_verification
+      PR68-R2-002: pending_final_tracking_write
+      PR68-R2-003: metadata_addressed_pending_normal_reviewer_fix_verification
+      report_commit: dc219813c35e402ac8aa8b83ce9550a41549d2d7
+      packet_commit_state_at_generation: commit_pending
+      final_route_ci_state_at_generation: ci_wait_pending
 next_action:
-  type: implementation_then_review
-  target_skill: chat-review-worker
-  mode: fix_verification
-  summary: Persist this packet, update T-004 as the last repository write, verify exact-head CI, then ask the same normal reviewer to verify R2-001/002/003.
+  type: implementation
+  target_skill: chat-implementation-worker
+  mode: review follow-up
+  summary: Persist packet, synchronize T-004 as final repository write, verify exact-head CI, then hand off to the same normal reviewer.
   instructions:
-    - preserve finding IDs and source severities.
-    - do not treat implementation disposition as reviewer closure.
-    - verify only the final PR current HEAD's matching pull_request run as final route evidence.
-    - keep independent-final lifecycle unopened until normal review converges.
-    - merge is user-owned.
+    - preserve finding IDs/severities
+    - do not treat implementation disposition as review closure
+    - use only matching current-HEAD CI
+    - keep independent-final unopened
+    - do not merge
   required_attachments_or_references:
     - PR #68
     - reports/issue-67-pr68-r2-findings-followup-20260906.md
     - reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
-    - reports/issue-67-pr68-fix-verification-r2-20260906.md
-    - reports/handoffs/issue-67-pr68-fix-verification-r2-20260906.yaml
   requested_authorized_actions:
     - read_repository
+    - edit_documentation
     - write_report
     - write_handoff
+    - commit
+    - push
     - update_pr
     - comment_pr
 transport:
   method: repository_file
   packet_path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
   packet_url: null
-  transport_note: This packet is generated before its own commit and before final tracking synchronization. It preserves three core Skill outputs including report-writer complete_body; final tracking SHA and exact-head CI belong to subsequent PR metadata/comment evidence. Permissions do not transfer to the next chat.
+  transport_note: generation-time packet; permissions do not transfer and later exact-head CI belongs to later PR evidence.
