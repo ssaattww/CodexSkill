@@ -2,9 +2,42 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-08-21
+- Updated: 2026-09-06
 
 ## In Progress
+
+- T-004: Issue #67のAstra high承認付きエスカレーション
+  - Status: 設計・Skill更新とPR #68作成済み。独立reviewは未実施
+  - Scope: 既存agent割当の保守。新規phase計画は追加しない
+  - Depends on: PR #65の既存適応型agent割当
+  - PR: https://github.com/ssaattww/CodexSkill/pull/68
+  - Exit Criteria:
+    - 通常defaultはLuna／Terra／Solを維持し、既存モデルの同一task実行・blocker・継続困難の証拠なしにAstraを提案しない
+    - Astraは`gpt-6-astra` / `high`のみとし、費用・scopeを提示して明示承認まで実行しない
+    - 既定のsingle-turn承認は1回の作業開始だけに使用し、追加依頼・retry・work-starting resumeには再承認を要求する
+    - 明示的task_until_completion承認だけが同一task/scope内の継続を許可し、完了・取消・scope変更等で失効する
+    - role、full-history継承、availability fallback、reviewer再利用でも承認を迂回しない
+    - existing reviewerのidentityとreport reservation、Sol xhigh/maxの既存規則を保持する
+    - 設計のA67-01〜A67-20へcontract対応を記録し、実モデル実行と混同しない
+    - current PR HEADとhead_shaが一致するCIでrepository validatorと配布ZIP検証が成功する
+    - 詳細report、別handoff、簡易PR commentを保存し、mergeはしない
+  - Output:
+    - `design/astra-escalation-design.md`
+    - `design/adaptive-agent-assignment-design.md`
+    - `design/skill-hierarchy-design.md`と同一内容の`skills/design/skill-hierarchy-design.md`
+    - `skills/sub-agent-task-manager/references/astra-escalation.md`と既存selector／spawn／caller Skill／report template
+    - `reports/issue-67-astra-implementation-20260906.md`（保存予定）
+    - `reports/handoffs/issue-67-pr68-implementation-20260906.yaml`（保存予定）
+  - Verification:
+    - technical_head: `8bdb6aa77c668ff9b13aaa6b3e302f57dcbd393e`
+    - verification_capability: `remote_ci_only`（repository全体の検証は既存CIで実施）
+    - commit: `committed`; push: `pushed`; technical-head CI wait: `ci_wait_completed`
+    - matching pull_request run `34022757470`: success。build job `101458238727`でrepository validator、ZIP build／構造確認、artifact保存がsuccess
+    - artifact `9986041919`, digest `sha256:4dda2e85ecf19b3ff83925e635771e9d5d780817aadca6c78fbbb9ca861258b7`
+    - TDDはCodexSkill方針によりnot applicable。Astraの有料runtime実行は未実施
+    - Markdown lintはrepository rootに`tools/`と`package.json`がないためunsupported。active relative linkはCI validatorで検証済み
+    - このtrackingとreport／handoffを含む新しいHEADのCIは別途確認し、PR commentへ記録する。上記technical-head runを新HEADの証拠に代用しない
+  - Administrative state: `commit_pending`。自己を含む将来SHAは記録せず、結果はPR metadata／commentへ保存する
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
   - Status: 通常review cycle収束、独立最終review待ち
@@ -164,7 +197,7 @@
     - `PR54-IFR2-002`: resolved維持
     - `PR54-IFR2-003`: resolved維持
     - normal fix verification cycle: 収束済み
-    - Project Instruction例は対象固有リポジトリ名の指定を対象URL1か所へ集約済み
+    - Project Instruction例は対象固有リポジトリ名の指定を対象URL1か所所へ集約済み
   - Verification:
     - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
     - input HEAD `98abfa40755e9d4ad3617fb8ae4e4f70159ef193`のworkflow run `30492531017`がsuccess
