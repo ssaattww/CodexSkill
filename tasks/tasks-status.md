@@ -26,8 +26,8 @@
     - `design/adaptive-agent-assignment-design.md`
     - `design/skill-hierarchy-design.md`と同一内容の`skills/design/skill-hierarchy-design.md`
     - `skills/sub-agent-task-manager/references/astra-escalation.md`と既存selector／spawn／caller Skill／report template
-    - `reports/issue-67-astra-implementation-20260906.md`（保存予定）
-    - `reports/handoffs/issue-67-pr68-implementation-20260906.yaml`（保存予定）
+    - 詳細report出力先: `reports/issue-67-astra-implementation-20260906.md`
+    - handoff出力先: `reports/handoffs/issue-67-pr68-implementation-20260906.yaml`
   - Verification:
     - technical_head: `8bdb6aa77c668ff9b13aaa6b3e302f57dcbd393e`
     - verification_capability: `remote_ci_only`（repository全体の検証は既存CIで実施）
@@ -37,7 +37,7 @@
     - TDDはCodexSkill方針によりnot applicable。Astraの有料runtime実行は未実施
     - Markdown lintはrepository rootに`tools/`と`package.json`がないためunsupported。active relative linkはCI validatorで検証済み
     - このtrackingとreport／handoffを含む新しいHEADのCIは別途確認し、PR commentへ記録する。上記technical-head runを新HEADの証拠に代用しない
-  - Administrative state: `commit_pending`。自己を含む将来SHAは記録せず、結果はPR metadata／commentへ保存する
+  - Administrative state: 本文生成時は`commit_pending`。自己を含む将来SHAは記録せず、永続化結果と最終HEADのCIはPR metadata／commentへ保存する
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
   - Status: 通常review cycle収束、独立最終review待ち
@@ -197,7 +197,7 @@
     - `PR54-IFR2-002`: resolved維持
     - `PR54-IFR2-003`: resolved維持
     - normal fix verification cycle: 収束済み
-    - Project Instruction例は対象固有リポジトリ名の指定を対象URL1か所所へ集約済み
+    - Project Instruction例は対象固有リポジトリ名の指定を対象URL1か所へ集約済み
   - Verification:
     - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
     - input HEAD `98abfa40755e9d4ad3617fb8ae4e4f70159ef193`のworkflow run `30492531017`がsuccess
