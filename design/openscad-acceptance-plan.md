@@ -134,16 +134,17 @@ overlayと差分画像は同じcameraとframingを使う。AとBをそれぞれ�
 
 `project init`でstable `project_id`を作り、run resultが同じID、`run_id`、retention情報を持つこと。既定`--retain-days 30`で完了runの`retention_until`が30日後となること。`--retain-days 1`と`3650`を受理し、0、負数、3651をexit 2で拒否すること。active runは`schema_id=openscad.run-lease`／`schema_version=1`のleaseを持ち、host token、PID、process creation time、lease nonce、heartbeatを記録すること。
 
-次の四つのliveness fixtureをWindows実行経路または同じproduction判定関数を使う決定的fixtureで確認する。
+次の五つのliveness／retention fixtureをWindows実行経路または同じproduction判定関数を使う決定的fixtureで確認する。
 
 1. **live owner**: helper processを生存させ、leaseのhost token、PID、process creation timeを実processと一致させる。heartbeatを意図的に古くしても`live`となり、自動housekeeping、`project clean --expired-runs`、`project clean --run-id`のいずれも削除しないこと。heartbeat expiry単独をstale判定に使わない。
-2. **crash後stale marker**: helperがactive leaseを作った後、release／terminal resultを書かずに終了する。次回同host操作でPID不在を確認して`stale-and-provable`とし、reconciliation claim後の再検査でも不在なら`status=failed`、`run_lifecycle=abandoned`、`exit_code=null`へreconcileすること。妥当な最終heartbeatをretention anchorにし、明示cleanまたは期限切れhousekeepingの対象へ移せること。diagnosticsはreconcile時点では消さないこと。
+2. **crash後stale marker**: helperがactive leaseを作った後、release／terminal resultを書かずに終了する。次回同host操作でPID不在を確認して`stale-and-provable`とし、reconciliation claim後の再検査でも不在なら`status=failed`、`run_lifecycle=abandoned`、`exit_code=null`へreconcileすること。retention anchorは既定で`abandoned_at`とし、OS等から信頼できるowner termination時刻を証明できる場合だけその時刻を使うこと。古いheartbeatをowner死亡時刻とみなさない。diagnosticsはreconcile時点では消さないこと。
 3. **PID reuse**: 生存中processのPIDをleaseへ設定するが、記録したprocess creation timeを実値と異ならせるfixtureでPID再利用相当を再現する。同じPIDという理由だけで`live`にせず、creation time不一致により`stale-and-provable`となること。reconciliation直前にidentityを再検査すること。
 4. **liveness unknown**: owner host token不一致、process query access denied、creation time取得不能の各ケースをfixture化する。`liveness-unknown`として自動housekeepingと明示`--run-id` cleanの双方がrunを保持し、判定不能理由を返すこと。初回実装にはunknownを強制削除するoptionを設けないこと。
+5. **古いheartbeat後のabandoned retention**: heartbeatを30日超古い時刻に固定したままowner processをliveとして維持し、liveness判定が`live`で削除禁止になることを先に確認する。その後ownerを終了させ、PID不在またはcreation time不一致でstaleを証明してabandonedへreconcileする。OS等からtermination時刻を信頼できる証拠として取得できないfixtureでは`retention_anchor=abandoned_at`、`retention_anchor_source=abandoned_at`となり、`retention_until`がreconcile時点から新たに`retain_days`分確保されること。同じhousekeeping passまたは直後の`project clean --expired-runs`でdiagnostics／run directoryが削除されないこと。古いheartbeatはanchorへ採用しないこと。
 
 正常終了runではresultをterminalとして保存した後にleaseがreleasedとなること。OS再起動やCLI強制終了後にactive leaseだけが残ったケースでも、同hostでPID不在またはcreation time不一致を証明できる場合だけabandonedへreconcileする。別hostから共有projectを開いた場合はhost token不一致によりunknownとなり、remote process死亡を推測しないこと。
 
-期限切れのcurrent project所有terminal run、期限内run、別project IDのrun、manifest欠落run、live run、abandoned run、liveness-unknown runを同じrun rootへ置く。自動housekeepingと`project clean --expired-runs --apply --yes`が期限切れかつ所有・terminal／abandoned・liveness確認済みのrunだけを削除し、他は残すこと。`project clean --run-id ID`は同projectのreleased terminalまたはabandonedへreconcile済みrunだけを明示削除できること。junction／symlinkでrun root外を指すものを削除しないこと。
+期限切れのcurrent project所有terminal run、期限内run、別project IDのrun、manifest欠落run、live run、abandoned run、liveness-unknown runを同じrun rootへ置く。自動housekeepingと`project clean --expired-runs --apply --yes`が期限切れかつ所有・terminal／abandoned・liveness確認済みのrunだけを削除し、他は残すこと。abandonedへreconcileしたrunは新しいretention anchorで`retention_until`を再計算し、未到達なら同じclean passで削除しないこと。`project clean --run-id ID`は同projectのreleased terminalまたはabandonedへreconcile済みrunだけを明示削除できること。junction／symlinkでrun root外を指すものを削除しないこと。
 
 ### AC-14: projectの非破壊性、path実体、同時run
 
