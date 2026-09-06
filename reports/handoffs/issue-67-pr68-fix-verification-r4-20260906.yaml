@@ -1,0 +1,556 @@
+schema_version: 3
+producer:
+  skill: chat-review-worker
+  mode: fix_verification
+  generated_at: 2026-09-06T20:54:00+09:00
+repository: ssaattww/CodexSkill
+issue_or_pr: 'Issue #67 / PR #68'
+task_id: T-004
+branch: feat/issue-67-astra-approval
+base_ref: main
+target:
+  current_head: f936f5fc60a426770a6408155852f7a98cf203bc
+  reviewed_head: &reviewed 776be2c1a18ce680157f84771c681197166662c0
+  commit_range: &range 54bc25ecb05c57b705f7f442335f515d7c4f52b5...776be2c1a18ce680157f84771c681197166662c0
+verification:
+  capability: remote_ci_only
+  capability_evidence:
+    - reviewed HEAD 776be2c1a18ce680157f84771c681197166662c0 has matching pull_request workflow run 34029006173 with completed/success.
+    - build job 101475006449 and artifact 9987975129 belong to the same reviewed HEAD.
+    - detailed r4 review report has been persisted at f936f5fc60a426770a6408155852f7a98cf203bc; this packet itself is not yet committed at generation time, so packet-persistence exact-head CI remains pending.
+  technical_head: *reviewed
+  administrative_parent: *reviewed
+  commit:
+    state: committed
+    review_target_sha: *reviewed
+  push:
+    state: pushed
+    head_sha: f936f5fc60a426770a6408155852f7a98cf203bc
+  ci_wait:
+    state: ci_wait_pending
+    required_for: route_verification
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
+authoritative_requirements: &requirements
+  - source: user_instruction
+    reference: current-chat
+    summary: PR #68を再reviewする。
+  - source: repository_instruction
+    reference: Project Instruction and AGENTS.md
+    summary: GitHub connectorを使用し、current HEADとhead_shaが一致するCIだけを採用する。CodexSkill保守はnon-TDD。詳細report、handoff、簡易PR commentを保存し、mergeしない。
+  - source: pr
+    reference: PR #68 R3 review and follow-up
+    summary: PR68-R3-001 medium requiredのfixをsame normal reviewerで検証し、fixで追加された差分も確認する。
+development_policy:
+  method: non-TDD review / fix verification
+  testing_order: static contract and tracking consistency review plus repository exact-head CI
+  governing_source: Project Instruction and AGENTS.md
+validation_plan: &validation_plan
+  commands:
+    - GitHub compare 54bc25ecb05c57b705f7f442335f515d7c4f52b5...776be2c1a18ce680157f84771c681197166662c0
+    - inspect R3 corrected handoff and new R3 follow-up handoff against current schema-v3 contracts
+    - compare tasks/tasks-status.md parent and current T-002/T-004 state
+    - matching pull_request workflow for reviewed HEAD 776be2c1a18ce680157f84771c681197166662c0
+    - matching pull_request workflow for this packet persistence HEAD
+  required_failure_diagnostics:
+    - exact failing workflow run/head_sha
+    - failing job/step and available stdout/stderr/logs
+    - relevant workflow artifact
+blocked: []
+authorized_actions:
+  - read_repository
+  - write_report
+  - write_handoff
+  - commit
+  - push
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: reports/issue-67-pr68-fix-verification-r4-20260906.md
+      reason: current normal fix-verification detailed report.
+    - path_or_operation: reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml
+      reason: current review state lossless handoff.
+    - path_or_operation: PR #68 review/comment threads
+      reason: finding closure and current verdict publication.
+  forbidden:
+    - path_or_operation: implementation or tracking fix for PR68-R4-001
+      reason: reviewer must not implement its own finding.
+    - path_or_operation: merge or auto-merge
+      reason: merge is user-owned.
+scope: &scope
+  - verify PR68-R3-001 by identity and source severity.
+  - inspect all four repository-file changes after R3 review evidence HEAD 54bc25ecb05c57b705f7f442335f515d7c4f52b5.
+  - inspect R3 follow-up handoff for schema/lossless regression.
+  - inspect T-004 tracking synchronization and sibling canonical tracking for unintended changes.
+  - inspect current exact-head CI.
+non_goals: &non_goals
+  - implement review findings.
+  - run paid Astra runtime execution.
+  - perform independent final review.
+  - merge.
+files:
+  changed:
+    - path: reports/issue-67-pr68-fix-verification-r4-20260906.md
+      purpose: r4 fix-verification detailed report.
+    - path: reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml
+      purpose: r4 review handoff.
+  inspected:
+    - path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
+      purpose: PR68-R3-001 technical fix verification.
+    - path: reports/issue-67-pr68-r3-finding-followup-20260906.md
+      purpose: R3 implementation disposition and validation boundary.
+    - path: reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml
+      purpose: newly created schema-v3/lossless follow-up packet inspection.
+    - path: tasks/tasks-status.md
+      purpose: R3 lifecycle synchronization and sibling T-002 regression inspection.
+    - path: skills/chat-handoff-manager/SKILL.md
+      purpose: schema-v3 typed enums and lossless rules.
+    - path: skills/work-context-manager/SKILL.md
+      purpose: current core output contract.
+    - path: skills/implementation-worker/SKILL.md
+      purpose: current core output contract.
+    - path: skills/report-writer/SKILL.md
+      purpose: current core output contract and severity record enum.
+  intentionally_untouched:
+    - path_or_area: Astra execution Skills/design
+      reason: R3 fixes do not change Astra execution semantics.
+    - path_or_area: tasks/tasks-status.md and implementation files
+      reason: reviewer records findings only and does not implement fixes.
+commands:
+  - command: GitHub compare 54bc25ecb05c57b705f7f442335f515d7c4f52b5...776be2c1a18ce680157f84771c681197166662c0
+    purpose: R3 fix range scope verification.
+    exit_code: 0
+    result: passed
+    head_sha: *reviewed
+    evidence: 4 commits / 4 repository files; R2 follow-up handoff fix, R3 report/handoff, T-004 tracking sync.
+  - command: GitHub Actions run 34029006173
+    purpose: reviewed HEAD exact-head repository validation.
+    exit_code: 0
+    result: passed
+    head_sha: *reviewed
+    evidence: pull_request completed/success; build job 101475006449; artifact 9987975129.
+  - command: static schema-v3 / core output contract inspection
+    purpose: verify PR68-R3-001 fix and newly generated R3 handoff.
+    exit_code: 0
+    result: passed
+    head_sha: *reviewed
+    evidence: R3-listed enum/source-payload defects are corrected and not repeated in the R3 follow-up handoff.
+  - command: canonical tracking parent/current comparison
+    purpose: verify the final R3 tracking sync stayed within T-004 scope.
+    exit_code: 1
+    result: failed
+    head_sha: *reviewed
+    evidence: PR68-R4-001; commit 776be2c1a18ce680157f84771c681197166662c0 removes 15 T-002 historical Output references while updating T-004.
+tests:
+  - name: CodexSkill TDD
+    phase: not_applicable
+    result: not_run
+    head_sha: *reviewed
+    evidence: repository maintenance is non-TDD.
+  - name: R3 finding fix verification
+    phase: verification
+    result: failed
+    head_sha: *reviewed
+    evidence: PR68-R3-001 is resolved, but introduced-by-fix PR68-R4-001 remains required.
+ci:
+  required: true
+  workflow: Validate and release ChatGPT worker skills
+  run_id: 34029006173
+  head_sha: *reviewed
+  conclusion: success
+  artifacts:
+    - id: 9987975129
+      name: chatgpt-worker-skills-34029006173
+      purpose: exact-reviewed-HEAD repository validation artifact.
+implementation:
+  outcome: not_applicable
+  final_head: *reviewed
+  commits: []
+  addressed_findings: []
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+    - reviewer performed fix verification only and did not implement PR68-R4-001.
+review:
+  mode: fix_verification
+  reviewed_head: *reviewed
+  reviewer: &reviewer
+    identity: chatgpt-pr68-normal-review-20260906
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: chatgpt-pr68-normal-review-20260906
+      changed: false
+      reason: same normal reviewer continuity for fix verification.
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+        - current chat is the same normal review lifecycle and did not implement R3 fixes.
+  verdict: fail
+  required_coverage: &coverage
+    - criterion: requirement and design conformance
+      disposition: checked_no_finding
+      evidence: no Astra execution-contract change after R1; R3 evidence fix does not alter A67 behavior.
+    - criterion: correctness and edge cases
+      disposition: checked_no_finding
+      evidence: PR68-R3-001 enum/lossless required action is satisfied.
+    - criterion: scope discipline and unrelated changes
+      disposition: checked_finding
+      evidence: T-004 tracking sync removes unrelated T-002 historical Output references, PR68-R4-001.
+    - criterion: changed files and direct dependency impact
+      disposition: checked_finding
+      evidence: R3 target handoff is fixed; tasks sibling section introduces PR68-R4-001.
+    - criterion: API data configuration workflow compatibility
+      disposition: checked_no_finding
+      evidence: R3 follow-up handoff uses current schema enum/source-payload contract without the R3 defects.
+    - criterion: error handling and failure diagnostics
+      disposition: checked_no_finding
+      evidence: exact-head CI is success and no failure is relabeled as success.
+    - criterion: security and secret handling
+      disposition: checked_no_finding
+      evidence: no credential or Astra authorization-boundary change in R3 fixes.
+    - criterion: tests and validation adequacy
+      disposition: checked_finding
+      evidence: repository CI does not detect semantic history loss in tasks tracking; static review detected PR68-R4-001.
+    - criterion: current-HEAD CI evidence
+      disposition: checked_no_finding
+      evidence: run 34029006173 head_sha matches reviewed HEAD and completed/success.
+    - criterion: report tracking documentation accuracy
+      disposition: checked_finding
+      evidence: T-002 Output list no longer matches its retained history/fidelity/pre-freeze references, PR68-R4-001.
+    - criterion: regression and maintainability
+      disposition: checked_finding
+      evidence: unrelated canonical tracking history is lost during a T-004-only synchronization.
+  independent_closure: &independent_closure
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix:
+      - finding_id: PR68-R3-001
+        required_action: normalize R2 follow-up handoff to current enums and complete current core outputs.
+        production_path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml.
+        actual_composition_fixture: current chat-handoff-manager plus current producer core output contracts.
+        focused_evidence: complete / resolved at b7e03ec7c847875fa1753cea3ea8814f8006f320 and current packet inspection.
+      - finding_id: PR68-R4-001
+        required_action: restore the 15 T-002 historical Output references while preserving T-004 R3 synchronization.
+        production_path: tasks/tasks-status.md.
+        actual_composition_fixture: T-002 Output plus retained Review History/Fidelity/Pre-freeze/Verification sections.
+        focused_evidence: incomplete; current commit removes the entries while downstream T-002 history remains.
+  validation_assessment: &validation_assessment
+    - item: PR68-R3-001 handoff correction
+      result: supported
+      evidence: current target handoff uses defined enums and complete producer evidence for the declared contract.
+    - item: R3 follow-up handoff schema/lossless compliance
+      result: supported
+      evidence: no recurrence of the R3-listed enum/complete-output defect was identified.
+    - item: T-004 tracking synchronization scope
+      result: failed
+      evidence: PR68-R4-001 removes T-002 historical Output references.
+    - item: reviewed HEAD repository CI
+      result: supported
+      evidence: run 34029006173 / job 101475006449 / artifact 9987975129 exact-head success.
+    - item: live Astra runtime
+      result: unavailable
+      evidence: paid runtime execution is outside current review scope.
+  reserved_report_paths: []
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: *reviewed
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence:
+      - normal review cycle remains open; independent-final attestation is not active.
+  summary:
+    - PR68-R3-001 is resolved.
+    - PR68-R4-001 medium required remains; verdict fail.
+report:
+  report_type: review_report
+  outcome: created
+  persistence_mode: repository_file
+  paths: &report_paths
+    - reports/issue-67-pr68-fix-verification-r4-20260906.md
+  reviewed_head: *reviewed
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - detailed r4 review report persisted at f936f5fc60a426770a6408155852f7a98cf203bc.
+    - this packet persistence and its exact-head CI are pending at generation time.
+findings: &findings
+  - id: PR68-R4-001
+    severity: medium
+    origin: introduced_by_fix
+    location: tasks/tasks-status.md / T-002 Output
+    description: R3 final T-004 tracking synchronization removes 15 historical Issue #53 report/handoff Output references from T-002 while the following T-002 history/evidence still relies on them.
+    impact: canonical tracking becomes internally inconsistent and restart/review flows can reconstruct T-002 with missing output evidence.
+    evidence: commit 776be2c1a18ce680157f84771c681197166662c0 deletion diff versus its parent, plus retained T-002 Review History/Fidelity/Pre-freeze/Verification references.
+    required_action: restore the 15 deleted T-002 Output references exactly from the previous HEAD, preserve T-004 R3 sync, and do not change unrelated T-002 history.
+held: []
+unexplored: &unexplored
+  - area: live Astra runtime availability/profile/cancellation/cost
+    blocker: runtime execution and paid model use are outside review scope.
+    remaining_risk: operational behavior and actual cost remain unverified.
+    verdict_impact: does not replace required fix of PR68-R4-001 and is not claimed as runtime success.
+unknown:
+  - field_or_fact: final CI for this handoff persistence HEAD
+    reason: this packet commit does not exist until persistence completes.
+not_applicable:
+  - field_or_area: TDD Red/Green
+    reason: CodexSkill repository maintenance is non-TDD.
+  - field_or_area: independent final review
+    reason: normal review cycle has not converged.
+remaining_risks: &risks
+  - PR68-R4-001 must be fixed and re-verified by the same normal reviewer.
+  - live Astra runtime remains untested.
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: current-branch-contract
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      issue_or_pr: 'Issue #67 / PR #68'
+      task_id: T-004
+      mode: review
+      branch: feat/issue-67-astra-approval
+      base_ref: main
+      current_head: *reviewed
+      reviewed_head: *reviewed
+      verification_capability: remote_ci_only
+      verification_capability_evidence:
+        - no usable local repository executor was used; formal evidence is matching GitHub Actions for the exact reviewed HEAD.
+      execution_state:
+        technical_head: *reviewed
+        administrative_parent: null
+        commit: committed
+        push: pushed
+        ci_wait: ci_wait_completed
+        full_local_equivalence_gate:
+          state: unsupported
+          candidate_head: *reviewed
+          invalidated_runs: []
+      scope: *scope
+      non_goals: *non_goals
+      authoritative_requirements: *requirements
+      write_boundary:
+        allowed:
+          - read repository and PR evidence
+          - persist review report and handoff
+          - publish PR review/comment evidence
+        forbidden:
+          - implement findings
+          - merge
+      development_policy:
+        method: non-TDD review / fix verification
+        testing_order: static contract and tracking consistency review plus exact-head CI
+      validation:
+        commands:
+          - compare R3 fix range
+          - inspect schema-v3/core output contracts
+          - compare canonical tracking parent/current state
+          - exact-head CI
+        required_failure_diagnostics:
+          - run/job/step/log/artifact for a matching failing HEAD
+      ci:
+        matching_run: https://github.com/ssaattww/CodexSkill/actions/runs/34029006173
+        conclusion: success
+      unknown:
+        - final packet-persistence HEAD CI
+      blocked: []
+      remaining_risks: *risks
+  - source_skill: review-worker
+    output_contract_version: current-branch-contract
+    content_type: application/yaml
+    payload:
+      review_mode: fix_verification
+      reviewed_implementation_head: *reviewed
+      initial_independent_reviewed_head: null
+      closure_reviewed_heads: []
+      independent_review_continuity: null
+      closure_scope: []
+      base: 6507727986329e34e69da3680a00824eb1fbfe13
+      commit_range: *range
+      reviewer: *reviewer
+      required_coverage: *coverage
+      findings: *findings
+      finding_completeness_matrix:
+        - finding_id: PR68-R3-001
+          required_action: normalize R2 follow-up handoff to current enums and complete current core outputs
+          production_path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
+          actual_composition_fixture: current handoff/core contracts
+          focused_evidence: resolved
+        - finding_id: PR68-R4-001
+          required_action: restore T-002 historical Output references
+          production_path: tasks/tasks-status.md
+          actual_composition_fixture: T-002 canonical tracking and retained history
+          focused_evidence: incomplete
+      severity_reclassification_records: []
+      held: []
+      unexplored: *unexplored
+      validation_assessment: *validation_assessment
+      verdict: fail
+      remaining_risks: *risks
+      next_action: implementation flow restores the T-002 Output entries without disturbing T-004 R3 sync, then same normal reviewer performs fix verification.
+      reserved_report_paths: []
+      report_attestation_allowed: false
+      report_attestation_conditions:
+        applicable: false
+        reason: normal review cycle is open and independent-final lifecycle has not started.
+  - source_skill: report-writer
+    output_contract_version: current-branch-contract
+    content_type: application/yaml
+    payload:
+      report_type: review_report
+      complete_body: |
+        # PR #68 fix verification r4
+
+        ## 判定と対象
+
+        - 判定: `fail`。
+        - Review mode: `fix_verification`。
+        - Reviewer identity: `chatgpt-pr68-normal-review-20260906`。初回normal reviewから同一reviewerを継続する。
+        - Repository / Issue / PR: `ssaattww/CodexSkill` / #67 / #68。
+        - Branch: `feat/issue-67-astra-approval`。
+        - Base: `main` / `6507727986329e34e69da3680a00824eb1fbfe13`。
+        - Reviewed implementation HEAD: `776be2c1a18ce680157f84771c681197166662c0`。
+        - Previous R3 review evidence HEAD: `54bc25ecb05c57b705f7f442335f515d7c4f52b5`。
+        - R3 technical fix HEAD: `b7e03ec7c847875fa1753cea3ea8814f8006f320`。
+        - Review range: `54bc25ecb05c57b705f7f442335f515d7c4f52b5...776be2c1a18ce680157f84771c681197166662c0`。
+        - Persistence: normal review report。independent-final report attestationではない。
+        - Merge: 実施しない。
+
+        前回review後の4 commits / 4 repository filesを確認した。R3-001 target handoff fix、R3 follow-up report/handoff、T-004 tracking同期である。
+
+        ## Source finding closure
+
+        ### PR68-R3-001 — `resolved`
+
+        R3で列挙したschema-v3 enum違反、custom-state mapping、producer source payload不足は修正されている。technical fix commit `b7e03ec7c847875fa1753cea3ea8814f8006f320`は対象handoff 1fileのみを変更し、新しいR3 follow-up handoffにも同型欠陥を確認しなかった。source severity `medium`は変更しない。
+
+        ## 新規指摘
+
+        ### PR68-R4-001 — T-004同期commitがT-002 historical Output referencesを削除
+
+        - Severity: `medium`。
+        - Origin: `introduced_by_fix`。
+        - Location: `tasks/tasks-status.md` / T-002 Output。
+        - Introduced commit: `776be2c1a18ce680157f84771c681197166662c0`。
+
+        T-004 R3 lifecycleを同期する最後のtracking commitで、T-002の既存Output一覧からIssue #53のhistorical report/handoff参照15件が削除された。直前HEADには存在し、現在も直後のT-002 Review History / Finding Fidelity / Pre-freeze State / Verificationが同じ成果物を参照するため、意図的なT-002状態変更として整合しない。
+
+        Required actionは、15件を直前HEADどおり復元し、T-004 R3同期内容を維持すること。T-002の他historyは変更しない。
+
+        ## Validation evidence
+
+        Reviewed HEAD `776be2c1a18ce680157f84771c681197166662c0`に一致するpull_request run `34029006173`はcompleted/success。build job `101475006449`、artifact `9987975129`、digest `sha256:d1a0784c02fba4368be7c09e2761e556ea4072c25942b610b6877fa21d6815a4`。別SHA runは代用していない。
+
+        ## Verdict
+
+        `fail`。R3-001はresolvedだが、R4-001 medium requiredが残る。independent final reviewへは進めず、same normal reviewerで次回fix verificationする。mergeしない。
+      evidence_sources:
+        - PR #68 current metadata and R3 review/follow-up evidence
+        - GitHub compare 54bc25ecb05c57b705f7f442335f515d7c4f52b5...776be2c1a18ce680157f84771c681197166662c0
+        - commit 776be2c1a18ce680157f84771c681197166662c0 diff and parent/current tasks-status comparison
+        - workflow run 34029006173 / job 101475006449 / artifact 9987975129
+        - current handoff/core output contracts
+      target_identity:
+        branch: feat/issue-67-astra-approval
+        base_ref: main
+        current_head: *reviewed
+        reviewed_implementation_head: *reviewed
+      verification:
+        capability: remote_ci_only
+        technical_head: *reviewed
+        administrative_parent: null
+        commit_state: committed
+        push_state: pushed
+        ci_wait_state: ci_wait_completed
+      independent_closure:
+        initial_independent_reviewed_head: null
+        closure_reviewed_heads: []
+        reviewer_continuity: null
+        closure_scope: []
+        completeness_matrix:
+          - finding_id: PR68-R3-001
+            required_action: R2 follow-up handoff schema/lossless normalization
+            production_path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
+            actual_composition_fixture: current handoff/core contracts
+            focused_evidence: resolved
+          - finding_id: PR68-R4-001
+            required_action: restore T-002 historical Output references
+            production_path: tasks/tasks-status.md
+            actual_composition_fixture: T-002 Output/history consistency
+            focused_evidence: incomplete
+      severity_records:
+        - finding_id: PR68-R3-001
+          source_severity: medium
+          new_severity: null
+          reason: null
+          approved_by: null
+          record_type: preserved
+        - finding_id: PR68-R4-001
+          source_severity: medium
+          new_severity: null
+          reason: null
+          approved_by: null
+          record_type: preserved
+      persistence:
+        mode: repository_file
+        reserved_paths:
+          - reports/issue-67-pr68-fix-verification-r4-20260906.md
+        report_attestation_head: null
+      concise_pr_comment_body: null
+      unresolved_discrepancies: []
+extensions:
+  - namespace: codexskill.pr68.r4_review_generation
+    payload:
+      PR68-R1-001: resolved_by_normal_reviewer
+      PR68-R2-001: resolved_by_normal_reviewer
+      PR68-R2-002: resolved_by_normal_reviewer
+      PR68-R2-003: resolved_by_normal_reviewer
+      PR68-R3-001: resolved_by_normal_reviewer
+      PR68-R4-001: required_pending_implementation
+      reviewed_head: *reviewed
+      reviewed_head_ci_run: 34029006173
+      report_commit: f936f5fc60a426770a6408155852f7a98cf203bc
+      packet_commit_state_at_generation: commit_pending
+      packet_ci_state_at_generation: ci_wait_pending
+next_action:
+  type: implementation
+  target_skill: chat-implementation-worker
+  mode: review follow-up
+  summary: Restore the 15 T-002 historical Output references while preserving T-004 R3 tracking changes; validate and return to the same normal reviewer.
+  instructions:
+    - preserve PR68-R4-001 identity and source severity medium
+    - restore only the deleted T-002 Output references from the previous HEAD
+    - preserve T-004 R3 synchronization and unrelated T-002 history
+    - do not self-issue review closure
+    - use only matching current-HEAD pull_request CI for formal evidence
+    - do not start independent final review before normal review convergence
+    - do not merge
+  required_attachments_or_references:
+    - PR #68
+    - reports/issue-67-pr68-fix-verification-r4-20260906.md
+    - reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml
+    - commit 776be2c1a18ce680157f84771c681197166662c0
+  requested_authorized_actions:
+    - read_repository
+    - edit_documentation
+    - write_report
+    - write_handoff
+    - commit
+    - push
+    - update_pr
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml
+  packet_url: null
+  transport_note: packet generated after detailed r4 report commit and before its own commit; final packet SHA and exact-head CI are recorded after persistence in PR metadata/comment. Permissions do not transfer to the next chat.
