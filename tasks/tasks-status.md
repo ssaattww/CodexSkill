@@ -7,12 +7,12 @@
 ## In Progress
 
 - T-004: Windowsネイティブ向けOpenSCAD Skillを設計・追加する
-  - Status: 設計reviewのrequired finding対応済み、同一normal reviewerのfix verification待ち。Skill本体は未実装
+  - Status: 設計ドラフト作成済み、利用者確認・実装指示待ち。Skill本体は未実装
   - Phase: Phase 9
   - Estimate: L。下表の小さな単位で実施する
   - PR: [#66](https://github.com/ssaattww/CodexSkill/pull/66)
   - Branch: `codex/openscad-windows-skill`
-  - Depends on: 設計review収束後の実装開始、コピーする上流fileの取り込み条件確認
+  - Depends on: 設計説明後の利用者による実装指示。コピーする上流fileの取り込み条件確認
   - Scope: SKILLの段階的読込、WindowsのPython実行基盤、既存OpenSCAD機能の移植
   - Non-goals: 今回の設計段階でのコード実装、MCP server新設、汎用自動再構築、新規自動release、merge
   - Exit Criteria:
@@ -22,7 +22,6 @@
     - 10 mm cube同士、Xへ5 mm移動、完全非重複でvolume IoUがそれぞれ1、1/3、0となる
     - 差分出力不在を0体積として100%一致と報告せず、失敗時はmetric=nullと診断を返す
     - PNG生成とCodexの実画像確認が分離され、未校正profileや未測定壁厚を検証済みにしない
-    - crash／強制終了後のrun leaseについてlive／stale-and-provable／liveness-unknownを区別し、PID再利用や判定不能時にrunを誤削除しない
     - `design/openscad-acceptance-plan.md`の必須ACについて実装HEADに紐づく証拠がある
     - 実装後に二つのhierarchy designを同期し、既存repository validatorとZIP buildを確認する
     - 詳細reportとPR要約を保存し、利用者が実装後にmergeする。同じPRを継続使用する
@@ -39,11 +38,11 @@
 
 | T-004内の単位 | Size | Status | Depends on | 終了条件 |
 | --- | --- | --- | --- | --- |
-| P66-D: 設計と説明 | M | normal design reviewの全required findingへ対応済み、fix verification待ち | 本依頼 | 構成・Windows・受け入れ設計、report、PRコメント、normal review finding収束 |
+| P66-D: 設計と説明 | M | 設計ドラフト作成済み、利用者確認待ち | 本依頼 | 構成・Windows・受け入れ設計、report、PRコメント、利用者への説明 |
 | P66-I1: Skill分割・出典 | S | 未着手 | P66-D、実装指示、取り込み条件確認 | AC-01〜03、18、20の構造・文書部分。実行を伴う確認は後続単位へ残す |
-| P66-I2: CLIと実行基盤 | M | 未着手 | P66-I1 | AC-04〜06、13〜14、19の基盤部分。schema／lease／retentionを含み、render等との結合は後続単位で確認 |
-| P66-I3: 基本CAD操作 | M | 未着手 | P66-I2 | AC-06〜10、15、19と基盤の結合。render／validate／export、基本4viewとfeature coverage |
-| P66-I4: mesh解析・再構築補助 | M | 未着手 | P66-I3 | AC-11〜12、16〜17、19。比較の失敗分離、schema／frame／複合品質gate、対応model限定 |
+| P66-I2: CLIと実行基盤 | M | 未着手 | P66-I1 | AC-04〜05、13〜14の基盤部分。render等との結合は後続単位で確認 |
+| P66-I3: 基本CAD操作 | M | 未着手 | P66-I2 | AC-06〜10、15と基盤の結合。render／validate／exportとprofile |
+| P66-I4: mesh解析・再構築補助 | M | 未着手 | P66-I3 | AC-11〜12、16〜17。比較の失敗分離と対応model限定 |
 | P66-I5: Windows受け入れ・提出 | M | 未着手 | P66-I4 | 全必須ACの実機証拠、設計同期、report。workerはmergeしない |
 
 各単位のAC番号は担当範囲を示す。後続実装が必要な実行項目は未実施のまま引き継ぎ、部分確認をAC全体の合格にしない。全必須ACの最終完了はP66-I5で判定する。
@@ -89,3 +88,171 @@
     - `skills/git-commit-manager/SKILL.md`
     - `skills/progress-sync-manager/SKILL.md`
     - `skills/report-output-manager/SKILL.md`
+    - `skills/report-writer/SKILL.md`
+    - `reports/issue-62-design-update-20260821183448.md`
+    - `reports/issue-62-skill-implementation-20260821184240.md`
+    - `reports/issue-62-normal-review-followup-20260821190259.md`
+    - `reports/issue-62-normal-review-20260821185421.md`
+    - `reports/issue-62-normal-review-finding-closure-20260821190920.md`
+    - `reports/issue-62-normal-review-followup-r2-20260821191250.md`
+    - `reports/issue-62-normal-review-finding-closure-r2-20260821191456.md`
+  - Verification:
+    - TDDはCodexSkill repository policyにより`not applicable`
+    - `git diff --check`は成功
+    - 2つのSkill hierarchy設計は一致
+    - repository validator／bundle buildはlocal Python runtime不在のため`unsupported`
+    - Markdown lintは`tools/lint/`と`package.json`不在のため`unsupported`
+    - 通常reviewは`I62-NR-001`〜`003`を全件closedとし`pass_with_held`
+    - 独立review、PR作成はpending
+
+- T-002: Codex／ChatGPT Skillを親非依存core Skillとruntime wrapperへ共通化し、ChatGPT依存Skillを単一ZIPへ収録する
+  - Status: normal fix verification pass、pre-freeze最終HEAD検証待ち
+  - Phase: Phase 7
+  - Estimate: L
+  - Depends on: なし
+  - Supersedes:
+    - `shared/workflow/`contractを複数Skillから参照する旧方針
+    - Release時にshared dependencyを各Skillへ複製する旧方針
+    - 3 ChatGPT Skillとshared handoff fileだけを配布する旧構成
+  - Exit Criteria:
+    - runtime非依存のcontext、implementation、review、report意味論が独立core Skillとして定義されている
+    - Codex wrapperがcore SkillをSkill名で呼び出し、runtime固有責務だけを持つ
+    - ChatGPT wrapperがcore SkillをSkill名で呼び出し、runtime固有責務だけを持つ
+    - 各Skillが自directory内で完結し、Skill外shared runtime fileへ依存しない
+    - `chat-handoff-manager`がtyped projectionとversioned raw source payloadの両方を保持する
+    - handoffがdevelopment policy、planned validation、required failure diagnostics、blocked state、implementation failure diagnosticsを保持する
+    - handoffがreviewer identity／continuity／independence、reserved report path、attestation allowlist／validation条件を保持する
+    - handoffがfull finding、reviewed HEAD、coverage、held、unexplored、requirements、test、artifact、commit、report／comment参照をlosslessにtransportする
+    - schema version 1／2のoriginal packetとmapping不能fieldをnormalizationで捨てない
+    - normal handoffをschema version 3 packetとして`reports/handoffs/`へ保存する
+    - `source_payloads`が4 core Skillのcomplete outputをfield名と構造を変えず保持する
+    - `report-writer` payloadが`complete_body`全文と`severity_records`を保持する
+    - Project Instruction例の対象固有リポジトリ名は最初の対象URLだけで指定し、後続instructionでは一般名で参照する
+    - 4 ChatGPT wrapperと4 core Skillが独立root directoryとして単一ZIPへ含まれる
+    - repository-wide validatorがfront matter、Skill dependency、active Markdown link、symlink、削除済みshared runtime path、hierarchy design同期を検証する
+    - PRとmain pushのworkflow triggerが`shared/**`だけの変更でもrepository validatorを実行する
+    - PR buildがread-onlyかつ実PR HEAD SHAをcheckoutし、main反映後のrelease jobだけがwrite権限を持つ
+    - finding identityとsource severityを維持し、reclassificationにはsource／new severity、理由、承認主体を記録する
+    - independent final review前の全non-final変更はcommitする。pre-review pushはremote-CI-onlyのformal verificationに限り、local routeへは適用しない
+    - pre-freeze処理でrepositoryが変わった場合はnormal review／fix verificationへ戻る
+    - passing final reportは予約済みpathだけを変更する1回のreport-attestation commitで保存できる
+    - attestation後にrepository-writing Skillまたは追加Git commitを実行しない
+    - current implementation HEAD固有のrepository validation、bundle workflow、artifact確認が成功する
+    - normal reviewerがsource findingと`PR54-IFR2-001`から`PR54-IFR2-003`をfix verificationしてpassする
+    - 別fresh reviewerがcurrent implementation HEADを独立最終reviewしてpassする
+    - mergeを行わない
+  - Output:
+    - `skills/work-context-manager/SKILL.md`
+    - `skills/implementation-worker/SKILL.md`
+    - `skills/review-worker/SKILL.md`
+    - `skills/report-writer/SKILL.md`
+    - `skills/chat-implementation-worker/SKILL.md`
+    - `skills/chat-review-worker/SKILL.md`
+    - `skills/chat-report-writer/SKILL.md`
+    - `skills/chat-handoff-manager/SKILL.md`
+    - `skills/implementation-executor/SKILL.md`
+    - `skills/review-enforcer/SKILL.md`
+    - `skills/report-output-manager/SKILL.md`
+    - `skills/development-orchestrator/SKILL.md`
+    - `skills/tdd-executor/SKILL.md`
+    - `skills/skill-authoring-wrapper/SKILL.md`
+    - `scripts/build_chatgpt_worker_skills.py`
+    - `scripts/verify_skill_repository.py`
+    - `.github/workflows/release-chatgpt-worker-skills.yml`
+    - `design/chat-worker-skill-design.md`
+    - `design/chatgpt-project-instruction-example.md`
+    - `design/skill-hierarchy-design.md`
+    - `skills/design/skill-hierarchy-design.md`
+    - `reports/issue-53-independent-final-review-20260729083728.md`
+    - `reports/issue-53-core-skill-wrapper-review-followup-20260729174338.md`
+    - `reports/issue-53-fix-verification-20260729182457.md`
+    - `reports/issue-53-fix-verification-followup-20260729182800.md`
+    - `reports/issue-53-fix-verification-r2-20260729185000.md`
+    - `reports/issue-53-independent-final-review-r2-20260729185400.md`
+    - `reports/issue-53-finding-severity-erratum-20260729193100.md`
+    - `reports/issue-53-independent-final-review-r2-followup-20260729193100.md`
+    - `reports/issue-53-independent-final-review-r2-fix-verification-20260729212800.md`
+    - `reports/issue-53-normal-handoff-followup-20260730060300.md`
+    - `reports/issue-53-independent-final-review-r2-fix-verification-r2-20260730062100.md`
+    - `reports/issue-53-complete-source-payload-followup-20260730070000.md`
+    - `reports/issue-53-independent-final-review-r2-fix-verification-r3-20260730072800.md`
+    - `reports/issue-53-normal-review-pass-prefreeze-followup-20260730091000.md`
+    - `reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`
+  - Review History:
+    - initial independent final review: source finding 5件、verdict `fail`
+    - first fix verification: `PR54-IFR-001`／`005` resolved、`002`／`003`／`004` partial、verdict `fail`
+    - r2 fix verification: source finding 5件 resolved、verdict `pass_with_held`、report commit `162e19ff44410d3fdfd8230615af8370cb8e2add`
+    - independent final review r2: `PR54-IFR2-001` high、`PR54-IFR2-002` medium、`PR54-IFR2-003` medium、verdict `fail`、report commit `9922865b2bd49cb7a76d462258e075c6959ee05e`
+    - independent-final-review-r2 fix verification: `PR54-IFR2-002`／`003` resolved、`PR54-IFR2-001` partial、verdict `fail`、report commit `17339b357226125b1b6bd6850645bfec8c92fcab`
+    - fix verification r2: packet persistenceは確認したがcomplete raw output不足で`PR54-IFR2-001` partial、verdict `fail`、report commit `98abfa40755e9d4ad3617fb8ae4e4f70159ef193`
+    - fix verification r3: `PR54-IFR2-001` resolved、`002`／`003` resolved維持、remaining required findings 0件、verdict `pass_with_held`、report commit `6fb76ce5f4cf3e358c5d70c5139a024d9495186f`
+  - Finding Fidelity:
+    - `PR54-IFR-004`のauthoritative source severityは`high`
+    - first／r2 fix-verification reportの`medium`表記はreclassificationではなくtranscription error
+    - correctionは`reports/issue-53-finding-severity-erratum-20260729193100.md`を正とし、historical reportは改変しない
+  - Pre-freeze State:
+    - state: pending final current-HEAD validation
+    - Skill-gap decision: `update existing skill`。`review-worker`と`report-writer`へseverity continuity guardを反映済み。新規Skillは不要
+    - feedback classification: task-specific implementation／report fidelity defect。active feedback ledger追記は不要
+    - normal handoff: schema version 3 packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存済み
+    - source payload: 4 core Skillのcomplete output、structured authority、changed-file purpose、full review evidence、`complete_body`全文、`severity_records`を保存済み
+    - packet／report commit: `ab7d58dccc96b6e22a36723b885e8f44666d7007`
+    - normal fix-verification report commit: `6fb76ce5f4cf3e358c5d70c5139a024d9495186f`
+    - normal review verdict: `pass_with_held`; required finding 0件
+    - freeze: 本trackingとpre-freeze follow-up reportを含むcurrent HEADのmatching validation成功後に実施する
+  - Current Review Follow-up:
+    - `PR54-IFR2-001`: resolved
+    - `PR54-IFR2-002`: resolved維持
+    - `PR54-IFR2-003`: resolved維持
+    - normal fix verification cycle: 収束済み
+    - Project Instruction例は対象固有リポジトリ名の指定を対象URL1か所へ集約済み
+  - Verification:
+    - TDDは利用者指示とCodexSkill repository policyにより`not applicable`
+    - input HEAD `98abfa40755e9d4ad3617fb8ae4e4f70159ef193`のworkflow run `30492531017`がsuccess
+    - input artifact `8740261320`、digest `sha256:e63e70c61b4845d7a7009db5e7fd32ab6fca09b868ea6ee165c1d8e42474c9b8`
+    - packet／report commit HEAD `ab7d58dccc96b6e22a36723b885e8f44666d7007`のworkflow run `30495649913`がsuccess
+    - artifact `chatgpt-worker-skills-ab7d58dccc96b6e22a36723b885e8f44666d7007`、ID `8741451881`、digest `sha256:da3589d11beae31eab5265b2b982e491c8b8560e6f274c9a0bdd1b398244ff9c`
+    - tracking同期HEAD `6976a94391dd3d7afa3c8284c19986edd6f18726`のworkflow run `30495814619`がsuccess
+    - fix-verification r3 report commit `6fb76ce5f4cf3e358c5d70c5139a024d9495186f`のworkflow run `30496514600`がsuccess
+    - artifact `chatgpt-worker-skills-6fb76ce5f4cf3e358c5d70c5139a024d9495186f`、ID `8741787240`、digest `sha256:03286426413470e9a9ad64ed13e003cfb562a8e87b978f3ab4d8a7e4c2e09eb9`
+    - 本pre-freeze follow-upとtracking更新後HEADのmatching workflow／artifactを確認する
+    - fresh independent final reviewは未実施
+
+## Backlog
+
+なし
+
+## Done
+
+- T-001: `spawn_agent` model override 呼び出し契約を Skill 化する
+  - Status: 完了
+  - Phase: Phase 2
+  - Estimate: S
+  - Depends on: なし
+  - Exit Criteria:
+    - `model` と `reasoning_effort` を prompt ではなく `spawn_agent` の実引数で渡す契約が明記されている
+    - override 時は `fork_turns: "none"` または部分 fork を使い、full-history forkを避ける規則が明記されている
+    - hidden schemaでもruntimeが受理する現在のmulti-agent v2挙動と、失敗時の `codex exec` fallbackが明記されている
+    - reviewerは原則parentと同じmodelを使用し、review reasoningの既定をhighとする
+    - implementation modelはdevelopment-orchestratorが作業開始時にユーザーへ確認する
+    - orchestration/delegation/review Skillと2つのhierarchy designが同期している
+    - Markdown lintを実行し、配線が無い場合は`unsupported`として理由と残リスクを記録する
+    - Skill validationと独立reviewが成功する
+    - commit、push、PR作成が完了する
+  - Output:
+    - `skills/sub-agent-task-manager/references/spawn-agent-model-overrides.md`
+    - `skills/sub-agent-task-manager/SKILL.md`
+    - `skills/codex-delegation-executor/SKILL.md`
+    - `skills/development-orchestrator/SKILL.md`
+    - `skills/review-enforcer/SKILL.md`
+    - `skills/design/skill-hierarchy-design.md`
+    - `design/skill-hierarchy-design.md`
+    - `reports/topic-spawn-agent-model-overrides-implementation-20260711194140.md`
+    - `reports/topic-spawn-agent-model-overrides-verification-20260711194628.md`
+    - `reports/topic-spawn-agent-model-overrides-review-20260711194140.md`
+  - Verification:
+    - built-in `skill-creator` の `quick_validate.py` が4 Skillで成功
+    - 2つのhierarchy designがbyte-identical
+    - `git diff --check` 成功
+    - Markdown lintはrepo配線不在のため`unsupported`として記録
+    - parentと同じ`gpt-5.6-sol / high` reviewerの再レビューで指摘なし
