@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-004: Issue #67のAstra high承認付きエスカレーション
-  - Status: R3 required finding `PR68-R3-001`をimplementation側でaddressed。same normal reviewerのfix verification待ち。独立最終reviewは未開始
+  - Status: R4 required finding `PR68-R4-001`をimplementation側でaddressed。same normal reviewerのfix verification待ち。独立最終reviewは未開始
   - Scope: 既存agent割当の保守。新規phase計画は追加しない
   - Depends on: PR #65の既存適応型agent割当
   - PR: https://github.com/ssaattww/CodexSkill/pull/68
@@ -21,7 +21,7 @@
     - 設計のA67-01〜A67-20へcontract対応を記録し、実モデル実行と混同しない
     - schema-v3 handoffが定義済みenumだけを使用し、generation時点のverification stateとproducer core Skillのcomplete raw outputをlosslessに保持する
     - tracking、report、handoff、PR本文がnormal review/fix lifecycleの実状態と同期する
-    - same normal reviewerが`PR68-R3-001`をfix verificationし、normal review cycleが収束する
+    - same normal reviewerが`PR68-R4-001`をfix verificationし、normal review cycleが収束する
     - current PR HEADとhead_shaが一致するCIでrepository validatorと配布ZIP検証が成功する
     - 詳細report、別handoff、簡易PR commentを保存し、mergeはしない
   - Output:
@@ -43,6 +43,10 @@
     - `reports/handoffs/issue-67-pr68-fix-verification-r3-20260906.yaml`
     - `reports/issue-67-pr68-r3-finding-followup-20260906.md`
     - `reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml`
+    - `reports/issue-67-pr68-fix-verification-r4-20260906.md`
+    - `reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml`
+    - `reports/issue-67-pr68-r4-finding-followup-20260906.md`
+    - `reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml`
   - Review History:
     - initial normal review on implementation HEAD `8d3f96a0ec5f01247c4092f7bb0f690168ba627e`: `pass_with_held`; `PR68-R1-001 / low` 1件、required finding 0件
     - `PR68-R1-001` fix commit: `30a7595559327308893469211080047bf485de16`。single_turnだけを複数operation再利用禁止にし、task_until_completionの同一task/scope/agent継続を明記
@@ -53,15 +57,19 @@
     - R3 fix verification on target HEAD `7515f13e9bfc27a8c416786a39ddfaa71d31ac99`: R2-001/002/003は全件resolved。新規`PR68-R3-001 / medium / required`を検出しverdict `fail`
     - R3 review report commit: `0acf85d6e075c1489f5f721d72b8d60037b0fc47`
     - R3 review handoff/evidence HEAD: `54bc25ecb05c57b705f7f442335f515d7c4f52b5`
+    - R4 fix verification on target HEAD `776be2c1a18ce680157f84771c681197166662c0`: `PR68-R3-001` resolved。新規`PR68-R4-001 / medium / required`を検出しverdict `fail`
+    - R4 review report commit: `f936f5fc60a426770a6408155852f7a98cf203bc`
+    - R4 review handoff/evidence HEAD: `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`
   - Current Review Follow-up:
     - `PR68-R1-001`: reviewer resolved確認済み。source severity `low`維持
     - `PR68-R2-001`: reviewer resolved確認済み。source severity `medium`維持
     - `PR68-R2-002`: reviewer resolved確認済み。source severity `medium`維持
     - `PR68-R2-003`: reviewer resolved確認済み。source severity `low`維持
-    - `PR68-R3-001`: R2 follow-up handoffの未定義enumとlossless producer payload不足を修正 commit `b7e03ec7c847875fa1753cea3ea8814f8006f320`
-    - R3-001 fix range `54bc25ecb05c57b705f7f442335f515d7c4f52b5...b7e03ec7c847875fa1753cea3ea8814f8006f320`: 1 commit / 対象handoff 1 fileのみ
-    - R3-001 follow-up detailed report commit: `9660cbdb09f35bdc0c5397e5950d3abefc00d7d6`
-    - R3-001 follow-up handoff commit: `1cca241331f420fce131b9447b88c38f0d0ad569`
+    - `PR68-R3-001`: reviewer resolved確認済み。source severity `medium`維持
+    - `PR68-R4-001`: T-004 R3同期で誤削除したT-002 historical Output参照15件を復元 commit `91785d8a16a613303818db2495de39f179e3c3d4`
+    - `PR68-R4-001`: T-004 R3同期内容を維持し、その他T-002 historyは内容変更なし
+    - R4-001 follow-up detailed report commit: `8f2963c3353f614887996d4c56b88cdc0b2b1edf`
+    - R4-001 follow-up handoff commit: `9a0c32ad88102ca1e4b3c4f5e92841d5a02efe20`
     - reviewer closure: pending same normal reviewer fix verification; independent final reviewは開始しない
   - Verification:
     - verification_capability: `remote_ci_only`
@@ -73,6 +81,9 @@
     - R3 review evidence HEAD `54bc25ecb05c57b705f7f442335f515d7c4f52b5`のmatching run `34027989571`: success、build job `101472279361`、artifact `9987667737`、digest `sha256:fa58ddd50a5948a02166908c7d1e19a5a74b7e068c90583631200ade424a211f`
     - R3 technical fix HEAD `b7e03ec7c847875fa1753cea3ea8814f8006f320`のmatching run `34028776760`: success、build job `101474391195`、artifact `9987905877`、digest `sha256:6192d76b6f1646aba123a682a607438ca53e35868edbb1ed2ad9a4e420a66ce3`
     - R3-001修正版handoffはPyYAML parseとcurrent schema enum／producer-output contract照合を実施しsuccess。repository CIは`reports/handoffs/*.yaml`のschema enumを自動検証しないため別証拠として保持
+    - R4 reviewed HEAD `776be2c1a18ce680157f84771c681197166662c0`のmatching run `34029006173`: success、build job `101475006449`、artifact `9987975129`
+    - R4 review evidence HEAD `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`のmatching run `34031903220`: success、build job `101482851378`、artifact `9988882650`
+    - R4 technical fix HEAD `91785d8a16a613303818db2495de39f179e3c3d4`のmatching run `34032315339`: success、build job `101483978974`、artifact `9989013493`、digest `sha256:668fa28b4c645fb2f00977e7a4217d75456949ed8a0b912764cd38f7719334a8`
     - TDDはCodexSkill方針によりnot applicable。Astraの有料runtime実行は未実施
     - Markdown lintはrepository rootに`tools/`と`package.json`がないためunsupported。active relative linkはCI validator対象
     - 本tracking保存後のcurrent HEADについて、そのSHAとhead_shaが一致する新しいpull_request runだけを最終route evidenceとして確認しPR commentへ記録する。上記の旧runを代用しない
