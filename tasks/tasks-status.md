@@ -92,7 +92,7 @@
     - `reports/issue-62-design-update-20260821183448.md`
     - `reports/issue-62-skill-implementation-20260821184240.md`
     - `reports/issue-62-normal-review-followup-20260821190259.md`
-    - `reports/issue-62-normal-review-2019finding-closure-20260821190920.md`
+    - `reports/issue-62-normal-review-finding-closure-20260821190920.md`
     - `reports/issue-62-normal-review-followup-r2-20260821191250.md`
     - `reports/issue-62-normal-review-finding-closure-r2-20260821191456.md`
   - Verification:
