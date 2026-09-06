@@ -11,7 +11,7 @@ Route executable work through Codex or sub-agents.
 
 Ensure investigation, implementation, build, and verification work are delegated consistently, with executor choice and any multi-agent decomposition made explicitly and evidenced.
 
-This Skill decides whether work stays with the main agent, goes to one sub-agent, or is split into independently bounded sub-agent tasks. `sub-agent-task-manager` owns the model tier, reasoning effort, fork policy, role/default-role planning, runtime-profile observability, and report-persistence handling for each bounded sub-agent task.
+This Skill decides whether work stays with the main agent, goes to one sub-agent, or is split into independently bounded sub-agent tasks. `sub-agent-task-manager` owns the model tier, reasoning effort, fork policy, role/default-role planning, Astra eligibility and operation authorization, runtime-profile observability, and report-persistence handling for each bounded sub-agent task.
 
 ## Execution owner
 
@@ -34,6 +34,7 @@ Before running this skill, identify:
 - report persistence mode when the caller requires `normal_persistence` or `deferred_attestation`
 - any pre-reserved report-path identity supplied by an upstream lifecycle owner
 - explicit user or repository model, reasoning, budget, availability, fork, or agent-role constraints
+- for possible Astra escalation or continuation, same-task prior-attempt/blocker evidence, task/scope/parent-context identity, next operation, and existing grant/usage records
 
 Do not require a routine user-selected implementation model. Preserve an explicit override when the user or repository supplies one; otherwise let `sub-agent-task-manager` select the per-task profile from the delegation assessment.
 
@@ -80,7 +81,7 @@ Before selecting or dispatching an executor, record:
 - `uncertainty`: `low`, `medium`, or `high`
 - `change_radius`: `local`, `cross_module`, or `cross_system`
 - `criticality`: `ordinary` or `high`
-- `repetition`: `single` or `high_volume`
+- `repetition`: `single`, or `high_volume`
 - `decomposability`: `single`, `sequential_dependencies`, or `independent_workstreams`
 - `decomposition_policy`: `allowed` or `forbidden`
 - `decomposition_disposition` when policy suppresses an otherwise-decomposable task
@@ -113,7 +114,13 @@ Use these provisional thresholds as the default trigger for switchable implement
 
 Use the main agent by default below those thresholds unless isolation, independence, or parallelism is clearly more valuable.
 
-The thresholds decide executor ownership only. They do not imply Luna, Terra, or Sol; per-task model selection uses the qualitative assessment above.
+The thresholds decide executor ownership only. They do not imply Luna, Terra, Sol, or Astra; per-task model selection uses the qualitative assessment above. Astra remains an eligibility- and approval-gated escalation rather than an automatic tier.
+
+### Astra execution boundary
+
+When Astra is proposed or an existing Astra agent is continued, pass the complete task-local evidence and grant state to `sub-agent-task-manager`. It owns the prior-attempt, cost notice, high-only, `single_turn`, and explicit `task_until_completion` rules.
+
+Astra authorization is for a scoped sub-agent only. Do not route an approval stop or spawn failure to main-agent Astra execution or parent `codex exec`. Before sending additional work, use the task manager's `authorization_only` mode and enforce its operation-specific result without changing the agent's profile or report reservation. Preserve eligibility, grant consumption, revocation, and expiry as parent-owned evidence; do not copy a grant to another task, agent, or parent session.
 
 ## Multi-agent decomposition
 
@@ -137,6 +144,7 @@ For every decomposed task:
 - allow different model tiers and reasoning efforts
 - use a separate report path
 - preserve one parent-owned integration decision
+- do not inherit an Astra grant from the original task or another workstream
 
 When one exceptionally difficult problem is intrinsically not separable, leave it as one task and allow the selector to consider Sol `max`. A caller prohibition on decomposition does not establish intrinsic non-decomposability and must not be used to justify `max`.
 
@@ -149,13 +157,13 @@ For each delegated task:
 3. if the work has independent workstreams and decomposition is allowed, decide whether multi-agent decomposition meets every gate above
 4. if fixed-sub-agent, call `sub-agent-task-manager`
 5. otherwise choose executor and record why that executor was chosen
-6. when choosing a `sub-agent`, pass the bounded task, assessment, explicit overrides or constraints, decomposition disposition, report persistence mode, and any upstream pre-reserved report identity to `sub-agent-task-manager`
+6. when choosing a `sub-agent`, pass the bounded task, assessment, explicit overrides or constraints, decomposition disposition, report persistence mode, any upstream pre-reserved report identity, and applicable Astra eligibility/grant history to `sub-agent-task-manager`
 7. define the exact scope and non-goals
 8. identify any skill files the executor must read
 9. define expected outputs
 10. define validation commands or evidence
-11. run or dispatch the delegated work
-12. capture results plus dispatch evidence: `requested`, `role_plan`, `planned_runtime_profile`, `profile_observability`, exact `applied` only when observable, otherwise the explicit unverified/inherited/fallback/capability-gap state, and synthesis evidence
+11. run or dispatch the delegated work only after applicable profile and operation-level authorization gates
+12. capture results plus dispatch evidence: `requested`, `role_plan`, `planned_runtime_profile`, `profile_observability`, exact `applied` only when observable, otherwise the explicit unverified/inherited/fallback/capability-gap state, applicable Astra grant/usage evidence, and synthesis evidence
 13. for `normal_persistence`, materialize the evidence in `reports/`; for `deferred_attestation`, retain it as parent-owned lifecycle evidence until the passing-verdict attestation owner permits persistence
 
 ## Rules
@@ -168,7 +176,7 @@ For each delegated task:
 - Apply the same switchable implementation rule to design-document edits, test authoring, and code authoring.
 - Do not use file count as the model selector. Pass qualitative task signals to `sub-agent-task-manager`.
 - Do not hardcode model or reasoning defaults in this Skill; `sub-agent-task-manager` owns the central selection table.
-- Do not require implementation model confirmation when no user or repository override exists.
+- Do not require implementation model confirmation when no user or repository override exists, except the task manager's mandatory expensive-profile and Astra gates.
 - Do not leave concrete design-editing or code-editing workflow rules scattered across unrelated skills when `design-executor` or `implementation-executor` already covers them.
 - Ordinary `normal_persistence` sub-agent work must leave a report in `reports/`.
 - Pre-create the report file before dispatch only for `normal_persistence`.
@@ -207,6 +215,7 @@ After this skill runs, there should be:
 - a bounded delegated or locally executed work scope
 - for every sub-agent task: `requested`, `role_plan`, `planned_runtime_profile`, and `profile_observability`
 - exact `applied` evidence when observable, otherwise an explicit `spawn_succeeded_profile_unverified`, inherited, fallback, or capability-gap state without inventing exact model/reasoning values
+- task-bound Astra grant and per-operation usage evidence when applicable
 - synthesis evidence when multiple sub-agents were used
 - report-backed evidence for `normal_persistence`, or retained parent-owned evidence plus a stable pre-reserved report identity for `deferred_attestation`
 
@@ -225,6 +234,7 @@ Record or retain, according to persistence mode:
 - planned runtime profile
 - runtime profile observability
 - exact applied profile only when observable; otherwise the explicit unverified/inherited/fallback/capability-gap state
+- Astra eligibility, scoped approval, grant consumption/continuation, and expiry when applicable
 - report persistence mode and, for deferred attestation, the upstream reservation owner/identity
 - pass/fail outcome
 - synthesis result when applicable
@@ -241,6 +251,7 @@ This skill is complete for the current work item only when:
 - any multi-agent split satisfies every decomposition gate and caller policy
 - delegated or assigned work scope is fixed
 - required execution has run or been dispatched
+- applicable Astra eligibility and operation authorization preceded work without broadening or replaying grants
 - sub-agent dispatch evidence includes requested profile, role plan, planned runtime profile, and profile observability
 - exact applied profile is recorded when observable; otherwise an explicit supported unverified/inherited/fallback/capability-gap state is recorded
 - results/evidence are captured in the applicable normal report or retained deferred-attestation lifecycle evidence
