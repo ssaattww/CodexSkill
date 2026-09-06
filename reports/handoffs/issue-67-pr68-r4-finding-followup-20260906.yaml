@@ -1,0 +1,541 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: review follow-up
+  generated_at: 2026-09-06T21:15:00+09:00
+
+repository: ssaattww/CodexSkill
+issue_or_pr: 'Issue #67 / PR #68'
+task_id: T-004
+branch: feat/issue-67-astra-approval
+base_ref: main
+target:
+  current_head: 8f2963c3353f614887996d4c56b88cdc0b2b1edf
+  reviewed_head: 776be2c1a18ce680157f84771c681197166662c0
+  commit_range: ca4efa2935141a9fed1c2c1713e216f3d73c3dfc...91785d8a16a613303818db2495de39f179e3c3d4
+verification:
+  capability: remote_ci_only
+  capability_evidence:
+    - R4 review evidence HEAD ca4efa2935141a9fed1c2c1713e216f3d73c3dfc contains only the r4 review report/handoff after reviewed HEAD 776be2c1a18ce680157f84771c681197166662c0.
+    - Technical fix HEAD 91785d8a16a613303818db2495de39f179e3c3d4 has matching pull_request run 34032315339 with completed/success, build job 101483978974, artifact 9989013493.
+    - This packet is generated after report commit 8f2963c3353f614887996d4c56b88cdc0b2b1edf and before its own commit/final tracking update, so later exact-head CI is not backfilled.
+  technical_head: 91785d8a16a613303818db2495de39f179e3c3d4
+  administrative_parent: ca4efa2935141a9fed1c2c1713e216f3d73c3dfc
+  commit:
+    state: committed
+    review_target_sha: 91785d8a16a613303818db2495de39f179e3c3d4
+  push:
+    state: pushed
+    head_sha: 8f2963c3353f614887996d4c56b88cdc0b2b1edf
+  ci_wait:
+    state: ci_wait_pending
+    required_for: route_verification
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
+
+authoritative_requirements:
+  - source: user_instruction
+    reference: current-chat
+    summary: PR #68の最新指摘へ対応する。
+  - source: repository_instruction
+    reference: Project Instruction and AGENTS.md
+    summary: GitHub connectorを使用し、CodexSkill保守はnon-TDD。小さくcommit/pushし、詳細report、handoff、簡易PR comment、current-HEAD一致CIを残し、mergeしない。
+  - source: pr
+    reference: PRR_kwDOSFr3-88AAAABMX0AXA
+    summary: PR68-R3-001はresolved。PR68-R4-001 medium requiredとして、T-002 Outputから誤削除したhistorical参照15件を直前HEADどおり復元し、T-004 R3同期を維持する。
+development_policy:
+  method: non-TDD review follow-up
+  testing_order: focused tracking diff inspection followed by exact-head repository CI
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - GitHub commit patch and compare for ca4efa2935141a9fed1c2c1713e216f3d73c3dfc...91785d8a16a613303818db2495de39f179e3c3d4
+    - matching pull_request workflow for technical fix HEAD
+    - final tracking HEAD matching pull_request workflow
+  required_failure_diagnostics:
+    - exact failing workflow run and head_sha
+    - failing job and step
+    - available stdout/stderr or job logs
+    - relevant workflow artifact
+blocked: []
+authorized_actions:
+  - read_repository
+  - edit_documentation
+  - write_report
+  - write_handoff
+  - commit
+  - push
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: tasks/tasks-status.md
+      reason: PR68-R4-001 direct fix and final T-004 lifecycle synchronization
+    - path_or_operation: reports/issue-67-pr68-r4-finding-followup-20260906.md
+      reason: detailed implementation follow-up report
+    - path_or_operation: reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml
+      reason: lossless handoff
+    - path_or_operation: PR #68 metadata and comments
+      reason: publish fix and exact-head evidence
+  forbidden:
+    - path_or_operation: unrelated Skill/design/workflow/source changes
+      reason: PR68-R4-001 scope only
+    - path_or_operation: other T-002 history changes
+      reason: required action is restoration only
+    - path_or_operation: merge or auto-merge
+      reason: user-owned
+scope:
+  - Restore the 15 T-002 historical Output references removed by the T-004 R3 tracking commit.
+  - Preserve T-004 R3 lifecycle synchronization.
+  - Preserve every other T-002 history field.
+non_goals:
+  - Astra runtime execution
+  - self-issued review closure
+  - independent final review
+  - unrelated cleanup
+  - merge
+files:
+  changed:
+    - path: tasks/tasks-status.md
+      purpose: restore 15 T-002 historical Output references
+    - path: reports/issue-67-pr68-r4-finding-followup-20260906.md
+      purpose: detailed R4 follow-up report
+    - path: reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml
+      purpose: current follow-up handoff
+  inspected:
+    - path: tasks/tasks-status.md at 1cca241331f420fce131b9447b88c38f0d0ad569
+      purpose: authoritative pre-regression T-002 Output list
+    - path: tasks/tasks-status.md at ca4efa2935141a9fed1c2c1713e216f3d73c3dfc
+      purpose: current pre-fix tracking state
+    - path: reports/issue-67-pr68-fix-verification-r4-20260906.md
+      purpose: source finding details
+    - path: reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml
+      purpose: source finding and continuity evidence
+  intentionally_untouched:
+    - path_or_area: T-002 Review History / Finding Fidelity / Pre-freeze State / Current Review Follow-up / Verification
+      reason: PR68-R4-001 requires Output restoration only
+    - path_or_area: Astra execution Skills/design
+      reason: no execution-contract defect in R4
+    - path_or_area: workflows
+      reason: existing validator/bundle workflow is used
+commands:
+  - command: GitHub commit patch for 91785d8a16a613303818db2495de39f179e3c3d4
+    purpose: confirm the required 15 Output entries were restored
+    exit_code: 0
+    result: passed
+    head_sha: 91785d8a16a613303818db2495de39f179e3c3d4
+    evidence: patch shows all 15 historical Output additions; no T-004 content change and no T-002 history content deletion
+  - command: GitHub Actions run 34032315339
+    purpose: technical fix exact-head repository validation
+    exit_code: 0
+    result: passed
+    head_sha: 91785d8a16a613303818db2495de39f179e3c3d4
+    evidence: completed/success, build 101483978974, artifact 9989013493
+  - command: final tracking HEAD matching CI
+    purpose: final publication route evidence after report/handoff/tracking writes
+    exit_code: unknown
+    result: not_run
+    head_sha: unknown
+    evidence: final tracking write occurs after this packet persistence
+tests:
+  - name: TDD Red/Green
+    phase: not_applicable
+    result: not_run
+    head_sha: 91785d8a16a613303818db2495de39f179e3c3d4
+    evidence: CodexSkill repository maintenance is non-TDD
+  - name: PR68-R4-001 tracking restoration
+    phase: verification
+    result: passed
+    head_sha: 91785d8a16a613303818db2495de39f179e3c3d4
+    evidence: 15 required references restored and T-004 R3 content preserved
+ci:
+  required: true
+  workflow: Validate and release ChatGPT worker skills
+  run_id: 34032315339
+  head_sha: 91785d8a16a613303818db2495de39f179e3c3d4
+  conclusion: success
+  artifacts:
+    - id: 9989013493
+      name: chatgpt-worker-skills-34032315339
+      purpose: repository validator/bundle artifact for technical fix HEAD
+implementation:
+  outcome: completed
+  final_head: 91785d8a16a613303818db2495de39f179e3c3d4
+  commits:
+    - sha: 91785d8a16a613303818db2495de39f179e3c3d4
+      purpose: restore T-002 historical Output references removed by R3 tracking sync
+  addressed_findings:
+    - id: PR68-R4-001
+      reviewed_head: 776be2c1a18ce680157f84771c681197166662c0
+      disposition: addressed
+      evidence: all 15 historical Output references restored; T-004 R3 sync retained; no other T-002 history content changed
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+    - PR68-R4-001 implementation fix is complete.
+    - same normal reviewer fix verification remains required.
+review:
+  mode: fix_verification
+  reviewed_head: 776be2c1a18ce680157f84771c681197166662c0
+  reviewer:
+    identity: chatgpt-pr68-normal-review-20260906
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: chatgpt-pr68-normal-review-20260906
+      changed: false
+      reason: same normal reviewer lifecycle
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+        - R4 review submission PRR_kwDOSFr3-88AAAABMX0AXA
+  verdict: fail
+  required_coverage:
+    - criterion: PR68-R3-001
+      disposition: checked_no_finding
+      evidence: R4 reviewer resolved source medium finding
+    - criterion: PR68-R4-001
+      disposition: checked_finding
+      evidence: implementation fix exists; reviewer fix verification is pending
+  independent_closure:
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: []
+  validation_assessment:
+    - item: direct fix scope
+      result: supported
+      evidence: target tracking file only; 15 historical Output references restored
+    - item: technical fix CI
+      result: supported
+      evidence: exact-head run 34032315339 success
+    - item: reviewer closure
+      result: unavailable
+      evidence: implementation worker does not self-verify
+  reserved_report_paths: []
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: 776be2c1a18ce680157f84771c681197166662c0
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence:
+      - normal review cycle remains open until PR68-R4-001 is verified
+  summary:
+    - PR68-R3-001 is reviewer-resolved.
+    - PR68-R4-001 is addressed by implementation but not yet reviewer-closed.
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/issue-67-pr68-r4-finding-followup-20260906.md
+  reviewed_head: 776be2c1a18ce680157f84771c681197166662c0
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - detailed R4 follow-up report persisted at 8f2963c3353f614887996d4c56b88cdc0b2b1edf
+    - packet/final tracking/exact-head CI are pending at generation
+findings:
+  - id: PR68-R4-001
+    severity: medium
+    origin: introduced_by_fix
+    location: tasks/tasks-status.md T-002 Output
+    description: R3 T-004 tracking synchronization deleted 15 unrelated historical T-002 Output references.
+    impact: canonical T-002 tracking no longer matched its retained review/fidelity/pre-freeze history and T-004 follow-up exceeded its scope.
+    evidence: R4 review PRR_kwDOSFr3-88AAAABMX0AXA and commit 776be2c1a18ce680157f84771c681197166662c0 patch.
+    required_action: restore the 15 historical Output references exactly while preserving T-004 R3 synchronization and all other T-002 history.
+held: []
+unexplored:
+  - area: live Astra runtime
+    blocker: out of follow-up scope
+    remaining_risk: availability/profile/cancellation/cost remain unverified
+    verdict_impact: not evidence of runtime success
+unknown:
+  - field_or_fact: this packet commit, final tracking commit, and final exact-head CI
+    reason: those writes occur after packet generation
+not_applicable:
+  - field_or_area: TDD
+    reason: CodexSkill repository maintenance is non-TDD
+  - field_or_area: independent final review
+    reason: normal review cycle is not yet converged
+remaining_risks:
+  - same normal reviewer must verify PR68-R4-001
+  - live Astra behavior remains untested
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      issue_or_pr: 'Issue #67 / PR #68'
+      task_id: T-004
+      mode: implementation
+      branch: feat/issue-67-astra-approval
+      base_ref: main
+      current_head: ca4efa2935141a9fed1c2c1713e216f3d73c3dfc
+      reviewed_head: 776be2c1a18ce680157f84771c681197166662c0
+      verification_capability: remote_ci_only
+      verification_capability_evidence:
+        - R4 review evidence HEAD ca4efa2935141a9fed1c2c1713e216f3d73c3dfc is the starting administrative state for the fix.
+        - Technical fix HEAD 91785d8a16a613303818db2495de39f179e3c3d4 has matching successful pull_request run 34032315339.
+      execution_state:
+        technical_head: 91785d8a16a613303818db2495de39f179e3c3d4
+        administrative_parent: ca4efa2935141a9fed1c2c1713e216f3d73c3dfc
+        commit: committed
+        push: pushed
+        ci_wait: ci_wait_completed
+        full_local_equivalence_gate:
+          state: unsupported
+          candidate_head: 91785d8a16a613303818db2495de39f179e3c3d4
+          invalidated_runs: []
+      scope:
+        - restore PR68-R4-001 T-002 Output references
+        - preserve T-004 R3 synchronization
+      non_goals:
+        - other T-002 history changes
+        - live Astra runtime
+        - self-review
+        - independent final review
+        - merge
+      authoritative_requirements:
+        - source: PR #68 r4 review
+          reference: PRR_kwDOSFr3-88AAAABMX0AXA
+          summary: restore 15 T-002 historical Output references exactly while retaining T-004 R3 state
+      write_boundary:
+        allowed:
+          - tasks/tasks-status.md direct restoration and T-004 lifecycle sync
+          - R4 follow-up report/handoff
+          - PR metadata/comments
+        forbidden:
+          - other T-002 history changes
+          - unrelated repository changes
+          - merge
+      development_policy:
+        method: non-TDD review follow-up
+        testing_order: focused tracking diff inspection followed by exact-head CI
+      validation:
+        commands:
+          - compare and inspect direct fix patch
+          - technical fix exact-head CI
+          - final tracking exact-head CI
+        required_failure_diagnostics:
+          - exact failing run/job/step/log/artifact
+      ci:
+        matching_run: '34032315339'
+        conclusion: success
+      unknown:
+        - final tracking SHA and exact-head CI
+      blocked: []
+      remaining_risks:
+        - normal reviewer closure pending
+        - live Astra runtime untested
+  - source_skill: implementation-worker
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      mode: review follow-up
+      accepted_scope:
+        - PR68-R4-001 historical Output restoration
+      non_goals:
+        - unrelated cleanup
+        - self-issued review verdict
+        - independent final review
+        - merge
+      requirements_and_design_references:
+        - PR #68 r4 review PRR_kwDOSFr3-88AAAABMX0AXA
+        - tasks/tasks-status.md at parent HEAD 1cca241331f420fce131b9447b88c38f0d0ad569
+      changed_files_and_purpose:
+        - path: tasks/tasks-status.md
+          purpose: restore 15 T-002 historical Output references
+      intentionally_untouched_areas:
+        - T-004 R3 synchronization content
+        - other T-002 history
+        - Astra execution Skills/design
+        - workflows
+      validation_commands_and_results:
+        - command: inspect commit 91785d8a16a613303818db2495de39f179e3c3d4
+          result: passed
+          evidence: 15 historical Output entries restored
+        - command: workflow run 34032315339
+          result: passed
+          evidence: exact-head completed/success; build 101483978974; artifact 9989013493
+      failure_diagnostics_and_artifacts:
+        - type: artifact
+          location: GitHub Actions artifact 9989013493
+          summary: validation ZIP; no validation failure occurred
+      verification_capability: remote_ci_only
+      validation_evidence:
+        - technical fix exact-head run 34032315339 success
+        - direct commit patch contains the required restoration
+      review_target_commit_identity_or_pending_state: 91785d8a16a613303818db2495de39f179e3c3d4
+      push_state_and_matching_ci_evidence:
+        push_state: pushed
+        matching_run: 34032315339
+        conclusion: success
+      final_technical_head: 91785d8a16a613303818db2495de39f179e3c3d4
+      administrative_parent: ca4efa2935141a9fed1c2c1713e216f3d73c3dfc
+      blocked_items: []
+      unknowns:
+        - final tracking commit and exact-head CI
+      remaining_risks:
+        - same normal reviewer closure pending
+      next_required_action: persist report/handoff, synchronize T-004 without changing restored T-002 history, verify final exact-head CI, publish PR evidence, then same normal reviewer fix verification
+  - source_skill: report-writer
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      report_type: implementation_report
+      complete_body: |
+        # Issue #67 PR #68 R4指摘対応レポート
+
+        ## メタデータ
+
+        - 日付: 2026-09-06
+        - Repository: `ssaattww/CodexSkill`
+        - Issue: #67
+        - PR: #68
+        - Branch: `feat/issue-67-astra-approval`
+        - Base: `main` / `6507727986329e34e69da3680a00824eb1fbfe13`
+        - Mode: review follow-up
+        - Source review: fix verification r4 / `PRR_kwDOSFr3-88AAAABMX0AXA`
+        - Source finding: `PR68-R4-001`
+        - Source severity: `medium`
+        - R4 reviewed HEAD: `776be2c1a18ce680157f84771c681197166662c0`
+        - R4 review evidence HEAD: `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`
+        - Technical fix HEAD: `91785d8a16a613303818db2495de39f179e3c3d4`
+        - Persistence: normal implementation follow-up report
+        - Merge: 実施しない
+
+        ## 指摘内容
+
+        R3 lifecycleを`tasks/tasks-status.md`のT-004へ同期したcommit `776be2c1a18ce680157f84771c681197166662c0`で、T-004とは無関係なT-002 `Output`のhistorical report/handoff参照15件が削除されていた。
+
+        T-002直後の`Review History`、`Finding Fidelity`、`Pre-freeze State`、`Verification`はこれらの成果物を引き続き参照しており、削除はT-002 trackingの自己整合性とT-004 follow-upのscope disciplineを損なうため、r4 reviewerは`PR68-R4-001 / medium / required`として記録した。
+
+        ## Required action
+
+        - 削除された15件のT-002 `Output`参照を、`776be2c1...`の直前HEAD `1cca241331f420fce131b9447b88c38f0d0ad569`どおり復元する。
+        - T-004のR3同期内容は維持する。
+        - その他のT-002 historyを変更しない。
+
+        ## 実装
+
+        `tasks/tasks-status.md`へ削除された15参照を復元した。Direct fix commitは`91785d8a16a613303818db2495de39f179e3c3d4`。R4 review evidence HEAD `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`から1 commit aheadで、変更fileは`tasks/tasks-status.md`のみである。
+
+        GitHub commit patchではT-002 `Output`へ15件が復元され、T-004本文、T-002の`Review History`以降、T-003、T-001には内容変更を加えていない。contents APIによる書込みで末尾改行表現の差分が1件見えるため、最終tracking同期では末尾改行を保持して不要なformat差分を残さない。
+
+        ## Validation
+
+        - Compare: `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc...91785d8a16a613303818db2495de39f179e3c3d4`
+        - Ahead: 1 commit
+        - Changed file: `tasks/tasks-status.md`のみ
+        - Required historical Output: 15件すべて復元
+        - T-004 R3 synchronization: 維持
+        - その他のT-002 history: 内容変更なし
+
+        Technical fix HEAD `91785d8a16a613303818db2495de39f179e3c3d4`のmatching pull-request run `34032315339`は`completed / success`、build job `101483978974`、artifact `9989013493`、digest `sha256:668fa28b4c645fb2f00977e7a4217d75456949ed8a0b912764cd38f7719334a8`。別SHA runは代用していない。
+
+        ## Failure diagnostics
+
+        CI failureなし。RevMem向け診断artifact workflow追加方針はCodexSkill保守には適用しない。
+
+        ## Finding disposition
+
+        `PR68-R4-001 / medium`はimplementation側で`addressed`。same normal reviewerによるclosureは未実施で、本chatからreview verdictは発行しない。
+
+        ## Testing policy
+
+        CodexSkill repository maintenanceのためTDDは`not applicable`。
+
+        ## 残存事項
+
+        report/handoff保存後にT-004へR4 stateを同期し、T-002 historical Outputと末尾改行を維持する。最終HEAD固有CIを確認し、PRへ証拠を投稿してsame normal reviewerへfix verificationを委ねる。independent final reviewとmergeは行わない。
+      evidence_sources:
+        - PR #68 r4 review PRR_kwDOSFr3-88AAAABMX0AXA
+        - commit 776be2c1a18ce680157f84771c681197166662c0
+        - parent tracking HEAD 1cca241331f420fce131b9447b88c38f0d0ad569
+        - direct fix 91785d8a16a613303818db2495de39f179e3c3d4
+        - workflow run 34032315339 / job 101483978974 / artifact 9989013493
+      target_identity:
+        branch: feat/issue-67-astra-approval
+        base_ref: main
+        current_head: 91785d8a16a613303818db2495de39f179e3c3d4
+        reviewed_implementation_head: 776be2c1a18ce680157f84771c681197166662c0
+      verification:
+        capability: remote_ci_only
+        technical_head: 91785d8a16a613303818db2495de39f179e3c3d4
+        administrative_parent: ca4efa2935141a9fed1c2c1713e216f3d73c3dfc
+        commit_state: committed
+        push_state: pushed
+        ci_wait_state: ci_wait_completed
+      independent_closure:
+        initial_independent_reviewed_head: null
+        closure_reviewed_heads: []
+        reviewer_continuity: null
+        closure_scope: []
+        completeness_matrix: []
+      severity_records:
+        - finding_id: PR68-R4-001
+          source_severity: medium
+          new_severity: null
+          reason: null
+          approved_by: null
+          record_type: preserved
+      persistence:
+        mode: repository_file
+        reserved_paths:
+          - reports/issue-67-pr68-r4-finding-followup-20260906.md
+        report_attestation_head: null
+      concise_pr_comment_body: 'PR68-R4-001をaddressed。T-004 R3同期で誤削除したT-002 historical Output 15件を91785d8a16a613303818db2495de39f179e3c3d4で復元。technical fix HEADのrun 34032315339はsuccess。final tracking HEADは別途exact-head CI確認後に記録する。'
+      unresolved_discrepancies: []
+extensions:
+  - namespace: codexskill.pr68.r4_followup
+    payload:
+      source_finding: PR68-R4-001
+      source_severity: medium
+      implementation_disposition: addressed
+      reviewer_closure: pending_fix_verification
+      restored_output_count: 15
+      direct_fix_head: 91785d8a16a613303818db2495de39f179e3c3d4
+      direct_fix_run: 34032315339
+      direct_fix_artifact: 9989013493
+      direct_fix_artifact_digest: sha256:668fa28b4c645fb2f00977e7a4217d75456949ed8a0b912764cd38f7719334a8
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: fix_verification
+  summary: Final tracking synchronization and exact-head CI publication後、same normal reviewerがPR68-R4-001をfinding identity/source severity維持でfix verificationする。
+  instructions:
+    - PR68-R4-001とsource severity mediumを維持する。
+    - T-002 Outputの15参照が復元され、T-004 R3同期が維持され、その他T-002 historyが変わっていないことを確認する。
+    - final tracking/report/handoff administrative commitsをtechnical fixと区別する。
+    - current PR HEADのmatching pull_request CIだけを採用する。
+    - normal review収束前にindependent final reviewへ進まない。
+    - mergeしない。
+  required_attachments_or_references:
+    - PR #68
+    - reports/issue-67-pr68-fix-verification-r4-20260906.md
+    - reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml
+    - reports/issue-67-pr68-r4-finding-followup-20260906.md
+    - reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml
+    - commit 91785d8a16a613303818db2495de39f179e3c3d4
+    - workflow run 34032315339
+  requested_authorized_actions:
+    - read_repository
+    - write_report
+    - write_handoff
+    - update_pr
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml
+  packet_url: null
+  transport_note: This packet is generated before its own commit and before final tracking synchronization. It preserves complete available work-context-manager, implementation-worker, and report-writer outputs. Permissions do not transfer to the next chat.
