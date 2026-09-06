@@ -18,7 +18,7 @@ Pythonは3.11以上の構文で実装し、初回の依存解決・受け入れ�
 | `scripts/openscad_lib/runtime.py` | バイナリと依存機能の探索、version、プロセス実行、timeout、ログ |
 | `scripts/openscad_lib/paths.py` | Skill root、workspace、許可済み出力先、SCAD用パス文字列 |
 | `scripts/openscad_lib/results.py` | 結果schema、run manifest、状態集約、成果物検査、shape identity |
-| `scripts/openscad_lib/project.py` | init／list／info／clean、project identity、run retention、sourceと生成物の分離 |
+| `scripts/openscad_lib/project.py` | init／list／info／clean、project identity、run lease／retention、sourceと生成物の分離 |
 | `scripts/openscad_lib/render.py` | PNG、複数view、STL、3MFの生成、評価条件とview manifestの固定 |
 | `scripts/openscad_lib/validate.py` | compile、warning分類、出力確認、要求値との照合 |
 | `scripts/openscad_lib/mesh.py` | STL読込、基本統計、mesh検査、boolean比較 |
@@ -35,7 +35,7 @@ Pythonは3.11以上の構文で実装し、初回の依存解決・受け入れ�
 | `doctor` | `--capability basic|mesh|profile|optimize|png|3mf` | 実行環境の検出。存在／option検出と実行成功を区別 |
 | `project init` | `--name NAME`、`--root DIR` | 新規project、stable project ID、必要なlocal template copy。既存projectは変更しない |
 | `project list`／`info` | rootまたはproject | 読取だけ。root不在のlistは空一覧 |
-| `project clean` | project、`--expired-runs`または`--run-id ID`、`--apply`、`--yes` | 既定は削除候補だけ表示。current project所有のrunだけを対象にする |
+| `project clean` | project、`--expired-runs`または`--run-id ID`、`--apply`、`--yes` | 既定は削除候補だけ表示。current project所有でterminalまたはabandonedと証明できるrunだけを対象にする |
 | `render` | SCAD、`--views iso|multi`、`--extra-view VIEW`反復、`--purpose explore|verify`、`--size W,H`、`--camera VALUE`、`--define EXPR`反復 | isoは1画像、multiはiso／front／right／topの4画像。verifyはexportと同じ最終評価条件を使う |
 | `validate` | SCAD、`--define EXPR`反復 | OpenSCAD compile、warning gate、非空出力の確認。必要なmesh検査は別field |
 | `export` | SCAD、`--format stl|3mf|all`、`--define EXPR`反復 | stlはbinaryを明示。allはSTL／3MF／verify PNGを要求成果物として扱う |
@@ -91,15 +91,29 @@ timeoutはcommandごとに有限の既定値を持ち、`--timeout`で変更可�
 
 失敗・timeout時はcleanupより先に、生成したhelper SCAD、process stdout／stderr、入力manifest、途中成果物の存在・hashを`.openscad/runs/<run-id>/diagnostics/`へ退避する。退避後にだけephemeral tempを削除する。退避できない場合はその保存失敗自体をresultへ記録し、存在しないdiagnostic pathを示さない。成功runでもstdout／stderrとsource identityはrun記録として保持する。
 
-### 4.4 一時ファイル、run ownership、非破壊性
+### 4.4 一時ファイル、run lease、ownership、非破壊性
 
 `/tmp`、固定名`check.stl`の共有、一律`rm -rf`を使わない。許可済み出力root内に`tempfile`でrunごとの一時directoryを作り、Windowsのfile handleを閉じてから再読込・削除する。後続processが参照するfileをopenしたまま渡さない。
 
-`project init`は`.openscad/project.json`へrandom UUIDのstable `project_id`を一度だけ作成する。各runは`project_id`、`run_id`、開始・終了時刻、`retention_until`、statusをresultへ保存し、run directoryの所有者を確定する。別projectのrun、manifest欠落、project ID不一致、active markerが残る実行中runを自動削除しない。
+`project init`は`.openscad/project.json`へrandom UUIDのstable `project_id`を一度だけ作成する。各runは`project_id`、`run_id`、開始・終了時刻、`retention_until`、statusをresultへ保存し、run directoryの所有者を確定する。別projectのrun、manifest欠落、project ID不一致を自動削除しない。
 
-runの既定retentionは完了時刻から30日で、`--retain-days 1..3650`によりそのrunだけ変更できる。write command開始時のhousekeepingは、current project所有、完了済み、`retention_until`超過、path実体検査済みのrunだけを自動pruneできる。削除前にmanifestとproject IDを再検査し、junction／symlinkでrun root外へ出るもの、形式不明なrun、実行中runはskipしてwarningを残す。これによりrunを無期限保存する契約にも、所有権を見ずに無条件削除する契約にもしない。
+run開始時は外部processを起動する前に`.openscad/runs/<run-id>/lease.json`をatomicに作成する。leaseは`schema_id: openscad.run-lease`、`schema_version: 1`とし、`project_id`、`run_id`、`owner_host_token`、`owner_pid`、`owner_process_start_time_utc`、random `lease_nonce`、`started_at`、`heartbeat_at`、`state`を持つ。`owner_host_token`は同じhost上のCLI invocation間で安定するuser-local runtime stateのrandom UUIDとし、hostname、hardware serial、Windows account名等の生識別子を保存しない。host tokenを取得できない場合は所有processのlivenessを証明不能として扱う。
 
-`project clean --expired-runs`は同じexpiry ruleの候補を表示し、`--apply --yes`でcurrent project所有の期限切れrunだけを削除する。`project clean --run-id ID`はretention前でも利用者が特定runを明示削除できるが、同じproject IDと非active状態の検査を必須にする。通常のoutput cleanとrun cleanを混同せず、source、入力STL、profile、他projectのrunを削除しない。
+owner processはactive中にheartbeatを更新するが、heartbeatの古さだけでstaleとは判定しない。Windowsではowner PIDの存在とOSが返すprocess creation timeを照合し、PID番号だけで同一processとみなさない。clean／housekeepingは削除候補ごとにleaseを再読込し、次の三状態へ分類する。
+
+- `live`: current host tokenがleaseと一致し、owner PIDが存在し、process creation timeもlease記録と一致する。heartbeatが古くてもprocess identityがliveなら削除しない。
+- `stale-and-provable`: current host tokenが一致し、owner PIDが存在しない、または同じPIDが存在してもprocess creation timeが異なる。PID再利用は後者として扱う。正常terminal resultがあるのにactive leaseだけ残った場合も、terminal resultのidentityが一致すればstaleと証明できる。
+- `liveness-unknown`: host token不一致／取得不能、process照会のaccess denied、creation time取得不能、leaseの必須identity欠落・破損など、liveでもstaleでもあることを証明できない状態。heartbeat expiryだけではここからstaleへ昇格しない。
+
+`live`と`liveness-unknown`は自動housekeeping、`project clean --expired-runs`、`project clean --run-id`のいずれでも削除禁止とし、unknownは理由をwarning／blocked detailとして返す。別hostから共有projectを開いた場合もhost token不一致なのでunknownとなり、remote processを死んだと推測して削除しない。
+
+`stale-and-provable`を見つけた場合、削除より先にrun単位のreconciliation claimを取得し、leaseとprocess identityをもう一度検査する。再検査でもstaleならrunを`abandoned` terminal lifecycleへatomicにreconcileし、`status: failed`、`run_lifecycle: abandoned`、`exit_code: null`、`abandoned_reason`、`abandoned_at`をresultへ保存する。存在するdiagnosticsは保持し、起動processが返していないexit codeを捏造しない。leaseは`state: abandoned`へ更新する。retention anchorは妥当な`heartbeat_at`がreconcile時刻以前ならその値、欠落・未来時刻等で信用できなければreconcile時刻とする。
+
+正常終了ではresultをterminal stateとして永続化した後にleaseを`state: released`へ更新する。crash、強制終了、OS再起動等でactive leaseが残っても、次回の同host操作でowner process不在またはPID creation time不一致を証明できれば`abandoned`へreconcileできる。process queryが不確実な場合はcleanup不能のunknownとして残し、安全側に倒す。
+
+runの既定retentionは正常terminal runでは完了時刻、abandoned runでは上記retention anchorから30日で、`--retain-days 1..3650`によりそのrunだけ変更できる。write command開始時のhousekeepingは、current project所有、terminalまたはabandoned、`retention_until`超過、livenessがlive／unknownでない、path実体検査済みのrunだけを自動pruneできる。削除前にmanifest、project ID、lease／lifecycle、junction／symlinkを再検査する。
+
+`project clean --expired-runs`は同じexpiry ruleの候補を表示し、`--apply --yes`でcurrent project所有の期限切れterminal／abandoned runだけを削除する。`project clean --run-id ID`はretention前でも利用者が特定runを明示削除できるが、同じproject IDであり、leaseがreleasedまたはstaleと証明されabandonedへreconcile済みであることを必須にする。liveness-unknownを強制削除するescape hatchは初回提供しない。通常のoutput cleanとrun cleanを混同せず、source、入力STL、profile、他projectのrunを削除しない。
 
 project名はdirectory traversal、絶対パス、Windows予約名、末尾の空白・dotを拒否する。削除直前に解決済みpathがproject配下か再確認し、symlink／junctionを辿って外部を消さない。initは存在済みdirectoryを上書きしない。新規runは旧成果物の存在を今回の成功証拠に使わない。
 
@@ -137,7 +151,9 @@ Modifyは正確なmesh検査を要求する場合にmesh capabilityを必要と�
 
 | Field | 内容 |
 | --- | --- |
-| `project_id`, `run_id`, `command`, `status`, `exit_code` | project／実行識別、要求、総合状態、CLI終了値 |
+| `project_id`, `run_id`, `command`, `status`, `exit_code` | project／実行識別、要求、総合状態、CLI終了値。abandoned reconcile時だけexit codeはnull |
+| `run_lifecycle` | `active|terminal|abandoned`。abandoned時は理由とreconcile時刻を保持 |
+| `lease` | lease schema/version、owner identity、heartbeat、liveness判定、lease stateへの参照 |
 | `inputs` | 正規化path、content hash、parameter override、単位、要求値 |
 | `source_identity` | root SCAD／STL hash、再帰的に解決できた`use`／`include`／`import`依存hash、effective override、OpenSCAD version、identity完全性 |
 | `environment` | OS、Python、OpenSCAD path／version、必要package version。全環境変数は保存しない |
@@ -146,12 +162,12 @@ Modifyは正確なmesh検査を要求する場合にmesh capabilityを必要と�
 | `artifacts` | 今回生成したpath、kind、size、hash、検査結果、source identity／artifact parent hash、schema情報 |
 | `checks` | 名前、`passed|failed|not_requested|unsupported|not_run`、数値・根拠 |
 | `metrics` | 定義名、値、単位、method、tolerance、算出不能理由。未知はnull |
-| `retention` | 完了時刻、retain days、retention_until、自動prune可否 |
+| `retention` | terminal／abandoned時刻、retain days、retention anchor、retention_until、自動prune可否 |
 | `errors`, `warnings` | 安定したcategory、説明、次の操作 |
 
 `source_identity`はcommand間で「同じ形状条件を検証した」ことを確認するためのfingerprintである。`use`／`include`／`import`の依存closureを再帰的にhashし、動的path等でclosureを確定できなければ`identity_complete=false`とする。その場合、別commandの結果を同一形状の証拠として自動結合しない。`width=12`でexportしたmeshをdefault `width=10`のanalysis結果と同じcandidateとして扱わない。STL等の成果物を次commandへ渡す場合はartifact hashをparent identityとして引き継ぐ。
 
-`status`は`succeeded|partial|failed|blocked`。全要求項目を満たした場合だけsucceeded／exit 0とする。引数・入力不正は2、環境・依存不足やunsupported schemaによるblockedは3、process失敗・timeoutは4、検証不合格は5、一部成果物だけ成功したpartialは6。未知の例外も診断を残し非0とする。非必須の未実施項目は明示し、optional skipだけで必須項目の成功を覆さない。
+`status`は通常runで`succeeded|partial|failed|blocked`。全要求項目を満たした場合だけsucceeded／exit 0とする。引数・入力不正は2、環境・依存不足やunsupported schemaによるblockedは3、process失敗・timeoutは4、検証不合格は5、一部成果物だけ成功したpartialは6。未知の例外も診断を残し非0とする。後続reconciliationでabandonedと確定したrunは`status: failed`、`run_lifecycle: abandoned`、`exit_code: null`とし、存在しない終了値を作らない。非必須の未実施項目は明示し、optional skipだけで必須項目の成功を覆さない。
 
 `--json`指定時のstdoutにはJSONを一つだけ出し、進捗や子process出力を混ぜない。通常は人向け要約を返し、同じresult pathを提示する。`export --format all`で3MFだけ失敗した場合はSTLの保存を報告してもoverall successにはしない。
 
@@ -167,6 +183,7 @@ profile、slice、再構築品質条件など、別commandがconsumeするJSON�
 | slice feature-map JSON | `openscad.feature-map` | 1 |
 | reconstruct quality specification | `openscad.reconstruct-quality` | 1 |
 | generated view manifest | `openscad.view-manifest` | 1 |
+| run ownership lease | `openscad.run-lease` | 1 |
 
 各JSONはtop-levelに`schema_id`、`schema_version`、producer version、source identity、必要なcoordinate frame参照を持つ。consumerはpayloadを読む前に`schema_id`と`schema_version`を検査し、サポート表に完全一致するversionだけをconsumeする。未知schema ID／unsupported versionはbest-effortで解釈せずblocked／exit 3、必須field欠落や型不正はinvalid input／exit 2とする。schema migrationを行う場合は明示的なmigration処理と変換前後schema versionを保存し、暗黙にv1として読むことを禁止する。
 
