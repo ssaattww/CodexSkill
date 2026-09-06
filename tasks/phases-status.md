@@ -70,7 +70,7 @@
   - `PR54-IFR2-002`はseverity erratumとcontinuity guardでresolvedを維持している
   - `PR54-IFR2-003`はPR／main path filterへ`shared/**`を追加しresolvedを維持している
   - `PR54-IFR2-001`のnormal handoff packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存した
-  - fix verification r2はpacketの`source_payloads`がcomplete outputではなく要約へ縮退退していることと、task／phaseのfuture stateを指摘し、verdict `fail`となった
+  - fix verification r2はpacketの`source_payloads`がcomplete outputではなく要約へ縮退していることと、task／phaseのfuture stateを指摘し、verdict `fail`となった
   - `reports/issue-53-complete-source-payload-followup-20260730070000.md`へcomplete report bodyを保存した
   - packetの4 `source_payloads`を各core SkillのOutput contractと同じfield名・構造へ更新した
   - `work-context-manager.authoritative_requirements`をstructured objectsとして保持した
