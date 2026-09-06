@@ -12,6 +12,25 @@ target:
   current_head: &snapshot 97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e
   reviewed_head: null
   commit_range: 6507727986329e34e69da3680a00824eb1fbfe13...97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e
+verification:
+  capability: remote_ci_only
+  capability_evidence:
+    - technical snapshot 97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e has matching pull_request workflow run 34023178976 with completed/success.
+    - Detailed implementation report was already persisted at commit 3c426b5b63ffcd32a1f9d7a38dc014dda70f6ee9; this packet itself was not yet committed at generation time, so packet-persistence exact-head CI remained pending.
+  technical_head: *snapshot
+  administrative_parent: null
+  commit:
+    state: committed
+    review_target_sha: *snapshot
+  push:
+    state: pushed
+    head_sha: 3c426b5b63ffcd32a1f9d7a38dc014dda70f6ee9
+  ci_wait:
+    state: ci_wait_pending
+    required_for: route_verification
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
 authoritative_requirements: &requirements
   - source: user_instruction
     reference: current-chat
