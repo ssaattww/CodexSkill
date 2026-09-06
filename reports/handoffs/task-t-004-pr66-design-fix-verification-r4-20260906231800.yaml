@@ -1,0 +1,193 @@
+schema_version: 3
+producer:
+  skill: chat-review-worker
+  mode: fix_verification
+  generated_at: '2026-09-06T23:18:00+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #66'
+task_id: T-004
+branch: codex/openscad-windows-skill
+base_ref: main
+target:
+  current_head: 6d14160df4ad89d961c756c35afb05631a7dd045
+  reviewed_head: ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+  commit_range: 7e3909f1d789cb21c05eded633dd1e1dc640ebf4..ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+authoritative_requirements:
+  - source: user_instruction
+    reference: current-chat
+    summary: 'PR #66を再レビューし、前回唯一openだったPR66-DR-006を同じnormal reviewerでfix verificationする。'
+  - source: review
+    reference: reports/task-t-004-pr66-design-fix-verification-r3-20260906194700.md
+    summary: 'PR66-DR-006 / medium。abandoned retention anchorは古いheartbeatを使わず、abandoned_atまたは信頼できるtermination timestampを使い、old-heartbeat→later-crash fixtureをAC-13へ追加する。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: 'CodexSkill repository maintenanceはnon-TDD。既存validationとdesign contract整合を使う。'
+development_policy:
+  method: non_tdd_repository_maintenance
+  testing_order: not_applicable
+  governing_source: AGENTS.md
+scope:
+  - 'PR66-DR-006 / medium のretention anchor fix verification'
+  - 'fix rangeの同一欠陥classと回帰確認'
+  - 'reviewed HEADのexact-head CI確認'
+non_goals:
+  - 'OpenSCAD Skill実装'
+  - 'Windows実機受け入れ'
+  - 'independent final review'
+  - 'merge'
+authorized_actions:
+  - read_repository
+  - write_report
+  - write_handoff
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: reports/task-t-004-pr66-design-fix-verification-r4-20260906231800.md
+      reason: normal review convergence report
+    - path_or_operation: reports/handoffs/task-t-004-pr66-design-fix-verification-r4-20260906231800.yaml
+      reason: lossless review handoff
+    - path_or_operation: PR #66 review/comment
+      reason: concise review result
+  forbidden:
+    - path_or_operation: design/ skills/ workflows/ tasks/ implementation
+      reason: reviewer does not implement fixes
+    - path_or_operation: merge
+      reason: user performs merge
+files:
+  changed:
+    - path: design/openscad-runtime-design.md
+      purpose: abandoned retention anchor fix
+    - path: design/openscad-acceptance-plan.md
+      purpose: AC-13 old-heartbeat/later-crash fixture
+    - path: reports/task-t-004-pr66-design-review-followup-r4-20260906205500.md
+      purpose: implementation-side follow-up report
+  inspected:
+    - path: reports/task-t-004-pr66-design-fix-verification-r3-20260906194700.md
+      purpose: source finding required action and closure
+    - path: design/openscad-runtime-design.md
+      purpose: runtime retention contract
+    - path: design/openscad-acceptance-plan.md
+      purpose: AC-13 closure fixture
+commands:
+  - command: 'GitHub compare 7e3909f1..ecb0dc11'
+    purpose: fix delta confirmation
+    exit_code: unknown
+    result: passed
+    head_sha: ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+    evidence: 'net changes are runtime, acceptance, follow-up report only'
+  - command: 'matching pull_request workflow for reviewed head'
+    purpose: reviewed HEAD validation
+    exit_code: 0
+    result: passed
+    head_sha: ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+    evidence: 'run 34031837729 success / build job 101482672267 / artifact 9988862970'
+tests:
+  - name: TDD
+    phase: not_applicable
+    result: not_run
+    head_sha: ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+    evidence: AGENTS.md
+ci:
+  required: true
+  workflow: .github/workflows/release-chatgpt-worker-skills.yml
+  run_id: 34031837729
+  head_sha: ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+  conclusion: success
+  artifacts:
+    - id: 9988862970
+      name: chatgpt-worker-skills-34031837729
+      size_in_bytes: 18678
+      digest: sha256:6140a7642442dab16e8da3715607b332109305139e9b648f386f3e44404e3dfd
+implementation:
+  outcome: addressed
+  final_head: ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+  commits:
+    - sha: 9347c0d7201833ddb3bfb44c1d28cb176024f64e
+      purpose: abandoned retention anchor contract
+    - sha: eef055bc2038db23d96097bcb0e1788822868d8f
+      purpose: AC-13 retention regression fixture
+    - sha: ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+      purpose: follow-up report r4
+  addressed_findings:
+    - id: PR66-DR-006
+      severity: medium
+      reviewed_head: ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+      disposition: closed
+      evidence: 'abandoned_at default anchor; trusted owner_termination_at optional; heartbeat excluded; same-pass deletion prevention; AC-13 old-heartbeat→later-crash fixture'
+review:
+  mode: fix_verification
+  reviewed_head: ecb0dc11c7f0ee48225f0b6c6c9c72b4c8791942
+  reviewer:
+    identity: pr66-design-review-current-chat
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: pr66-design-review-current-chat
+      changed: false
+      reason: null
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+        - 'same normal review chat used for initial review and all fix verifications'
+  verdict: pass
+  source_findings:
+    total: 12
+    closed: 12
+    open: 0
+  required_coverage:
+    - criterion: requirement and design conformance
+      disposition: checked_no_finding
+      evidence: 'PR66-DR-006 required action and closure are satisfied'
+    - criterion: correctness and edge cases
+      disposition: checked_no_finding
+      evidence: 'old heartbeat + long-lived owner + later crash preserves fresh retention'
+    - criterion: scope discipline
+      disposition: checked_no_finding
+      evidence: 'fix range limited to runtime, acceptance, follow-up report'
+    - criterion: API/data/config/workflow/compatibility
+      disposition: checked_no_finding
+      evidence: 'retention anchor source is explicit and compatible with existing lease lifecycle'
+    - criterion: error handling and failure diagnostics
+      disposition: checked_no_finding
+      evidence: 'diagnostics are not immediately expired after abandoned reconciliation'
+    - criterion: security and secret handling
+      disposition: checked_no_finding
+      evidence: 'existing host token/PID reuse/unknown safe-side rules preserved'
+    - criterion: validation adequacy
+      disposition: checked_no_finding
+      evidence: 'AC-13 includes 30+ day old heartbeat then later crash fixture'
+    - criterion: current-HEAD CI
+      disposition: checked_no_finding
+      evidence: 'reviewed HEAD exact-match run 34031837729 success'
+    - criterion: reports/tracking/docs
+      disposition: checked_no_finding
+      evidence: 'follow-up report maintains finding identity; PR remains Draft and Skill unimplemented'
+    - criterion: regression and maintainability
+      disposition: checked_no_finding
+      evidence: 'previously closed design areas unchanged in fix range'
+held_or_unexplored:
+  - item: Windows native OpenSCAD execution
+    disposition: not_run
+    reason: Skill not implemented
+  - item: Windows process liveness / termination timestamp API
+    disposition: not_run
+    reason: runtime not implemented
+  - item: multi-view PNG generation and Codex visual review
+    disposition: not_run
+    reason: Skill not implemented
+  - item: profile/slice/reconstruct acceptance fixtures
+    disposition: not_run
+    reason: Skill not implemented
+  - item: independent final review
+    disposition: pending
+    reason: 'must be performed by a reviewer with required independence; current chat is the normal reviewer'
+blocked:
+  - item: independent_final_review
+    reason: 'normal review has converged; independent final review is the next lifecycle stage'
+    required_input_or_decision: 'run an independent final review with a different reviewer identity/context'
+next_action:
+  - 'Run independent final design review with the required independence.'
+  - 'Do not treat this normal-review pass as implementation success.'
+  - 'Do not merge; keep PR Draft until later lifecycle gates are satisfied.'

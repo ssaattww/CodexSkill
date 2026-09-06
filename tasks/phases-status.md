@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-08-21
+- Updated: 2026-09-06
 
 ## Phase 1: 契約・設計
 
@@ -113,3 +113,26 @@
   - 通常reviewは一度の全範囲passで`I62-NR-001`〜`003`を一括検出した
   - 同じnormal reviewerのfinding-limited closureで3件を全件closedとし、verdict `pass_with_held`でnormal cycleは収束した
   - 次は全non-final変更をcommitし、別fresh reviewerで独立最終reviewを一度だけ実施する
+
+## Phase 9: Windows OpenSCAD Skillの設計と実装
+
+- Status: In Progress。設計ドラフト作成済み、利用者確認・実装指示待ち
+- Task: T-004
+- PR: [#66](https://github.com/ssaattww/CodexSkill/pull/66)。設計から実装まで同じDraft PRを使用する
+- Milestones:
+  - P66-D: SKILL分割、Windows実行、受け入れ条件の設計を作成。利用者へ説明する
+  - P66-I1: Skill入口とreference分割、出典・取り込み条件を確定する
+  - P66-I2: Python CLI、path、process、result、project管理を実装する
+  - P66-I3: render／validate／export、template、printer profileを実装する
+  - P66-I4: mesh比較・profile・slice・対応model限定SDFを移植する
+  - P66-I5: Windows上の実Codexで受け入れを確認し、設計同期と最終報告を行う
+- Exit Criteria:
+  - [受け入れ・実装計画](../design/openscad-acceptance-plan.md)の必須ACに実装HEADの証拠がある
+  - 一つのSkill内で段階的読込が成立し、基本操作が不要な解析依存に阻害されない
+  - 数値成功、画像未確認、部分出力、処理失敗を区別する
+  - 未実装Skillをinstalled inventoryへ先行登録しない。実装時に二つのhierarchy designを同期する
+  - current HEAD一致CI、詳細report、PR要約を確認する。workerはmergeしない
+- Current Evidence:
+  - 設計3文書をPRへ追加済み。実装・Windows実行・画像確認は未実施
+  - TDDとRevMem向け診断artifact workflow追加方針は適用しない
+  - 他phaseと既存ChatGPT worker ZIPの構成は変更しない

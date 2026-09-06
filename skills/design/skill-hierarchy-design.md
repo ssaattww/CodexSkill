@@ -6,7 +6,9 @@ Codex向け親／sub-agent flowと、利用者が親となるChatGPT chat worker
 
 実装、レビュー、レポート生成の意味論は親runtimeに依存しないcore Skillとして定義し、CodexとChatGPTはruntime wrapperからそれらを呼び出す。
 
-この設計書をSkill hierarchyの正本とし、`skills/design/skill-hierarchy-design.md`と同一内容に保つ。
+これらの開発workflow Skillとは別に、利用者が直接目的を達成するためのdomain Skillも同じhierarchy上で扱う。domain Skillは開発lifecycleを再実装せず、その分野の作業手順、実行処理、成果物検証だけを所有する。
+
+利用者向けの全体像と入口はroot `README.md`を正とし、本設計書はSkill間の責務、依存、実行方式、保守契約の正本とする。この設計書は`skills/design/skill-hierarchy-design.md`と同一内容に保つ。
 
 ## 実行方式
 
@@ -14,8 +16,9 @@ Codex向け親／sub-agent flowと、利用者が親となるChatGPT chat worker
 - `親が呼び出し、sub-agentが実行`: Codex親agentがSkillを通じてsub-agentへ実作業を委譲する。
 - `利用者が親としてChatGPT chatで実行`: 利用者が独立chatを起動し、そのchatが指定wrapper Skillを直接実行する。
 - `runtime非依存Skillとして実行`: 親またはwrapperから渡されたcontextを使用し、Codex親、sub-agent、ChatGPT chat固有の制御を持たずに実作業を行う。
+- `利用者が直接実行`: 利用者の目的に対応するdomain SkillをCodex等から直接利用し、開発workflow Skillを経由せずに分野固有作業を行う。
 
-ChatGPT wrapperは別workerまたはsub-agentを起動しない。Codex向けwrapperとChatGPT向けwrapperは別の実行系として扱うが、実装、レビュー、レポートの意味論は同じcore Skillを使用する。
+ChatGPT wrapperは別workerまたはsub-agentを起動しない。Codex向けwrapperとChatGPT向けwrapperは別の実行系として扱うが、実装、レビュー、レポートの意味論は同じcore Skillを使用する。domain Skillはこの開発workflowとは独立して利用できる。
 
 ## Skill依存アーキテクチャ
 
@@ -36,6 +39,9 @@ runtime wrapper
    ├─ chat-review-worker
    ├─ chat-report-writer
    └─ chat-handoff-manager
+
+利用者向けdomain Skill
+└─ openscad [PR #66で設計中、未実装]
 ```
 
 ### Core Skill
@@ -59,6 +65,19 @@ runtime wrapper
 Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuity、一度だけのfresh independent reviewerと同reviewerによるbounded closure、report path reservation identity、phase-specific report persistence、completion gateを所有する。
 
 ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persistence、chat continuity、cross-chat handoffを所有する。
+
+### 利用者向けdomain Skill
+
+利用者向けdomain Skillは、repository開発workflowの入口ではなく、利用者が特定分野の成果物を直接作成・解析・修正するためのSkillである。domain Skillは`development-orchestrator`、review lifecycle、Git提出、report-attestationを内部へ複製しない。domain Skill自体をこのrepositoryで開発する場合だけ、通常のCodexSkill開発flowを適用する。
+
+`openscad`はPR #66で設計中の最初のdomain Skillである。現時点では`skills/openscad/`は未実装であり、mainで利用可能なSkillとして扱わない。実装後は次を担当する。
+
+- OpenSCADによる新規SCAD作成、既存SCADの構造理解と設計意図を維持した修正
+- STLへの局所変更、写真からの再現、STLから編集可能なSCADへの再構築
+- validation、PNG preview、STL／3MF export、mesh比較
+- Windowsネイティブ実行、必要なreferenceだけを読む段階的読込、数値検証と画像確認の分離
+
+`openscad`の内部では一つのinstallable Skillを`SKILL.md`、用途別`references/`、Python実行層、`templates/`へ分割する。Quick／Design／Refine、Modify、Replicate、Reconstruct、Analyze／Exportのmodeを持つが、modeごとに独立Skillを作らない。詳細契約は`design/openscad-skill-design.md`、`design/openscad-runtime-design.md`、`design/openscad-acceptance-plan.md`を正本とする。
 
 ## Verification capabilityと状態遷移
 
@@ -345,7 +364,7 @@ chatgpt-worker-skills.zip
 
 各directoryには少なくとも`SKILL.md`が存在し、front matterの`name`とdirectory名を一致させる。
 
-このZIPをChatGPTへuploadし、wrapperと依存core Skillを一括登録する。
+このZIPをChatGPTへuploadし、wrapperと依存core Skillを一括登録する。利用者向けdomain Skillはこの8 Skill ZIPとは別の配布単位であり、`openscad`を実装しただけでは既存ChatGPT worker ZIPへ自動追加しない。
 
 ## Handoff
 
@@ -523,6 +542,12 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | `chat-report-writer` | ChatGPT上のsource discovery、report永続化、PR commentを統括する | 利用者が親としてChatGPT chatで実行 |
 | `chat-handoff-manager` | 独立chat間のlossless typed／raw handoff packetを生成する | ChatGPT wrapperから呼び出す |
 
+### 利用者向けdomain Skill
+
+| Skill | 役割 | 実行方式 | 状態 |
+| --- | --- | --- | --- |
+| `openscad` | OpenSCADの新規設計、既存SCADの理解・修正、STL変更・再構築、検証・exportを行う | 利用者が直接実行 | PR #66で設計中。`skills/openscad/`未実装 |
+
 ## 共通規則
 
 - 対象repositoryのProject Instructionを優先する。
@@ -551,6 +576,8 @@ Release時の共通file複製とrepository相対link書換は行わない。
 ## 保守規則
 
 - Skill追加または責務変更時は本設計書を更新する。
+- 利用者向けSkillの追加、削除、利用可否、主要入口が変わる場合はroot `README.md`も同期する。
+- 設計中Skillを一覧へ記載する場合は状態を明示し、実装済み／配布済みと誤認させない。
 - `design/skill-hierarchy-design.md`と`skills/design/skill-hierarchy-design.md`を同一内容に保つ。
 - ChatGPT Skill package変更時はRelease workflowと`design/chat-worker-skill-design.md`も更新する。
 - ChatGPT Project Instruction例を変更する場合は`design/chatgpt-project-instruction-example.md`を更新する。
