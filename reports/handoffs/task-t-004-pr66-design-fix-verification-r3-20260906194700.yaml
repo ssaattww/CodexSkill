@@ -1,0 +1,143 @@
+schema_version: 3
+producer:
+  skill: chat-review-worker
+  mode: fix_verification
+  generated_at: '2026-09-06T19:47:00+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #66'
+task_id: T-004
+branch: codex/openscad-windows-skill
+base_ref: main
+target:
+  current_head: 52ee09c1a42347be4097c089829777ddc694f628
+  reviewed_head: 55ea86530ee342689d5a8ef3ac5ae60b488cdf3f
+  commit_range: b45e4e16bcb32aa5e1e5948b11762df920b35a8f..55ea86530ee342689d5a8ef3ac5ae60b488cdf3f
+authoritative_requirements:
+  - source: review
+    reference: PRR_kwDOSFr3-88AAAABMXkROg
+    summary: 'PR66-DR-006 stale active marker recoveryをfix verificationする。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: 'CodexSkill repository maintenanceはnon-TDD。既存validationと設計contract整合を使う。'
+development_policy:
+  method: non_tdd_repository_maintenance
+  testing_order: not_applicable
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - 'matching pull_request workflow for exact reviewed/current HEAD'
+  required_failure_diagnostics:
+    - '別SHAのworkflow runを代用しない'
+    - 'Windows実機未実施をCI successへ変換しない'
+blocked:
+  - item: independent_final_review
+    reason: '`PR66-DR-006` remains open'
+    required_input_or_decision: 'abandoned retention anchorを修正して同じnormal reviewerで再度fix verificationする'
+authorized_actions:
+  - read_repository
+  - write_report
+  - write_handoff
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: reports/task-t-004-pr66-design-fix-verification-r3-20260906194700.md
+      reason: detailed fix-verification report
+    - path_or_operation: reports/handoffs/task-t-004-pr66-design-fix-verification-r3-20260906194700.yaml
+      reason: review handoff
+    - path_or_operation: PR #66 review/comment
+      reason: concise verdict
+  forbidden:
+    - path_or_operation: design/ skills/ workflows/ tasks/ implementation
+      reason: reviewer does not implement fixes
+    - path_or_operation: merge
+      reason: user performs merge
+scope:
+  - '`PR66-DR-006` fix verification'
+  - 'stale lease / diagnostics retention lifecycle'
+  - 'fix-range regression and exact-HEAD CI'
+non_goals:
+  - 'OpenSCAD Skill implementation'
+  - 'Windows process API acceptance execution'
+  - 'independent final review'
+files:
+  changed:
+    - path: design/openscad-runtime-design.md
+      purpose: recoverable run lease and retention lifecycle
+    - path: design/openscad-acceptance-plan.md
+      purpose: stale lease recovery AC-13 fixtures
+    - path: reports/task-t-004-pr66-design-review-followup-r3-20260906190000.md
+      purpose: implementation-side follow-up report
+  inspected:
+    - path: reports/task-t-004-pr66-design-fix-verification-r2-20260906185118.md
+      purpose: previous finding state
+    - path: reports/handoffs/task-t-004-pr66-design-fix-verification-r2-20260906185118.yaml
+      purpose: reviewer continuity
+  intentionally_untouched:
+    - path_or_area: design/ skills/ workflows/ tasks/
+      reason: fix-verification reviewer does not implement fixes
+commands:
+  - command: 'GitHub compare b45e4e16..55ea8653'
+    purpose: fix delta
+    result: passed
+    head_sha: 55ea86530ee342689d5a8ef3ac5ae60b488cdf3f
+    evidence: 'net changes are runtime, acceptance, follow-up report only'
+  - command: 'matching pull_request workflow for technical reviewed head'
+    purpose: repository validation
+    exit_code: 0
+    result: passed
+    head_sha: 55ea86530ee342689d5a8ef3ac5ae60b488cdf3f
+    evidence: 'run 34028233551 success / build job 101472943720 / artifact 9987744571'
+tests:
+  - name: TDD
+    phase: not_applicable
+    result: not_run
+    head_sha: 55ea86530ee342689d5a8ef3ac5ae60b488cdf3f
+    evidence: AGENTS.md
+ci:
+  required: true
+  workflow: .github/workflows/release-chatgpt-worker-skills.yml
+  run_id: 34028233551
+  head_sha: 55ea86530ee342689d5a8ef3ac5ae60b488cdf3f
+  conclusion: success
+  artifacts:
+    - id: 9987744571
+      name: chatgpt-worker-skills-34028233551
+review:
+  mode: fix_verification
+  reviewed_head: 55ea86530ee342689d5a8ef3ac5ae60b488cdf3f
+  reviewer:
+    identity: pr66-design-review-current-chat
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: pr66-design-review-current-chat
+      changed: false
+      reason: null
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+  verdict: fail
+  findings:
+    - id: PR66-DR-006
+      severity: medium
+      disposition: open_partial
+      location: 'design/openscad-runtime-design.md §4.4; design/openscad-acceptance-plan.md AC-13'
+      description: 'abandoned run retention anchorが古いheartbeatを採用でき、長時間live後のcrashでreconciliation直後にdiagnosticsが期限切れとなり得る。'
+      impact: '30日retentionを設定してもfailure diagnosticsの実効保持期間が0日近くになり得る。'
+      evidence:
+        - 'live判定はheartbeatが古くてもPID/creation time一致ならlive'
+        - 'abandoned retention anchorはvalid heartbeat_atを優先'
+        - 'AC-13 live fixtureも古いheartbeatを許容'
+      required_action: 'abandoned retention anchorをabandoned_at/reconciliation時刻、または信頼できるowner termination時刻基準にし、古いheartbeatで保持期間を消費済みにしない。'
+      closure_condition: 'old heartbeatで30日超live→owner crash→reconcileしても、reconcile直後に削除されず新しいretention期間が確保されるACを追加する。'
+  summary:
+    - '12 source findings中11件closed、PR66-DR-006のみopen。'
+    - 'lease liveness classification、PID reuse対策、abandoned reconciliation自体は改善済み。'
+    - '新規の別findingは追加しない。'
+reports:
+  detailed: reports/task-t-004-pr66-design-fix-verification-r3-20260906194700.md
+next_action:
+  - '`PR66-DR-006` identityを維持してretention anchor/AC-13を修正する'
+  - '同じnormal reviewerでfix verificationを継続する'
+  - 'independent final reviewへはまだ進めない'
