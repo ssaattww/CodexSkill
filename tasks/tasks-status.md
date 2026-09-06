@@ -92,6 +92,7 @@
     - `reports/issue-62-design-update-20260821183448.md`
     - `reports/issue-62-skill-implementation-20260821184240.md`
     - `reports/issue-62-normal-review-followup-20260821190259.md`
+    - `reports/issue-62-normal-review-20260821185421.md`
     - `reports/issue-62-normal-review-finding-closure-20260821190920.md`
     - `reports/issue-62-normal-review-followup-r2-20260821191250.md`
     - `reports/issue-62-normal-review-finding-closure-r2-20260821191456.md`
@@ -192,7 +193,7 @@
   - Pre-freeze State:
     - state: pending final current-HEAD validation
     - Skill-gap decision: `update existing skill`。`review-worker`と`report-writer`へseverity continuity guardを反映済み。新規Skillは不要
-    - feedback classification: task-specific defectであり、active feedback ledger追記は不要
+    - feedback classification: task-specific implementation／report fidelity defect。active feedback ledger追記は不要
     - normal handoff: schema version 3 packetを`reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`へ保存済み
     - source payload: 4 core Skillのcomplete output、structured authority、changed-file purpose、full review evidence、`complete_body`全文、`severity_records`を保存済み
     - packet／report commit: `ab7d58dccc96b6e22a36723b885e8f44666d7007`
