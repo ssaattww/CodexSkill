@@ -107,11 +107,11 @@ owner processはactive中にheartbeatを更新するが、heartbeatの古さだ�
 
 `live`と`liveness-unknown`は自動housekeeping、`project clean --expired-runs`、`project clean --run-id`のいずれでも削除禁止とし、unknownは理由をwarning／blocked detailとして返す。別hostから共有projectを開いた場合もhost token不一致なのでunknownとなり、remote processを死んだと推測して削除しない。
 
-`stale-and-provable`を見つけた場合、削除より先にrun単位のreconciliation claimを取得し、leaseとprocess identityをもう一度検査する。再検査でもstaleならrunを`abandoned` terminal lifecycleへatomicにreconcileし、`status: failed`、`run_lifecycle: abandoned`、`exit_code: null`、`abandoned_reason`、`abandoned_at`をresultへ保存する。存在するdiagnosticsは保持し、起動processが返していないexit codeを捏造しない。leaseは`state: abandoned`へ更新する。retention anchorは妥当な`heartbeat_at`がreconcile時刻以前ならその値、欠落・未来時刻等で信用できなければreconcile時刻とする。
+`stale-and-provable`を見つけた場合、削除より先にrun単位のreconciliation claimを取得し、leaseとprocess identityをもう一度検査する。再検査でもstaleならrunを`abandoned` terminal lifecycleへatomicにreconcileし、`status: failed`、`run_lifecycle: abandoned`、`exit_code: null`、`abandoned_reason`、`abandoned_at`をresultへ保存する。存在するdiagnosticsは保持し、起動processが返していないexit codeを捏造しない。leaseは`state: abandoned`へ更新する。abandoned runのretention anchorは原則`abandoned_at`、すなわちreconciliationがterminal化をcommitした時刻とする。OSやJob Object等からowner termination時刻を信頼できる証拠として取得・記録できる場合に限り、その`owner_termination_at`をanchorとして採用してよい。`heartbeat_at`はlivenessの補助記録であってowner死亡時刻の証拠ではないため、古いheartbeatだけでanchorを過去へ戻さない。採用したanchor sourceを`abandoned_at|owner_termination_at`としてresultへ保存する。
 
 正常終了ではresultをterminal stateとして永続化した後にleaseを`state: released`へ更新する。crash、強制終了、OS再起動等でactive leaseが残っても、次回の同host操作でowner process不在またはPID creation time不一致を証明できれば`abandoned`へreconcileできる。process queryが不確実な場合はcleanup不能のunknownとして残し、安全側に倒す。
 
-runの既定retentionは正常terminal runでは完了時刻、abandoned runでは上記retention anchorから30日で、`--retain-days 1..3650`によりそのrunだけ変更できる。write command開始時のhousekeepingは、current project所有、terminalまたはabandoned、`retention_until`超過、livenessがlive／unknownでない、path実体検査済みのrunだけを自動pruneできる。削除前にmanifest、project ID、lease／lifecycle、junction／symlinkを再検査する。
+runの既定retentionは正常terminal runでは完了時刻、abandoned runでは上記retention anchorから30日で、`--retain-days 1..3650`によりそのrunだけ変更できる。abandonedへreconcileした同じhousekeepingまたは`project clean --expired-runs` passでは、新しく算出した`retention_until`を再評価し、その時刻が未来なら削除候補へ戻さない。write command開始時のhousekeepingは、current project所有、terminalまたはabandoned、`retention_until`超過、livenessがlive／unknownでない、path実体検査済みのrunだけを自動pruneできる。削除前にmanifest、project ID、lease／lifecycle、junction／symlinkを再検査する。
 
 `project clean --expired-runs`は同じexpiry ruleの候補を表示し、`--apply --yes`でcurrent project所有の期限切れterminal／abandoned runだけを削除する。`project clean --run-id ID`はretention前でも利用者が特定runを明示削除できるが、同じproject IDであり、leaseがreleasedまたはstaleと証明されabandonedへreconcile済みであることを必須にする。liveness-unknownを強制削除するescape hatchは初回提供しない。通常のoutput cleanとrun cleanを混同せず、source、入力STL、profile、他projectのrunを削除しない。
 
@@ -162,7 +162,7 @@ Modifyは正確なmesh検査を要求する場合にmesh capabilityを必要と�
 | `artifacts` | 今回生成したpath、kind、size、hash、検査結果、source identity／artifact parent hash、schema情報 |
 | `checks` | 名前、`passed|failed|not_requested|unsupported|not_run`、数値・根拠 |
 | `metrics` | 定義名、値、単位、method、tolerance、算出不能理由。未知はnull |
-| `retention` | terminal／abandoned時刻、retain days、retention anchor、retention_until、自動prune可否 |
+| `retention` | terminal／abandoned時刻、retain days、retention anchor、anchor source、retention_until、自動prune可否 |
 | `errors`, `warnings` | 安定したcategory、説明、次の操作 |
 
 `source_identity`はcommand間で「同じ形状条件を検証した」ことを確認するためのfingerprintである。`use`／`include`／`import`の依存closureを再帰的にhashし、動的path等でclosureを確定できなければ`identity_complete=false`とする。その場合、別commandの結果を同一形状の証拠として自動結合しない。`width=12`でexportしたmeshをdefault `width=10`のanalysis結果と同じcandidateとして扱わない。STL等の成果物を次commandへ渡す場合はartifact hashをparent identityとして引き継ぐ。
