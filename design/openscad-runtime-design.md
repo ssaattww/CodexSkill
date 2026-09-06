@@ -17,14 +17,14 @@ Pythonは3.11以上の構文で実装し、初回の依存解決・受け入れ�
 | `scripts/openscad.py` | 引数受付、command dispatch、最終終了コード。幾何処理を書かない |
 | `scripts/openscad_lib/runtime.py` | バイナリと依存機能の探索、version、プロセス実行、timeout、ログ |
 | `scripts/openscad_lib/paths.py` | Skill root、workspace、許可済み出力先、SCAD用パス文字列 |
-| `scripts/openscad_lib/results.py` | 結果schema、run manifest、状態集約、成果物検査 |
+| `scripts/openscad_lib/results.py` | 結果schema、run manifest、状態集約、成果物検査、shape identity |
 | `scripts/openscad_lib/project.py` | init／list／info／clean、sourceと生成物の分離 |
-| `scripts/openscad_lib/render.py` | PNG、複数view、STL、3MFの生成 |
+| `scripts/openscad_lib/render.py` | PNG、複数view、STL、3MFの生成、評価条件の固定 |
 | `scripts/openscad_lib/validate.py` | compile、warning分類、出力確認、要求値との照合 |
 | `scripts/openscad_lib/mesh.py` | STL読込、基本統計、mesh検査、boolean比較 |
-| `scripts/openscad_lib/profile.py` | 断面・profile抽出 |
-| `scripts/openscad_lib/slice.py` | 適応的な多軸slice |
-| `scripts/openscad_lib/optimize.py` | 対応model限定のSDF最適化 |
+| `scripts/openscad_lib/profile.py` | 断面・profile抽出、穴・複数成分のtopology保持 |
+| `scripts/openscad_lib/slice.py` | 適応的な多軸slice、解析座標frame管理 |
+| `scripts/openscad_lib/optimize.py` | 対応model限定のSDF最適化、品質gate |
 
 上記はSkill自身の内部moduleであり、別installable Skillでもrepository外shared dependencyでもない。`__init__.py`を置き、親repositoryのworking directoryや`PYTHONPATH`を要求しない。構文確認や内部moduleの小分けは行うが、未使用の拡張frameworkは作らない。
 
@@ -36,20 +36,22 @@ Pythonは3.11以上の構文で実装し、初回の依存解決・受け入れ�
 | `project init` | `--name NAME`、`--root DIR` | 新規projectと必要なlocal template copy。既存projectは変更しない |
 | `project list`／`info` | rootまたはproject | 読取だけ。root不在のlistは空一覧 |
 | `project clean` | project、`--apply`、`--yes` | 既定は削除候補だけ表示。明示実行時もmanifest内の生成物だけ削除 |
-| `render` | SCAD、`--views iso|multi`、`--size W,H`、`--camera VALUE`、`--define EXPR`反復 | isoは1画像、multiはiso／front／right／topの4画像 |
-| `validate` | SCAD、`--define EXPR`反復 | OpenSCAD compile、warning、非空出力の確認。必要なmesh検査は別field |
-| `export` | SCAD、`--format stl|3mf|all`、`--define EXPR`反復 | stlはbinaryを明示。allはSTL／3MF／PNGを要求成果物として扱う |
+| `render` | SCAD、`--views iso|multi`、`--purpose explore|verify`、`--size W,H`、`--camera VALUE`、`--define EXPR`反復 | isoは1画像、multiはiso／front／right／topの4画像。verifyはexportと同じ最終評価条件を使う |
+| `validate` | SCAD、`--define EXPR`反復 | OpenSCAD compile、warning gate、非空出力の確認。必要なmesh検査は別field |
+| `export` | SCAD、`--format stl|3mf|all`、`--define EXPR`反復 | stlはbinaryを明示。allはSTL／3MF／verify PNGを要求成果物として扱う |
 | `analyze` | SCADまたはSTL、`--level basic|mesh` | basicはbbox・triangleなど。meshは閉包性・体積等を追加 |
 | `compare` | STL A／B、`--images` | 数値比較をPNG生成から独立実行。images指定時は画像も要求成果物 |
-| `profile` | STL、`--axis x|y|z|auto` | JSON、SVGまたはprofile SCAD。axis選定理由を残す |
-| `slice` | STL、coarse／fine間隔 | 軸・slice位置・contourを含むfeature-map JSON |
-| `optimize` | STL、`--model NAME`、`--seed N`、`--samples N` | 対応modelのparameter、sampled IoU、収束状態、生成可能時だけSCAD |
+| `profile` | STL、`--axis x|y|z|auto` | topology付きJSON、SVGまたはprofile SCAD。axis選定理由とframeを残す |
+| `slice` | STL、coarse／fine間隔 | frame、軸・slice位置・contourを含むfeature-map JSON |
+| `optimize` | STL、`--model NAME`、`--seed N`、`--samples N`、品質target | 対応modelのparameter、sampled IoU、solver状態、export後metric、生成可能時だけSCAD |
 
 すべての書込commandは`--workspace DIR`と`--output-dir DIR`を共通に受け付ける。workspace省略時は開始時のcwdを固定する。相対入力・出力はそのcwd基準で正規化し、内部処理中のcwd変更で意味を変えない。CLIの`--define`はOpenSCADに`-D`と式を別argv要素として渡す。公開CLIに未知のOpenSCAD optionを無条件転送するescape hatchは作らない。
 
 旧`.sh`名との互換aliasは初回対象外。移行表と全使用例を新CLIへ統一し、存在しない旧scriptを呼ばせない。`custom`の目的はrenderのcamera／size等の明示optionで引き継ぎ、任意shell実行は提供しない。
 
 `doctor`の通常実行はpackageの自動install、設定書換え、ネットワーク接続を行わない。PNGなどの実行probeは明示選択された場合だけ小さなfixtureで行う。通常render自体が成功した場合も、そのrun内のcapability証拠にできる。`--help`にoptionがあるだけでPNG生成可能とは判定しない。
+
+`render --purpose explore`は形状探索の高速表示に限り、OpenSCADのpreview評価を許可する。`render --purpose verify`と`export --format all`のPNGは最終形状確認であり、`--render`相当の評価条件を使って`$preview=false`にする。探索PNGとverify PNGを同じ検証証拠として混用せず、resultへ`evaluation_mode: preview|render`を保存する。最終STL／3MFとverify PNGは同じsource identity、`-D` override、library closureで評価する。
 
 ## 4. Windows固有契約
 
@@ -81,13 +83,19 @@ OpenSCADはargv配列と`shell=False`で起動する。`eval`、shell command連
 
 起動時cwd、実行バイナリ、引数、開始・終了時刻、timeoutを保存する。stdoutとstderrを別ファイルへ保存し、全ログを末尾数行だけに切り詰めない。原byte列を保持し、表示用decodeで置換が起きた場合はその事実を記録する。JSON／新規SCAD／MarkdownはUTF-8で書く。
 
-timeoutはcommandごとに有限の既定値を持ち、`--timeout`で変更可能とする。Windowsでは`.com`から起動される`.exe`を含む自分の子プロセスtreeだけを追跡・終了する。実装はWindows Job Object等で起動から終了まで管理し、無関係なOpenSCAD GUIをprocess名で一括停止しない。子treeを安全に管理できない環境は明示エラーにし、孤児processを残して成功扱いしない。
+timeoutはcommandごとに有限の既定値を持ち、`--timeout`で変更可能とする。Windowsでは`.com`から起動される`.exe`を含む自分の子process treeだけを追跡・終了する。実装はWindows Job Object等で起動から終了まで管理し、無関係なOpenSCAD GUIをprocess名で一括停止しない。子treeを安全に管理できない環境は明示エラーにし、孤児processを残して成功扱いしない。
+
+失敗・timeout時はcleanupより先に、生成したhelper SCAD、process stdout／stderr、入力manifest、途中成果物の存在・hashを`.openscad/runs/<run-id>/diagnostics/`へ退避する。退避後にだけephemeral tempを削除する。退避できない場合はその保存失敗自体をresultへ記録し、存在しないdiagnostic pathを示さない。成功runでもstdout／stderrとsource identityはrun記録として保持する。
 
 ### 4.4 一時ファイルと非破壊性
 
 `/tmp`、固定名`check.stl`の共有、一律`rm -rf`を使わない。許可済み出力root内に`tempfile`でrunごとの一時directoryを作り、Windowsのfile handleを閉じてから再読込・削除する。後続processが参照するfileをopenしたまま渡さない。
 
 project名はdirectory traversal、絶対パス、Windows予約名、末尾の空白・dotを拒否する。削除直前に解決済みpathがproject配下か再確認し、symlink／junctionを辿って外部を消さない。initは存在済みdirectoryを上書きしない。cleanは新旧manifestの生成物だけを候補にし、SCAD source、入力STL、測定済みprofileを消さない。新規runは旧成果物の存在を今回の成功証拠に使わない。
+
+書込先は文字列上のprefixだけで許可せず、各既存path componentを解決してjunction／symlinkによるworkspace外escapeがないことをpublish直前にも再確認する。入力と出力はWindows file identityまたは利用可能な同等手段で同一実体か確認し、同一実体なら拒否する。既存の同名成果物は既定で上書きせずblockedとし、明示的なreplace要求がある場合だけ、run固有staging fileの検証完了後にatomic replaceする。入力source、入力STL、profileをreplace対象にしない。
+
+同時runはrun IDごとのstaging directoryを使う。共通の最終pathへpublishする場合はtarget単位の排他claimを取得し、別runがclaim中なら待機またはblockedとして明示する。固定temp名や「最後に書いたrunが勝つ」動作を許可しない。排他claim取得後もpublish直前にpath identityとallowed rootを再確認する。
 
 ## 5. 依存関係
 
@@ -121,12 +129,16 @@ Modifyは正確なmesh検査を要求する場合にmesh capabilityを必要と�
 | --- | --- |
 | `run_id`, `command`, `status`, `exit_code` | 実行識別、要求、総合状態、CLI終了値 |
 | `inputs` | 正規化path、content hash、parameter override、単位、要求値 |
+| `source_identity` | root SCAD／STL hash、再帰的に解決できた`use`／`include`／`import`依存hash、effective override、OpenSCAD version、identity完全性 |
 | `environment` | OS、Python、OpenSCAD path／version、必要package version。全環境変数は保存しない |
-| `processes` | argv、cwd、各終了値、timeout、stdout／stderr path |
-| `artifacts` | 今回生成したpath、kind、size、hash、検査結果 |
+| `processes` | argv、cwd、各終了値、timeout、stdout／stderr path、`evaluation_mode` |
+| `coordinate_frames` | source frame、analysis frame、source→analysis／analysis→source変換、単位。変換しない場合もidentityを記録 |
+| `artifacts` | 今回生成したpath、kind、size、hash、検査結果、source identity／artifact parent hash |
 | `checks` | 名前、`passed|failed|not_requested|unsupported|not_run`、数値・根拠 |
 | `metrics` | 定義名、値、単位、method、tolerance、算出不能理由。未知はnull |
 | `errors`, `warnings` | 安定したcategory、説明、次の操作 |
+
+`source_identity`はcommand間で「同じ形状条件を検証した」ことを確認するためのfingerprintである。`use`／`include`／`import`の依存closureを再帰的にhashし、動的path等でclosureを確定できなければ`identity_complete=false`とする。その場合、別commandの結果を同一形状の証拠として自動結合しない。`width=12`でexportしたmeshをdefault `width=10`のanalysis結果と同じcandidateとして扱わない。STL等の成果物を次commandへ渡す場合はartifact hashをparent identityとして引き継ぐ。
 
 `status`は`succeeded|partial|failed|blocked`。全要求項目を満たした場合だけsucceeded／exit 0とする。引数・入力不正は2、環境・依存不足によるblockedは3、process失敗・timeoutは4、検証不合格は5、一部成果物だけ成功したpartialは6。未知の例外も診断を残し非0とする。非必須の未実施項目は明示し、optional skipだけで必須項目の成功を覆さない。
 
@@ -136,9 +148,13 @@ Modifyは正確なmesh検査を要求する場合にmesh capabilityを必要と�
 
 ## 8. 検証・比較の正確さ
 
-### 8.1 compileと物理品質を分離する
+### 8.1 compile、warning、物理品質を分離する
 
-validateの成功はcompile、warning policy、今回の非空出力確認を意味する。bbox、mesh閉包性、壁厚、overhang、bed収容、実際の印刷品質は別checkとする。パラメーターの`assert()`はその関係の確認であり、任意形状の全局所壁厚を測った証拠ではない。
+validateの成功はcompile、warning gate、今回の非空出力確認を意味する。bbox、mesh閉包性、壁厚、overhang、bed収容、実際の印刷品質は別checkとする。パラメーターの`assert()`はその関係の確認であり、任意形状の全局所壁厚を測った証拠ではない。
+
+OpenSCADは、未定義moduleや欠落include等でも正常bodyが残ればexit 0と非空成果物を返すversionがあるため、process exit 0やfile存在だけをcompile成功条件にしない。validation gateは、対応versionで`--hardwarnings`を使用してwarningをprocess失敗へ昇格させるか、同等のdiagnostic分類を行う。`ERROR`、parser error、unknown module／function、未定義変数に起因する評価不能、`use`／`include`／`import`の解決失敗等、形状意味論が欠落するdiagnosticはblocking warningとして`checks.compile=failed`／exit 5にする。未知warningは成功へ落とさず、分類不能ならvalidation failedとして保持する。
+
+warningを許容する必要がある場合は、warning categoryを設計上の明示allowlistへ追加し、なぜ形状意味論を損なわないかと適用OpenSCAD versionを記録する。利用者単位で黙ってwarningを無視するoptionは初回提供しない。render／exportで成果物が生成されても、そのsource identityに対する必須validationがfailedなら成果物を検証済み成功として扱わない。
 
 解析対象を持たない項目は`unsupported`または`not_requested`とし、全体を「印刷可能保証済み」とはしない。利用者が必須にした項目を検証できなければ完了条件を満たさない。STL基本readerはASCII／binaryを識別し、破損・切断・非有限座標を拒否する。watertight／volume等を報告するときはmesh解析の結果を使う。
 
@@ -154,11 +170,19 @@ validateの成功はcompile、warning policy、今回の非空出力確認を意
 
 PNGが使えなくても数値比較は独立して実行可能にする。`--images`要求時に画像が失敗すればpartialとし、算出済みmetricにmethodと範囲を添えて保存する。各画像は同一camera・projection・共通bboxに基づくframingで作り、個別autocenterで位置差を隠さない。overlayにはpreview用表示方式を使い、背景modifierがfinal renderで失われないことを確認する。
 
-### 8.3 再構築と最適化
+### 8.3 profile topologyと座標frame
+
+profile／sliceは輪郭を「点列の集合」だけでなく、connected componentごとのouter ringとinner ring（hole）の包含関係として保持する。外周と穴輪郭を同列にpolygonizeしてunionし、穴を材料で埋める実装を禁止する。複数componentのうち最大輪郭だけを残すことも禁止する。各componentの外周面積から所属hole面積を引いた材料面積を計算し、self-intersectionや包含関係が曖昧でtopologyを確定できない場合は成功形状を捏造せず`failed`または`unsupported`にする。
+
+解析の都合で軸入替え、回転、平行移動を行う場合、元STLの座標を`source_frame`、解析座標を`analysis_frame`とし、同次4×4の`source_to_analysis`と`analysis_to_source`を相互逆行列として保存する。profile点、slice位置、fitted primitiveはどのframeの値かを明示する。生成candidateは原則source frameへ戻してからSCAD／mesh比較し、analysis frameのcandidateを元STLと直接比較しない。round-trip誤差と単位を結果へ保存する。
 
 有限個のsliceにcontourがないことは、モデル全体にそのfeatureがない証明ではない。slice間隔・位置・限界を記録し、追加slice／別軸／画像照合が必要な箇所を未確定とする。bbox一致だけで再構築成功としない。
 
-SDF optimizerのsampled IoUとexport meshのvolume IoUは別metricとする。seed、sample数、bounds、solver終了状態を記録する。初期seedは0、sample数は30000とし、反復・実行時間に上限を設ける。得たparameterからSCADをexportして再検証するまで、製造用形状の一致を確定しない。
+### 8.4 再構築と最適化の品質gate
+
+SDF optimizerのsampled IoUとexport meshのvolume IoUは別metricとする。seed、sample数、bounds、solver終了状態を記録する。初期seedは0、sample数は30000とし、反復・実行時間に上限を設ける。得たparameterからSCADをcompile・exportし、source frameへ戻したmeshを元meshと比較するまで、製造用形状の一致を確定しない。
+
+`solver_succeeded`、`scad_generated`、`compile_succeeded`、`mesh_exported`、`quality_metric_available`、`quality_target_met`を別checkにする。solverが正常終了しても品質合格ではなく、SCADがcompileできても形状一致の証拠にはならない。Reconstructの既定受け入れtargetはexport meshの`volume_iou >= 0.95`とし、利用者が別targetを明示した場合だけその値を記録して使用する。targetを黙って下げない。target未達candidateは調査・中間成果物として保持できるが、Reconstruct taskをsucceededにせずvalidation failure／exit 5とする。
 
 上流の`generate_scad()`は`stadium-slot`以外でgenerator未提供を示すcommentを返す。[S5] 移植版は対応modelと`can_generate_scad`を明示し、未対応modelからcommentだけのfileを成功成果物として出さない。初回のend-to-end候補は実在する`stadium-slot`に限定する。新たなmodel generatorは別の承認対象とし、汎用STL自動再構築は約束しない。
 
