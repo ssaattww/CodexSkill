@@ -3,7 +3,7 @@
 ## 1. 状態と目的
 
 - 作成日: 2026-09-06。
-- 状態: 設計ドラフト作成済み。利用者確認待ち。Skill本体は未実装。
+- 状態: 設計review fix verificationの指摘対応中。Skill本体は未実装。
 - 対象PR: [#66](https://github.com/ssaattww/CodexSkill/pull/66)。設計から実装まで同じDraft PRを使用する。
 - branch: `codex/openscad-windows-skill`。base: `main`。
 - 作業開始HEAD: `6507727986329e34e69da3680a00824eb1fbfe13`。
@@ -11,7 +11,7 @@
 
 WindowsネイティブのCodexからOpenSCADによる設計、既存SCAD編集、STL変更、形状確認、再構築、出力を行うSkillを設計する。同時に、上流の大きな`SKILL.md`を、入口・手順・専門知識・実行処理へ分離する。
 
-今回は設計、tracking、report、PR更新だけを行う。実行スクリプト、Skill本体、依存package、workflowは変更しない。利用者へ設計を説明した後、実装指示を受けて同じPRへ実装を積む。workerはmergeせず、設計完了だけでmerge readinessを表明しない。
+今回は設計、tracking、report、PR更新だけを行う。実行スクリプト、Skill本体、依存package、workflowは変更しない。設計reviewのrequired findingが収束した後、実装指示を受けて同じPRへ実装を積む。workerはmergeせず、設計完了だけでmerge readinessを表明しない。
 
 ## 2. 設計文書の分担
 
@@ -86,6 +86,7 @@ reference名・公開CLI名・template参照は一つの変更単位で同期す
 - Skill root／workspaceを取り違えないこと、実行capabilityの確認方法。
 - 原本非破壊、未測定値を事実にしない、無断install・追加作業・権限拡大をしない、失敗を成功にしないという共通規則。
 - 数値検証と画像確認を分けること、必須検証未実施時の報告・停止条件。
+- 形状を変更・新規作成するmodeでは、基本4方向のverify PNGとrequired featureごとのview coverageを最終視覚確認契約にすること。
 - 成果物、仮定、変更parameter、検証結果、残る制約を返す共通出力形式。
 
 Bashの長い実行例、全camera preset、詳細SCAD言語解説、SDF数式、template全文、導入コマンド全文はSKILLへ置かない。commandの意味は`cli.md`、実装はscript、再利用SCADはtemplateを正本にする。
@@ -112,14 +113,14 @@ SKILLを読んでmodeを選び、下表の主referenceの該当節を読む。CL
 
 | Mode | 選択条件 | 主reference | 主な処理と完了条件 |
 | --- | --- | --- | --- |
-| Quick | 単純な新規部品。不足値が安全に仮定可能 | `modeling.md`のQuick節 | SCAD作成、validation、iso一枚の確認、仮定とparameterの説明。未依頼exportはしない |
-| Design | 複数featureや相互依存寸法のある新規設計 | `modeling.md`のDesign節 | 要求・寸法・部品分解、SCAD、複数view、要求値確認。承認範囲内で反復 |
-| Refine | 既存SCADの局所編集 | `modeling.md`のRefine節 | 現状読解、依頼箇所だけ編集、変更前後の確認。無関係部分を保つ |
-| Modify | STLの元形状をparameter化せず局所変更 | `modify-stl.md` | 原本保持、mesh／座標確認、import＋boolean、変更差分確認 |
-| Replicate | 写真の物体を再現 | `replicate-image.md` | 画像と既知寸法、分解案、同じ角度で比較。画像だけで絶対寸法を断定しない |
-| Reconstruct | STLを編集可能なSCADへparameter化 | `reconstruct-stl.md` | mesh・profile・slice分析、手法選択、SCAD、mesh比較、近似限界の説明 |
-| Export | 既存SCADを指定formatで出力 | `validate-export.md`のExport節 | 指定parameterでvalidation／出力。要求formatを黙って減らさない |
-| Analyze | 既存形状の寸法・mesh・印刷上の制約を確認 | `validate-export.md`のAnalyze節 | 計測可能項目だけ判定し、未測定・未実装checkを分離 |
+| Quick | 単純な新規部品。不足値が安全に仮定可能 | `modeling.md`のQuick節 | SCAD作成、validation、基本4方向verifyとfeature coverage、仮定とparameterの説明。未依頼exportはしない |
+| Design | 複数featureや相互依存寸法のある新規設計 | `modeling.md`のDesign節 | 要求・寸法・部品分解、SCAD、基本4方向verify＋必要追加view、要求値確認。承認範囲内で反復 |
+| Refine | 既存SCADの局所編集 | `modeling.md`のRefine節 | 現状読解、依頼箇所だけ編集、変更featureを含む基本4方向verifyと必要な変更前後view。無関係部分を保つ |
+| Modify | STLの元形状をparameter化せず局所変更 | `modify-stl.md` | 原本保持、mesh／座標確認、import＋boolean、基本4方向verifyと変更featureの追加view、変更差分確認 |
+| Replicate | 写真の物体を再現 | `replicate-image.md` | 画像と既知寸法、分解案、基本4方向verify、参照写真と対応角度で比較。画像だけで絶対寸法を断定しない |
+| Reconstruct | STLを編集可能なSCADへparameter化 | `reconstruct-stl.md` | mesh・profile・slice分析、手法選択、SCAD、mesh品質gate、基本4方向verify＋critical feature追加view、近似限界の説明 |
+| Export | 既存SCADを指定formatで出力 | `validate-export.md`のExport節 | 指定parameterでvalidation／出力。要求formatを黙って減らさない。視覚確認は要求または`all`契約時だけ |
+| Analyze | 既存形状の寸法・mesh・印刷上の制約を確認 | `validate-export.md`のAnalyze節 | 計測可能項目だけ判定し、未測定・未実装checkを分離。視覚解析を要求した場合は対象featureのview coverageを記録 |
 
 Quick／Design／RefineはSCAD作成編集の共通規則が多いため同じreference内で分ける。Analyze／Exportはvalidationと成果物判定を共有するため同じreferenceへまとめる。STL再構築は専門知識と計算負荷が異なるので独立したreferenceとする。modeをまとめたことは必読節をすべて読む指示を意味しない。
 
@@ -152,9 +153,13 @@ WindowsではPython本体を基本依存とし、追加packageはcommand別に�
 
 形状の確認は、SCADの構造とparameter、PNGの複数方向の見え方、meshの寸法・体積・断面・差分を組み合わせる。PNGを一枚出しただけで内部形状・局所壁厚・製造適合性を保証しない。既存SCADのhistoryを別途復元する機構は作らない。
 
-modeごとの必須checkを先に定め、数値checkはscriptのresult、視覚checkはsessionの実際の画像閲覧と所見で証拠を分ける。画像確認toolがなければ、その事実と未確認範囲を返す。画像を見ずに見たと報告しない。
+形状を新規作成または変更するQuick／Design／Refine／Modify／Replicate／Reconstructでは、最終視覚確認の基本集合を`iso`／`front`／`right`／`top`の4方向verify PNGとする。これは探索用previewではなく、最終exportと同じ評価条件で生成する。4方向だけではrequired featureまたは今回変更したfeatureを視認できない場合、`back`／`left`／`bottom`／custom camera／明示的なsection診断viewなど、featureを確認できる追加viewを生成する。
 
-最終報告では成果物path、選択mode、利用者指定値、仮定、変更したparameter、計測結果、視覚所見、未確認項目、必要な次の判断を示す。処理失敗、依存不足、要求外作業が必要な状態を完了として隠さない。exportだけの依頼に視覚確認を無条件で追加せず、必要性は要求とmode契約で判定する。
+最終視覚確認前に`visual_feature_coverage`を作り、各required／changed featureについて`feature_id`、期待状態、確認に使うview ID、実際に画像を開いたか、所見を記録する。最低一つの実閲覧viewでfeatureを確認できない場合、そのfeatureのvisual checkはpassedにしない。基本4方向またはfeature coverage上のrequired viewの一枚でも生成失敗・破損・未閲覧なら、visual review全体をpassedにしない。画像capabilityがなければ`unavailable`、画像上で要求と矛盾すれば`failed`とし、数値checkの成功で上書きしない。
+
+modeごとの必須checkを先に定め、数値checkはscriptのresult、視覚checkはsessionの実際の画像閲覧と所見で証拠を分ける。画像確認toolがなければ、その事実と未確認範囲を返す。画像を見ずに見たと報告しない。Exportだけの依頼には視覚確認を無条件追加せず、`--format all`や利用者要求などmode契約で必要な場合だけ実施する。
+
+最終報告では成果物path、選択mode、利用者指定値、仮定、変更したparameter、計測結果、visual feature coverage、視覚所見、未確認項目、必要な次の判断を示す。処理失敗、依存不足、要求外作業が必要な状態を完了として隠さない。
 
 ## 7. 上流からの移行と不整合
 
