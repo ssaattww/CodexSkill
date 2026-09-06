@@ -4,6 +4,8 @@ Use this reference before dispatching every bounded `sub-agent` task.
 
 The selector chooses a model tier, reasoning effort, and fork policy separately. It records task decomposability as an observed signal and execution decomposition policy as a separate caller constraint. It may return decomposable work to `codex-delegation-executor` only when decomposition is allowed.
 
+For any proposed, requested, role-adjusted, inherited, or reused Astra profile, also read [astra-escalation.md](astra-escalation.md). Its eligibility and operation-level authorization gate applies before every work-starting call, not only new profile selection.
+
 ## Current model family
 
 Use the following runtime model IDs when they are available:
@@ -13,8 +15,9 @@ Use the following runtime model IDs when they are available:
 | Luna | `gpt-5.6-luna` | deterministic, repetitive, cost-sensitive, high-volume work |
 | Terra | `gpt-5.6-terra` | ordinary implementation and bounded technical work |
 | Sol | `gpt-5.6-sol` | ambiguous, high-risk, cross-system, design, debugging, and review work |
+| Astra | `gpt-6-astra` | approval-gated escalation after an evidenced existing-model attempt becomes blocked; `high` only |
 
-Use only reasoning effort values supported by the selected runtime model. For the GPT-5.6 family, the normalized values are `none`, `low`, `medium`, `high`, `xhigh`, and `max`.
+Use only reasoning effort values supported by the selected runtime model. For the GPT-5.6 family, the normalized values are `none`, `low`, `medium`, `high`, `xhigh`, and `max`. Astra is not governed by that family-wide list: this repository permits only `high` for Astra.
 
 `Ultra` is not a `reasoning_effort` value. Treat it as a multi-agent execution strategy for independently separable workstreams. `codex-delegation-executor` owns that decomposition decision when decomposition is allowed; this reference selects the profile for each resulting bounded task.
 
@@ -36,9 +39,17 @@ When automatic classification, repository policy, escalation, agent-role plannin
 
 An explicit user instruction in the current task that directly requests `Sol xhigh` or `Sol max` counts as approval. A repository policy, previous approval for another task, inferred preference, or silence does not count.
 
-If the user rejects the proposal, recompute the profile with `Sol xhigh` and `Sol max` excluded. Normally the highest automatic fallback is `Sol high`, but classification must still be recomputed rather than silently copying the rejected proposal.
+If the user rejects the proposal, recompute the profile with `Sol xhigh` and `Sol max` excluded. Normally the highest automatic fallback is `Sol high`, but classification must still be recomputed rather than silently copying the rejected proposal. Astra is not an automatic fallback from a rejected Sol proposal.
 
 This gate has higher precedence than repository policy and automatic selection. It also applies to role/default-role profile changes, review, and release-audit tasks.
+
+## Astra escalation gate
+
+Astra high is never an ordinary task default or automatic model floor. Follow [astra-escalation.md](astra-escalation.md) for the complete eligibility, cost notice, grant, invalidation, and operation-consumption contract.
+
+Require an actual existing-model attempt on the same task, blocker evidence, a concrete reason that continuing the existing approach is insufficient, and an expected task-specific benefit. Only then propose Astra high and stop for explicit user approval. The default approval is `single_turn`; `task_until_completion` requires explicit user selection. A model override alone does not waive these prerequisites.
+
+Astra authorization covers a scoped sub-agent only. It does not authorize parent-model switching, parent `codex exec`, another task/agent, or a different effort. Recheck before role/inheritance/availability changes and before every continuation or retry. Reusing a reviewer does not waive this gate.
 
 ## Selection inputs
 
@@ -56,6 +67,7 @@ Record these signals before choosing a profile:
 - explicit user or repository model, effort, budget, availability, fork, or agent-role constraints
 - applicable explicit/default agent-role configuration evidence when runtime roles can change model or reasoning
 - approval state when `Sol xhigh` or `Sol max` is proposed
+- for possible Astra use, same-task prior-attempt/blocker evidence and the versioned `astra_authorization` record
 - existing agent identity and original applied-profile evidence when the caller requests continuity reuse
 
 `criticality: high` includes security, authorization, privacy, destructive data handling, schema or data migration, concurrency, compatibility, public API, release, deployment, and other changes where an incorrect result has a large or difficult-to-reverse impact.
@@ -81,7 +93,7 @@ This distinction matters for `max`: a caller policy that forbids splitting does 
 
 ## Model-tier rules
 
-Choose the highest floor required by any applicable rule.
+Choose the highest floor required by any applicable rule. These automatic floors remain Luna/Terra/Sol; none automatically selects Astra.
 
 ### Luna floor
 
@@ -127,7 +139,7 @@ Do not downgrade a Sol-floor task merely because the expected edit is small. Cha
 
 ## Task defaults
 
-Use these defaults after applying the floors above. A value marked `proposal` is not dispatchable until the user approves it. Defaults apply only when a new sub-agent is being created; continuity reuse preserves the existing agent profile instead of reselecting a default.
+Use these defaults after applying the floors above. A value marked `proposal` is not dispatchable until the user approves it. Defaults apply only when a new sub-agent is being created; continuity reuse preserves the existing agent profile instead of reselecting a default. Astra eligibility and per-operation authorization still apply to an existing Astra agent.
 
 | Task | Default profile | Escalation |
 | --- | --- | --- |
@@ -145,21 +157,23 @@ Do not use `none` by default for delegated development work. It may be used only
 
 ## Reviewer continuity rule
 
-When `review-enforcer` requests reuse of an already-running normal reviewer or independent reviewer, continuity takes precedence over the task default table.
+When `review-enforcer` requests reuse of an already-running normal reviewer or independent reviewer, continuity takes precedence over the task default table, but not over Astra authorization.
 
 - do not spawn a replacement merely to apply the focused fix-verification default
 - do not reselect Terra `high`, Sol `high`, `xhigh`, or `max` for the existing agent
 - preserve the model, reasoning effort, and fork context that were actually established when that reviewer was created
 - if exact original model/reasoning evidence was unavailable, preserve that uncertainty rather than inventing an exact profile
-- record `application_status: reused_existing_agent_profile` only together with the original observability state
+- record `application_status: reused_existing_agent_profile` only together with the original observability state and evidence that an authorized continuation actually ran
 - record the reviewer identity and the original applied/unverified profile evidence as continuity evidence
 - record the continued review mode, such as `fix_verification` or `finding_ci_delta_closure`
 
 Reusing an already-approved `Sol xhigh` or `Sol max` reviewer in the same review lifecycle does not create a new expensive-profile selection. The original approval evidence remains attached to that reviewer. A new reviewer, a replacement reviewer, or a new task lifecycle must pass profile selection and any applicable approval gate again.
 
+For an Astra reviewer, call the task manager's `authorization_only` mode before each work-starting continuation. Require fresh `single_turn` approval or a still-valid explicit `task_until_completion` grant for the same task. Preserve identity and report reservation; do not treat `inherited_from_original_dispatch` alone as Astra consent.
+
 ## Reasoning-effort rules
 
-Choose reasoning effort independently from model tier:
+Choose reasoning effort independently from model tier, except Astra which is fixed to `high` by repository policy:
 
 - `low`: exact, low-risk transformations with explicit expected output
 - `medium`: ordinary bounded implementation or deterministic evidence work
@@ -183,7 +197,7 @@ Return the task to `codex-delegation-executor` for decomposition only when `deco
 
 When decomposition is forbidden but observed decomposability is `independent_workstreams`, record that decomposition was considered but suppressed by caller policy. Do not falsify the observed signal.
 
-Each decomposed task receives its own profile. Do not assign one shared profile merely because the tasks run together.
+Each decomposed task receives its own profile. Do not assign one shared profile merely because the tasks run together. An Astra grant is not inherited by decomposed tasks or additional agents.
 
 ## Agent-role/default-role re-evaluation
 
@@ -204,8 +218,9 @@ planned_runtime_profile:
 
 Rules:
 
-- If the role/default role changes model tier or reasoning effort, re-evaluate floors and the expensive Sol approval gate against `planned_runtime_profile` before spawn.
+- If the role/default role changes model tier or reasoning effort, re-evaluate floors and both Sol and Astra approval gates against `planned_runtime_profile` before spawn.
 - If the role/default role would produce Sol `xhigh` or Sol `max`, stop for current-task user approval even when the original `requested` profile was cheaper.
+- If the role/default role would produce Astra, require the same prior-attempt eligibility and scoped approval as direct Astra selection; only Astra `high` is permitted.
 - If the role forces a profile below the required floor, record a policy/capability mismatch rather than silently accepting it.
 - If applicable role configuration cannot be inspected well enough to determine whether it changes model/reasoning, stop before spawn with a role-profile capability gap. This is required to prevent an unobservable role from bypassing the expensive-profile gate.
 - `planned_runtime_profile` is planning evidence, not `applied` evidence.
@@ -216,8 +231,8 @@ After spawn, exact `applied` may be recorded only when the parent can observe a 
 
 Apply precedence in this order:
 
-1. explicit current-task user instruction, including explicit approval for `Sol xhigh` or `Sol max`
-2. mandatory user-approval gate for an unapproved initial or role-adjusted Sol `xhigh` / Sol `max` proposal
+1. explicit current-task user instruction, including explicit approval for `Sol xhigh` or `Sol max`; a profile override alone does not waive Astra prerequisites
+2. mandatory user-approval gate for an unapproved initial or role-adjusted Sol `xhigh` / Sol `max` proposal, and Astra eligibility and operation-level authorization
 3. reviewer continuity reuse of an existing agent and its original observability state
 4. caller-owned decomposition policy
 5. authoritative repository policy
@@ -226,7 +241,7 @@ Apply precedence in this order:
 
 An override may pin the model, effort, or both. Continue to classify the task and record when the override is below the automatically calculated floor. Do not silently replace an explicit override. Report the mismatch and follow the governing authority.
 
-A repository policy that requests Sol `xhigh` or Sol `max` creates a proposal but cannot satisfy the approval gate.
+A repository policy that requests Sol `xhigh`, Sol `max`, or Astra creates a candidate but cannot satisfy the approval gate. Astra is never an automatic same/higher-tier availability replacement.
 
 ## Dispatch profile schema
 
@@ -295,7 +310,7 @@ profile_observability: final_profile_hidden
 
 Never copy `requested` or `planned_runtime_profile` into `applied` merely because the call succeeded.
 
-For approval-gated profiles, keep the candidate out of `requested` until approval:
+For approval-gated Sol profiles, keep the candidate out of `requested` until approval:
 
 ```yaml
 dispatch_profile:
@@ -321,7 +336,7 @@ dispatch_profile:
     - higher reasoning effort increases execution cost
 ```
 
-For continuity reuse:
+For continuity reuse of a non-Astra reviewer:
 
 ```yaml
 dispatch_profile:
@@ -341,13 +356,16 @@ dispatch_profile:
     status: inherited_from_original_dispatch | not_required
 ```
 
-After explicit approval, copy the approved proposal into `requested`, record approval evidence, then run role/default-role planning and follow [spawn-agent-model-overrides.md](spawn-agent-model-overrides.md). A later role adjustment can require a second approval check if it raises the planned profile to Sol `xhigh` or Sol `max`.
+Astra proposals, dispatches, and continuations additionally require the `astra_authorization.schema_version: 1` extension defined in [astra-escalation.md](astra-escalation.md). The ordinary continuity example does not authorize Astra; old records without a grant are not approval evidence. Keep the common `approval` summary consistent with the authoritative Astra grant and record consumption separately from runtime outcome.
+
+After explicit approval, copy the approved proposal into `requested`, record approval evidence, then run role/default-role planning and follow [spawn-agent-model-overrides.md](spawn-agent-model-overrides.md). A later role adjustment can require a second approval check if it raises the planned profile to Sol `xhigh`, Sol `max`, or Astra. For Astra, run the operation gate immediately before submission.
 
 ## Fork policy
 
 - Use `fork_turns: "none"` for a fresh specialist when applying a model or reasoning override.
 - Use an explicit positive partial fork only when the required history is bounded and identified.
 - A full-history fork follows the runtime inheritance/role path. Preserve requested specialization as unapplied evidence until final profile observability is established.
+- Inherited Astra must satisfy the same eligibility, `high` restriction, and authorization gate; unknown inherited exposure is a pre-dispatch capability gap.
 - Prefer fresh context plus explicit task-local inputs over a full-history fork when specialization matters.
 - Continuity reuse keeps the existing agent context and is not represented as a new fork operation.
 
@@ -358,10 +376,11 @@ Recompute the profile when new evidence changes uncertainty, change radius, crit
 - A failed deterministic verification becomes investigation; do not keep retrying it as Luna work.
 - A localized implementation that exposes architectural ambiguity becomes Sol work.
 - A task that becomes cleanly separable returns to `codex-delegation-executor` only when decomposition is allowed.
-- Raise reasoning effort when the problem is unchanged but needs more careful analysis.
+- Raise reasoning effort when the problem is unchanged but needs more careful analysis, except Astra remains fixed to `high`.
 - Raise model tier when the nature of the problem changes or the current model lacks the required judgment capability.
 - If escalation or role planning reaches Sol `xhigh` or Sol `max`, convert it to a proposal and stop for user approval instead of dispatching.
-- Do not recompute the profile merely because an existing reviewer moved from initial review to fix verification or bounded closure.
+- Propose Astra high only after the existing-model attempt/blocker and continuation-insufficiency gate; never use it as an automatic escalation.
+- Do not recompute the profile merely because an existing reviewer moved from initial review to fix verification or bounded closure; recheck Astra authorization without reselecting its profile.
 
 Avoid blind retry loops. Record the reason for every profile escalation, role adjustment, observability gap, or fallback and reuse existing evidence.
 
@@ -383,13 +402,15 @@ Every dispatched task lifecycle must record:
 - reclassification or escalation, if any
 - whether multi-agent decomposition was allowed, considered, suppressed, or used
 - for Sol `xhigh` or Sol `max`, the proposal, cost notice, approval status, and explicit approval evidence
-- for reviewer continuity, existing reviewer identity, original profile/observability evidence, continued mode, and `application_status: reused_existing_agent_profile`
+- for Astra, the complete eligibility, proposal/cost notice, task/scope-bound grant, mode, per-operation usage, consumption/invalidation, and approval evidence
+- for reviewer continuity, existing reviewer identity, original profile/observability evidence, continued mode, and `application_status: reused_existing_agent_profile` for an invoked continuation
 
 A proposal awaiting approval or an unresolved role-profile capability gap is a stopped workflow state, not a dispatched task.
 
 ## References
 
 - [Adaptive agent assignment design](../../../design/adaptive-agent-assignment-design.md)
+- [Astra escalation and authorization](astra-escalation.md)
 - [Spawn-agent model overrides](spawn-agent-model-overrides.md)
 - [Execution Cost Stabilizer](../../execution-cost-stabilizer/SKILL.md)
 - [OpenAI model catalog](https://developers.openai.com/api/docs/models)
