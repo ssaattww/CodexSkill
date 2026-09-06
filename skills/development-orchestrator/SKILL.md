@@ -48,7 +48,7 @@ Before running this Skill, establish:
 - active `/home/ibis/AI/CodexSkill/feedback-points/feedback-points.md`,
 - repository state needed to select one task.
 
-When no explicit dispatch override exists, do not ask the user to choose an implementation sub-agent model routinely. `codex-delegation-executor` and `sub-agent-task-manager` derive a profile from the bounded task. The exception is an approval-gated Sol `xhigh` or Sol `max` proposal, including one produced by agent-role/default-role planning; those profiles require explicit current-task user approval before dispatch.
+When no explicit dispatch override exists, do not ask the user to choose an implementation sub-agent model routinely. `codex-delegation-executor` and `sub-agent-task-manager` derive a profile from the bounded task. The exceptions are approval-gated Sol `xhigh` / Sol `max` proposals and eligible Astra high escalation, including role/default-role or inheritance paths. Astra additionally requires same-task prior-attempt evidence and scoped authorization before each work-starting operation, as owned by `sub-agent-task-manager`.
 
 ## Required flow
 
@@ -63,21 +63,21 @@ When no explicit dispatch override exists, do not ask the user to choose an impl
 9. Call `task-consistency-manager`.
 10. Call `design-doc-maintainer` when design impact exists.
 11. If and only if the target repository explicitly requires TDD for selected work, call `tdd-executor`. Otherwise record TDD as not applicable with governing source and continue.
-12. Call `codex-delegation-executor` to classify the task, choose an executor, and decide whether independently bounded workstreams justify multi-agent decomposition when decomposition is allowed. For each sub-agent task, `sub-agent-task-manager` selects model/reasoning/fork, preserves truthful decomposability separately from decomposition policy, plans explicit/default agent-role effects, and records runtime profile observability. If initial or role-adjusted planning proposes Sol `xhigh`/`max`, present rationale/cost to the user and stop before dispatch until explicit approval. If role impact cannot be inspected sufficiently to enforce the gate, stop with capability gap rather than dispatch.
+12. Call `codex-delegation-executor` to classify the task, choose an executor, and decide whether independently bounded workstreams justify multi-agent decomposition when decomposition is allowed. For each sub-agent task, `sub-agent-task-manager` selects model/reasoning/fork, preserves truthful decomposability separately from decomposition policy, plans explicit/default agent-role effects, and records runtime profile observability. If initial or role-adjusted planning proposes Sol `xhigh`/`max` or eligible Astra high, present rationale/cost and stop before dispatch until the applicable explicit approval. Astra must pass the task manager's eligibility and operation-level authorization gate, not just a generic model override. If role impact cannot be inspected sufficiently to enforce the gate, stop with capability gap rather than dispatch.
 13. Route validation, commit, push, and CI waiting by `verification_capability`. For `local_execution_available`, reuse focused inner-loop evidence before review-target commits, keep normal review/fix loops local without CI waits, and keep broader validation distinct from full local equivalence gate. For `remote_ci_only`, use matching current-HEAD CI after authorized push as formal verification evidence.
 14. Before review, create/update implementation and verification reports through `report-output-manager`, synchronize task/phase tracking, and create review-target commit. Do not require local-route review round to push or wait for CI.
-15. Call `review-enforcer` for normal review cycle. Persist normal-review/fix-verification reports before selecting independent-final-review target. Required fixes return through `implementation-executor`, followed by route-appropriate validation, report/tracking synchronization, commit, and another normal fix-verification round. Any initial/role-adjusted Sol `xhigh`/`max` review proposal remains subject to explicit approval stop.
+15. Call `review-enforcer` for normal review cycle. Persist normal-review/fix-verification reports before selecting independent-final-review target. Required fixes return through `implementation-executor`, followed by route-appropriate validation, report/tracking synchronization, commit, and another normal fix-verification round. Any initial/role-adjusted Sol `xhigh`/`max` or Astra review proposal remains subject to its approval stop; existing Astra reviewers also require operation-level authorization for new work.
 16. After normal cycle converges, make parent-owned end-of-Issue Skill-gap decision: `no skill action needed`, `update an existing skill`, or `propose a new skill`.
 17. When chosen Skill action should execute in current scope, call `skill-authoring-wrapper`. Otherwise record follow-up before final-review freeze.
 18. Call `feedback-points-manager` for reusable process feedback, Skillization state, or follow-up Issue. Persist any repository-backed normal handoff, feedback ledger, report, or tracking change now.
 19. If steps 16 through 18 changed repository files, run route-appropriate validation, update reports/tracking, commit, and return to normal review/fix-verification cycle. Repeat until normal cycle converges with all end-of-Issue/feedback changes included.
 20. Ensure every non-final repository change is committed. After normal convergence, run the repository-defined full local equivalence gate exactly once for the final publication candidate HEAD; record exact-HEAD identity, retain invalidated prior runs, and rerun only if a content delta changes the candidate. **Do not reserve an independent-final report path and do not freeze the reviewed implementation HEAD here.** Mark the lifecycle as `pre_freeze_ready` and pass the completed pre-freeze evidence to `review-enforcer`.
-21. Continue the same `review-enforcer` lifecycle for independent final review. `review-enforcer` alone performs the exactly-once reservation-only phase, records `reservation_owner: review-enforcer` and the stable reservation identity, freezes `reviewed_implementation_head`, selects/dispatches the fresh independent reviewer, retains structured evidence, handles same-reviewer bounded closure, persists at most one report-attestation commit, validates the attestation diff, performs the final authorized push/PR publication, and waits once for exact-head required `pull_request` CI. If profile/role planning proposes Sol `xhigh`/`max`, surface the proposal and stop before dispatch until the user explicitly approves. If role-profile safety is unresolved, stop with capability gap.
+21. Continue the same `review-enforcer` lifecycle for independent final review. `review-enforcer` alone performs the exactly-once reservation-only phase, records `reservation_owner: review-enforcer` and the stable reservation identity, freezes `reviewed_implementation_head`, selects/dispatches the fresh independent reviewer, retains structured evidence, handles same-reviewer bounded closure, persists at most one report-attestation commit, validates the attestation diff, performs the final authorized push/PR publication, and waits once for exact-head required `pull_request` CI. If profile/role planning proposes Sol `xhigh`/`max` or eligible Astra high, surface the proposal and stop before dispatch until the applicable user approval. If role-profile safety is unresolved, stop with capability gap. Astra continuity stays subject to the task manager's authorization gate without changing terminal ownership.
 22. If `review-enforcer` returns a required repository-change disposition, invalidate terminal readiness and execute only the requested implementation, validation, reporting, tracking, feedback, or Skill-action work. Commit the changes, complete normal fix verification, then return to the **same** `review-enforcer` independent lifecycle so it can reuse its reviewer/reservation evidence as defined by that Skill. Do not create a second reservation or a new terminal owner.
 23. When `review-enforcer` returns a passing terminal result, consume its completion evidence: `reviewed_implementation_head`, reservation identity/path evidence, independent reviewer verdict/coverage, `report_attestation_head` or explicit absence, attestation allowlist validation, final push state, PR publication state, and exact-head CI state. **Do not call `report-output-manager` attestation-persistence phase, create another attestation commit, invoke `git-pr-submitter` again, push again, or wait for CI again.**
 24. After terminal completion, allow only Git-HEAD-neutral caller work that is not already represented by the returned evidence, such as a concise PR comment, review request, external Issue update, or inline/branch-external handoff transport. Do not duplicate final publication or CI waiting already owned by `review-enforcer`.
 25. Do not commit task, design, Skill, workflow, configuration, feedback, handoff, report, or implementation changes after the attestation head. Return final handoff inline/outside reviewed PR branch.
-26. Return to task confirmation. Starting another task begins a new lifecycle and must not append commits to the completed attestation pair.
+26. Return to task confirmation. Starting another task begins a new lifecycle and must not append commits to the completed attestation pair. A prior Astra grant does not authorize that next task.
 
 ## Independent-final terminal ownership
 
@@ -101,8 +101,8 @@ A returned `review-enforcer` terminal result is authoritative lifecycle evidence
 The workflow must preserve the distinction between:
 
 - executor choice and multi-agent decomposition, owned by `codex-delegation-executor`
-- per-task model, reasoning effort, fork policy, truthful decomposability, decomposition policy, agent-role/default-role planning, expensive-profile proposal state, and runtime-profile observability, owned by `sub-agent-task-manager`
-- explicit user/repository overrides, subject to mandatory user-approval gate for Sol `xhigh` and Sol `max`
+- per-task model, reasoning effort, fork policy, truthful decomposability, decomposition policy, agent-role/default-role planning, expensive-profile proposal state, Astra operation authorization, and runtime-profile observability, owned by `sub-agent-task-manager`
+- explicit user/repository overrides, subject to mandatory Sol approval and Astra eligibility/scoped-authorization gates
 
 The parent records delegation assessment, proposal/approval evidence, requested profile, role plan, planned runtime profile, runtime observability, exact applied profile when observable, and application status. It does not infer success from a model name in child prompt or from spawn success alone.
 
@@ -110,7 +110,9 @@ When final model/reasoning metadata is not parent-visible, preserve `applied: nu
 
 Sol `xhigh` and Sol `max` are a user-confirmation boundary for cost optimization. If initial selection or role/default-role planning proposes either, parent must explain why Sol `high` is insufficient, disclose higher execution cost, and stop before dispatch. Repository policy cannot waive confirmation. Explicit current-task user instruction counts as approval; prior unrelated approval/silence does not.
 
-A dispatch classification must be recomputed when investigation/implementation changes task kind, uncertainty, change radius, criticality, or known role-adjusted runtime plan. Failed deterministic verification becomes investigation. Independently separable work returns to `codex-delegation-executor` only when decomposition policy permits; identity-sensitive review may preserve `decomposability: independent_workstreams` while suppressing decomposition by policy. Full-history/role constraints remain explicit runtime planning evidence. If user rejects expensive-profile proposal, recompute with Sol `xhigh`/`max` excluded.
+Astra high is an escalation-only sub-agent profile. Pass the same-task failed/blocked attempt, continuation-insufficiency judgment, task/scope identity, cost notice, and grant history to `sub-agent-task-manager`. It owns the complete eligibility and `single_turn` / explicitly selected `task_until_completion` rules. Honor its approval or capability stop for spawn, inheritance, reuse, resume, and retry; do not route around that stop through the main agent or parent `codex exec`. Retain grant/usage evidence and preserve current-chat authority on handoff. General instructions to implement or continue do not silently broaden the grant.
+
+A dispatch classification must be recomputed when investigation/implementation changes task kind, uncertainty, change radius, criticality, or known role-adjusted runtime plan. Failed deterministic verification becomes investigation. Independently separable work returns to `codex-delegation-executor` only when decomposition policy permits; identity-sensitive review may preserve `decomposability: independent_workstreams` while suppressing decomposition by policy. Full-history/role constraints remain explicit runtime planning evidence. If user rejects an expensive-profile proposal, recompute under the rejected profile's exclusion rules; rejection must not automatically authorize another gated profile.
 
 ## Report-attestation terminal rule
 
@@ -143,8 +145,9 @@ After terminal completion, only operations that do not change Git HEAD are permi
 - If any of those actions changes repository, require validation and normal review before entering terminal lifecycle again.
 - Do not leave substantial local Skill changes without explicit caller.
 - Do not choose parent versus sub-agent implementation outside `codex-delegation-executor`.
-- Do not hardcode or routinely confirm implementation sub-agent model when no explicit override exists, except mandatory Sol `xhigh`/`max` gate.
+- Do not hardcode or routinely confirm implementation sub-agent model when no explicit override exists, except mandatory Sol `xhigh`/`max` and Astra approval gates.
 - Never dispatch Sol `xhigh` or Sol `max` without explicit current-task user approval, including role-adjusted proposals.
+- Never start or continue Astra work without the task manager's eligibility and scoped authorization; do not transfer a grant to another agent/task/session or reuse a consumed grant.
 - Do not bypass `sub-agent-task-manager` profile/role planning for delegated work.
 - Do not falsify `decomposability` to enforce one-agent policy; record policy separately.
 - Do not claim exact `applied` when final runtime profile is hidden.
@@ -168,7 +171,7 @@ After this Skill runs, workflow has:
 - governing target-project development/testing policy,
 - concrete route through applicable wrapper/core Skills,
 - executor and decomposition decision/policy,
-- delegation assessment plus proposal/approval evidence when applicable,
+- delegation assessment plus proposal/approval and Astra grant/usage evidence when applicable,
 - requested profile, role/default-role plan, planned runtime profile, runtime observability, and exact applied profile when observable or explicit unverified/capability state for every dispatched sub-agent task,
 - resolved `verification_capability` and separate commit/push/CI-wait evidence,
 - implementation/validation evidence or explicit blocking condition,
@@ -185,6 +188,7 @@ A task cycle is complete only when:
 - normal review and independent final review are complete,
 - delegated work records requested/role-plan evidence and either exact applied profile or an explicit unverified/inherited/fallback/capability state,
 - any initial/role-adjusted Sol `xhigh`/`max` dispatch has explicit current-task approval evidence,
+- every Astra work-starting operation has task/scope-bound eligibility, approval, and grant-usage evidence,
 - required non-final reports/tracking/Skill decisions/feedback/normal handoffs were committed before independent-final terminal lifecycle,
 - any repository change discovered during pre-freeze finalization returned through validation/normal review,
 - `review-enforcer` created exactly one independent-final reservation identity and, when persistence was required, at most one validated report-attestation commit,
