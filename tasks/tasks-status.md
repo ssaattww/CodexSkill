@@ -194,6 +194,21 @@
     - `design/chatgpt-project-instruction-example.md`
     - `design/skill-hierarchy-design.md`
     - `skills/design/skill-hierarchy-design.md`
+    - `reports/issue-53-independent-final-review-20260729083728.md`
+    - `reports/issue-53-core-skill-wrapper-review-followup-20260729174338.md`
+    - `reports/issue-53-fix-verification-20260729182457.md`
+    - `reports/issue-53-fix-verification-followup-20260729182800.md`
+    - `reports/issue-53-fix-verification-r2-20260729185000.md`
+    - `reports/issue-53-independent-final-review-r2-20260729185400.md`
+    - `reports/issue-53-finding-severity-erratum-20260729193100.md`
+    - `reports/issue-53-independent-final-review-r2-followup-20260729193100.md`
+    - `reports/issue-53-independent-final-review-r2-fix-verification-20260729212800.md`
+    - `reports/issue-53-normal-handoff-followup-20260730060300.md`
+    - `reports/issue-53-independent-final-review-r2-fix-verification-r2-20260730062100.md`
+    - `reports/issue-53-complete-source-payload-followup-20260730070000.md`
+    - `reports/issue-53-independent-final-review-r2-fix-verification-r3-20260730072800.md`
+    - `reports/issue-53-normal-review-pass-prefreeze-followup-20260730091000.md`
+    - `reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`
   - Review History:
     - initial independent final review: source finding 5件、verdict `fail`
     - first fix verification: `PR54-IFR-001`／`005` resolved、`002`／`003`／`004` partial、verdict `fail`
