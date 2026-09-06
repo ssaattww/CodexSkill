@@ -56,15 +56,15 @@ Quick、Modify、Design、Replicate、Reconstruct、Refine、Export、Analyzeそ
 
 ### AC-04: バイナリ探索と依存分離
 
-`C:\\Program Files\\OpenSCAD\\openscad.com`のような空白付き実行ファイルを明示指定し、version、成功時と失敗時の終了値、stdout、stderr、終了待ちを確認する。明示指定が存在しないとき、PATHに別OpenSCADがあっても黙って切り替えずexit 3となること。
+`C:\Program Files\OpenSCAD\openscad.com`のような空白付き実行ファイルを明示指定し、version、成功時と失敗時の終了値、stdout、stderr、終了待ちを確認する。明示指定が存在しないとき、PATHに別OpenSCADがあっても黙って切り替えずexit 3となること。
 
 NumPy／trimesh／SciPyが未導入でも、標準libraryだけのhelp、project管理、OpenSCADを使う基本render／exportが動くこと。mesh commandだけが不足packageを示してblockedとなり、pip、winget、PATH変更、sandbox緩和を自動実行しないこと。
 
 ### AC-05: パスと引数
 
-workspaceを`C:\\work\\試作 部品\\O'Brien`とし、そこからSCAD、STL、PNG、JSONを扱う。入力pathをPython sourceへ埋め込まず、directoryを誤分割しないこと。文字列parameterに空白、apostrophe、double quote、backslashを含めても意図した`-D`値がOpenSCADへ届くこと。Windows file名に使えないdouble quoteをfile名の正常系には使わない。
+workspaceを`C:\work\試作 部品\O'Brien`とし、そこからSCAD、STL、PNG、JSONを扱う。入力pathをPython sourceへ埋め込まず、directoryを誤分割しないこと。文字列parameterに空白、apostrophe、double quote、backslashを含めても意図した`-D`値がOpenSCADへ届くこと。Windows file名に使えないdouble quoteをfile名の正常系には使わない。
 
-既存`OPENSCADPATH`が`C:\\libA;D:\\libB`の場合、両方とSkill側のlibraryを探索できること。親processやOSの永続環境変数を変更しないこと。Unixの`:`連結がWindowsに残っていないこと。PowerShellの実行例を記載するversionごとに実行し、PowerShell 5.1／7で異なるquoteを未検証のまま同一と表明しないこと。
+既存`OPENSCADPATH`が`C:\libA;D:\libB`の場合、両方とSkill側のlibraryを探索できること。親processやOSの永続環境変数を変更しないこと。Unixの`:`連結がWindowsに残っていないこと。PowerShellの実行例を記載するversionごとに実行し、PowerShell 5.1／7で異なるquoteを未検証のまま同一と表明しないこと。
 
 ### AC-06: パラメーターと基本形状
 
@@ -173,11 +173,13 @@ CodexSkillの保守にTDDは適用しない。必要なfixtureは構文・schema
 | 単位 | 内容 | 前提と終了条件 |
 | --- | --- | --- |
 | P66-D | 本設計、tracking、report、説明 | D-01〜D-06。今回はここまで |
-| P66-I1 | Skill入口、reference分割、出典、導入手順、構造検査 | 設計確認・実装指示と取り込み条件確認。AC-01〜03、18、20 |
-| P66-I2 | Python CLI、path／process／result、project管理、doctor | AC-04〜05、13〜14。依存不足で基本commandが壊れない |
-| P66-I3 | render／validate／export、template、printer profile | AC-06〜10、15。新run成果物と視覚確認を区別 |
+| P66-I1 | Skill入口、reference分割、出典、導入手順、構造検査 | 設計確認・実装指示と取り込み条件確認。AC-01〜03、18、20の構造・文書部分 |
+| P66-I2 | Python CLI、path／process／result、project管理、doctor | AC-04〜05、13〜14の基盤部分。基本renderとの結合はI3で確認 |
+| P66-I3 | render／validate／export、template、printer profile | AC-06〜10、15と基盤の結合。新run成果物と視覚確認を区別 |
 | P66-I4 | mesh／compare／profile／slice／optimize | AC-11〜12、16〜17。未対応機能を正しくblocked化 |
 | P66-I5 | Windows Codex受け入れ、設計同期、最終報告 | 全必須ACの証拠を確認。未実施は残しmerge readinessを主張しない |
+
+AC番号は各単位の担当範囲を示す。例えばI1ではfile構造とroutingの整合までを確認し、まだ存在しないCLIの起動や八つのmodeの実処理は合格にせず後続へ残す。I2ではprocess・path・依存判定を確認し、未実装renderとの結合はI3へ残す。部分確認をAC全体の合格と記録しない。全必須ACの最終完了はI5で判定する。
 
 各単位内もレビュー可能な変更ごとにcommit／pushする。変更は同じPR #66へ積む。途中の段階では提供済みcommandだけを案内し、全mode対応済みと表示しない。実装後のreviewとCIは実装HEADを対象とし、本設計時のCI成功を流用しない。
 
