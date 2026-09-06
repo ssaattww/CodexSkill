@@ -126,15 +126,24 @@ PNG生成が利用不能でも`compare`の数値経路は実行する。`--image
 
 overlayと差分画像は同じcameraとframingを使う。AとBをそれぞれ別々にautocenterして位置誤差を隠さない。rendererの背景modifierが効くモードを使って両形状が比較画像に存在することを確認する。
 
-### AC-13: timeout、diagnostics ownership、retention lifecycle
+### AC-13: timeout、diagnostics ownership、retention、stale lease recovery
 
 子processがstdout／stderrへ別々の識別文字列を出して停止しないfixtureでtimeoutを発生させる。非0終了、timeout分類、両log保存、自分の子tree終了を確認する。別途起動した無関係なGUI/processが停止しないこと。
 
 実行中にhelper SCADと途中成果物を作らせたうえでtimeoutまたは異常終了させる。cleanup前に`.openscad/runs/<run-id>/diagnostics/`へhelper SCAD、入力manifest、stdout／stderr、途中成果物の存在状態・hashを退避し、通常temp cleanup後にもそれらを開けること。退避後にephemeral tempだけが削除されること。診断退避自体をaccess deniedで失敗させた場合は、存在しないpathを示さず保存失敗をresultへ記録すること。全環境変数やtokenを診断へdumpしない。
 
-`project init`でstable `project_id`を作り、run resultが同じID、`run_id`、retention情報を持つこと。既定`--retain-days 30`で完了runの`retention_until`が30日後となること。`--retain-days 1`と`3650`を受理し、0、負数、3651をexit 2で拒否すること。
+`project init`でstable `project_id`を作り、run resultが同じID、`run_id`、retention情報を持つこと。既定`--retain-days 30`で完了runの`retention_until`が30日後となること。`--retain-days 1`と`3650`を受理し、0、負数、3651をexit 2で拒否すること。active runは`schema_id=openscad.run-lease`／`schema_version=1`のleaseを持ち、host token、PID、process creation time、lease nonce、heartbeatを記録すること。
 
-期限切れのcurrent project所有run、期限内run、別project IDのrun、manifest欠落run、active runを同じrun rootへ置く。自動housekeepingと`project clean --expired-runs --apply --yes`が期限切れかつ所有確認済みの完了runだけを削除し、他は残すこと。`project clean --run-id ID`は同projectの非active runだけを明示削除できること。junction／symlinkでrun root外を指すものを削除しないこと。
+次の四つのliveness fixtureをWindows実行経路または同じproduction判定関数を使う決定的fixtureで確認する。
+
+1. **live owner**: helper processを生存させ、leaseのhost token、PID、process creation timeを実processと一致させる。heartbeatを意図的に古くしても`live`となり、自動housekeeping、`project clean --expired-runs`、`project clean --run-id`のいずれも削除しないこと。heartbeat expiry単独をstale判定に使わない。
+2. **crash後stale marker**: helperがactive leaseを作った後、release／terminal resultを書かずに終了する。次回同host操作でPID不在を確認して`stale-and-provable`とし、reconciliation claim後の再検査でも不在なら`status=failed`、`run_lifecycle=abandoned`、`exit_code=null`へreconcileすること。妥当な最終heartbeatをretention anchorにし、明示cleanまたは期限切れhousekeepingの対象へ移せること。diagnosticsはreconcile時点では消さないこと。
+3. **PID reuse**: 生存中processのPIDをleaseへ設定するが、記録したprocess creation timeを実値と異ならせるfixtureでPID再利用相当を再現する。同じPIDという理由だけで`live`にせず、creation time不一致により`stale-and-provable`となること。reconciliation直前にidentityを再検査すること。
+4. **liveness unknown**: owner host token不一致、process query access denied、creation time取得不能の各ケースをfixture化する。`liveness-unknown`として自動housekeepingと明示`--run-id` cleanの双方がrunを保持し、判定不能理由を返すこと。初回実装にはunknownを強制削除するoptionを設けないこと。
+
+正常終了runではresultをterminalとして保存した後にleaseがreleasedとなること。OS再起動やCLI強制終了後にactive leaseだけが残ったケースでも、同hostでPID不在またはcreation time不一致を証明できる場合だけabandonedへreconcileする。別hostから共有projectを開いた場合はhost token不一致によりunknownとなり、remote process死亡を推測しないこと。
+
+期限切れのcurrent project所有terminal run、期限内run、別project IDのrun、manifest欠落run、live run、abandoned run、liveness-unknown runを同じrun rootへ置く。自動housekeepingと`project clean --expired-runs --apply --yes`が期限切れかつ所有・terminal／abandoned・liveness確認済みのrunだけを削除し、他は残すこと。`project clean --run-id ID`は同projectのreleased terminalまたはabandonedへreconcile済みrunだけを明示削除できること。junction／symlinkでrun root外を指すものを削除しないこと。
 
 ### AC-14: projectの非破壊性、path実体、同時run
 
@@ -190,7 +199,7 @@ Skillを実装した時点で二つのhierarchy designを同じ内容へ更新�
 
 各形状検証runにはroot source hash、解決済み`use`／`include`／`import`依存hash、effective `-D` override、OpenSCAD version、evaluation modeを含むsource identityを保存する。生成artifactを次commandで解析する場合はartifact hashと親source identityを関連付ける。dependency closureを確定できないrunは`identity_complete=false`とし、別runの結果を同一形状証拠へ統合しない。
 
-中間JSONは`openscad.profile`、`openscad.feature-map`、`openscad.reconstruct-quality`、`openscad.view-manifest`のschema IDとversionを持ち、producer／consumer両側の対応version表を同一変更単位で更新する。unsupported versionをbest-effortで読む実装を禁止する。検証scenarioには対応v1、unsupported v2、schema ID違い、必須field欠落を含める。
+中間JSONは`openscad.profile`、`openscad.feature-map`、`openscad.reconstruct-quality`、`openscad.view-manifest`、`openscad.run-lease`のschema IDとversionを持ち、producer／consumer両側の対応version表を同一変更単位で更新する。unsupported versionをbest-effortで読む実装を禁止する。検証scenarioには対応v1、unsupported v2、schema ID違い、必須field欠落を含める。
 
 CodexSkillの保守にTDDは適用しない。必要なfixtureは構文・schema・CLI smoke・実機受け入れの検証用として扱い、Red/Green証拠を作るためのtestやworkflowを追加しない。新しいWindows CIを前提条件にしない。まず利用可能なWindows実行環境で検証し、CI経路を追加する必要がある場合は別途承認範囲を確認する。
 
@@ -206,7 +215,7 @@ CodexSkillの保守にTDDは適用しない。必要なfixtureは構文・schema
 | --- | --- | --- |
 | P66-D | 本設計、tracking、report、説明、normal design review対応 | D-01〜D-06。required findingがclosedしてから実装へ進む |
 | P66-I1 | Skill入口、reference分割、出典、導入手順、構造検査 | 設計review収束・実装指示と取り込み条件確認。AC-01〜03、18、20の構造・文書部分 |
-| P66-I2 | Python CLI、path／process／result、project管理、doctor | AC-04〜06、13〜14、19の基盤部分。schema／retentionを含む。基本renderとの結合はI3で確認 |
+| P66-I2 | Python CLI、path／process／result、project管理、doctor | AC-04〜06、13〜14、19の基盤部分。schema／lease／retentionを含む。基本renderとの結合はI3で確認 |
 | P66-I3 | render／validate／export、template、printer profile | AC-06〜10、15、19と基盤の結合。warning gate、shape identity、新run成果物、preview／verify、基本4viewとfeature coverageを区別 |
 | P66-I4 | mesh／compare／profile／slice／optimize | AC-11〜12、16〜17、19。topology、schema、frame、複合品質gate、未対応機能を正しくblocked化 |
 | P66-I5 | Windows Codex受け入れ、設計同期、最終報告 | 全必須ACの証拠を確認。未実施は残しmerge readinessを主張しない |
@@ -217,6 +226,6 @@ AC番号は各単位の担当範囲を示す。例えばI1ではfile構造とrou
 
 ## 8. 現時点の未検証・未確定事項
 
-Windowsでの実行、PNGの生成とCodexによる閲覧、empty boolean応答のversion別挙動、warning分類のversion差、Python packageの固定version組は実装時に確認する。これらは実装受け入れの必須証拠であり、設計の推測で成功に変えない。
+Windowsでの実行、PNGの生成とCodexによる閲覧、empty boolean応答のversion別挙動、warning分類のversion差、Windows process liveness／PID creation time照合、Python packageの固定version組は実装時に確認する。これらは実装受け入れの必須証拠であり、設計の推測で成功に変えない。
 
 設計reviewのfix verification収束、利用者による実装開始指示、上流fileの取り込み条件の確認を待つ。本PRはDraftを維持し、workerはmergeしない。
