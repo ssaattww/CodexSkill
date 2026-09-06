@@ -1,0 +1,352 @@
+schema_version: 3
+producer:
+  skill: chat-review-worker
+  mode: fix_verification
+  generated_at: '2026-09-06T18:30:38+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #66'
+task_id: T-004
+branch: codex/openscad-windows-skill
+base_ref: main
+target:
+  current_head: 28fc8e133be80b5de498d0e478ecd163c09a93a6
+  reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+  commit_range: ec39c07d43d61c05a297af573e28672a056bcf94..38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+authoritative_requirements:
+  - source: user_instruction
+    reference: current-chat
+    summary: 'PR #66の再review。前回findingを同じnormal reviewerでfix verificationする。'
+  - source: user_instruction
+    reference: current-chat-multiview
+    summary: 'PNGは複数面から見て3D形状を理解できるものにし、不足ならfindingへ追加する。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: 'CodexSkill repository maintenanceはnon-TDD。既存validation、設計/Skill contract整合を使う。'
+  - source: review
+    reference: reports/task-t-004-openscad-design-review-20260906174737.md
+    summary: 'P66-DR-001〜005。finding identityとsource severityを維持する。'
+  - source: review
+    reference: reports/task-t-004-pr66-design-review-20260906180147.md
+    summary: 'PR66-DR-001〜006。finding identityとsource severityを維持する。'
+  - source: review
+    reference: reports/task-t-004-openscad-multiview-review-20260906180825.md
+    summary: 'P66-DR-006 / P2 / medium の複数面PNG finding。'
+development_policy:
+  method: non_tdd_repository_maintenance
+  testing_order: not_applicable
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - 'repository validator / existing worker ZIP build via matching pull_request workflow'
+  required_failure_diagnostics:
+    - 'review対象HEADとrun head_shaを完全一致させる'
+    - 'Windows OpenSCAD未実装事項をCI successへ変換しない'
+blocked:
+  - item: independent_final_review
+    reason: 'required findings remain open'
+    required_input_or_decision: 'open findingsを設計修正し、同じnormal reviewerで再度fix verificationする'
+authorized_actions:
+  - read_repository
+  - write_report
+  - write_handoff
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: reports/task-t-004-pr66-design-fix-verification-20260906182935.md
+      reason: fix verification detailed report
+    - path_or_operation: reports/handoffs/task-t-004-pr66-design-fix-verification-20260906183038.yaml
+      reason: lossless normal-review handoff
+    - path_or_operation: PR #66 comment/review
+      reason: concise review result
+  forbidden:
+    - path_or_operation: design/ skills/ workflows/ tasks/ implementation
+      reason: reviewer does not implement fixes
+    - path_or_operation: merge
+      reason: user performs merge
+scope:
+  - '前回source finding 12件のfix verification'
+  - 'fix rangeの新規変更領域と同一欠陥classの確認'
+  - 'current-HEAD CI evidenceの確認'
+non_goals:
+  - 'OpenSCAD Skill実装'
+  - 'Windows実機受け入れの代行'
+  - '独立最終review'
+files:
+  changed:
+    - path: design/openscad-runtime-design.md
+      purpose: 8論点のruntime契約修正
+    - path: design/openscad-acceptance-plan.md
+      purpose: 8論点のacceptance fixture修正
+    - path: reports/task-t-004-pr66-design-review-followup-20260906182238.md
+      purpose: implementation-side follow-up report
+  inspected:
+    - path: design/openscad-skill-design.md
+      purpose: multiview findingが未反映か確認
+    - path: reports/task-t-004-openscad-design-review-20260906174737.md
+      purpose: P66 source findings
+    - path: reports/task-t-004-pr66-design-review-20260906180147.md
+      purpose: PR66 source findings
+    - path: reports/task-t-004-openscad-multiview-review-20260906180825.md
+      purpose: later multiview finding
+    - path: tasks/tasks-status.md
+      purpose: canonical task state accuracy
+  intentionally_untouched:
+    - path_or_area: design/ skills/ workflows/ tasks/
+      reason: fix verification reviewerは修正しない
+commands:
+  - command: 'GitHub compare ec39c07..38824e1'
+    purpose: fix delta確認
+    exit_code: unknown
+    result: passed
+    head_sha: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+    evidence: 'runtime, acceptance, follow-up reportの3fileのみ'
+  - command: 'matching pull_request workflow for reviewed head'
+    purpose: current reviewed HEAD validation
+    exit_code: 0
+    result: passed
+    head_sha: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+    evidence: 'run 34024526920 success / build job 101463021294 / artifact 9986611935'
+  - command: 'matching pull_request workflow for report head'
+    purpose: report persistence後のrepository validation
+    exit_code: 0
+    result: passed
+    head_sha: 28fc8e133be80b5de498d0e478ecd163c09a93a6
+    evidence: 'run 34024852984 success and head_sha exact match'
+tests:
+  - name: TDD
+    phase: not_applicable
+    result: not_run
+    head_sha: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+    evidence: AGENTS.md
+ci:
+  required: true
+  workflow: .github/workflows/release-chatgpt-worker-skills.yml
+  run_id: 34024852984
+  head_sha: 28fc8e133be80b5de498d0e478ecd163c09a93a6
+  conclusion: success
+  artifacts: []
+implementation:
+  outcome: partial
+  final_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+  commits:
+    - sha: 4b5beb1c8d2f2489dc38699a71a3fb76b858d87a
+      purpose: runtime contract fixes
+    - sha: 92a10a5c35a67790b50991627a8ff4f9b461b6f2
+      purpose: acceptance fixture fixes
+    - sha: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      purpose: follow-up report
+  addressed_findings:
+    - id: P66-DR-001
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: addressed
+      evidence: warning gate + AC-08
+    - id: P66-DR-002
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: addressed
+      evidence: explore/verify + AC-07/10
+    - id: P66-DR-003
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: addressed
+      evidence: topology + AC-16
+    - id: P66-DR-004
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: addressed
+      evidence: source/analysis frame + AC-16/17
+    - id: P66-DR-005
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: partial
+      evidence: IoU gate exists but required feature/dimension gate remains absent
+    - id: PR66-DR-002
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: addressed
+      evidence: source_identity + AC-06/19
+    - id: PR66-DR-003
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: partial
+      evidence: topology/frame fixed; intermediate artifact schema version/consumer validation absent
+    - id: PR66-DR-005
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: addressed
+      evidence: write target / collision contract + AC-14
+    - id: PR66-DR-006
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: partial
+      evidence: diagnostics are preserved before cleanup; retention/explicit clean lifecycle absent
+    - id: P66-DR-006
+      reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+      disposition: partial
+      evidence: multiview requirement untouched; Quick remains iso-only
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+    - '8 integrated logical findings were targeted, but later multiview finding was not included.'
+    - 'Source finding 12件中7件closed、5件open。'
+review:
+  mode: fix_verification
+  reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+  reviewer:
+    identity: pr66-design-review-current-chat
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: pr66-design-review-current-chat
+      changed: false
+      reason: null
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+        - 'same normal review chat used for initial review and fix verification'
+  verdict: fail
+  required_coverage:
+    - criterion: requirement and design conformance
+      disposition: checked_finding
+      evidence: 'quality, schema version, diagnostics lifecycle, multiview remain'
+    - criterion: correctness and edge cases
+      disposition: checked_finding
+      evidence: 'small feature with high IoU, artifact version mismatch, hidden view'
+    - criterion: scope discipline
+      disposition: checked_no_finding
+      evidence: 'fix delta is runtime, acceptance, follow-up report only'
+    - criterion: API/data/config/workflow/compatibility
+      disposition: checked_finding
+      evidence: 'quality target CLI and intermediate schema version incomplete'
+    - criterion: error handling and failure diagnostics
+      disposition: checked_finding
+      evidence: 'warning closed; diagnostic retention partial'
+    - criterion: security and secret handling
+      disposition: checked_no_finding
+      evidence: 'junction, same-file, no-clobber and env rules present'
+    - criterion: tests and validation adequacy
+      disposition: checked_finding
+      evidence: 'missing feature-quality, schema-version, diagnostic-clean, multiview fixture'
+    - criterion: current-HEAD CI evidence
+      disposition: checked_no_finding
+      evidence: '38824e1 matches run 34024526920 success'
+    - criterion: report/tracking/documentation accuracy
+      disposition: checked_finding
+      evidence: 'PR body/follow-up cover 8 findings and omit later P66-DR-006'
+    - criterion: regression and maintainability
+      disposition: checked_finding
+      evidence: 'intermediate artifact compatibility and diagnostic lifecycle incomplete'
+  validation_assessment:
+    - item: reviewed-head CI
+      result: supported
+      evidence: 'run 34024526920 exact head_sha, success'
+    - item: Windows OpenSCAD acceptance
+      result: unavailable
+      evidence: 'Skill implementation not present'
+  reserved_report_paths: []
+  report_attestation:
+    allowed: not_applicable
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence: []
+  summary:
+    - 'fail: 5 source finding identities remain open across 4 logical issues'
+report:
+  report_type: verification_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/task-t-004-pr66-design-fix-verification-20260906182935.md
+  reviewed_head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - 'detailed fix verification report persisted at 28fc8e1'
+findings:
+  - id: PR66-DR-003
+    severity: medium
+    origin: coverage_miss
+    location: design/openscad-runtime-design.md §3/§7, design/openscad-acceptance-plan.md AC-16/17/19
+    description: 'profile/slice intermediate JSON schema version and consumer version validation remain undefined'
+    impact: 'producer/consumer compatibility changes can be silently misread'
+    evidence: 'result.json is versioned, but intermediate topology/feature-map artifacts are not'
+    required_action: 'version intermediate schemas and reject unsupported versions; add compatibility fixtures'
+  - id: PR66-DR-004
+    severity: medium
+    origin: coverage_miss
+    location: design/openscad-runtime-design.md §3/§8.4, design/openscad-acceptance-plan.md AC-16/17
+    description: 'Reconstruct quality gate remains volume IoU-only and user target CLI is not concrete'
+    impact: 'important low-volume feature may be missing while IoU passes'
+    evidence: 'default gate is volume_iou >= 0.95; no mandatory model feature/dimension checks'
+    required_action: 'add required feature/dimension/tolerance checks and concrete target option contract'
+  - id: PR66-DR-006
+    severity: medium
+    origin: coverage_miss
+    location: design/openscad-runtime-design.md §4.3, design/openscad-acceptance-plan.md AC-13
+    description: 'diagnostic preservation exists but retention and explicit clean lifecycle remain undefined'
+    impact: 'diagnostics may accumulate indefinitely or be deleted without a defined ownership rule'
+    evidence: 'diagnostics are copied before temp cleanup; no retention/clean contract follows'
+    required_action: 'define run-owned diagnostic retention and explicit clean semantics; add AC'
+  - id: P66-DR-006
+    severity: medium
+    origin: coverage_miss
+    location: design/openscad-skill-design.md §4.2/§6, design/openscad-acceptance-plan.md AC-07
+    description: 'later user-requested multiview completion rule remains untouched'
+    impact: 'Quick can still complete from one iso view and hidden features can be unobserved'
+    evidence: 'Quick remains iso one image; multi is only an explicit render mode'
+    required_action: 'apply MV-01..05: default shape-verification multiview, extra views for hidden features, preserve explicit single-view/STL-only requests'
+extensions:
+  - namespace: source_finding_labels
+    payload:
+      P66-DR-005: P2
+      P66-DR-006: P2/medium
+      note: 'typed findings use medium only because schema does not represent P1/P2; authoritative source labels remain unchanged in source reports and verification report'
+source_payloads:
+  - source_skill: review-worker
+    output_contract_version: unknown
+    content_type: text/markdown
+    payload: 'Full review output is persisted in reports/task-t-004-pr66-design-fix-verification-20260906182935.md; finding identities, source labels, dispositions, coverage, validation and next action are reproduced in this packet.'
+  - source_skill: report-writer
+    output_contract_version: unknown
+    content_type: text/markdown
+    payload: 'Detailed report path: reports/task-t-004-pr66-design-fix-verification-20260906182935.md. Reviewed head: 38824e11621b9dc09ead47cda73ff27c5fd5cdb0. Verdict: fail.'
+held:
+  - item: Markdown lint
+    reason: repository lint wiring absent
+    owner: repository maintainer
+    remaining_risk: automated Markdown style check unavailable
+    verdict_impact: not the cause of fail
+unexplored:
+  - area: Windows OpenSCAD / Codex image review / profile-SDF runtime acceptance
+    blocker: Skill implementation not present
+    remaining_risk: design may need runtime adjustment
+    verdict_impact: does not convert design fix verification to success
+unknown:
+  - field_or_fact: upstream redistribution conditions
+    reason: existing design gate remains unresolved before implementation copy
+not_applicable:
+  - field_or_area: independent final review / report attestation / TDD
+    reason: this is normal fix verification; repository policy is non-TDD
+remaining_risks:
+  - 'Important small features can still pass volume-IoU-only quality gate.'
+  - 'Intermediate analysis artifact compatibility is not version-gated.'
+  - 'Diagnostic storage lifecycle is incomplete.'
+  - 'Multiview shape verification is not connected to Quick completion.'
+next_action:
+  type: design_rework
+  target_skill: chat-implementation-worker
+  mode: review_follow_up
+  summary: 'Open 5 source finding identities across 4 logical issues must be fixed before another fix verification.'
+  instructions:
+    - 'Preserve P66-DR-005, PR66-DR-003, PR66-DR-004, PR66-DR-006, P66-DR-006 identities and source severity labels.'
+    - 'Do not treat report/CI success as Windows OpenSCAD acceptance.'
+    - 'After fixes, return to the same normal reviewer for fix verification.'
+  required_attachments_or_references:
+    - reports/task-t-004-pr66-design-fix-verification-20260906182935.md
+    - reports/task-t-004-openscad-multiview-review-20260906180825.md
+    - PR #66
+  requested_authorized_actions: []
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/task-t-004-pr66-design-fix-verification-20260906183038.yaml
+  packet_url: https://github.com/ssaattww/CodexSkill/blob/codex/openscad-windows-skill/reports/handoffs/task-t-004-pr66-design-fix-verification-20260906183038.yaml
+  transport_note: 'Packet target current_head is the report commit before this handoff commit. This handoff commit changes branch HEAD; final publication HEAD and matching CI are recorded in the PR comment after persistence.'
