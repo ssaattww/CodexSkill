@@ -1,0 +1,255 @@
+schema_version: 3
+producer:
+  skill: chat-handoff-manager
+  mode: fix_verification_to_independent_final_review
+  generated_at: '2026-09-08T20:05:00+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'Issue #69 / PR #71'
+task_id: T-004
+branch: issue-69-document-wording-review
+base_ref: main
+target:
+  current_head: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+  reviewed_head: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+  commit_range: '74794fda77ec8cd3c4ed17d942af3ccd4005d4dd..89c2bc6d1a9bdf2797770a70331d5b0723cf92b7'
+authoritative_requirements:
+  - source: issue
+    reference: ssaattww/CodexSkill#69
+    summary: Preserve standalone-word restrictions while adding contextual wording review and same-chat self-check through the #70 Remote Desktop Commander route.
+  - source: user_instruction
+    reference: current conversation
+    summary: Review the current implementation; inspect source through Remote Desktop Commander.
+development_policy:
+  method: validation-only, non-TDD
+  testing_order: local validation before CI-triggering publication
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - python scripts/run_validation.py --output-dir validation-artifacts/pr71-fix-review-89c2bc6-20260908
+    - git diff --check 62a7ddf3dce5c40df0a7c36a5aff27b4702cb47c..89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+  required_failure_diagnostics:
+    - results.json
+    - results.xml
+    - source.json
+    - per-command stdout/stderr
+blocked: []
+authorized_actions:
+  - read_repository
+  - write_report
+  - write_handoff
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: review report and handoff for PR #71
+      reason: project workflow requires durable review evidence
+  forbidden:
+    - path_or_operation: implementation, design, workflow, test, configuration or product changes
+      reason: reviewer boundary
+    - path_or_operation: merge
+      reason: user retains merge authority
+scope:
+  - fix verification of I69-DEP-70
+  - changed areas since the prior normal review
+  - current-HEAD local validation and exact-head CI evidence
+non_goals:
+  - independent final review
+  - implementation changes
+  - Issue #70 lifecycle review beyond the dependency evidence required by #69
+files:
+  changed:
+    - path: reports/issue-69-pr71-fix-verification-20260908.md
+      purpose: detailed normal-review fix-verification report
+    - path: reports/handoffs/issue-69-pr71-fix-verification-20260908.yaml
+      purpose: lossless handoff to independent final review
+  inspected:
+    - path: skills/chat-implementation-worker/SKILL.md
+      purpose: Remote Desktop Commander execution and self-check integration
+    - path: skills/chat-implementation-worker/references/document-wording-self-check.md
+      purpose: same-chat evidence acquisition and reading procedure
+    - path: skills/document-wording-review/SKILL.md
+      purpose: read-evidence and semantic review contract
+    - path: skills/implementation-worker/SKILL.md
+      purpose: execution-environment integration
+    - path: skills/work-context-manager/SKILL.md
+      purpose: execution-environment evidence contract
+    - path: design/document-wording-review-design.md
+      purpose: Issue #69 integration design
+    - path: design/chat-execution-environment-design.md
+      purpose: Issue #70 route contract
+    - path: reports/issue-69-rdc-self-check-followup-20260908.md
+      purpose: implementation and local evidence
+    - path: tasks/tasks-status.md
+      purpose: T-004 acceptance tracking
+  intentionally_untouched:
+    - path_or_area: Issue #70 task lifecycle and unrelated repository tasks
+      reason: outside #69 fix-verification scope
+commands:
+  - command: python scripts/run_validation.py --output-dir validation-artifacts/pr71-fix-review-89c2bc6-20260908
+    purpose: current reviewed-HEAD repository and bundle validation
+    exit_code: 0
+    result: passed
+    head_sha: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+    evidence: repository, bundle, zip-integrity and zip-contents all passed on FA780 via Remote Desktop Commander
+  - command: git diff --check 62a7ddf3dce5c40df0a7c36a5aff27b4702cb47c..89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+    purpose: whitespace/conflict-marker check
+    exit_code: 0
+    result: passed
+    head_sha: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+    evidence: no output
+ci:
+  required: true
+  workflow: .github/workflows/release-chatgpt-worker-skills.yml
+  run_id: 34211019883
+  head_sha: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+  conclusion: success
+  artifacts:
+    - id: 10049783910
+      name: skill-validation-34211019883-1
+      purpose: validation diagnostics
+    - id: 10049784332
+      name: chatgpt-worker-skills-34211019883
+      purpose: distributable worker Skill bundle
+implementation:
+  outcome: not_applicable
+  final_head: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+  commits: []
+  addressed_findings: []
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+    - Reviewer made no implementation changes.
+review:
+  mode: fix_verification
+  reviewed_head: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+  reviewer:
+    identity: chatgpt-pr71-normal-review-20260908
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: chatgpt-pr71-normal-review-20260908
+      changed: false
+      reason: same chat continues the normal review cycle
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+        - This chat performed the prior normal review and only reviewed the implementation in this round.
+  verdict: pass_with_held
+  required_coverage:
+    - criterion: I69-DEP-70 route integration and real-PC evidence
+      disposition: checked_no_finding
+      evidence: same-chat read procedure, Remote Desktop Commander execution contract, actual FA780 source reads, local validation, and exact-head CI are present
+    - criterion: requirement and design conformance
+      disposition: checked_no_finding
+      evidence: Issue #69, document wording design, execution-environment design and wrappers agree
+    - criterion: source and dependency impact
+      disposition: checked_no_finding
+      evidence: caller/core contracts and tracking inspected
+    - criterion: current-HEAD validation and CI
+      disposition: checked_no_finding
+      evidence: local four-step pass and run 34211019883 on exact head
+    - criterion: independent final review
+      disposition: unexplored
+      evidence: intentionally not performed in normal fix-verification
+  validation_assessment:
+    - item: local repository validation
+      result: supported
+      evidence: current reviewed HEAD passed four common validation steps
+    - item: mechanical Markdown wording lint
+      result: unsupported
+      evidence: target repository has no applicable lint configuration
+  reserved_report_paths: []
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence: []
+  summary:
+    - I69-DEP-70 resolved; normal review cycle has no required findings.
+report:
+  report_type: review_report
+  outcome: rendered
+  persistence_mode: repository_file
+  paths:
+    - reports/issue-69-pr71-fix-verification-20260908.md
+  reviewed_head: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - Detailed fix-verification report; independent final review remains next.
+findings: []
+held:
+  - item: mechanical Markdown focused/full wording lint
+    reason: repository configuration absent
+    owner: repository policy
+    remaining_risk: mechanical terminology gate cannot be executed here
+    verdict_impact: nonblocking for this normal fix-verification; remains explicit evidence limitation
+  - item: additional stress/evaluation observations
+    reason: communication-cut fault injection, multi-model semantic accuracy, CI artifact binary inspection and failed-Actions upload observation were not required for this closure
+    owner: future work if desired
+    remaining_risk: those scenarios are not empirically observed
+    verdict_impact: nonblocking
+unexplored:
+  - area: independent final review
+    blocker: must be performed by a fresh chat independent of implementation and normal review
+    remaining_risk: independent reviewer may still find defects
+    verdict_impact: blocks final acceptance, not normal-cycle pass
+unknown: []
+not_applicable:
+  - field_or_area: TDD
+    reason: CodexSkill maintenance policy explicitly excludes TDD
+remaining_risks:
+  - Independent final review is still required before final acceptance.
+source_payloads:
+  - source_skill: review-worker
+    output_contract_version: uploaded-chatgpt-worker-skills
+    content_type: application/yaml
+    payload:
+      mode: fix_verification
+      reviewed_implementation_head: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+      finding_closure:
+        I69-DEP-70: resolved
+      findings: []
+      verdict: pass_with_held
+      next_action: independent final review in a fresh chat
+extensions:
+  - namespace: remote-workspace
+    payload:
+      device: FA780
+      device_id: 4eae589f-096b-4362-9bec-0f392d77d44f
+      root: 'C:\Users\donabe\Project\CodexSkill'
+      local_head: 89c2bc6d1a9bdf2797770a70331d5b0723cf92b7
+      source_state: clean
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: independent_final_review
+  summary: Run one fresh independent final review after pre-freeze requirements are satisfied.
+  instructions:
+    - Use a fresh chat that did not implement, fix, or perform normal review.
+    - Resolve the current PR HEAD again and inspect source through the selected execution route.
+    - Do not reuse this normal reviewer as the independent reviewer.
+    - Use only exact-head CI evidence and do not merge.
+  required_attachments_or_references:
+    - ssaattww/CodexSkill#69
+    - ssaattww/CodexSkill#71
+    - reports/issue-69-pr71-fix-verification-20260908.md
+    - reports/handoffs/issue-69-pr71-fix-verification-20260908.yaml
+  requested_authorized_actions:
+    - read_repository
+    - write_report
+    - write_handoff
+    - update_pr
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-69-pr71-fix-verification-20260908.yaml
+  packet_url: null
+  transport_note: Normal fix-verification evidence only; not an independent-final attestation.
