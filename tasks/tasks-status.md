@@ -2,9 +2,33 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-08-21
+- Updated: 2026-09-08
 
 ## In Progress
+
+- T-005: Issue #70として通常チャットとPC接続の作業経路を整備する
+  - Status: 実装・ローカル検証済み、通常・独立レビュー待ち
+  - Phase: Phase 10
+  - Estimate: M
+  - Depends on: 既存のChatGPT worker構成と検証能力の判定
+  - Design: `design/chat-execution-environment-design.md`
+  - Exit Criteria:
+    - 既存3種類のworkerで通常チャットとRemote Desktop Commanderの経路を選択できる
+    - 接続先、作業ツリー、HEAD、未コミット変更、依存ツール、権限を確認し、指定外への切り替えを行わない
+    - サブエージェントを起動せず、GitHub操作をGitHubコネクタに限定する
+    - 他タスクのツリーを変更せず、Windowsの専用ワークツリーで検証を行う
+    - CIより先にローカル検証を行い、成功・失敗の結果とstdout/stderrを保存する
+    - 検証対象と公開内容を照合し、CIはPR current HEADに一致するrunだけを確認する
+    - #69の文書自己点検に渡す資料と証拠を定義し、#69の組み込み完了とは分ける
+    - 既存repository検査、8スキルZIP、設計同期を検証し、通常・独立レビューを受ける
+    - 詳細報告、引き継ぎ、PR、簡易PRコメントを保存し、マージしない
+  - Notes:
+    - T-004とPhase 9は別作業のPR #71で使用中のため重複させない
+    - CodexSkillの方針に従いTDDは適用しない
+    - `C:/Users/donabe/Project/CodexSkill-issue-70` を使用する
+    - 既存repository検査、ZIP生成・整合性・収録内容・再現性、設計同期、差分検査は成功
+    - 診断保存の確認用に意図的な終了値7を実行し、stdout/stderrを保存した。TDDのRedではない
+    - 公開後のHEAD、CI、報告保存先はPRへ記録する。実装者の自己確認をレビュー済みとはしない
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
   - Status: 通常review cycle収束、独立最終review待ち
