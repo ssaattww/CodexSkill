@@ -10,6 +10,7 @@ from pathlib import Path
 
 CORE_SKILLS = {
     "work-context-manager",
+    "document-wording-review",
     "implementation-worker",
     "review-worker",
     "report-writer",

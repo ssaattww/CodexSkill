@@ -65,12 +65,19 @@ logs. Compare the publication tree with validated local content; bind dirty
 source evidence to its fingerprint, not only its baseline HEAD. Follow the
 verification-route rules below for separate publication and CI states.
 
-When a document self-check is required, read the applicable Skill, references,
-before/after text, context, and definitions from the verified source through
-the selected route. The current chat reads and judges the text; command
-success or Remote Desktop Commander is not semantic review evidence. Keep
-self-check and mechanical-check outcomes separate, and do not use either as
-proof that normal or independent review was performed.
+## Document wording self-check
+
+When `implementation-worker` requires `document-wording-review`, follow the
+[ChatGPT self-check procedure](references/document-wording-self-check.md).
+The current chat must read the actual Skill, references, and changed prose
+itself through the selected route. On the connected-PC route, acquire that
+material and check tool dependencies using Remote Desktop Commander on the
+verified PC; do not assume dependencies are resolved inside ChatGPT.
+
+Return `author_self_check` evidence, including actual read ranges and source
+identity, through the implementation result to the report and handoff. Keep
+mechanical command outcomes separate. No additional agent is involved, and
+neither result is proof that normal or independent review was performed.
 
 ## Verification-route execution
 

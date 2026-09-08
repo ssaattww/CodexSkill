@@ -114,6 +114,20 @@
   - 同じnormal reviewerのfinding-limited closureで3件を全件closedとし、verdict `pass_with_held`でnormal cycleは収束した
   - 次は全non-final変更をcommitし、別fresh reviewerで独立最終reviewを一度だけ実施する
 
+## Phase 9: 用語・文章品質レビューと診断保存
+
+- Status: In Progress
+- Task: T-004 / Issue #69 / PR #71
+- Notes:
+  - 単独語禁止を維持し、文脈付きの四観点判定を行うdocument-wording-reviewを追加した
+  - 作成担当と既存レビュワーへの必須呼び出し、18判断例、9スキル配布、依存検査、関連設計を同期した
+  - 成功・失敗の両方で診断artifactを保存し、配布用ZIPは検証成功時だけ渡す
+  - 実装HEAD c5819e3afed8f1947da3ad377dffb6c057127403でローカル4処理成功。機械的Markdown用語検査は設定不在でunsupported
+  - 74794fdの通常レビュー後、PR #72で取り込まれた#70経路へ自己点検を接続した。Chat自身の読解と機械検査の証拠を分ける
+  - 経路統合後のローカル4検証、依存不足・終了値7の診断保存、Chat自身の自己点検を実施した。詳細はreports/issue-69-rdc-self-check-followup-20260908.md
+  - 今回変更の修正確認・独立最終レビューは未実施。自己確認や構造検査を代用しない
+  - 詳細はreports/issue-69-wording-review-implementation-20260908.md。current HEADのCIとartifactはPRで追跡する
+
 ## Phase 10: 通常チャットとPC接続の作業経路
 
 - Status: In Progress

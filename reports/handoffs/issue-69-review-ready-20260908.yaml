@@ -1,0 +1,370 @@
+schema_version: 3
+producer: {skill: chat-handoff-manager, mode: implementation_to_initial_review, generated_at: '2026-09-08T12:47:18.661938+09:00'}
+repository: ssaattww/CodexSkill
+issue_or_pr: 'Issue #69 / PR #71'
+task_id: T-004
+branch: issue-69-document-wording-review
+base_ref: main
+target:
+  current_head: unknown
+  reviewed_head: null
+  commit_range: 6507727986329e34e69da3680a00824eb1fbfe13..c5819e3afed8f1947da3ad377dffb6c057127403
+verification: &verification
+  capability: local_execution_available
+  capability_evidence: &capability_evidence
+    - Remote Desktop Commander process 3036 on FA780 executed Python 3.14.7 in the Windows checkout.
+    - Clean local HEAD c5819e3afed8f1947da3ad377dffb6c057127403 passed four validation steps before its CI-triggering push.
+  technical_head: c5819e3afed8f1947da3ad377dffb6c057127403
+  administrative_parent: c5819e3afed8f1947da3ad377dffb6c057127403
+  commit: {state: commit_pending, review_target_sha: null}
+  push: {state: push_pending, head_sha: unknown}
+  ci_wait: {state: ci_wait_pending, required_for: merge_gate}
+  final_publication:
+    sequence: final_push_then_authorized_pr_create_or_update_then_exact_head_pull_request_ci_wait
+    pr_action: update
+authoritative_requirements: &requirements
+  - {source: issue, reference: 'ssaattww/CodexSkill#69', summary: Add contextual wording review without relaxing standalone-word restrictions.}
+  - {source: user_instruction, reference: 'Current conversation, 2026-09-08', summary: Resume through Remote Desktop Commander; test locally before CI; preserve diagnostic artifacts on success and failure; update the existing PR.}
+  - {source: repository_instruction, reference: AGENTS.md, summary: Non-TDD maintenance using existing validation and package checks.}
+  - {source: design, reference: design/document-wording-review-design.md, summary: Separate meaning, identification, approved usage and readability; use existing author/reviewer identities.}
+development_policy: &policy
+  method: validation-only, non-TDD
+  testing_order: local validation before CI-triggering push
+  governing_source: AGENTS.md and explicit user instructions
+validation_plan: &plan
+  commands:
+    - python scripts/run_validation.py --output-dir validation-artifacts/c5819e3-clean-head
+    - Re-run the common validator on the clean report-publication HEAD before updating the remote ref.
+    - Check only PR current-HEAD-matching workflow runs and artifacts after publication.
+  required_failure_diagnostics: [results.json, results.xml, source.json, per-command stdout and stderr, CI job-status.json and runner logs]
+blocked: []
+authorized_actions: [read_repository, edit_code, edit_documentation, edit_configuration, edit_workflows, write_handoff, write_report, commit, push, update_issue, update_pr, comment_pr]
+write_boundary: &boundary
+  allowed:
+    - {path_or_operation: 'Issue #69 implementation, designs, validation, tracking, reports, handoff and PR #71', reason: Explicit user request}
+  forbidden:
+    - {path_or_operation: Merge or release publication, reason: User retains merge authority}
+    - {path_or_operation: Discard unrelated local edits, reason: Outside scope}
+    - {path_or_operation: Broaden standalone whitelist permissions, reason: Explicitly rejected}
+    - {path_or_operation: Spawn another worker or issue an independent verdict from this implementation chat, reason: Chat implementation wrapper boundary}
+scope: &scope
+  - Contextual document-wording-review and 18 decision examples
+  - Existing author/reviewer integration and nine-Skill packaging
+  - Synchronized design, tracking, reporting and success/failure diagnostics
+non_goals: &non_goals
+  - Target-specific whitelist changes
+  - New reviewer lifecycle or model dispatch
+  - Unrelated release behavior changes
+  - Merge
+files:
+  changed: &changed
+    - {path: skills/document-wording-review/SKILL.md, purpose: Canonical contextual review contract}
+    - {path: skills/document-wording-review/references/decision-examples.md, purpose: Eighteen contextual positive and negative cases}
+    - {path: skills/implementation-worker/SKILL.md, purpose: Mandatory author self-check}
+    - {path: skills/review-worker/SKILL.md, purpose: Mandatory check inside existing reviewer}
+    - {path: skills/markdown-word-checker/SKILL.md, purpose: Separate lexical compliance from wording decisions}
+    - {path: scripts/build_chatgpt_worker_skills.py, purpose: Package the fifth core Skill}
+    - {path: scripts/verify_skill_repository.py, purpose: Check required Skill and core dependencies}
+    - {path: design/document-wording-review-design.md, purpose: Design and acceptance criteria}
+    - {path: design/skill-hierarchy-design.md, purpose: Canonical inventory and caller design}
+    - {path: skills/design/skill-hierarchy-design.md, purpose: Byte-identical hierarchy mirror}
+    - {path: design/chat-worker-skill-design.md, purpose: Chat packaging and diagnostic design}
+    - {path: scripts/run_validation.py, purpose: Existing common diagnostics implementation from this PR}
+    - {path: .github/workflows/release-chatgpt-worker-skills.yml, purpose: Always upload diagnostics and success-only distributable}
+    - {path: .gitignore, purpose: Ignore local diagnostic outputs}
+    - {path: tasks/tasks-status.md, purpose: Track T-004 as review pending}
+    - {path: tasks/phases-status.md, purpose: Track Phase 9}
+    - {path: reports/issue-69-checkpoint-20260908.md, purpose: Preserved historical checkpoint}
+    - {path: reports/handoffs/issue-69-checkpoint-20260908.yaml, purpose: Preserved historical handoff}
+    - {path: reports/issue-69-wording-review-implementation-20260908.md, purpose: Current implementation and validation report}
+    - {path: reports/handoffs/issue-69-review-ready-20260908.yaml, purpose: Current review handoff}
+  inspected:
+    - {path: AGENTS.md, purpose: Repository policy}
+    - {path: skills/skill-authoring-wrapper/SKILL.md, purpose: Authoring and responsibility policy}
+    - {path: skills/progress-sync-manager/SKILL.md, purpose: Governed tracking updates}
+  intentionally_untouched: &untouched
+    - {path_or_area: Target whitelist entries and unrelated task histories, reason: Outside accepted scope}
+    - {path_or_area: Pre-existing prerelease design/workflow mismatch, reason: Not introduced by wording or diagnostics integration; disclose without changing release behavior}
+commands: &commands
+  - {command: 'Common validator on staged core snapshot', purpose: Verify the exact first published tree, exit_code: 0, result: passed, head_sha: de103b362cb64aae4be9091d85d73cf980842d1d, evidence: 'Tree 143b4b03f041730804c6e6e39b4b032e4d1bf93b; validation-artifacts/core-prepush/; snapshot evidence not a clean commit execution.'}
+  - {command: 'Common validator on staged integration snapshot', purpose: Verify the exact integration tree, exit_code: 0, result: passed, head_sha: c5819e3afed8f1947da3ad377dffb6c057127403, evidence: 'Tree 642542bae36d6102b8ca5a7f6816452d0121f486; validation-artifacts/integration-prepush/.'}
+  - {command: 'python scripts/run_validation.py --output-dir validation-artifacts/c5819e3-clean-head', purpose: Clean local implementation-HEAD validation before push, exit_code: 0, result: passed, head_sha: c5819e3afed8f1947da3ad377dffb6c057127403, evidence: 'repository, bundle, zip-integrity, zip-contents all passed; source.json records HEAD and content hashes.'}
+  - {command: 'Temporary missing-Skill and missing-declaration probes', purpose: Confirm dependency failures, exit_code: 1, result: passed, head_sha: c5819e3afed8f1947da3ad377dffb6c057127403, evidence: 'Expected nonzero outcomes; stderr retained in integration-prepush; temporary files restored.'}
+  - {command: 'Repeat ZIP build and byte comparison', purpose: Check package reproducibility, exit_code: 0, result: passed, head_sha: c5819e3afed8f1947da3ad377dffb6c057127403, evidence: 'Nine roots; bytes identical; SHA-256 f19643d08f5c43ffeef300184dbadef709111fa20c9ae1b64b2a0e3f3c839219.'}
+  - {command: 'AST, isolated PyYAML, case-ID and git diff --check checks', purpose: Syntax and structure, exit_code: 0, result: passed, head_sha: c5819e3afed8f1947da3ad377dffb6c057127403, evidence: 'YAML parses, diagnostic always condition and trigger confirmed, 18 distinct IDs, hierarchy mirror equal; not a model evaluation.'}
+tests:
+  - {name: Post-implementation dependency probes, phase: post_implementation, result: passed, head_sha: c5819e3afed8f1947da3ad377dffb6c057127403, evidence: Expected failure paths; no TDD tests added.}
+ci:
+  required: true
+  workflow: .github/workflows/release-chatgpt-worker-skills.yml
+  run_id: null
+  head_sha: unknown
+  conclusion: unknown
+  artifacts: []
+implementation:
+  outcome: completed
+  final_head: c5819e3afed8f1947da3ad377dffb6c057127403
+  commits: &commits
+    - {sha: c73af1afc2d728b8cae454a41d4a26565cabe474, purpose: Success/failure diagnostics}
+    - {sha: de103b362cb64aae4be9091d85d73cf980842d1d, purpose: New contextual review core and examples}
+    - {sha: c5819e3afed8f1947da3ad377dffb6c057127403, purpose: Caller integration, package inventory and synchronized designs}
+  addressed_findings: []
+  failure_diagnostics: &diagnostics
+    - {type: artifact, location: 'C:\Users\donabe\Project\CodexSkill\validation-artifacts', summary: Clean-head results, local failure probes, per-command stdout/stderr, JSON/XML and source hashes}
+  blocked_items: []
+  summary: [Implementation complete; reviews pending; report-publication identity and CI are recorded externally after this packet is committed.]
+review:
+  mode: not_applicable
+  reviewed_head: unknown
+  reviewer:
+    identity: unknown
+    role: not_applicable
+    continuity: {previous_reviewer_identity: null, changed: false, reason: No review has run}
+    independence:
+      implemented_change: true
+      implemented_review_fix: false
+      served_as_normal_reviewer: false
+      inherited_conversation: true
+      evidence: [This chat implemented the changes and performed only author self-checks.]
+  verdict: incomplete
+  required_coverage:
+    - {criterion: Normal and independent review, disposition: unexplored, evidence: No separate review executed}
+  independent_closure: &closure
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: []
+  validation_assessment:
+    - {item: Local validation, result: supported, evidence: Four existing checks passed on clean c5819e3 HEAD}
+    - {item: Mechanical Markdown lint, result: unsupported, evidence: Target package and terminology configuration absent}
+  reserved_report_paths: []
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence: []
+  summary: [Author self-check is not a normal or independent verdict.]
+report:
+  report_type: implementation_report
+  outcome: rendered
+  persistence_mode: repository_file
+  paths: [reports/issue-69-wording-review-implementation-20260908.md]
+  reviewed_head: null
+  attestation_head: null
+  pr_comments: []
+  summary: [Records exact local evidence and separates implementation completion from review acceptance.]
+findings: []
+held: []
+unexplored:
+  - {area: Normal and independent reviews, blocker: Must be performed outside the implementation identity, remaining_risk: Semantic and other defects may remain, verdict_impact: Blocks final acceptance}
+unknown:
+  - {field_or_fact: This packet publication HEAD and its CI result, reason: The containing commit is not created yet; follow PR current HEAD after publication}
+not_applicable:
+  - {field_or_area: TDD, reason: Explicit CodexSkill maintenance policy}
+remaining_risks: &risks
+  - Normal and independent review are pending; draft PR is not merge-approved.
+  - Mechanical Markdown lint is unsupported, not passed.
+  - Eighteen examples are contract cases, not an independent model-accuracy evaluation.
+  - Actual failure-run upload on GitHub Actions has not been observed; failure preservation was probed locally.
+  - Pre-existing prerelease design/workflow mismatch remains outside this change.
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: current-uploaded-skill
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      issue_or_pr: 'Issue #69 / PR #71'
+      task_id: T-004
+      mode: implementation
+      branch: issue-69-document-wording-review
+      base_ref: main
+      current_head: c5819e3afed8f1947da3ad377dffb6c057127403
+      reviewed_head: null
+      verification_capability: local_execution_available
+      verification_capability_evidence: *capability_evidence
+      execution_state:
+        technical_head: c5819e3afed8f1947da3ad377dffb6c057127403
+        administrative_parent: c5819e3afed8f1947da3ad377dffb6c057127403
+        commit: commit_pending
+        push: push_pending
+        ci_wait: ci_wait_pending
+        full_local_equivalence_gate: {state: pending_normal_convergence, candidate_head: unknown, invalidated_runs: []}
+      scope: *scope
+      non_goals: *non_goals
+      authoritative_requirements: *requirements
+      write_boundary: *boundary
+      development_policy: *policy
+      validation: *plan
+      ci: {matching_run: null, conclusion: unknown}
+      unknown: [Future packet HEAD and matching CI]
+      blocked: []
+      remaining_risks: *risks
+  - source_skill: implementation-worker
+    output_contract_version: issue-69-wording-integration
+    content_type: application/yaml
+    payload:
+      mode: initial implementation
+      accepted_scope: *scope
+      non_goals: *non_goals
+      requirements_and_design_references: *requirements
+      changed_files_and_purpose: *changed
+      intentionally_untouched_areas: *untouched
+      validation_commands_and_results: *commands
+      document_wording_review: &wording
+        mode: author_self_check
+        target: c5819e3afed8f1947da3ad377dffb6c057127403
+        base: 6507727986329e34e69da3680a00824eb1fbfe13
+        identity: current implementation chat
+        coverage: [New Skill and all 18 cases, Changed caller contracts, New design, Changed hierarchy and package design passages with context]
+        exclusions: [Unmodified historical reports and unrelated design sections]
+        dimensions: {meaning: checked_no_finding, identification: checked_no_finding, approved_usage: not_applicable, readability: checked_no_finding}
+        approved_usage_note: No project approval registry applies to these newly authored Skill contracts; the supplied example policies were checked as example assumptions.
+        mechanical_lint: unsupported
+        wording_result: pass
+        findings: []
+        policy_conflicts: []
+        closure_evidence: DW-09 was refined during authoring so an authorized definition alone does not certify readability.
+        remaining_risks: [Self-check only; no independent evaluation]
+        next_required_action: Initial review by a different identity
+      failure_diagnostics_and_artifacts: *diagnostics
+      verification_capability: local_execution_available
+      validation_evidence: *commands
+      review_target_commit_identity: c5819e3afed8f1947da3ad377dffb6c057127403
+      push_state: pushed for implementation; packet publication pending
+      matching_ci_evidence: Future packet HEAD is not yet known; query current PR after publication
+      final_technical_head: c5819e3afed8f1947da3ad377dffb6c057127403
+      administrative_parent: c5819e3afed8f1947da3ad377dffb6c057127403
+      blocked_items: []
+      unknowns: [Future packet HEAD and matching CI]
+      remaining_risks: *risks
+      next_required_action: Publish report and handoff after local validation, then begin initial review
+  - source_skill: report-writer
+    output_contract_version: current-uploaded-skill
+    content_type: application/yaml
+    payload:
+      report_type: implementation_report
+      complete_body: |
+        # Issue #69 実装・ローカル検証報告
+
+        ## 状態と対象
+
+        2026-09-08（日本時間）。対象は `ssaattww/CodexSkill` のIssue #69、PR #71、ブランチ `issue-69-document-wording-review`。実装と設計同期を完了し、通常レビュー待ちとする。通常・独立レビューを実施したという主張ではない。PRはドラフトを維持し、マージしない。
+
+        - 基準HEAD: `6507727986329e34e69da3680a00824eb1fbfe13`。
+        - スキル追加: `de103b362cb64aae4be9091d85d73cf980842d1d`。
+        - 組み込み・設計同期の実装HEAD: `c5819e3afed8f1947da3ad377dffb6c057127403`。
+        - 実装tree: `642542bae36d6102b8ca5a7f6816452d0121f486`。
+        - 本報告・タスク状態・引き継ぎを保存するコミットは `commit_pending`。保存後のHEADでの検証、CI、artifactはPR本文とコメントへ追記する。独立レビューの承認用コミットではない。
+
+        ## 変更内容
+
+        | 対象 | 内容 |
+        | --- | --- |
+        | `skills/document-wording-review/SKILL.md` | 文書変更前後と文脈を読み、意味、用語の識別性、承認された用法、読みやすさを別々に確認する中核スキルを追加した。 |
+        | 同スキルの `references/decision-examples.md` | 拒否例・許容例・方針判断待ち・証拠不足を含む18件を追加した。文字種による一律判定を防ぐ対照例も含む。 |
+        | `implementation-worker` / `review-worker` | 作成担当の自己確認と既存レビュワーによる確認に組み込んだ。機械検査が未設定または成功でも省略しない。未解決の文章上の欠陥や方針上の衝突を合格へ変更しない。 |
+        | `markdown-word-checker` | 日本語化や複数語への変更を自動的な解決とせず、変更した文章を呼び出し側の文章確認へ渡す。機械検査の責務と承認経路は維持した。 |
+        | 配布ビルダー・依存検査 | 4つのChatGPT用スキルと5つの中核スキル、計9個を配布する。必須スキルと、実装・レビュー担当からの依存宣言を検査する。 |
+        | 設計書 | 専用設計書を追加し、階層設計の正本と複製、ChatGPT配布設計を同期した。 |
+        | タスク・引き継ぎ | T-004 / Phase 9として実装済み・レビュー待ちを記録し、今回の状態を別の引き継ぎへ保存する。過去の停止記録は履歴として残す。 |
+
+        対象リポジトリの単独語禁止は緩めていない。プロジェクト固有の許可語句、意味、別表記、除外対象を自動変更する機能は追加していない。新スキルは既存担当内で実行し、新たなレビュワーやモデル選定経路を作らない。
+
+        ## 文章の自己確認
+
+        実装担当として、Issue #69の要件、新スキル全文、18判断例、既存3スキルの変更部分、専用設計書、階層・配布設計の変更部分と前後文脈を照合した。対象読者はこれらの開発・レビュースキルを利用する担当である。
+
+        | 観点 | 確認した内容 |
+        | --- | --- |
+        | 意味 | 単独語禁止を維持すること、許可候補以外も対象にすること、既知の誤りと方針上の衝突を併記することを確認した。 |
+        | 識別性 | `SHA-256`、単位、実在する識別子を説明文と区別する条件、および認可された仕様変更を誤って拒否しない例を確認した。 |
+        | 用法 | 複数語が完全一致しても別の意味で使われた場合は拒否する。承認一覧が存在しないと確認した場合と、必要な一覧が読めない場合を区別した。 |
+        | 読みやすさ | 指示対象・修飾関係・概念名の不一致・不要な反復を具体的に示す条件を確認した。DW-09は「定義があれば合格」と読めないよう、読者が理解し、簡潔で曖昧でない文という前提を追加した。 |
+
+        これは `author_self_check` であり、通常レビューや独立レビューの代替ではない。18例は契約の具体例であり、別モデルによる18件の判定精度評価を実行したものではない。新規文書は要件を基準に確認し、既存文書は変更前後を確認した。過去の報告と、今回変更しない設計・タスク履歴は改稿対象から除外した。
+
+        ## ローカル検証
+
+        Remote Desktop Commanderの接続復旧後、`C:\Users\donabe\Project\CodexSkill` で実施した。Python 3.14.7を使用。GitHubへの参照・更新はconnectorを使用し、ローカルのstage済みtreeとconnectorで作成したtreeの一致を確認した。未公開変更を `.git/issue69-resume-backup/` に保全し、既存コミットの内容とSHAを照合してローカルHEADを同期した。resetやcleanによる破棄はしていない。
+
+        | 検証 | 結果・証拠 |
+        | --- | --- |
+        | スキル追加だけの保存前スナップショット | `validation-artifacts/core-prepush/`。既存4処理成功。tree `143b4b03f041730804c6e6e39b4b032e4d1bf93b` と公開内容が一致した。 |
+        | 組み込み全体の保存前スナップショット | `validation-artifacts/integration-prepush/`。4処理成功。tree `642542bae36d6102b8ca5a7f6816452d0121f486` と公開内容が一致した。 |
+        | clean HEADでの共通検証 | `python scripts/run_validation.py --output-dir validation-artifacts/c5819e3-clean-head`。HEADは上記 `c5819e3...`、開始時と終了時の作業ツリー変更なし。repository / bundle / zip-integrity / zip-contentsがすべて終了値0。CIを起動するpush前に完了した。 |
+        | 不足状態の動作確認 | 一時スナップショットから新スキルを除くと依存検査が終了値1。呼び出し側の依存宣言を除いた場合も終了値1。両方の標準エラーを `integration-prepush/` に保存し、一時入力は復元した。 |
+        | 配布構成・再現性 | 9個のルート、新スキルと判断例の内容一致を確認。同じ入力の再生成ZIPはバイト一致。SHA-256は `f19643d08f5c43ffeef300184dbadef709111fa20c9ae1b64b2a0e3f3c839219`。 |
+        | 構文・設定 | 変更したPython処理の構文、隔離環境のPyYAMLによるfront matterとworkflowの解析、always条件、変更検知対象を確認。階層設計2ファイルはバイト一致。`git diff --check`は成功。 |
+        | 判断例の構造 | DW-01からDW-18まで重複・欠番なし。文章判定精度の自動評価ではない。 |
+
+        `AGENTS.md`に従いTDDは適用せず、既存検証と実装後の動作確認を使用した。新たなRed/Green用テストは追加していない。
+
+        CodexSkillには `package.json`、`tools/lint/markdown-targets.json`、`markdown-whitelist.yaml`、`cspell.config.jsonc` がない。機械的なMarkdown用語検査はfocused/fullとも `unsupported` であり、成功と扱わない。検査を通すためだけの設定追加はしていない。文章の自己確認と、リポジトリ構造・配布物の検証は別の証拠として記録する。
+
+        ## 成功・失敗時の診断artifact
+
+        前回反映済みの `scripts/run_validation.py` とworkflowを維持した。結果JSON、JUnit形式XML、ソース識別情報、処理別の標準出力・標準エラーを保存する。CIでは検証開始前の失敗もステップ状態に残し、診断artifactを `always()` で保存する。保持期間は14日。配布用ZIPは別artifactとし、検証成功時だけ公開用処理へ渡す。
+
+        前回のローカル動作確認では、検証を終了値7、ZIP生成を終了値9で失敗させ、共通処理の終了値1、失敗2・未実施2、JSON/XMLとstdout/stderrの保存を確認済み。CRC破損ZIPも終了値1となった。詳細は過去のcheckpoint報告とローカル `validation-artifacts/probe-failure/` を参照する。GitHub Actions上で実際に失敗したrunからのuploadは未確認であり、実行機停止や保存サービスの障害まで保証しない。
+
+        ## レビュー・CIと残る事項
+
+        通常・独立レビューは未実施。現在のChatGPTは実装担当であり、自分の変更へ独立した合格判定を出していない。レビュー後の最終判定や承認用コミットも作成していない。Issue全体の受け入れ完了とはしない。
+
+        本報告保存後のPR current HEADと一致するrunだけを確認し、結果とartifactをPR本文・コメントへ記録する。過去のHEADで成功したCIを代用しない。今回のローカル全体検証は実装内容の検証であり、通常レビュー収束後の最終承認段階が完了したという意味ではない。
+
+        既存設計のPR単位Pre-release説明と現行workflowのmain-push方式の不一致は、本変更より前から存在する。今回の配布スキル集合・診断保存とは別のため、Release動作の変更や関連節の全面改稿は行っていない。既存の他タスクの履歴・状態も変更していない。
+
+        次は、PR #71のcurrent HEADを対象に `chat-review-worker` の初回レビューを行う。報告と引き継ぎを読み、スキルの意味、受け入れ例、実際の呼び出し、配布物、診断保存を確認する。
+      evidence_sources: [GitHub connector commit and tree records, Remote Desktop Commander local command outputs, Current Issue and user instructions, Repository and uploaded Skill contracts]
+      target_identity:
+        branch: issue-69-document-wording-review
+        base_ref: main
+        current_head: c5819e3afed8f1947da3ad377dffb6c057127403
+        reviewed_implementation_head: null
+      verification: *verification
+      independent_closure: *closure
+      severity_records: []
+      persistence:
+        mode: repository_file
+        reserved_paths: [reports/issue-69-wording-review-implementation-20260908.md]
+        report_attestation_head: null
+      concise_pr_comment_body: 'Issue #69 implementation is now included in PR #71. The new contextual wording Skill preserves standalone-word restrictions, adds 18 cases, and is required by existing author/reviewer workers. Nine-Skill packaging, dependency guards, clean Windows local validation and reproducible ZIP checks passed. Mechanical Markdown lint remains unsupported; normal and independent reviews are pending. Current-HEAD CI and artifacts are recorded after publication; no merge.'
+      unresolved_discrepancies: [Pre-existing prerelease design/workflow mismatch; outside the accepted implementation scope]
+extensions:
+  - namespace: document-wording-review
+    payload: *wording
+  - namespace: remote-workspace
+    payload:
+      device: FA780
+      root: C:\Users\donabe\Project\CodexSkill
+      python_pid: 3036
+      authentication: restored
+      preserved_backup: .git/issue69-resume-backup
+      local_head: c5819e3afed8f1947da3ad377dffb6c057127403
+      synchronization: Connector-created commit and tree identities were hash-verified before updating local refs; no working-tree reset or clean.
+      pending_local_changes: Report, T-004 and Phase 9 tracking, and this handoff
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: initial_review
+  summary: Review PR 71 at its current HEAD with an identity that did not implement the changes.
+  instructions:
+    - Resolve the current PR HEAD and new user authorization; permissions are not inherited from this packet.
+    - Read the implementation report and all changed content, including the new wording Skill and both positive and negative cases.
+    - Review the caller integration, nine-Skill package, dependency guards and diagnostic workflow.
+    - Preserve unsupported lint and unperformed model evaluation as limitations, not successes.
+    - Use only matching current-HEAD CI; do not merge.
+  required_attachments_or_references: ['ssaattww/CodexSkill#69', 'ssaattww/CodexSkill#71', reports/issue-69-wording-review-implementation-20260908.md, reports/handoffs/issue-69-review-ready-20260908.yaml]
+  requested_authorized_actions: [read_repository, write_report, write_handoff, commit, push, update_pr, comment_pr]
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-69-review-ready-20260908.yaml
+  packet_url: null
+  transport_note: Report-publication HEAD and exact-head CI are recorded in the PR after persistence. This is not an independent-review attestation. The older checkpoint remains history, not current state.

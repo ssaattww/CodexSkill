@@ -17,7 +17,8 @@ Skill外の`shared/`file参照や、複数Skillから同一fileを直接参照�
 ├─ work-context-manager
 ├─ implementation-worker
 ├─ review-worker
-└─ report-writer
+├─ report-writer
+└─ document-wording-review
 
 ChatGPT runtime wrapper
 ├─ chat-implementation-worker
@@ -32,7 +33,7 @@ wrapperとcore Skillの依存は、同一fileへのpath参照ではなく、inst
 
 ## 通常チャットとPC接続の作業場所
 
-Issue #70により、通常チャット内の経路を残し、Remote Desktop Commanderで利用者のPCを使う経路を追加する。既存3種類のworkerが同じ中核スキルを呼び出し、接続先の読み取り・編集・検証だけをPC側で行う。新しいworkerやサブエージェントは起動しない。配布構成は8スキルのままとする。
+Issue #70により、通常チャット内の経路を残し、Remote Desktop Commanderで利用者のPCを使う経路を追加する。既存3種類のworkerが同じ中核スキルを呼び出し、接続先の読み取り・編集・検証だけをPC側で行う。新しいworkerやサブエージェントは起動しない。#70単独では8スキルだったが、#69統合後は文章品質スキルを含む9スキルとする。
 
 利用者の明示指定、Project Instructionの順で経路を決め、どちらにも指定がなければRemote Desktop CommanderによるPC接続を基本経路とする。通常チャットは明示指定された場合だけ使い、PC接続に失敗しても無断で別経路へ切り替えない。`work-context-manager` が `execution_environment` として接続先、絶対パス、HEAD、作業ツリー、依存ツール、書き込み範囲を確認し、検証能力とは分けて記録する。
 
@@ -82,8 +83,19 @@ runtime-neutral coreはvalidation evidence、frozen HEAD、finding completeness�
 - `implementation-worker`
 - `review-worker`
 - `report-writer`
+- `document-wording-review`
 
 core SkillはCodex親、Codex sub-agent、ChatGPT chatのいずれにも依存しない。
+
+## 用語・文章品質レビュー
+
+`implementation-worker` は文章変更後の自己確認として、`review-worker` は文章または用語定義・承認内容が変わるレビューで `document-wording-review` を呼び出す。未登録語ゼロや機械検査未設定でも省略しない。新スキルは既存担当内で意味、用語の識別性、承認された用法、読みやすさを確認し、追加担当の起動や許可一覧の編集を行わない。自己確認は独立レビューではない。
+
+機械検査と文章判定を分けて返す。欠陥、方針判断待ち、証拠不足は必須確認の未完了として保持する。単独語禁止は緩和しない。新スキル内の判断例を含め、4 wrapperと5 coreの計9 Skillを配布する。構造検証だけではモデルの文章判断精度を証明しない。
+
+### Chat自身による文書自己点検
+
+#70のPC接続経路を用い、`chat-implementation-worker` の `references/document-wording-self-check.md` が、スキル・参照資料・変更前後の文章の取得とPC側の依存確認を担当する。意味・読みやすさの判定は現在のChat自身が `document-wording-review` に従って行う。`read_evidence` には実行場所、スキルと文書それぞれの版、読んだ範囲、不足資料を残す。機械検査の結果は別に保持し、取得証拠を含む実装結果を報告と引き継ぎのraw payloadへ渡す。自己点検は通常・独立レビューではない。
 
 ## Core Skill責務
 
@@ -182,7 +194,8 @@ GitHub Releaseへ、次の構造を持つ単一ファイル`chatgpt-worker-skill
 ```text
 chatgpt-worker-skills.zip
 ├─ chat-implementation-worker/
-│  └─ SKILL.md
+│  ├─ SKILL.md
+│  └─ references/document-wording-self-check.md
 ├─ chat-review-worker/
 │  └─ SKILL.md
 ├─ chat-report-writer/
@@ -195,8 +208,11 @@ chatgpt-worker-skills.zip
 │  └─ SKILL.md
 ├─ review-worker/
 │  └─ SKILL.md
-└─ report-writer/
-   └─ SKILL.md
+├─ report-writer/
+│  └─ SKILL.md
+└─ document-wording-review/
+   ├─ SKILL.md
+   └─ references/decision-examples.md
 ```
 
 このZIPをChatGPTのSkill uploadへ指定し、wrapperと依存core Skillを一括登録する。
@@ -218,7 +234,7 @@ chatgpt-worker-skills.zip
 7. symlink、missing Skill、Skill外`shared/`参照を拒否する。
 8. wrapperとcore Skillを独立root directoryとしてZIPへ収録する。
 9. ZIP rootが検出したSkill集合と一致することを確認する。
-10. 生成ZIPをworkflow artifactとして保存する。
+10. `scripts/run_validation.py` でローカルと同じ検証を実行し、結果JSON/XML、ソース識別情報、処理別stdout/stderrを保存する。診断artifactは成功・失敗の双方で `always()` により保存する（14日保持）。検証開始前の失敗はステップ状態を残す。配布用ZIPは別artifactとして検証成功時だけ保存する。
 11. GitHub Releaseは更新しない。
 
 ### Rolling normal Release
