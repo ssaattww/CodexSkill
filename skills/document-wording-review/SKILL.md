@@ -25,7 +25,8 @@ Require:
 - intended readers, document purpose, authoritative requirements, and project terminology policy;
 - exact approved phrases, their meanings and usage restrictions, and approval evidence when relevant;
 - mechanical lint results, with missing or unsupported checks explicitly identified;
-- prior finding identities and coverage for bounded fix verification.
+- prior finding identities and coverage for bounded fix verification;
+- available execution-environment evidence and the actual Skill/reference source identity, separately from the target document identity.
 
 For new documents, mark the baseline as absent because the file is new and use requirements and definitions instead. An unavailable baseline for an existing document is missing evidence, not a new-document exemption. Request only the missing evidence from the caller; do not invent it.
 
@@ -40,7 +41,7 @@ List each changed file with its covered ranges or an explicit exclusion reason. 
 ## Required flow
 
 1. Resolve scope and immutable target evidence. Read the [decision examples](references/decision-examples.md) before the first review; use relevant cases again when verifying fixes.
-2. Compare original and replacement sentences in context. For new text, compare against requirements and defined concepts.
+2. Read the actual in-scope passages and compare original and replacement sentences in context. For new text, compare against requirements and defined concepts. Record the paths and ranges actually read; request omitted or truncated content before claiming coverage. File hashes and successful commands are identity/execution evidence, not reading evidence.
 3. Assess each dimension independently:
    - **Meaning:** preserve quantities, units, negation, conditions, boundaries, actor/object relations, and technical guarantees.
    - **Identification:** preserve the identity of algorithms, standards, types, commands, fields, units, and named concepts. A descriptive paraphrase is not necessarily an equivalent identifier.
@@ -70,6 +71,7 @@ Return `document_wording_review` with:
 - mode: `author_self_check` or the caller's actual review mode;
 - target identity, base or explicit new-file baseline status, and reviewer identity supplied by the caller;
 - coverage by file/range, exclusions with reasons, and unresolved evidence gaps;
+- `read_evidence`: actual reader identity, supplied execution environment, Skill/reference source revision or hashes and read paths, document base/target identity, read ranges, and missing inputs;
 - per-dimension dispositions: `checked_no_finding`, `checked_finding`, `not_applicable`, or `unexplored`;
 - supplied mechanical-lint state without changing its meaning;
 - wording result: `pass`, `fail`, `needs_policy_decision`, `incomplete`, or `not_applicable`;

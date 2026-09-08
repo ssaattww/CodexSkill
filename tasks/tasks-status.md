@@ -7,10 +7,10 @@
 ## In Progress
 
 - T-004: Issue #69の用語・文章品質レビューを追加する
-  - Status: 実装・ローカル検証済み、通常・独立レビュー待ち
+  - Status: 旧HEADの通常レビュー済み。#70経路の組み込み・実機自己点検済み、修正確認・独立レビュー待ち
   - Phase: Phase 9
   - Estimate: M
-  - Depends on: 既存のimplementation-worker、review-worker、markdown-word-checker
+  - Depends on: 既存のimplementation-worker、review-worker、markdown-word-checker。#70のPR #72はmain取り込み済み
   - PR: #71（draft）
   - Exit Criteria:
     - 対象側の単独語禁止を緩めず、登録候補以外の日本語化した文も確認する
@@ -20,6 +20,8 @@
     - 方針判断待ち・証拠不足を合格にせず、単独語許可や不自然な置換で完了させない
     - 作成担当と既存レビュワーから必須実行し、追加レビュワーを起動しない
     - 新スキルと18判断例を含む9スキルのZIP、依存検査、階層設計2ファイルと配布設計が一致する
+    - Chat自身がRDC経由でスキルと変更前後を読み、read_evidenceと機械検査結果を分けて保持する
+    - 接続失敗、依存不足、資料の省略、対象変更を成功扱いにせず、単独語禁止を維持する
     - CI前にローカル検証し、成功・失敗の診断結果・stdout・stderrを保存する
     - 通常・独立レビュー、current HEAD一致のCI確認、PR更新を完了し、マージしない
   - Output:
@@ -32,7 +34,34 @@
     - 実装HEAD `c5819e3afed8f1947da3ad377dffb6c057127403` のclean作業ツリーで既存4処理成功。CIを起動するpush前に実行した
     - 9スキル構成、ZIP再生成のバイト一致、依存不足の拒否を確認した
     - TDDは適用しない。Markdown機械検査は対象設定不在のためunsupportedであり、自己確認と区別する
-    - 通常・独立レビューは未実施。保存後のHEADとCI証拠はPR本文・コメントで追跡する
+    - 通常レビューは74794fdに対して実施済みで、残件I69-DEP-70は経路の組み込み・実機確認だった
+    - #70経路を利用する自己点検手順、読解の取得証拠、PC側依存確認を追加した。4検証成功と依存不足・終了値7の失敗ログ保存を実機確認した
+    - 詳細: `reports/issue-69-rdc-self-check-followup-20260908.md`
+    - 修正確認・独立最終レビューは未実施。保存後HEADとCI証拠はPR本文・コメントで追跡する
+
+- T-005: Issue #70として通常チャットとPC接続の作業経路を整備する
+  - Status: 実装・ローカル検証済み、通常・独立レビュー待ち
+  - Phase: Phase 10
+  - Estimate: M
+  - Depends on: 既存のChatGPT worker構成と検証能力の判定
+  - Design: `design/chat-execution-environment-design.md`
+  - Exit Criteria:
+    - 既存3種類のworkerで通常チャットとRemote Desktop Commanderの経路を選択できる
+    - 接続先、作業ツリー、HEAD、未コミット変更、依存ツール、権限を確認し、指定外への切り替えを行わない
+    - サブエージェントを起動せず、GitHub操作をGitHubコネクタに限定する
+    - 他タスクのツリーを変更せず、Windowsの専用ワークツリーで検証を行う
+    - CIより先にローカル検証を行い、成功・失敗の結果とstdout/stderrを保存する
+    - 検証対象と公開内容を照合し、CIはPR current HEADに一致するrunだけを確認する
+    - #69の文書自己点検に渡す資料と証拠を定義し、#69の組み込み完了とは分ける
+    - 既存repository検査、8スキルZIP、設計同期を検証し、通常・独立レビューを受ける
+    - 詳細報告、引き継ぎ、PR、簡易PRコメントを保存し、マージしない
+  - Notes:
+    - T-004とPhase 9は別作業のPR #71で使用中のため重複させない
+    - CodexSkillの方針に従いTDDは適用しない
+    - `C:/Users/donabe/Project/CodexSkill-issue-70` を使用する
+    - 既存repository検査、ZIP生成・整合性・収録内容・再現性、設計同期、差分検査は成功
+    - 診断保存の確認用に意図的な終了値7を実行し、stdout/stderrを保存した。TDDのRedではない
+    - 公開後のHEAD、CI、報告保存先はPRへ記録する。実装者の自己確認をレビュー済みとはしない
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
   - Status: 通常review cycle収束、独立最終review待ち

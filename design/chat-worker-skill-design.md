@@ -31,6 +31,16 @@ core Skillが作業の意味論を保持する。wrapperはChatGPT固有の権�
 
 wrapperとcore Skillの依存は、同一fileへのpath参照ではなく、install済みSkill名による呼び出しとして表現する。
 
+## 通常チャットとPC接続の作業場所
+
+Issue #70により、通常チャット内の経路を残し、Remote Desktop Commanderで利用者のPCを使う経路を追加する。既存3種類のworkerが同じ中核スキルを呼び出し、接続先の読み取り・編集・検証だけをPC側で行う。新しいworkerやサブエージェントは起動しない。#70単独では8スキルだったが、#69統合後は文章品質スキルを含む9スキルとする。
+
+利用者の明示指定、Project Instructionの順で経路を決め、どちらにも指定がなければRemote Desktop CommanderによるPC接続を基本経路とする。通常チャットは明示指定された場合だけ使い、PC接続に失敗しても無断で別経路へ切り替えない。`work-context-manager` が `execution_environment` として接続先、絶対パス、HEAD、作業ツリー、依存ツール、書き込み範囲を確認し、検証能力とは分けて記録する。
+
+PC接続でもGitHub上の参照・更新、コミット公開、Issue・PR・コメントはGitHubコネクタを使う。実装者の自己点検、通常レビュー、独立レビューの境界は変えない。引き継ぎはschema version 3を維持し、実行場所と各検証の対象内容をtyped項目とraw出力に残す。
+
+詳細な開始手順、権限、診断保存、#69への受け渡しは [作業場所とPC接続経路の設計](chat-execution-environment-design.md) を参照する。
+
 ## Verification capabilityと状態遷移
 
 `work-context-manager`は実際に利用可能なtool capabilityを確認し、次のいずれかをcontext、report、handoffへ記録する。runtime名は補助情報であり、route選択の根拠にしない。
@@ -82,6 +92,10 @@ core SkillはCodex親、Codex sub-agent、ChatGPT chatのいずれにも依存�
 `implementation-worker` は文章変更後の自己確認として、`review-worker` は文章または用語定義・承認内容が変わるレビューで `document-wording-review` を呼び出す。未登録語ゼロや機械検査未設定でも省略しない。新スキルは既存担当内で意味、用語の識別性、承認された用法、読みやすさを確認し、追加担当の起動や許可一覧の編集を行わない。自己確認は独立レビューではない。
 
 機械検査と文章判定を分けて返す。欠陥、方針判断待ち、証拠不足は必須確認の未完了として保持する。単独語禁止は緩和しない。新スキル内の判断例を含め、4 wrapperと5 coreの計9 Skillを配布する。構造検証だけではモデルの文章判断精度を証明しない。
+
+### Chat自身による文書自己点検
+
+#70のPC接続経路を用い、`chat-implementation-worker` の `references/document-wording-self-check.md` が、スキル・参照資料・変更前後の文章の取得とPC側の依存確認を担当する。意味・読みやすさの判定は現在のChat自身が `document-wording-review` に従って行う。`read_evidence` には実行場所、スキルと文書それぞれの版、読んだ範囲、不足資料を残す。機械検査の結果は別に保持し、取得証拠を含む実装結果を報告と引き継ぎのraw payloadへ渡す。自己点検は通常・独立レビューではない。
 
 ## Core Skill責務
 
@@ -180,7 +194,8 @@ GitHub Releaseへ、次の構造を持つ単一ファイル`chatgpt-worker-skill
 ```text
 chatgpt-worker-skills.zip
 ├─ chat-implementation-worker/
-│  └─ SKILL.md
+│  ├─ SKILL.md
+│  └─ references/document-wording-self-check.md
 ├─ chat-review-worker/
 │  └─ SKILL.md
 ├─ chat-report-writer/
