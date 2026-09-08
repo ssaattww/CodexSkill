@@ -30,6 +30,16 @@ core Skillが作業の意味論を保持する。wrapperはChatGPT固有の権�
 
 wrapperとcore Skillの依存は、同一fileへのpath参照ではなく、install済みSkill名による呼び出しとして表現する。
 
+## 通常チャットとPC接続の作業場所
+
+Issue #70により、通常チャット内の経路を残し、Remote Desktop Commanderで利用者のPCを使う経路を追加する。既存3種類のworkerが同じ中核スキルを呼び出し、接続先の読み取り・編集・検証だけをPC側で行う。新しいworkerやサブエージェントは起動しない。配布構成は8スキルのままとする。
+
+利用者の明示指定、Project Instructionの順で経路を決め、どちらにも指定がなければRemote Desktop CommanderによるPC接続を基本経路とする。通常チャットは明示指定された場合だけ使い、PC接続に失敗しても無断で別経路へ切り替えない。`work-context-manager` が `execution_environment` として接続先、絶対パス、HEAD、作業ツリー、依存ツール、書き込み範囲を確認し、検証能力とは分けて記録する。
+
+PC接続でもGitHub上の参照・更新、コミット公開、Issue・PR・コメントはGitHubコネクタを使う。実装者の自己点検、通常レビュー、独立レビューの境界は変えない。引き継ぎはschema version 3を維持し、実行場所と各検証の対象内容をtyped項目とraw出力に残す。
+
+詳細な開始手順、権限、診断保存、#69への受け渡しは [作業場所とPC接続経路の設計](chat-execution-environment-design.md) を参照する。
+
 ## Verification capabilityと状態遷移
 
 `work-context-manager`は実際に利用可能なtool capabilityを確認し、次のいずれかをcontext、report、handoffへ記録する。runtime名は補助情報であり、route選択の根拠にしない。

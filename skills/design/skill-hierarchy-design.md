@@ -60,6 +60,18 @@ Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuit
 
 ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persistence、chat continuity、cross-chat handoffを所有する。
 
+## ChatGPTの2つの作業経路
+
+Issue #70では既存のChatGPT wrapperを拡張し、通常チャット内の経路とRemote Desktop Commanderで利用者のPCを使う経路を提供する。worker数、Skill名による依存関係、8スキルの配布構成、通常・独立レビューの責務は変更しない。端末経由で別エージェントを起動することも認めない。
+
+経路の指定と接続ツールの選択はChatGPT wrapperが担う。利用者の明示指定、Project Instructionの順で経路を決め、指定がなければRemote Desktop CommanderによるPC接続を基本経路とする。通常チャットは明示指定時だけ使う。`work-context-manager` はツール固有の処理を持たず、`execution_environment` として実行場所、対象HEAD、未コミット変更の識別情報、作業ツリーの所有者、依存ツールと権限の証拠を扱う。接続できることと `local_execution_available` は別に確認する。
+
+PC上のファイル操作と検証はRemote Desktop Commander、GitHub上の参照・更新・公開・Issue・PR・コメントはGitHubコネクタへ分ける。別タスクのワークツリーは変更せず、認可された専用ワークツリーを使う。接続失敗や対象不一致は停止理由として残し、無断で別経路へ切り替えない。
+
+`implementation-worker` は実行場所と対象内容に結び付いた検証結果を返す。`report-writer` と `chat-handoff-manager` は成功・失敗、依存不足、診断保存先を保持する。schema version 3の引き継ぎでは `execution_environment` を追加し、旧packetの欠落はunknownとして再確認する。
+
+詳細はリポジトリ内の `design/chat-execution-environment-design.md` に定義する。#69の文章自己点検は利用側で組み込み、PC接続や機械検査の成功だけで意味・読みやすさの確認済みとはしない。
+
 ## Verification capabilityと状態遷移
 
 `work-context-manager`はruntime名ではなく実際のtool capabilityでrouteを決め、context、report、handoffに`verification_capability`を記録する。

@@ -1,0 +1,1043 @@
+schema_version: 3
+producer:
+  skill: chat-review-worker
+  mode: initial review
+  generated_at: '2026-09-08T06:29:15.840354+00:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'Issue #70 / PR #72'
+task_id: T-005
+branch: issue-70-remote-desktop
+base_ref: 6507727986329e34e69da3680a00824eb1fbfe13
+target:
+  current_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  commit_range: 6507727986329e34e69da3680a00824eb1fbfe13..30b9178e262b392ddf50b9dc892d859a18b7810d
+execution_environment: &id001
+  kind: connected_computer
+  tool: Remote Desktop Commander
+  machine_id: 4eae589f-096b-4362-9bec-0f392d77d44f
+  connection: available
+  os: Windows
+  shell: PowerShell 5.1 / Python 3.14.7
+  working_directory: C:/Users/donabe/Project/CodexSkill-issue-70
+  repository: ssaattww/CodexSkill
+  branch: issue-70-remote-desktop
+  head_sha: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+  source_state: dirty
+  source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+  ownership: read_only
+  writable_paths:
+  - C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm
+  dependencies:
+  - name: Python 3.14.7
+    status: available
+    evidence: repository/bundle exit 0
+  - name: Git
+    status: available
+    evidence: per-command safe.directory; index tree matches published tree
+  - name: PyYAML 6.0.3
+    status: available
+    evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/python-deps; task-local only
+  evidence:
+  - Observed local HEAD differs from reviewed commit; index tree matches its published tree; no unstaged/untracked inputs.
+  - C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/source.json
+verification:
+  capability: local_execution_available
+  capability_evidence: &id002
+  - FA780 Python runs existing validators successfully
+  technical_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  administrative_parent: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  commit:
+    state: commit_pending
+    review_target_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  push:
+    state: push_pending
+    head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  ci_wait:
+    state: ci_wait_pending
+    required_for: unknown
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
+authoritative_requirements: &id005
+- source: user_instruction
+  reference: current chat review request and Project Instruction
+  summary: 'Issue #70をRDC経由で一度に通常レビュー。詳細報告、引き継ぎ、PRコメントを保存。GitHub操作はconnector。マージ禁止。'
+- source: issue
+  reference: 'Issue #70; PR #72 comment 5579849282'
+  summary: 通常チャットとPC接続の2経路。RDC既定、明示指定優先、sub-agentなし。
+- source: repository_instruction
+  reference: AGENTS.md
+  summary: CodexSkillは非TDD。既存検証を使う。
+- source: design
+  reference: design/chat-execution-environment-design.md
+  summary: 実行場所、対象内容、権限、診断の証拠を保持。#69実装は範囲外。
+development_policy:
+  method: non-TDD, review only
+  testing_order: existing local validation before publication
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+  - C:\Python314\python.exe -X utf8 scripts/verify_skill_repository.py
+  - C:\Python314\python.exe -X utf8 scripts/build_chatgpt_worker_skills.py --output C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\chatgpt-worker-skills.zip
+  - C:\Python314\python.exe -X utf8 -m zipfile -t C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\chatgpt-worker-skills.zip
+  - git -c safe.directory=C:/Users/donabe/Project/CodexSkill-issue-70 -C C:\Users\donabe\Project\CodexSkill-issue-70 diff --cached --check 6507727986329e34e69da3680a00824eb1fbfe13
+  - C:\Python314\python.exe -X utf8 scripts/build_chatgpt_worker_skills.py --output C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\chatgpt-worker-skills-repeat.zip
+  - C:\Python314\python.exe -c "import sys; print('review diagnostic stdout'); print('review diagnostic stderr',file=sys.stderr); sys.exit(7)"
+  - C:\Python314\python.exe -m pip --version
+  - 'C:\Python314\python.exe -m pip install --target C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\python-deps --no-cache-dir --no-deps --only-binary=:all: --disable-pip-version-check PyYAML==6.0.3'
+  required_failure_diagnostics: &id006
+  - result
+  - exit status
+  - stdout
+  - stderr
+  - source fingerprint
+blocked: []
+authorized_actions:
+- read_repository
+- write_report
+- write_handoff
+- commit
+- push
+- update_pr
+- comment_pr
+write_boundary:
+  allowed:
+  - path_or_operation: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm
+    reason: authorized review reporting only
+  - path_or_operation: reports/issue-70-pr72-normal-review-20260908.md
+    reason: authorized review reporting only
+  - path_or_operation: reports/handoffs/issue-70-pr72-normal-review-20260908.yaml
+    reason: authorized review reporting only
+  - path_or_operation: GitHub connector report-only commit / PR metadata / PR comment
+    reason: authorized review reporting only
+  forbidden:
+  - path_or_operation: product/Skill/design/test/config/workflow/tracking changes
+    reason: outside normal review authorization
+  - path_or_operation: original index and staged work
+    reason: outside normal review authorization
+  - path_or_operation: other task worktrees
+    reason: outside normal review authorization
+  - path_or_operation: global installation or machine/auth configuration
+    reason: outside normal review authorization
+  - path_or_operation: GitHub operations via terminal/network bypass
+    reason: outside normal review authorization
+  - path_or_operation: merge
+    reason: outside normal review authorization
+scope: &id003
+- 'PR #72の変更17ファイルと直接依存の通常レビュー'
+- 実行場所・検証・報告・引き継ぎの確認
+non_goals: &id004
+- implementation fixes
+- other-task worktree changes
+- 'Issue #69 / PR #71 integration'
+- independent final review
+- merge
+files:
+  changed:
+  - path: design/chat-execution-environment-design.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: design/chat-worker-skill-design.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: design/chatgpt-project-instruction-example.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: design/skill-hierarchy-design.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: reports/handoffs/issue-70-remote-desktop-20260908.json
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: reports/issue-70-default-rdc-followup-20260908.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: reports/issue-70-remote-desktop-implementation-20260908.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: skills/chat-handoff-manager/SKILL.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: skills/chat-implementation-worker/SKILL.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: skills/chat-report-writer/SKILL.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: skills/chat-review-worker/SKILL.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: skills/design/skill-hierarchy-design.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: skills/implementation-worker/SKILL.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: skills/report-writer/SKILL.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: skills/work-context-manager/SKILL.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: tasks/phases-status.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  - path: tasks/tasks-status.md
+    purpose: reviewed PR implementation change; reviewer does not edit
+  inspected:
+  - path: AGENTS.md
+    purpose: direct dependency or repository policy
+  - path: skills/review-worker/SKILL.md
+    purpose: direct dependency or repository policy
+  - path: scripts/verify_skill_repository.py
+    purpose: direct dependency or repository policy
+  - path: scripts/build_chatgpt_worker_skills.py
+    purpose: direct dependency or repository policy
+  - path: .github/workflows/release-chatgpt-worker-skills.yml
+    purpose: direct dependency or repository policy
+  - path: skills/markdown-word-checker/SKILL.md
+    purpose: direct dependency or repository policy
+  - path: skills/report-output-manager/SKILL.md
+    purpose: direct dependency or repository policy
+  intentionally_untouched:
+  - path_or_area: product/Skill/design/test/config/workflow/tracking changes
+    reason: review only; preserve original state
+  - path_or_area: original index and staged work
+    reason: review only; preserve original state
+  - path_or_area: other task worktrees
+    reason: review only; preserve original state
+commands:
+- command: C:\Python314\python.exe -X utf8 scripts/verify_skill_repository.py
+  purpose: repository
+  exit_code: 0
+  result: passed
+  head_sha: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+  evidence: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\repository.stdout.txt ; C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\repository.stderr.txt
+  execution_environment: *id001
+  source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+- command: C:\Python314\python.exe -X utf8 scripts/build_chatgpt_worker_skills.py --output C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\chatgpt-worker-skills.zip
+  purpose: bundle
+  exit_code: 0
+  result: passed
+  head_sha: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+  evidence: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\bundle.stdout.txt ; C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\bundle.stderr.txt
+  execution_environment: *id001
+  source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+- command: C:\Python314\python.exe -X utf8 -m zipfile -t C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\chatgpt-worker-skills.zip
+  purpose: zip-integrity
+  exit_code: 0
+  result: passed
+  head_sha: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+  evidence: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\zip-integrity.stdout.txt ; C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\zip-integrity.stderr.txt
+  execution_environment: *id001
+  source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+- command: git -c safe.directory=C:/Users/donabe/Project/CodexSkill-issue-70 -C C:\Users\donabe\Project\CodexSkill-issue-70 diff --cached --check 6507727986329e34e69da3680a00824eb1fbfe13
+  purpose: diff-check
+  exit_code: 0
+  result: passed
+  head_sha: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+  evidence: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\diff-check.stdout.txt ; C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\diff-check.stderr.txt
+  execution_environment: *id001
+  source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+- command: C:\Python314\python.exe -X utf8 scripts/build_chatgpt_worker_skills.py --output C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\chatgpt-worker-skills-repeat.zip
+  purpose: bundle-repeat
+  exit_code: 0
+  result: passed
+  head_sha: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+  evidence: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\bundle-repeat.stdout.txt ; C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\bundle-repeat.stderr.txt
+  execution_environment: *id001
+  source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+- command: C:\Python314\python.exe -c "import sys; print('review diagnostic stdout'); print('review diagnostic stderr',file=sys.stderr); sys.exit(7)"
+  purpose: diagnostic-failure-probe
+  exit_code: 7
+  result: failed
+  head_sha: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+  evidence: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\diagnostic-failure-probe.stdout.txt ; C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\diagnostic-failure-probe.stderr.txt
+  execution_environment: *id001
+  source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+- command: C:\Python314\python.exe -m pip --version
+  purpose: pip-capability
+  exit_code: 0
+  result: passed
+  head_sha: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+  evidence: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\pip-capability.stdout.txt ; C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\pip-capability.stderr.txt
+  execution_environment: *id001
+  source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+- command: 'C:\Python314\python.exe -m pip install --target C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\python-deps --no-cache-dir --no-deps --only-binary=:all: --disable-pip-version-check PyYAML==6.0.3'
+  purpose: yaml-dependency
+  exit_code: 0
+  result: passed
+  head_sha: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+  evidence: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\yaml-dependency.stdout.txt ; C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\yaml-dependency.stderr.txt
+  execution_environment: *id001
+  source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+tests:
+- name: eight-skill-roots
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / eight-skill-roots
+- name: zip-entire-contents-equal-worktree
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / zip-entire-contents-equal-worktree
+- name: zip-reproducible
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / zip-reproducible
+- name: hierarchy-byte-identity
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / hierarchy-byte-identity
+- name: python-syntax-build_chatgpt_worker_skills.py
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / python-syntax-build_chatgpt_worker_skills.py
+- name: python-syntax-verify_skill_repository.py
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / python-syntax-verify_skill_repository.py
+- name: handoff-json-roundtrip
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / handoff-json-roundtrip
+- name: environment-projection-retained
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / environment-projection-retained
+- name: failure-diagnostics-retained
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / failure-diagnostics-retained
+- name: all-success-logs-retained
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / all-success-logs-retained
+- name: source-worktree-unmodified
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / source-worktree-unmodified
+- name: prerelease-description-predates-change
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / prerelease-description-predates-change
+- name: workflow-unmodified
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / workflow-unmodified
+- name: yaml-contract-work-context-manager
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / yaml-contract-work-context-manager
+- name: yaml-contract-chat-handoff-manager
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / yaml-contract-chat-handoff-manager
+- name: yaml-contract-report-writer
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / yaml-contract-report-writer
+- name: environment-schema-identical
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / environment-schema-identical
+- name: per-command-environment-schema
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / per-command-environment-schema
+- name: eight-frontmatters-yaml
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / eight-frontmatters-yaml
+- name: workflow-yaml
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / workflow-yaml
+- name: original-handoff-top-level-fields
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / original-handoff-top-level-fields
+- name: source-still-preserved
+  phase: verification
+  result: passed
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json / source-still-preserved
+ci:
+  required: true
+  workflow: release-chatgpt-worker-skills.yml
+  run_id: 34191202873
+  head_sha: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  conclusion: success
+  artifacts:
+  - id: 10042258632
+    name: chatgpt-worker-skills-34191202873
+    purpose: distribution ZIP; metadata verified, binary not downloaded
+implementation:
+  outcome: not_applicable
+  final_head: unknown
+  commits: []
+  addressed_findings: []
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+  - No implementation or fixes in this normal review
+review:
+  mode: initial_review
+  reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  reviewer: &id008
+    identity: chat-issue70-pr72-normal-review-20260908
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: null
+      changed: false
+      reason: same chat resumed after connection failures; no earlier code review
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+      - current chat performs initial normal review, not independent final review; no agent launched
+  verdict: pass_with_held
+  required_coverage: &id009
+  - criterion: requirement and design conformance
+    disposition: checked_no_finding
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認
+  - criterion: correctness and edge cases
+    disposition: checked_no_finding
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認
+  - criterion: scope discipline and unrelated changes
+    disposition: checked_no_finding
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認
+  - criterion: changed files and direct dependency impact
+    disposition: checked_no_finding
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認
+  - criterion: API/data/configuration/workflow/compatibility effects
+    disposition: checked_no_finding
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認
+  - criterion: error handling and failure diagnostics
+    disposition: checked_no_finding
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認
+  - criterion: security and secret handling
+    disposition: checked_no_finding
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認
+  - criterion: tests and validation adequacy
+    disposition: held
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認 / H-01
+  - criterion: current-HEAD CI evidence
+    disposition: checked_no_finding
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認
+  - criterion: report/tracking/documentation accuracy
+    disposition: held
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認 / H-02
+  - criterion: regression and maintainability risks
+    disposition: checked_no_finding
+    evidence: reports/issue-70-pr72-normal-review-20260908.md / 観点別の確認
+  independent_closure: &id022
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: []
+  validation_assessment: &id013
+  - item: local structure, packaging, YAML and source identity
+    result: supported
+    evidence: C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/results.json; C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/checks.json; C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/source.json
+  - item: Markdown focused/full
+    result: unsupported
+    evidence: repository has no package.json / tools/lint configuration; H-01
+  - item: failure diagnostics
+    result: supported
+    evidence: intentional exit 7; stdout and stderr retained; not product test or TDD Red
+  - item: exact-head CI
+    result: supported
+    evidence: run 34191202873 attempt 1 pull_request; head_sha=30b9178e262b392ddf50b9dc892d859a18b7810d; build 101949459689 success; artifact 10042258632 unexpired
+  reserved_report_paths: []
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence:
+    - normal review report only; no independent-final attestation
+  summary:
+  - 修正必須0件。保留2件。技術判定は30b9178...に限定。
+report:
+  report_type: review_report
+  outcome: rendered
+  persistence_mode: repository_file
+  paths:
+  - reports/issue-70-pr72-normal-review-20260908.md
+  reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+  attestation_head: null
+  pr_comments: []
+  summary:
+  - report/handoff commit pending; record resulting HEAD and exact-head CI in PR
+findings: &id010 []
+held: &id011
+- item: 'H-01: Markdown機械検査の設定不在'
+  reason: package.json / tools/lint absent; focused/full unsupported
+  owner: repository maintainer
+  remaining_risk: 機械的な用語・表記検査は未実施。本文は直接確認。
+  verdict_impact: 'pre-existing, nonblocking for #70 normal review'
+- item: 'H-02: 既存Release設計とworkflowの不一致'
+  reason: PR-close prerelease documented; main-push versioned prerelease implemented; both present at base
+  owner: repository maintainer
+  remaining_risk: Release手順の説明が実装と異なる。
+  verdict_impact: 'pre-existing, nonblocking for #70; no workflow delta'
+unexplored: &id012
+- area: CI artifact binary / production release execution
+  blocker: metadata and local ZIP checked; these operations not performed
+  remaining_risk: CI binary equality and production release behavior unverified
+  verdict_impact: 'nonblocking; unchanged release path outside #70'
+- area: multiple-device switching and deliberate disconnect injection
+  blocker: review used the specified FA780; did not alter device state
+  remaining_risk: failure branches reviewed as instructions, not a multi-device runtime test
+  verdict_impact: nonblocking for instruction-only changes
+unknown:
+- field_or_fact: report commit SHA and its exact-head CI
+  reason: snapshot before publication; re-fetch PR on resume
+not_applicable:
+- field_or_area: implementation-worker source output
+  reason: review only; not invoked
+- field_or_area: independent review and attestation
+  reason: ordinary initial review
+remaining_risks: &id007
+- independent final review pending
+- H-01
+- H-02
+- CI artifact binary unchecked
+source_payloads:
+- source_skill: work-context-manager
+  output_contract_version: reviewed repository 30b9178e262b392ddf50b9dc892d859a18b7810d
+  content_type: application/yaml
+  payload:
+    repository: ssaattww/CodexSkill
+    issue_or_pr: 'Issue #70 / PR #72'
+    task_id: T-005
+    mode: review
+    branch: issue-70-remote-desktop
+    base_ref: 6507727986329e34e69da3680a00824eb1fbfe13
+    current_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+    reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+    verification_capability: local_execution_available
+    verification_capability_evidence: *id002
+    execution_environment: *id001
+    execution_state:
+      technical_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      administrative_parent: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      commit: commit_pending
+      push: push_pending
+      ci_wait: ci_wait_pending
+      full_local_equivalence_gate:
+        state: not_required
+        candidate_head: unknown
+        invalidated_runs: []
+    scope: *id003
+    non_goals: *id004
+    authoritative_requirements: *id005
+    write_boundary:
+      allowed:
+      - C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm
+      - reports/issue-70-pr72-normal-review-20260908.md
+      - reports/handoffs/issue-70-pr72-normal-review-20260908.yaml
+      - GitHub connector report-only commit / PR metadata / PR comment
+      forbidden:
+      - product/Skill/design/test/config/workflow/tracking changes
+      - original index and staged work
+      - other task worktrees
+      - global installation or machine/auth configuration
+      - GitHub operations via terminal/network bypass
+      - merge
+    development_policy:
+      method: non-TDD, review only
+      testing_order: existing local validation and report checks before publication
+    validation:
+      commands:
+      - &id014
+        - C:\Python314\python.exe
+        - -X
+        - utf8
+        - scripts/verify_skill_repository.py
+      - &id015
+        - C:\Python314\python.exe
+        - -X
+        - utf8
+        - scripts/build_chatgpt_worker_skills.py
+        - --output
+        - C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\chatgpt-worker-skills.zip
+      - &id016
+        - C:\Python314\python.exe
+        - -X
+        - utf8
+        - -m
+        - zipfile
+        - -t
+        - C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\chatgpt-worker-skills.zip
+      - &id017
+        - git
+        - -c
+        - safe.directory=C:/Users/donabe/Project/CodexSkill-issue-70
+        - -C
+        - C:\Users\donabe\Project\CodexSkill-issue-70
+        - diff
+        - --cached
+        - --check
+        - 6507727986329e34e69da3680a00824eb1fbfe13
+      - &id018
+        - C:\Python314\python.exe
+        - -X
+        - utf8
+        - scripts/build_chatgpt_worker_skills.py
+        - --output
+        - C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\chatgpt-worker-skills-repeat.zip
+      - &id019
+        - C:\Python314\python.exe
+        - -c
+        - import sys; print('review diagnostic stdout'); print('review diagnostic stderr',file=sys.stderr); sys.exit(7)
+      - &id020
+        - C:\Python314\python.exe
+        - -m
+        - pip
+        - --version
+      - &id021
+        - C:\Python314\python.exe
+        - -m
+        - pip
+        - install
+        - --target
+        - C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\python-deps
+        - --no-cache-dir
+        - --no-deps
+        - '--only-binary=:all:'
+        - --disable-pip-version-check
+        - PyYAML==6.0.3
+      required_failure_diagnostics: *id006
+    ci:
+      matching_run: '34191202873'
+      conclusion: success
+    unknown:
+    - future report commit SHA and its exact-head CI
+    blocked: []
+    remaining_risks: *id007
+- source_skill: review-worker
+  output_contract_version: reviewed repository 30b9178e262b392ddf50b9dc892d859a18b7810d
+  content_type: application/yaml
+  payload:
+    review_mode: initial review
+    reviewed_implementation_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    independent_review_continuity: null
+    bounded_closure_scope: []
+    base: 6507727986329e34e69da3680a00824eb1fbfe13
+    commit_range: 6507727986329e34e69da3680a00824eb1fbfe13..30b9178e262b392ddf50b9dc892d859a18b7810d
+    reviewer: *id008
+    required_coverage: *id009
+    findings: *id010
+    finding_completeness_matrix: []
+    severity_reclassification_records: []
+    held: *id011
+    unexplored: *id012
+    validation_assessment: *id013
+    verdict: pass_with_held
+    remaining_risks: *id007
+    next_action: 実装担当が必要な非最終変更を整え、別チャットによる独立最終レビューへ進める。
+    reserved_report_paths: []
+    report_attestation_allowed: false
+    attestation_conditions:
+      mode: not_applicable
+      reason: ordinary review; no independent attestation or verdict transfer to later HEAD
+    commands:
+    - name: repository
+      command: *id014
+      started_at: '2026-09-08T06:18:12.802256+00:00'
+      exit_code: 0
+      expected_exit: 0
+      expectation_met: true
+      reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      actual_local_head: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+      source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+      stdout: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\repository.stdout.txt
+      stderr: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\repository.stderr.txt
+    - name: bundle
+      command: *id015
+      started_at: '2026-09-08T06:18:12.862930+00:00'
+      exit_code: 0
+      expected_exit: 0
+      expectation_met: true
+      reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      actual_local_head: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+      source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+      stdout: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\bundle.stdout.txt
+      stderr: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\bundle.stderr.txt
+    - name: zip-integrity
+      command: *id016
+      started_at: '2026-09-08T06:18:13.034018+00:00'
+      exit_code: 0
+      expected_exit: 0
+      expectation_met: true
+      reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      actual_local_head: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+      source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+      stdout: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\zip-integrity.stdout.txt
+      stderr: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\zip-integrity.stderr.txt
+    - name: diff-check
+      command: *id017
+      started_at: '2026-09-08T06:18:13.093064+00:00'
+      exit_code: 0
+      expected_exit: 0
+      expectation_met: true
+      reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      actual_local_head: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+      source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+      stdout: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\diff-check.stdout.txt
+      stderr: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\diff-check.stderr.txt
+    - name: bundle-repeat
+      command: *id018
+      started_at: '2026-09-08T06:18:13.122856+00:00'
+      exit_code: 0
+      expected_exit: 0
+      expectation_met: true
+      reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      actual_local_head: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+      source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+      stdout: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\bundle-repeat.stdout.txt
+      stderr: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\bundle-repeat.stderr.txt
+    - name: diagnostic-failure-probe
+      command: *id019
+      started_at: '2026-09-08T06:19:41.655249+00:00'
+      exit_code: 7
+      expected_exit: 7
+      expectation_met: true
+      reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      actual_local_head: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+      source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+      stdout: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\diagnostic-failure-probe.stdout.txt
+      stderr: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\diagnostic-failure-probe.stderr.txt
+    - name: pip-capability
+      command: *id020
+      started_at: '2026-09-08T06:19:41.732742+00:00'
+      exit_code: 0
+      expected_exit: 0
+      expectation_met: true
+      reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      actual_local_head: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+      source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+      stdout: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\pip-capability.stdout.txt
+      stderr: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\pip-capability.stderr.txt
+    - name: yaml-dependency
+      command: *id021
+      started_at: '2026-09-08T06:23:10.856949+00:00'
+      exit_code: 0
+      expected_exit: 0
+      expectation_met: true
+      reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      actual_local_head: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+      source_fingerprint: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+      stdout: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\yaml-dependency.stdout.txt
+      stderr: C:\Users\donabe\Project\CodexSkill-issue-70-review-20260908-3duvm_dm\yaml-dependency.stderr.txt
+    local_checks:
+    - name: eight-skill-roots
+      passed: true
+      detail:
+      - chat-handoff-manager
+      - chat-implementation-worker
+      - chat-report-writer
+      - chat-review-worker
+      - implementation-worker
+      - report-writer
+      - review-worker
+      - work-context-manager
+    - name: zip-entire-contents-equal-worktree
+      passed: true
+      detail:
+      - chat-handoff-manager/SKILL.md
+      - chat-implementation-worker/SKILL.md
+      - chat-report-writer/SKILL.md
+      - chat-review-worker/SKILL.md
+      - implementation-worker/SKILL.md
+      - report-writer/SKILL.md
+      - review-worker/SKILL.md
+      - work-context-manager/SKILL.md
+    - name: zip-reproducible
+      passed: true
+      detail: 0ebce4c7f38c595f57b27dc019648b76767db8b3ac81fe5c3b25c59c039d1d17
+    - name: hierarchy-byte-identity
+      passed: true
+      detail: canonical and mirror
+    - name: python-syntax-build_chatgpt_worker_skills.py
+      passed: true
+      detail: C:\Users\donabe\Project\CodexSkill-issue-70\scripts\build_chatgpt_worker_skills.py
+    - name: python-syntax-verify_skill_repository.py
+      passed: true
+      detail: C:\Users\donabe\Project\CodexSkill-issue-70\scripts\verify_skill_repository.py
+    - name: handoff-json-roundtrip
+      passed: true
+      detail: stdlib JSON parse/serialize; no schema pass claim
+    - name: environment-projection-retained
+      passed: true
+      detail: work-context raw and typed object equal
+    - name: failure-diagnostics-retained
+      passed: true
+      detail: Expected exit 7; diagnostic probe not product test or TDD Red
+    - name: all-success-logs-retained
+      passed: true
+      detail: empty stderr files retained
+    - name: source-worktree-unmodified
+      passed: true
+      detail: all tracked file bytes, status and index tree unchanged
+    - name: prerelease-description-predates-change
+      passed: true
+      detail: base design already uses PR-closed tags; base workflow already uses main-push versioning
+    - name: workflow-unmodified
+      passed: true
+      detail: 'no workflow delta in #70'
+    - name: yaml-contract-work-context-manager
+      passed: true
+      detail: 1 YAML block(s); duplicate keys rejected
+    - name: yaml-contract-chat-handoff-manager
+      passed: true
+      detail: 1 YAML block(s); duplicate keys rejected
+    - name: yaml-contract-report-writer
+      passed: true
+      detail: 1 YAML block(s); duplicate keys rejected
+    - name: environment-schema-identical
+      passed: true
+      detail: context and handoff environment mapping match
+    - name: per-command-environment-schema
+      passed: true
+      detail: typed environment and fingerprint retained
+    - name: eight-frontmatters-yaml
+      passed: true
+      detail: 8 mappings parsed; names and descriptions checked
+    - name: workflow-yaml
+      passed: true
+      detail: BaseLoader preserves on key; PR reports trigger exists
+    - name: original-handoff-top-level-fields
+      passed: true
+      detail: '[]'
+    - name: source-still-preserved
+      passed: true
+      detail: after task-local PyYAML install and parsing
+- source_skill: report-writer
+  output_contract_version: reviewed repository 30b9178e262b392ddf50b9dc892d859a18b7810d
+  content_type: application/yaml
+  payload:
+    report_type: review_report
+    complete_body: |
+      # Issue #70 / PR #72 通常レビュー報告
+
+      ## 結論
+
+      判定は `pass_with_held`。レビュー対象の変更17ファイルと直接依存を確認し、今回の変更に修正必須の指摘は検出しなかった。保留2件は既存の検証設定不足と既存設計の不一致であり、今回の変更の不合格指摘とは区別する。
+
+      これは現在のチャットによる初回の通常レビューである。過去の接続失敗時にはソースレビューを実施していない。実装・修正には参加しておらず、独立最終レビュー、マージ承認、Issue全体の完了を意味しない。
+
+      ## 対象の識別
+
+      | 項目 | 確認した値 |
+      | --- | --- |
+      | Repository / Issue / PR | ssaattww/CodexSkill / #70 / #72 |
+      | Task / Phase | T-005 / Phase 10 |
+      | Branch | issue-70-remote-desktop |
+      | Base | 6507727986329e34e69da3680a00824eb1fbfe13 |
+      | Reviewed implementation HEAD | 30b9178e262b392ddf50b9dc892d859a18b7810d |
+      | 公開済みtree | 1b04b6560183ff2485af1c1d4bf6fa1b010446d4 |
+      | PC | FA780。Remote Desktop Commanderで接続先を確認し、同じdevice IDに固定。 |
+      | 作業場所 | C:/Users/donabe/Project/CodexSkill-issue-70 |
+      | 実際のローカルHEAD | 6bfda0acb50db851ab93e01a1c801d24356cacfe |
+      | 作業状態 | 10ファイルのステージ済み変更あり。未ステージ変更・未追跡入力なし。 |
+
+      ローカルHEADをPRのHEADと同一だとは扱っていない。ステージ済みtreeがGitHubコネクタで取得した公開treeと一致し、未ステージ変更がないことを確認した。この同一内容を対象としてレビュー・検証した。全追跡ファイルのSHA-256一覧、元のstatus、基点HEAD、treeを診断領域の `source.json` に保存した。
+
+      Gitの所有権検査が初回に失敗したため、以降のローカルGit確認は対象パスだけの `git -c safe.directory=<対象パス>` を使用した。グローバル設定・所有者・認証は変更していない。reset、checkout、stash、cleanや元のindexの更新はしていない。
+
+      ## 根拠と範囲
+
+      利用者のレビュー依頼、Project Instruction、アップロード済みworkerスキル、対象版の `AGENTS.md`、Issue #70、PR #72、追加指示のPRコメント5579849282、設計と追跡を確認した。要件の中心は通常チャットとPC接続の両経路、Remote Desktop Commanderの既定利用、現在のチャット自身による作業である。
+
+      確認した変更ファイル:
+
+      - スキル7件: `skills/chat-handoff-manager/SKILL.md`、`skills/chat-implementation-worker/SKILL.md`、`skills/chat-report-writer/SKILL.md`、`skills/chat-review-worker/SKILL.md`、`skills/implementation-worker/SKILL.md`、`skills/report-writer/SKILL.md`、`skills/work-context-manager/SKILL.md`。
+      - 設計5件: `design/chat-execution-environment-design.md`、`design/chat-worker-skill-design.md`、`design/chatgpt-project-instruction-example.md`、`design/skill-hierarchy-design.md`、`skills/design/skill-hierarchy-design.md`。
+      - 報告・引き継ぎ3件: `reports/issue-70-default-rdc-followup-20260908.md`、`reports/issue-70-remote-desktop-implementation-20260908.md`、`reports/handoffs/issue-70-remote-desktop-20260908.json`。
+      - 追跡2件: `tasks/tasks-status.md`、`tasks/phases-status.md`。
+
+      直接依存として `review-worker`、既存のrepository検査・ZIP生成スクリプト、配布workflowを確認した。Markdown検査の分類と報告保存規則も確認した。旧実装報告・引き継ぎは保存当時の記録であり、旧HEADの検証結果を今回の結果に流用していない。
+
+      ## 観点別の確認
+
+      | 観点 | 判定 | 根拠 |
+      | --- | --- | --- |
+      | 要件・設計への適合 | checked_no_finding | 3つのworkerで利用者指定、Project Instruction、RDC既定の順序が一致。通常チャットは明示指定時のみ。 |
+      | 正しさ・境界条件 | checked_no_finding | 接続失敗、対象不一致、他タスクの変更、依存不足で停止・再確認する契約を照合。無断の代替経路を認めない。 |
+      | 変更範囲 | checked_no_finding | 新規workerやエージェント起動を追加せず、#69の未マージ実装を取り込んでいない。 |
+      | 変更ファイル・直接依存 | checked_no_finding | 全17ファイル、呼び出す中核スキル、配布処理を確認。スキル名による依存は維持。 |
+      | データ・設定・互換性 | checked_no_finding | 実行場所の型定義、コマンド別の識別情報、旧schema 3の欠落をunknownとして再確認する契約を確認。 |
+      | エラー処理・診断 | checked_no_finding | 成功・失敗の結果とstdout/stderrを保持。ローカルで終了値7の診断保存を確認。workflowの診断保存追加は適用外。 |
+      | セキュリティ・権限 | checked_no_finding | 接続先固定、作業領域限定、管理者・全体設定の別途承認、GitHub操作のコネクタ境界を確認。 |
+      | 検証の十分性 | held | 既存検査・配布物・YAMLは確認。Markdown機械検査は設定不在でunsupported。H-01。 |
+      | current-HEAD CI | checked_no_finding | run 34191202873のhead_shaがレビュー対象HEADと一致し、PR build成功。 |
+      | 報告・追跡・文書の正確性 | held | #70の状態と未実施事項を照合。既存のRelease設計不一致はH-02として分離。 |
+      | 回帰・保守性 | checked_no_finding | 8スキルの配布構成、両階層設計、通常／独立レビューの分離、実装禁止の境界を維持。 |
+
+      通常チャットの明示指定、指定なし、接続失敗、HEAD不一致、別タスクのdirty tree、依存不足、報告専用操作、旧引き継ぎという分岐は文章の契約として確認した。複数PCの切替や切断を実際に発生させた試験とは扱わない。意味・文脈の確認は現在のチャットが行い、機械検査の成功を文章レビューの代用にしていない。
+
+      ## ローカル検証
+
+      検証出力は対象ソース外の `C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm` に保存した。これはPC上のパスであり、ChatGPTへの添付済みファイルではない。
+
+      | 検証 | 結果 |
+      | --- | --- |
+      | `python -X utf8 scripts/verify_skill_repository.py` | 終了値0。依存関係、リンク、削除済み構成の不在、階層設計を確認。 |
+      | `python -X utf8 scripts/build_chatgpt_worker_skills.py --output <ZIP>` | 終了値0。8スキルを収録。 |
+      | `python -X utf8 -m zipfile -t <ZIP>` | 終了値0。 |
+      | `git -c safe.directory=<対象パス> diff --cached --check <base>` | 終了値0。 |
+      | 同一入力からのZIP再生成 | 終了値0、ZIPがバイト一致。 |
+      | ZIP全収録ファイルと対象ソース | 8ファイルすべてバイト一致。 |
+      | 階層設計2ファイル | バイト一致。 |
+      | 既存Pythonスクリプト2件 | AST構文解析成功。 |
+      | YAML | 8スキルのfront matter、context・handoff・reportの型定義、workflowを解析。重複キーも検査。 |
+      | 実行場所の型定義 | contextとhandoffが一致。コマンド別environment・fingerprint項目を確認。 |
+      | 既存引き継ぎJSON | 読み書き往復、トップレベル項目、実行場所のtyped/raw一致を確認。汎用JSON Schema検証ではない。 |
+      | 診断保存 | 意図的な終了値7、stdout/stderr両方を保存。成功時の空stderrもファイルとして保存。 |
+      | 作業状態の保全 | 全追跡ファイルの内容、status、index treeが開始時と一致。 |
+
+      実行環境はPython 3.14.7。YAML解析用のPyYAML 6.0.3は診断領域内の `python-deps` だけに導入し、対象ソースやグローバル環境を変更していない。コマンド情報と終了値は `results.json`、比較結果は `checks.json`、標準出力と標準エラーは各処理名のファイルに保存した。追加確認22件はいずれも成立したが、製品テスト22件の意味ではない。
+
+      ローカルZIPのSHA-256は `0ebce4c7f38c595f57b27dc019648b76767db8b3ac81fe5c3b25c59c039d1d17`。同一Windows入力での再現性であり、CI上のZIPとのバイナリ一致は検査していない。CodexSkillの方針に従い、TDDのRed/Green、製品テスト、診断workflowを追加していない。
+
+      ## レビュー対象HEADのCI
+
+      GitHubコネクタでPRのHEADを取得し、そのSHAに対応するrunを取得して、run自身の `head_sha` を再確認した。
+
+      - HEAD: `30b9178e262b392ddf50b9dc892d859a18b7810d`。
+      - Run: `34191202873`、attempt 1、event `pull_request`、completed / success。
+      - Build job: `101949459689`。構成検査、ZIP生成、artifact保存の全ステップが成功。Release用jobはPRではskipped。
+      - Artifact: `chatgpt-worker-skills-34191202873`、ID `10042258632`、22,645 bytes、未失効。
+      - Artifact digest: `sha256:8115045584cc4a1c8c65333d287cc41cb164daa866eed843bc0617d43057d9d0`。ローカルZIPではなくActions artifactの値。
+
+      CI artifactのバイナリ内容は未取得。内容の検査はローカルで生成したZIPに限る。この報告と引き継ぎの保存でHEADが更新された場合、その新しいHEADのCIを別に確認し、結果はPRへ記録する。上記runを新HEADの証拠にはしない。
+
+      ## 修正必須の指摘
+
+      0件。今回の変更に対するseverity付きの修正要求はない。
+
+      ## 保留事項
+
+      ### H-01: Markdown機械検査の設定不在
+
+      対象リポジトリには `package.json` と `tools/lint/` の実行設定がなく、focused/fullとも `unsupported`。担当はリポジトリの保守担当。必要な検査設定を導入するかは別途方針判断とする。本文を読み、識別子と普通の文章の混同や検査回避目的の引用は認めなかったが、機械的な用語検査の成功は主張しない。変更前からの制限であり、#70の通常レビューを不合格にする項目ではない。
+
+      ### H-02: 既存Release設計とworkflowの不一致
+
+      `design/chat-worker-skill-design.md:233-252` と `design/skill-hierarchy-design.md:412-432` はPR close/mergeとPR番号単位のPre-releaseを説明するが、実workflowはmain pushで版番号付きPre-releaseを作る。基点 `6507727...` にも同じ記述とworkflowがあり、今回の変更による回帰ではない。担当はリポジトリの保守担当。Releaseの設計保守として同期する事項であり、本レビューでは修正しない。PRの構成検査・ZIP生成には影響しないため非ブロッキングの保留とする。
+
+      ## 未実施・範囲外
+
+      CI artifactのバイナリ検査、本番Release実行、複数PC・切断・再接続を意図的に発生させる試験は実施していない。これらの成功を主張せず、静的契約の確認と実機での読み取り・検証を区別する。
+
+      #69の文書自己点検の組み込み・実機受け入れ、PR #71の診断workflowの統合は別作業。現在のworkflowが成功時の配布ZIPしか保存しない点は開始時に確認済みだが、CodexSkillに診断workflow追加方針を適用しないという指示に従い変更していない。
+
+      ## 保存と次の作業
+
+      詳細報告は本ファイル、通常レビュー引き継ぎは `reports/handoffs/issue-70-pr72-normal-review-20260908.yaml` に保存する。保存前の状態は `commit_pending`、親はレビュー対象HEADである。保存後のcommit、current-HEAD CI、PRコメントの識別情報はPRへ記録する。
+
+      これは通常報告の保存であり、独立最終レビューのattestationではない。技術的な判定対象は上記30b9178...のままとし、報告追加後のHEADを自動的にレビュー済みとはしない。
+
+      実装・スキル・設計・テスト・workflow・追跡は変更しない。利用者の既存ステージ済み変更と#69の作業ツリーも維持する。新規スキルやfeedback ledger更新が必要となる新しい問題は本レビューでは検出していない。
+
+      独立最終レビューは未実施。実装担当が通常レビュー報告と追跡など必要な非最終変更を整えた後、実装・通常レビューに参加していない別チャットで行う。Draftを維持し、マージしない。
+    evidence_sources:
+    - RDC source and diagnostics
+    - GitHub PR/Issue/commit/run metadata
+    target_identity:
+      branch: issue-70-remote-desktop
+      base_ref: 6507727986329e34e69da3680a00824eb1fbfe13
+      current_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      reviewed_implementation_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+    verification:
+      capability: local_execution_available
+      technical_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      administrative_parent: 30b9178e262b392ddf50b9dc892d859a18b7810d
+      commit_state: commit_pending
+      push_state: push_pending
+      ci_wait_state: ci_wait_pending
+    execution_environment: *id001
+    independent_closure: *id022
+    severity_records: []
+    persistence:
+      mode: repository_file
+      reserved_paths:
+      - reports/issue-70-pr72-normal-review-20260908.md
+      report_attestation_head: null
+    concise_pr_comment_body: 通常レビュー pass_with_held、修正必須0件。保留はMarkdown設定不在と既存Release設計不一致。報告保存後のHEADとCIは公開後に追記する。
+    unresolved_discrepancies:
+    - H-01
+    - H-02
+extensions:
+- namespace: issue70.review.source-binding
+  payload:
+    reviewed_implementation_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+    published_tree: 1b04b6560183ff2485af1c1d4bf6fa1b010446d4
+    actual_local_head: 6bfda0acb50db851ab93e01a1c801d24356cacfe
+    source_state: dirty staged; no unstaged/untracked input
+    status: |
+      M  design/chat-execution-environment-design.md
+      M  design/chat-worker-skill-design.md
+      M  design/chatgpt-project-instruction-example.md
+      M  design/skill-hierarchy-design.md
+      A  reports/issue-70-default-rdc-followup-20260908.md
+      M  reports/issue-70-remote-desktop-implementation-20260908.md
+      M  skills/chat-implementation-worker/SKILL.md
+      M  skills/chat-report-writer/SKILL.md
+      M  skills/chat-review-worker/SKILL.md
+      M  skills/design/skill-hierarchy-design.md
+    root: C:\Users\donabe\Project\CodexSkill-issue-70
+    device_id: 4eae589f-096b-4362-9bec-0f392d77d44f
+    fingerprint_scope: all tracked/index paths; git diff empty; no untracked inputs
+    files_sha256: full manifest is preserved in C:/Users/donabe/Project/CodexSkill-issue-70-review-20260908-3duvm_dm/source.json
+- namespace: issue70.review.publication
+  payload:
+    reviewed_head: 30b9178e262b392ddf50b9dc892d859a18b7810d
+    administrative_parent: 30b9178e262b392ddf50b9dc892d859a18b7810d
+    report_paths:
+    - reports/issue-70-pr72-normal-review-20260908.md
+    - reports/handoffs/issue-70-pr72-normal-review-20260908.yaml
+    state: commit_pending
+    attestation: false
+    instruction: Compare report/handoff content before publishing; verify only new exact-head CI afterward; keep original staged tree unchanged.
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: independent final review
+  summary: 実装担当が必要な非最終変更を整え、別チャットによる独立最終レビューへ進める。
+  instructions:
+  - Finish pre-freeze work; do not treat the ordinary report commit as independently reviewed.
+  - Re-fetch current PR HEAD and only matching CI.
+  - Reconfirm device, source identity and permissions; do not reset original staged work.
+  - No merge.
+  required_attachments_or_references:
+  - reports/issue-70-pr72-normal-review-20260908.md
+  - reports/handoffs/issue-70-pr72-normal-review-20260908.yaml
+  - 'PR #72'
+  - design/chat-execution-environment-design.md
+  requested_authorized_actions:
+  - read_repository
+  - write_report
+  - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-70-pr72-normal-review-20260908.yaml
+  packet_url: null
+  transport_note: Pre-commit review snapshot. Source payloads are complete; YAML aliases preserve repeated objects. New HEAD and CI will be recorded in PR, not fabricated here.
