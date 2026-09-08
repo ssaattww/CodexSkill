@@ -2,13 +2,14 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-06
+- Updated: 2026-09-08
 
 ## In Progress
 
-- T-004: Issue #67のAstra high承認付きエスカレーション
-  - Status: R4 required finding `PR68-R4-001`をimplementation側でaddressed。same normal reviewerのfix verification待ち。独立最終reviewは未開始
+- T-006: Issue #67のAstra high承認付きエスカレーション
+  - Status: normal review cycleはR5でpass。独立最終reviewで検出された`PR68-IFR-001`、`PR68-IFR-002`、`PR68-IR-001`をimplementation側でaddressedし、same independent reviewerのfix verification待ち
   - Scope: 既存agent割当の保守。新規phase計画は追加しない
+  - Historical Task ID: PR branchではIssue #67を`T-004`として追跡していた。mainのIssue #69 `T-004`と衝突したためcurrent trackingは`T-006`へ移し、過去report/handoff内の`T-004`はhistorical evidenceとして変更しない
   - Depends on: PR #65の既存適応型agent割当
   - PR: https://github.com/ssaattww/CodexSkill/pull/68
   - Exit Criteria:
@@ -21,7 +22,7 @@
     - 設計のA67-01〜A67-20へcontract対応を記録し、実モデル実行と混同しない
     - schema-v3 handoffが定義済みenumだけを使用し、generation時点のverification stateとproducer core Skillのcomplete raw outputをlosslessに保持する
     - tracking、report、handoff、PR本文がnormal review/fix lifecycleの実状態と同期する
-    - same normal reviewerが`PR68-R4-001`をfix verificationし、normal review cycleが収束する
+    - 独立最終reviewのrequired findings `PR68-IFR-001`、`PR68-IFR-002`、`PR68-IR-001`をsame independent reviewerがfix verificationし、required finding 0件へ収束する
     - current PR HEADとhead_shaが一致するCIでrepository validatorと配布ZIP検証が成功する
     - 詳細report、別handoff、簡易PR commentを保存し、mergeはしない
   - Output:
@@ -47,6 +48,9 @@
     - `reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml`
     - `reports/issue-67-pr68-r4-finding-followup-20260906.md`
     - `reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml`
+    - `reports/issue-67-pr68-fix-verification-r5-20260906.md`
+    - `reports/handoffs/issue-67-pr68-fix-verification-r5-20260906.yaml`
+    - `reports/issue-67-pr68-independent-review-20260908.md`
   - Review History:
     - initial normal review on implementation HEAD `8d3f96a0ec5f01247c4092f7bb0f690168ba627e`: `pass_with_held`; `PR68-R1-001 / low` 1件、required finding 0件
     - `PR68-R1-001` fix commit: `30a7595559327308893469211080047bf485de16`。single_turnだけを複数operation再利用禁止にし、task_until_completionの同一task/scope/agent継続を明記
@@ -60,17 +64,23 @@
     - R4 fix verification on target HEAD `776be2c1a18ce680157f84771c681197166662c0`: `PR68-R3-001` resolved。新規`PR68-R4-001 / medium / required`を検出しverdict `fail`
     - R4 review report commit: `f936f5fc60a426770a6408155852f7a98cf203bc`
     - R4 review handoff/evidence HEAD: `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`
+    - R5 fix verification on target HEAD `dbd534af603bfb51d1bfc30609d446ca0ad0281b`: `PR68-R4-001` resolved、verdict `pass`。normal review cycle収束
+    - 独立最終review on target HEAD `0518ed3cc965e00a922e18545a171f2a3cd1084f`: `PR68-IFR-001 / medium / required`、`PR68-IFR-002 / medium / required`、`PR68-IR-001 / medium / required`を検出しverdict `fail`
   - Current Review Follow-up:
     - `PR68-R1-001`: reviewer resolved確認済み。source severity `low`維持
     - `PR68-R2-001`: reviewer resolved確認済み。source severity `medium`維持
     - `PR68-R2-002`: reviewer resolved確認済み。source severity `medium`維持
     - `PR68-R2-003`: reviewer resolved確認済み。source severity `low`維持
     - `PR68-R3-001`: reviewer resolved確認済み。source severity `medium`維持
-    - `PR68-R4-001`: T-004 R3同期で誤削除したT-002 historical Output参照15件を復元 commit `91785d8a16a613303818db2495de39f179e3c3d4`
-    - `PR68-R4-001`: T-004 R3同期内容を維持し、その他T-002 historyは内容変更なし
+    - `PR68-R4-001`: 旧`T-004` R3同期で誤削除したT-002 historical Output参照15件を復元 commit `91785d8a16a613303818db2495de39f179e3c3d4`
+    - `PR68-R4-001`: 旧`T-004` R3同期内容を維持し、その他T-002 historyは内容変更なし
     - R4-001 follow-up detailed report commit: `8f2963c3353f614887996d4c56b88cdc0b2b1edf`
     - R4-001 follow-up handoff commit: `9a0c32ad88102ca1e4b3c4f5e92841d5a02efe20`
-    - reviewer closure: pending same normal reviewer fix verification; independent final reviewは開始しない
+    - R5 reviewer closure: same normal reviewerが`PR68-R4-001` resolvedを確認し、normal review cycleはpassで収束
+    - `PR68-IFR-001`: 8 handoff YAMLのunquoted ` #` scalarをquoteし、parse後のfull intended stringを保持
+    - `PR68-IR-001`: 5 handoffのreport-writer `complete_body`を対応するgeneration-time detailed report全文へ復元
+    - `PR68-IFR-002`: current task IDを`T-006`へ移し、mainのIssue #69 `T-004`を保持。historical report/handoffの旧`T-004`は変更しない
+    - independent reviewer closure: pending same independent reviewer fix verification
   - Verification:
     - verification_capability: `remote_ci_only`
     - initial implementation reviewed HEAD `8d3f96a0ec5f01247c4092f7bb0f690168ba627e`のmatching run `34023404043`: success
@@ -84,10 +94,12 @@
     - R4 reviewed HEAD `776be2c1a18ce680157f84771c681197166662c0`のmatching run `34029006173`: success、build job `101475006449`、artifact `9987975129`
     - R4 review evidence HEAD `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`のmatching run `34031903220`: success、build job `101482851378`、artifact `9988882650`
     - R4 technical fix HEAD `91785d8a16a613303818db2495de39f179e3c3d4`のmatching run `34032315339`: success、build job `101483978974`、artifact `9989013493`、digest `sha256:668fa28b4c645fb2f00977e7a4217d75456949ed8a0b912764cd38f7719334a8`
+    - R5 reviewed HEAD `dbd534af603bfb51d1bfc30609d446ca0ad0281b`のmatching run `34032752514`: success、build job `101485236418`、artifact `9989152500`
+    - independent reviewed HEAD `0518ed3cc965e00a922e18545a171f2a3cd1084f`のmatching run `34038814249`: success。independent review後のreport保存HEAD `16cc1e33133ea1b2f666ced15261be1609965261`にはreview時点でmatching runなし
     - TDDはCodexSkill方針によりnot applicable。Astraの有料runtime実行は未実施
     - Markdown lintはrepository rootに`tools/`と`package.json`がないためunsupported。active relative linkはCI validator対象
     - 本tracking保存後のcurrent HEADについて、そのSHAとhead_shaが一致する新しいpull_request runだけを最終route evidenceとして確認しPR commentへ記録する。上記の旧runを代用しない
-  - Administrative state: 本文生成時は`commit_pending`。本tracking自身を含む将来SHAを自己参照せず、永続化結果・push・exact-head CIはPR metadata/commentへ保存する
+  - Administrative state: 独立review指摘修正のtracking生成時は`commit_pending`。本tracking自身を含む将来SHAを自己参照せず、永続化結果・push・exact-head CIはPR metadata/commentへ保存する
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
   - Status: 通常review cycle収束、独立最終review待ち
