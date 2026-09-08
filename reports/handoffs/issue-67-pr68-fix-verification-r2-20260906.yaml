@@ -17,7 +17,7 @@ target:
 verification:
   capability: remote_ci_only
   capability_evidence:
-    - PR #68 technical reviewed HEAD 87549104916a1a04d62aa0508099c857b1844840 has matching pull_request workflow run 34024920108 with completed/success.
+    - "PR #68 technical reviewed HEAD 87549104916a1a04d62aa0508099c857b1844840 has matching pull_request workflow run 34024920108 with completed/success."
     - This packet is generated after review report commit 58da9092de9225b81066e3c60956363587bd2d8e; packet persistence will advance HEAD again, so final persistence CI remains pending here.
   technical_head: *reviewed
   administrative_parent: *reviewed
@@ -37,7 +37,7 @@ verification:
 authoritative_requirements:
   - source: user_instruction
     reference: current-chat
-    summary: PR #68を再reviewし、指摘を一度にすべて洗い出す。
+    summary: "PR #68を再reviewし、指摘を一度にすべて洗い出す。"
   - source: repository_instruction
     reference: Project Instruction and AGENTS.md
     summary: GitHub connectorを使用し、CodexSkill保守はnon-TDD。current HEADとrun head_sha一致のCIだけを採用。詳細reportと簡易PRコメントを保存し、mergeしない。
@@ -80,7 +80,7 @@ write_boundary:
       reason: detailed normal-review fix-verification evidence
     - path_or_operation: reports/handoffs/issue-67-pr68-fix-verification-r2-20260906.yaml
       reason: lossless next-chat handoff
-    - path_or_operation: PR #68 review/comment operations
+    - path_or_operation: "PR #68 review/comment operations"
       reason: publish findings and closure evidence
   forbidden:
     - path_or_operation: implementation/design/tracking/handoff fixes for findings
@@ -272,7 +272,7 @@ review:
         focused_evidence: incomplete; current T-004 is stale
       - finding_id: PR68-R2-003
         required_action: Remove or update stale current-HEAD statement in PR body.
-        production_path: PR #68 body
+        production_path: "PR #68 body"
         actual_composition_fixture: current PR metadata plus latest exact-head verification
         focused_evidence: incomplete; body still names 8d3f96a as current
   validation_assessment:
@@ -340,7 +340,7 @@ findings:
   - id: PR68-R2-003
     severity: low
     origin: coverage_miss
-    location: PR #68 body validation section
+    location: "PR #68 body validation section"
     description: PR body calls 8d3f96a0ec5f01247c4092f7bb0f690168ba627e the final current HEAD while actual technical reviewed current HEAD was 87549104916a1a04d62aa0508099c857b1844840.
     impact: standalone PR-body readers can mistake stale evidence for current evidence, although latest PR comment has the correct exact-head run.
     evidence: PR metadata versus body.
@@ -479,7 +479,7 @@ source_payloads:
         - id: PR68-R2-003
           severity: low
           origin: coverage_miss
-          location: PR #68 body
+          location: "PR #68 body"
           description: stale fixed current HEAD claim
           impact: documentation can mislead readers about current exact-head evidence
           evidence: PR metadata versus body
@@ -505,7 +505,7 @@ source_payloads:
           disposition: incomplete
         - finding_id: PR68-R2-003
           required_action: PR body evidence drift correction
-          production_path: PR #68 metadata
+          production_path: "PR #68 metadata"
           actual_composition_fixture: current head/latest CI
           focused_evidence: missing
           disposition: incomplete_nonblocking
@@ -702,7 +702,7 @@ source_payloads:
         4. 同じnormal reviewerへ再度fix verificationを依頼する。
         5. mergeしない。
       evidence_sources:
-        - PR #68 and Issue #67
+        - "PR #68 and Issue #67"
         - commit compare a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3..30a7595559327308893469211080047bf485de16
         - commit compare 8d3f96a0ec5f01247c4092f7bb0f690168ba627e..87549104916a1a04d62aa0508099c857b1844840
         - workflow run 34024920108 / job 101464076367 / artifact 9986733423
@@ -790,7 +790,7 @@ next_action:
   required_attachments_or_references:
     - reports/issue-67-pr68-fix-verification-r2-20260906.md
     - reports/handoffs/issue-67-pr68-fix-verification-r2-20260906.yaml
-    - PR #68 review threads
+    - "PR #68 review threads"
     - commit 87549104916a1a04d62aa0508099c857b1844840
     - workflow run 34024920108
   requested_authorized_actions:

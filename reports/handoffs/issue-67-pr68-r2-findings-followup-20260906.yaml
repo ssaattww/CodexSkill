@@ -35,7 +35,7 @@ verification:
 authoritative_requirements:
   - source: user_instruction
     reference: current-chat
-    summary: PR #68の最新指摘へ対応する。
+    summary: "PR #68の最新指摘へ対応する。"
   - source: repository_instruction
     reference: Project Instruction and AGENTS.md
     summary: GitHub connector使用、CodexSkill non-TDD、small commits、report/handoff/PR comment、exact-head CI、merge禁止。
@@ -74,7 +74,7 @@ write_boundary:
       reason: evidence persistence
     - path_or_operation: tasks/tasks-status.md
       reason: PR68-R2-002
-    - path_or_operation: PR #68 metadata/comments
+    - path_or_operation: "PR #68 metadata/comments"
       reason: PR68-R2-003 and evidence
   forbidden:
     - path_or_operation: unrelated repository changes
@@ -277,7 +277,7 @@ findings:
   - id: PR68-R2-003
     severity: low
     origin: coverage_miss
-    location: PR #68 body
+    location: "PR #68 body"
     description: stale fixed current HEAD wording
     impact: stale PR summary
     evidence: R2 review
@@ -335,7 +335,7 @@ source_payloads:
         - independent final review
         - merge
       authoritative_requirements:
-        - source: PR #68 R2 fix verification
+        - source: "PR #68 R2 fix verification"
           reference: PRR_kwDOSFr3-88AAAABMXje9w
           summary: address R2-001/002/003 before normal review convergence
       write_boundary:
@@ -610,7 +610,7 @@ next_action:
     - keep independent-final unopened
     - do not merge
   required_attachments_or_references:
-    - PR #68
+    - "PR #68"
     - reports/issue-67-pr68-r2-findings-followup-20260906.md
     - reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
   requested_authorized_actions:

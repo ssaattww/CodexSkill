@@ -35,7 +35,7 @@ verification:
 authoritative_requirements:
   - source: user_instruction
     reference: current-chat
-    summary: PR #68の最新指摘へ対応する。
+    summary: "PR #68の最新指摘へ対応する。"
   - source: repository_instruction
     reference: Project Instruction and AGENTS.md
     summary: GitHub connector使用、CodexSkill non-TDD、small commits、report/handoff/PR comment、exact-head CI、merge禁止。
@@ -76,7 +76,7 @@ write_boundary:
       reason: lossless handoff
     - path_or_operation: tasks/tasks-status.md
       reason: final lifecycle synchronization
-    - path_or_operation: PR #68 comments/body
+    - path_or_operation: "PR #68 comments/body"
       reason: evidence publication
   forbidden:
     - path_or_operation: unrelated Skill/design/workflow/source changes
@@ -256,7 +256,7 @@ findings:
     location: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
     description: R2 follow-up handoff used undefined schema enums and did not preserve complete current core-Skill outputs.
     impact: strict readers can reject or ambiguously normalize the packet, and cross-chat state cannot be reconstructed losslessly.
-    evidence: PR #68 fix verification r3 review PRR_kwDOSFr3-88AAAABMXpu-Q
+    evidence: "PR #68 fix verification r3 review PRR_kwDOSFr3-88AAAABMXpu-Q"
     required_action: use only defined enums, move custom state to extensions/evidence, and preserve complete current work-context/implementation/report outputs.
 held: []
 unexplored:
@@ -309,7 +309,7 @@ source_payloads:
         - independent final review
         - merge
       authoritative_requirements:
-        - source: PR #68 fix verification r3
+        - source: "PR #68 fix verification r3"
           reference: PRR_kwDOSFr3-88AAAABMXpu-Q
           summary: correct enum values and preserve complete producer outputs in the R2 follow-up handoff
       write_boundary:
@@ -460,21 +460,67 @@ source_payloads:
         - additions: 248
         - deletions: 182
 
+        R3-001以外のrepository fileはtechnical fix commitで変更していない。
+
         ### Schema / YAML
 
-        修正版packetをPyYAMLでparseし、R3で指摘されたenumをcurrent contractと照合した。`implementation.outcome=partial`、定義済みdisposition、`next_action.type=implementation`、`record_type=preserved`、3 producerのrequired fieldsと`complete_body`を確認した。
+        修正版packetをPyYAMLでparseし、R3で指摘されたenumをcurrent `skills/chat-handoff-manager/SKILL.md`の定義と照合した。
+
+        確認した事項:
+
+        - `implementation.outcome == partial`
+        - addressed finding dispositionは`addressed | partial`のみ
+        - review coverage dispositionは`checked_no_finding | checked_finding`のみ
+        - `next_action.type == implementation`
+        - severity `record_type == preserved`
+        - `work-context-manager` raw payloadに`verification_capability` / `execution_state`あり
+        - `implementation-worker` raw payloadにverification / commit / push / final technical/admin evidenceあり
+        - `report-writer` raw payloadに`verification` / `independent_closure` / `complete_body`あり
 
         ### Technical fix HEAD CI
 
-        `b7e03ec7c847875fa1753cea3ea8814f8006f320`に一致するrun `34028776760`は`completed / success`。build job `101474391195`、artifact `9987905877`、digest `sha256:6192d76b6f1646aba123a682a607438ca53e35868edbb1ed2ad9a4e420a66ce3`。CIはhandoff enumを自動検査しないためschema validationとは別証拠として扱う。
+        `b7e03ec7c847875fa1753cea3ea8814f8006f320`と`head_sha`が一致する`pull_request` workflowのみを使用した。
+
+        - run: `34028776760`
+        - status/conclusion: `completed / success`
+        - build job: `101474391195`
+        - repository Skill architecture / active link validator: success
+        - ChatGPT wrapper/core ZIP build/verify: success
+        - artifact upload: success
+        - artifact: `9987905877`
+        - artifact digest: `sha256:6192d76b6f1646aba123a682a607438ca53e35868edbb1ed2ad9a4e420a66ce3`
+        - artifact workflow head SHA: `b7e03ec7c847875fa1753cea3ea8814f8006f320`
+
+        このCIはreports/handoffsのschema enumを自動検証するものではないため、schema correctnessは上記のcontract inspectionとYAML parseを別証拠として扱う。
+
+        ## Failure diagnostics
+
+        - technical fix CIに失敗なし。
+        - failure log/stdout/stderrの追加収集は不要だった。
+        - CI failureが発生した場合は同一HEADのrun/job/step/log/artifactだけを調査証拠にする。
+        - RevMem向け診断artifact workflow追加方針はCodexSkill保守には適用しない。
 
         ## Finding disposition
 
-        `PR68-R3-001 / medium / required`はimplementation側でaddressed。reviewer closureはpending。本chatはfix verification verdictを発行しない。
+        ### PR68-R3-001
+
+        - Source severity: `medium`
+        - Required: yes
+        - Implementation disposition: addressed
+        - Fix commit: `b7e03ec7c847875fa1753cea3ea8814f8006f320`
+        - Reviewer closure: pending
+
+        本chatは実装担当のためfix verification verdictを発行しない。same normal reviewerによる確認へ戻す。
 
         ## 残存事項
 
-        report/handoff保存後にT-004を最終repository writeとして同期し、そのHEAD固有CIを確認してsame normal reviewerへ戻す。independent final reviewとmergeは行わない。
+        - 本reportと別schema-v3 handoffを保存する。
+        - `tasks/tasks-status.md`へR3 review/fix状態を同期し、これを今回の最終repository writeとする。
+        - 最終current HEADと一致するpull_request CIを確認し、PR commentへ記録する。
+        - same normal reviewerへR3-001のfix verificationを依頼する。
+        - normal review cycle収束前にindependent final reviewへ進めない。
+        - live Astra runtimeは未検証。
+        - mergeは行わない。
       evidence_sources:
         - PRR_kwDOSFr3-88AAAABMXpu-Q
         - compare 54bc25e..b7e03ec
@@ -537,7 +583,7 @@ next_action:
     - do not start independent final review before normal review convergence
     - do not merge
   required_attachments_or_references:
-    - PR #68
+    - "PR #68"
     - reports/issue-67-pr68-r3-finding-followup-20260906.md
     - reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml
     - reports/issue-67-pr68-fix-verification-r3-20260906.md

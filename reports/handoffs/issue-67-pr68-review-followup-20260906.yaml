@@ -36,12 +36,12 @@ verification:
 authoritative_requirements:
   - source: user_instruction
     reference: current chat
-    summary: PR #68の指摘対応を行う。
+    summary: "PR #68の指摘対応を行う。"
   - source: repository_instruction
     reference: AGENTS.md
     summary: CodexSkill repository maintenanceにはTDDを適用せず、既存validationを使用する。
   - source: pr
-    reference: PR #68 review PRR_kwDOSFr3-88AAAABMXfFjg
+    reference: "PR #68 review PRR_kwDOSFr3-88AAAABMXfFjg"
     summary: PR68-R1-001 low。grant複数operation再利用禁止をsingle_turnへ限定し、task_until_completionの継続と整合させる。
   - source: design
     reference: design/astra-escalation-design.md
@@ -79,7 +79,7 @@ write_boundary:
       reason: 指摘対応の詳細reportを永続化する。
     - path_or_operation: reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
       reason: 次worker向けlossless handoffを永続化する。
-    - path_or_operation: PR #68 review thread and issue comments
+    - path_or_operation: "PR #68 review thread and issue comments"
       reason: 修正証拠、final HEAD、matching CIを記録する。
   forbidden:
     - path_or_operation: unrelated source, Skill, workflow, design, tracking cleanup
@@ -112,7 +112,7 @@ files:
     - path: skills/sub-agent-task-manager/references/astra-escalation.md
       purpose: source reviewで正本が両approval modeを既に区別していることを確認済みの前提として、不要な変更を避けた。
     - path: tasks/tasks-status.md
-      purpose: T-004がIssue #67 / PR #68の継続scopeを表していることを確認した。
+      purpose: "T-004がIssue #67 / PR #68の継続scopeを表していることを確認した。"
   intentionally_untouched:
     - path_or_area: skills/sub-agent-task-manager/references/astra-escalation.md
       reason: PR68-R1-001は設計文の整合性指摘であり、source reviewでは正本contractは既にmodeを区別している。
@@ -186,10 +186,10 @@ review:
   mode: fix_verification
   reviewed_head: 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
   reviewer:
-    identity: existing PR #68 normal reviewer
+    identity: "existing PR #68 normal reviewer"
     role: normal_reviewer
     continuity:
-      previous_reviewer_identity: existing PR #68 normal reviewer
+      previous_reviewer_identity: "existing PR #68 normal reviewer"
       changed: false
       reason: null
     independence:
@@ -236,7 +236,7 @@ report:
   reviewed_head: 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
   attestation_head: null
   pr_comments:
-    - target: PR #68 review thread PR68-R1-001
+    - target: "PR #68 review thread PR68-R1-001"
       url_or_id: "reply 3943547743"
   summary:
     - Detailed review-follow-up implementation report persisted.
@@ -249,7 +249,7 @@ findings:
     location: design/astra-escalation-design.md:71
     description: grant複数operation再利用禁止がapproval mode無限定で記述され、task_until_completionとA67-09の継続規則と矛盾していた。
     impact: 設計書読者がtask_until_completion grantも1 operationで失効すると誤解できる。
-    evidence: PR #68 review thread PRRT_kwDOSFr3-86fqpKD / comment 3943536154。
+    evidence: "PR #68 review thread PRRT_kwDOSFr3-86fqpKD / comment 3943536154。"
     required_action: 複数operation再利用禁止をsingle_turnに限定し、task_until_completionは同一task/scope/agentで有効grantをoperationごとに確認して継続可能と明記する。別agent転用禁止は維持する。
 
 held: []
@@ -291,7 +291,7 @@ source_payloads:
         - independent review verdict
         - merge
       authoritative_requirements:
-        - source: PR #68 normal review
+        - source: "PR #68 normal review"
           reference: PR68-R1-001
           summary: single_turnとtask_until_completionのgrant再利用規則を整合させる。
       write_boundary:
@@ -333,7 +333,7 @@ source_payloads:
         - review verdict
         - merge
       requirements_and_design_references:
-        - PR #68 review PR68-R1-001
+        - "PR #68 review PR68-R1-001"
         - design/astra-escalation-design.md A67-09
       changed_files:
         - path: design/astra-escalation-design.md
@@ -526,7 +526,7 @@ source_payloads:
         5. fix verificationはnormal reviewerへ委ねる。
         6. mergeは行わない。
       evidence_sources:
-        - PR #68 review PR68-R1-001
+        - "PR #68 review PR68-R1-001"
         - compare a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3..30a7595559327308893469211080047bf485de16
         - workflow run 34024771335
         - artifact 9986689500
@@ -582,7 +582,7 @@ next_action:
     - fix verification後のcurrent HEADに必要なCIはhead_sha一致を確認し、別SHA runを代用しない。
     - mergeしない。
   required_attachments_or_references:
-    - PR #68 review thread PRRT_kwDOSFr3-86fqpKD
+    - "PR #68 review thread PRRT_kwDOSFr3-86fqpKD"
     - reports/issue-67-pr68-review-followup-20260906.md
     - reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
     - commit 30a7595559327308893469211080047bf485de16

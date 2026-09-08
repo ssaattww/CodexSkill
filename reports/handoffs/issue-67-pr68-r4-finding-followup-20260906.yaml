@@ -37,7 +37,7 @@ verification:
 authoritative_requirements:
   - source: user_instruction
     reference: current-chat
-    summary: PR #68の最新指摘へ対応する。
+    summary: "PR #68の最新指摘へ対応する。"
   - source: repository_instruction
     reference: Project Instruction and AGENTS.md
     summary: GitHub connectorを使用し、CodexSkill保守はnon-TDD。小さくcommit/pushし、詳細report、handoff、簡易PR comment、current-HEAD一致CIを残し、mergeしない。
@@ -76,7 +76,7 @@ write_boundary:
       reason: detailed implementation follow-up report
     - path_or_operation: reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml
       reason: lossless handoff
-    - path_or_operation: PR #68 metadata and comments
+    - path_or_operation: "PR #68 metadata and comments"
       reason: publish fix and exact-head evidence
   forbidden:
     - path_or_operation: unrelated Skill/design/workflow/source changes
@@ -306,7 +306,7 @@ source_payloads:
         - independent final review
         - merge
       authoritative_requirements:
-        - source: PR #68 r4 review
+        - source: "PR #68 r4 review"
           reference: PRR_kwDOSFr3-88AAAABMX0AXA
           summary: restore 15 T-002 historical Output references exactly while retaining T-004 R3 state
       write_boundary:
@@ -350,7 +350,7 @@ source_payloads:
         - independent final review
         - merge
       requirements_and_design_references:
-        - PR #68 r4 review PRR_kwDOSFr3-88AAAABMX0AXA
+        - "PR #68 r4 review PRR_kwDOSFr3-88AAAABMX0AXA"
         - tasks/tasks-status.md at parent HEAD 1cca241331f420fce131b9447b88c38f0d0ad569
       changed_files_and_purpose:
         - path: tasks/tasks-status.md
@@ -393,7 +393,7 @@ source_payloads:
     content_type: application/yaml
     payload:
       report_type: implementation_report
-      complete_body: |
+      complete_body: |-
         # Issue #67 PR #68 R4指摘対応レポート
 
         ## メタデータ
@@ -428,11 +428,31 @@ source_payloads:
 
         ## 実装
 
-        `tasks/tasks-status.md`へ削除された15参照を復元した。Direct fix commitは`91785d8a16a613303818db2495de39f179e3c3d4`。R4 review evidence HEAD `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`から1 commit aheadで、変更fileは`tasks/tasks-status.md`のみである。
+        `tasks/tasks-status.md`へ以下15参照を復元した。
 
-        GitHub commit patchではT-002 `Output`へ15件が復元され、T-004本文、T-002の`Review History`以降、T-003、T-001には内容変更を加えていない。contents APIによる書込みで末尾改行表現の差分が1件見えるため、最終tracking同期では末尾改行を保持して不要なformat差分を残さない。
+        1. `reports/issue-53-independent-final-review-20260729083728.md`
+        2. `reports/issue-53-core-skill-wrapper-review-followup-20260729174338.md`
+        3. `reports/issue-53-fix-verification-20260729182457.md`
+        4. `reports/issue-53-fix-verification-followup-20260729182800.md`
+        5. `reports/issue-53-fix-verification-r2-20260729185000.md`
+        6. `reports/issue-53-independent-final-review-r2-20260729185400.md`
+        7. `reports/issue-53-finding-severity-erratum-20260729193100.md`
+        8. `reports/issue-53-independent-final-review-r2-followup-20260729193100.md`
+        9. `reports/issue-53-independent-final-review-r2-fix-verification-20260729212800.md`
+        10. `reports/issue-53-normal-handoff-followup-20260730060300.md`
+        11. `reports/issue-53-independent-final-review-r2-fix-verification-r2-20260730062100.md`
+        12. `reports/issue-53-complete-source-payload-followup-20260730070000.md`
+        13. `reports/issue-53-independent-final-review-r2-fix-verification-r3-20260730072800.md`
+        14. `reports/issue-53-normal-review-pass-prefreeze-followup-20260730091000.md`
+        15. `reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md`
+
+        Direct fix commitは`91785d8a16a613303818db2495de39f179e3c3d4`。R4 review evidence HEAD `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`から1 commit aheadで、変更fileは`tasks/tasks-status.md`のみである。
+
+        GitHub commit patchではT-002 `Output`へ上記15件が復元され、T-004本文、T-002の`Review History`以降、T-003、T-001には内容変更を加えていない。contents APIによる書込みで末尾改行表現の差分が1件見えるため、最終tracking同期では末尾改行を保持して不要なformat差分を残さない。
 
         ## Validation
+
+        ### Scope inspection
 
         - Compare: `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc...91785d8a16a613303818db2495de39f179e3c3d4`
         - Ahead: 1 commit
@@ -441,25 +461,56 @@ source_payloads:
         - T-004 R3 synchronization: 維持
         - その他のT-002 history: 内容変更なし
 
-        Technical fix HEAD `91785d8a16a613303818db2495de39f179e3c3d4`のmatching pull-request run `34032315339`は`completed / success`、build job `101483978974`、artifact `9989013493`、digest `sha256:668fa28b4c645fb2f00977e7a4217d75456949ed8a0b912764cd38f7719334a8`。別SHA runは代用していない。
+        ### Technical fix HEADのCI
+
+        current-head evidenceとして、`91785d8a16a613303818db2495de39f179e3c3d4`と`head_sha`が一致するpull-request workflowだけを採用した。
+
+        - Workflow: `Validate and release ChatGPT worker skills`
+        - Run: `34032315339`
+        - Status / conclusion: `completed / success`
+        - Build job: `101483978974` / success
+        - Repository Skill architecture / active-link validation: success
+        - ChatGPT wrapper/core Skill ZIP build and verify: success
+        - Artifact upload: success
+        - Artifact: `9989013493` / `chatgpt-worker-skills-34032315339`
+        - Artifact digest: `sha256:668fa28b4c645fb2f00977e7a4217d75456949ed8a0b912764cd38f7719334a8`
+        - Artifact `workflow_run.head_sha`: `91785d8a16a613303818db2495de39f179e3c3d4`
+
+        別SHAのrunはtechnical fix HEADの証拠に代用していない。
 
         ## Failure diagnostics
 
-        CI failureなし。RevMem向け診断artifact workflow追加方針はCodexSkill保守には適用しない。
+        - technical fix CIの失敗は観測していない。
+        - 失敗job、stdout/stderr、追加diagnostic artifactを収集する事象はなかった。
+        - RevMem向け診断artifact workflow追加方針はCodexSkill保守には適用しない。
 
         ## Finding disposition
 
-        `PR68-R4-001 / medium`はimplementation側で`addressed`。same normal reviewerによるclosureは未実施で、本chatからreview verdictは発行しない。
+        ### PR68-R4-001
+
+        - Source severity: `medium`
+        - Implementation disposition: `addressed`
+        - Technical fix: `91785d8a16a613303818db2495de39f179e3c3d4`
+        - Evidence:
+          - 削除された15件を直前HEADどおり復元した。
+          - T-004 R3同期を維持した。
+          - T-002のその他historyは内容変更していない。
+        - Reviewer closure: 未実施。本chatは実装担当であり、自身の変更へfix-verification verdictを発行しない。
 
         ## Testing policy
 
-        CodexSkill repository maintenanceのためTDDは`not applicable`。
+        CodexSkill repository maintenanceのためTDDは`not applicable`。今回の変更はcanonical trackingのhistory復元であり、差分照合とexact-head CIで検証した。
 
         ## 残存事項
 
-        report/handoff保存後にT-004へR4 stateを同期し、T-002 historical Outputと末尾改行を維持する。最終HEAD固有CIを確認し、PRへ証拠を投稿してsame normal reviewerへfix verificationを委ねる。independent final reviewとmergeは行わない。
+        - 本reportと別handoffを保存後、T-004へR4 review/fix stateを同期する。最終tracking updateではT-002 historical Output 15件を維持し、末尾改行も維持する。
+        - 最終repository HEADについて、そのSHAと`head_sha`が一致するpull-request runのみをroute evidenceとして確認する。
+        - `PR68-R4-001`のclosureはsame normal reviewerへ委ねる。
+        - normal review cycle収束前にindependent final reviewへ進まない。
+        - Astra runtime availability/profile/cancellation/costは未検証。
+        - mergeは利用者が行う。
       evidence_sources:
-        - PR #68 r4 review PRR_kwDOSFr3-88AAAABMX0AXA
+        - "PR #68 r4 review PRR_kwDOSFr3-88AAAABMX0AXA"
         - commit 776be2c1a18ce680157f84771c681197166662c0
         - parent tracking HEAD 1cca241331f420fce131b9447b88c38f0d0ad569
         - direct fix 91785d8a16a613303818db2495de39f179e3c3d4
@@ -521,7 +572,7 @@ next_action:
     - normal review収束前にindependent final reviewへ進まない。
     - mergeしない。
   required_attachments_or_references:
-    - PR #68
+    - "PR #68"
     - reports/issue-67-pr68-fix-verification-r4-20260906.md
     - reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml
     - reports/issue-67-pr68-r4-finding-followup-20260906.md
