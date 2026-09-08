@@ -2,31 +2,63 @@ schema_version: 3
 producer:
   skill: chat-implementation-worker
   mode: review_followup
-  generated_at: 2026-09-09T07:53:00+09:00
+  generated_at: 2026-09-09T07:56:13+09:00
 repository: ssaattww/CodexSkill
 issue_or_pr: 'Issue #67 / PR #68'
 task_id: T-006
 branch: feat/issue-67-astra-approval
 base_ref: main
 target:
-  current_head: 87320113a2cf239cd2de1007967dbe927ee8f129
+  current_head: 43e84c2f2ff15dc8b20dc102f02f4007484268c4
   reviewed_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
+  commit_range: 0518ed3cc965e00a922e18545a171f2a3cd1084f...3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
 verification:
   capability: local_execution_available
   capability_evidence:
-    - Remote Desktop Commander経由でローカル検証を実施。
-    - current PR HEAD 87320113a2cf239cd2de1007967dbe927ee8f129に一致するpull_request workflow runは未作成。
-  technical_head: 87320113a2cf239cd2de1007967dbe927ee8f129
-  administrative_parent: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+    - Remote Desktop Commander経由でローカル検証を実施した。
+    - focused YAML validation、repository validator、worker ZIP build、zip integrity checkはいずれも成功した。
+    - generation時点のcurrent HEAD 43e84c2f2ff15dc8b20dc102f02f4007484268c4に一致するpull_request workflow runは存在しない。
+  technical_head: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+  administrative_parent: 43e84c2f2ff15dc8b20dc102f02f4007484268c4
   commit:
     state: committed
-    review_target_sha: 87320113a2cf239cd2de1007967dbe927ee8f129
+    review_target_sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
   push:
     state: pushed
-    head_sha: 87320113a2cf239cd2de1007967dbe927ee8f129
+    head_sha: 43e84c2f2ff15dc8b20dc102f02f4007484268c4
   ci_wait:
     state: ci_wait_pending
     required_for: route_verification
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
+authoritative_requirements:
+  - source: user_instruction
+    reference: current-chat
+    summary: PR #68の独立レビュー指摘へ対応し、Remote Desktop Commanderを使用する。
+  - source: repository_instruction
+    reference: Project Instruction
+    summary: repository更新・PR操作はGitHub connectorを使い、current HEADとhead_shaが一致するrunだけをCI証拠として採用する。mergeしない。
+  - source: report
+    reference: reports/issue-67-pr68-independent-review-20260908.md
+    summary: PR68-IFR-001、PR68-IFR-002、PR68-IR-001をrequired findingとして修正する。
+development_policy:
+  method: CodexSkill repository maintenance / non-TDD
+  testing_order: focused static validation then repository validator and worker ZIP verification
+  governing_source: Project Instruction and repository policy
+validation_plan:
+  commands:
+    - validate affected handoff YAML parse and intended scalar preservation
+    - compare five report-writer complete_body values with generation-time detailed reports
+    - git diff --check
+    - python scripts/verify_skill_repository.py
+    - python scripts/build_chatgpt_worker_skills.py --output <artifact>/chatgpt-worker-skills-pr68-fix.zip
+    - python -m zipfile -t <artifact>/chatgpt-worker-skills-pr68-fix.zip
+    - check only pull_request workflow runs whose head_sha equals final current PR HEAD
+  required_failure_diagnostics:
+    - failing command and exit code
+    - standard output and standard error
+    - relevant workflow run/job/log/artifact for a matching failing HEAD
 blocked: []
 authorized_actions:
   - read_repository
@@ -37,80 +69,228 @@ authorized_actions:
   - push
   - update_pr
   - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: affected reports/handoffs/issue-67-pr68-*.yaml
+      reason: independent review handoff evidence correction
+    - path_or_operation: tasks/tasks-status.md
+      reason: canonical task ID collision correction and lifecycle synchronization
+    - path_or_operation: reports/issue-67-pr68-independent-findings-followup-20260908.md
+      reason: required detailed implementation report
+    - path_or_operation: reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml
+      reason: lossless implementation handoff
+    - path_or_operation: PR #68 metadata and conversation comment
+      reason: synchronize review status and publish concise result
+  forbidden:
+    - path_or_operation: merge or auto-merge
+      reason: merge is user-owned
+scope:
+  - repair unquoted hash scalar truncation in eight handoff YAML files
+  - restore full generation-time report bodies in five handoffs
+  - move current Issue #67 tracking from T-004 to non-conflicting T-006 while preserving historical T-004 evidence
+  - synchronize PR body with R5 pass and independent review follow-up state
+non_goals:
+  - change Astra runtime behavior
+  - execute paid Astra runtime
+  - merge PR #68
 files:
   changed:
     - path: reports/handoffs/issue-67-pr68-fix-verification-r2-20260906.yaml
-      purpose: unquoted hash scalar修正。
+      purpose: quote unquoted hash scalar content
     - path: reports/handoffs/issue-67-pr68-fix-verification-r3-20260906.yaml
-      purpose: unquoted hash scalar修正とreport-writer complete_body全文復元。
+      purpose: quote hash scalars and restore full report-writer complete_body
     - path: reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml
-      purpose: unquoted hash scalar修正とreport-writer complete_body全文復元。
+      purpose: quote hash scalars and restore full report-writer complete_body
     - path: reports/handoffs/issue-67-pr68-fix-verification-r5-20260906.yaml
-      purpose: unquoted hash scalar修正とreport-writer complete_body全文復元。
+      purpose: quote hash scalars and restore full report-writer complete_body
     - path: reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml
-      purpose: unquoted hash scalar修正。
+      purpose: quote unquoted hash scalar content
     - path: reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml
-      purpose: unquoted hash scalar修正とreport-writer complete_body全文復元。
+      purpose: quote hash scalars and restore full report-writer complete_body
     - path: reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml
-      purpose: unquoted hash scalar修正とreport-writer complete_body全文復元。
+      purpose: quote hash scalars and restore full report-writer complete_body
     - path: reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
-      purpose: unquoted hash scalar修正。
+      purpose: quote unquoted hash scalar content
     - path: tasks/tasks-status.md
-      purpose: current canonical taskをT-006へ移し独立review follow-up状態へ同期。
+      purpose: move current canonical task to T-006 and synchronize independent review follow-up state
     - path: reports/issue-67-pr68-independent-findings-followup-20260908.md
-      purpose: 独立review指摘対応の詳細report。
+      purpose: persist detailed independent review finding follow-up report
+    - path: reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml
+      purpose: persist this lossless follow-up handoff
+  inspected:
+    - path: reports/issue-67-pr68-independent-review-20260908.md
+      purpose: authoritative independent review findings
+    - path: skills/chat-handoff-manager/SKILL.md
+      purpose: schema-v3 and lossless transport contract
+    - path: skills/work-context-manager/SKILL.md
+      purpose: work context source output contract
+    - path: skills/implementation-worker/SKILL.md
+      purpose: implementation source output contract
+    - path: skills/report-writer/SKILL.md
+      purpose: report source output contract
+    - path: .github/workflows/release-chatgpt-worker-skills.yml
+      purpose: exact-head CI route and artifact behavior
+  intentionally_untouched:
+    - path_or_area: Astra design and runtime behavior
+      reason: independent findings are evidence/tracking defects only
+    - path_or_area: historical report/handoff task_id T-004 values
+      reason: preserve generation-time historical evidence
+commands:
+  - command: focused handoff YAML parse / scalar validation
+    purpose: verify PR68-IFR-001 corrections
+    exit_code: 0
+    result: passed
+    head_sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+    evidence: affected handoffs parse and intended hash-containing strings are preserved
+  - command: five complete_body vs generation-time detailed report comparisons
+    purpose: verify PR68-IR-001 corrections
+    exit_code: 0
+    result: passed
+    head_sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+    evidence: all five normalized bodies matched their detailed reports
+  - command: git diff --check
+    purpose: whitespace validation
+    exit_code: 0
+    result: passed
+    head_sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+    evidence: no diff errors
+  - command: python scripts/verify_skill_repository.py
+    purpose: repository Skill architecture validation
+    exit_code: 0
+    result: passed
+    head_sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+    evidence: local validator exit 0
+  - command: python scripts/build_chatgpt_worker_skills.py --output <artifact>/chatgpt-worker-skills-pr68-fix.zip
+    purpose: worker Skill bundle validation
+    exit_code: 0
+    result: passed
+    head_sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+    evidence: bundle build exit 0
+  - command: python -m zipfile -t <artifact>/chatgpt-worker-skills-pr68-fix.zip
+    purpose: ZIP integrity validation
+    exit_code: 0
+    result: passed
+    head_sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+    evidence: Done testing
+tests:
+  - name: TDD Red/Green
+    phase: not_applicable
+    result: not_run
+    head_sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+    evidence: CodexSkill repository maintenance is non-TDD
+  - name: independent finding focused validation
+    phase: verification
+    result: passed
+    head_sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+    evidence: three required findings are addressed by focused local evidence
+ci:
+  required: true
+  workflow: Validate and release ChatGPT worker skills
+  run_id: null
+  head_sha: 43e84c2f2ff15dc8b20dc102f02f4007484268c4
+  conclusion: unknown
+  artifacts: []
 implementation:
   outcome: completed
-  final_head: 87320113a2cf239cd2de1007967dbe927ee8f129
+  final_head: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
   commits:
-    - 6f80b7ea67352d18b5a477d082d884e1f9fe5da7
-    - 33369886f419c126976de857fbd83f7853253a23
-    - 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
-    - 87320113a2cf239cd2de1007967dbe927ee8f129
+    - sha: 6f80b7ea67352d18b5a477d082d884e1f9fe5da7
+      purpose: publish corrected handoff evidence set
+    - sha: 33369886f419c126976de857fbd83f7853253a23
+      purpose: synchronize current task tracking to T-006
+    - sha: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+      purpose: restore exact r3 handoff source evidence
+    - sha: 87320113a2cf239cd2de1007967dbe927ee8f129
+      purpose: administrative no-content exact-head validation trigger
   addressed_findings:
-    - finding_id: PR68-IFR-001
+    - id: PR68-IFR-001
+      reviewed_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
       disposition: addressed
-      evidence: 8 handoff YAMLのunquoted hash scalarを修正し、parse後の欠落を0件化。
-    - finding_id: PR68-IR-001
+      evidence: eight handoff YAML files retain full intended hash-containing strings after parsing
+    - id: PR68-IFR-002
+      reviewed_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
       disposition: addressed
-      evidence: 5 handoffのreport-writer complete_bodyをgeneration-time detailed report全文へ復元。
-    - finding_id: PR68-IFR-002
+      evidence: current canonical task is T-006; historical T-004 evidence is preserved
+    - id: PR68-IR-001
+      reviewed_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
       disposition: addressed
-      evidence: current canonical taskをT-006へ移しhistorical T-004を保持。
+      evidence: five report-writer complete_body values match generation-time detailed reports
   failure_diagnostics: []
   blocked_items: []
   summary:
-    - focused validation、repository validator、worker ZIP build、zip integrity checkはローカルでsuccess。
-    - current HEAD一致CIは未実施のため別SHA runを代用しない。
+    - all three required independent-review findings are implemented and locally validated
+    - PR body is synchronized with R5 pass and independent-review follow-up state
+    - matching exact-head pull_request CI is absent and is not substituted
 review:
   mode: not_applicable
   reviewed_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
+  reviewer:
+    identity: unknown
+    role: not_applicable
+    continuity:
+      previous_reviewer_identity: null
+      changed: false
+      reason: implementation follow-up does not perform reviewer closure
+    independence:
+      implemented_change: true
+      implemented_review_fix: true
+      served_as_normal_reviewer: false
+      inherited_conversation: true
+      evidence:
+        - this packet records implementation follow-up only; same independent reviewer closure is pending
   verdict: not_applicable
-  required_coverage: []
+  required_coverage:
+    - criterion: independent source finding closure
+      disposition: not_applicable
+      evidence: closure verdict belongs to the same independent reviewer, not this implementation flow
   independent_closure:
     initial_independent_reviewed_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
     closure_reviewed_heads: []
-    reviewer_continuity: pending_same_independent_reviewer
+    reviewer_continuity: pending same independent reviewer
     closure_scope:
-      - PR68-IFR-001
-      - PR68-IFR-002
-      - PR68-IR-001
+      - finding_or_ci_delta: PR68-IFR-001
+      - finding_or_ci_delta: PR68-IFR-002
+      - finding_or_ci_delta: PR68-IR-001
     completeness_matrix:
       - finding_id: PR68-IFR-001
         required_action: repair unquoted hash scalar truncation in affected handoffs
-        production_path: reports/handoffs/*.yaml
+        production_path: reports/handoffs/issue-67-pr68-*.yaml
         actual_composition_fixture: YAML parse and intended-string comparison
-        focused_evidence: addressed locally and published
+        focused_evidence: addressed; affected strings are preserved
       - finding_id: PR68-IFR-002
-        required_action: remove task ID collision with main T-004
+        required_action: remove current task ID collision with main T-004
         production_path: tasks/tasks-status.md
-        actual_composition_fixture: main/current tracking ID set
-        focused_evidence: T-006 current canonical tracking
+        actual_composition_fixture: current main and PR task IDs
+        focused_evidence: addressed; Issue #67 current task is T-006
       - finding_id: PR68-IR-001
         required_action: restore full generation-time report body in five handoffs
         production_path: affected report-writer source_payloads
-        actual_composition_fixture: generation-time detailed reports
-        focused_evidence: five normalized full-body comparisons matched
+        actual_composition_fixture: generation-time detailed report files
+        focused_evidence: addressed; five normalized body comparisons matched
+  validation_assessment:
+    - item: focused independent finding validation
+      result: supported
+      evidence: local focused checks passed
+    - item: repository validation and worker ZIP
+      result: supported
+      evidence: validator, bundle build and ZIP integrity checks passed locally
+    - item: exact-head pull_request CI
+      result: unavailable
+      evidence: no matching workflow run exists for generation-time current HEAD
+  reserved_report_paths: []
+  report_attestation:
+    allowed: not_applicable
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence:
+      - implementation follow-up is not a passing final review attestation
+  summary:
+    - implementation completed; same independent reviewer fix verification remains pending
 report:
   report_type: implementation_report
   outcome: created
@@ -120,40 +300,266 @@ report:
   reviewed_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
   attestation_head: null
   pr_comments: []
+  summary:
+    - detailed independent-review finding follow-up report is persisted in the repository
 findings: []
 held: []
 unexplored:
   - area: current publication HEAD exact-head CI
-    blocker: no pull_request workflow run exists for 87320113a2cf239cd2de1007967dbe927ee8f129
-    remaining_risk: repository CI result for current HEAD is unknown
-    verdict_impact: report as CI not executed; do not substitute another SHA
+    blocker: no matching pull_request workflow run exists at generation time
+    remaining_risk: repository CI result for the final publication HEAD remains unknown
+    verdict_impact: CI is reported as not executed and no different SHA is substituted
 unknown:
-  - field_or_fact: exact-head CI result
+  - field_or_fact: exact-head CI conclusion
     reason: no matching workflow run exists
 not_applicable:
-  - field_or_area: TDD
+  - field_or_area: TDD Red/Green
     reason: CodexSkill repository maintenance is non-TDD
 remaining_risks:
   - same independent reviewer fix verification is pending
+  - final publication HEAD exact-head CI is unavailable until a matching run exists
 source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: current-branch-contract
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      issue_or_pr: 'Issue #67 / PR #68'
+      task_id: T-006
+      mode: implementation
+      branch: feat/issue-67-astra-approval
+      base_ref: main
+      current_head: 43e84c2f2ff15dc8b20dc102f02f4007484268c4
+      reviewed_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
+      verification_capability: local_execution_available
+      verification_capability_evidence:
+        - Remote Desktop Commander local validation is available and was used
+        - no matching pull_request workflow exists for the generation-time current HEAD
+      execution_state:
+        technical_head: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+        administrative_parent: 43e84c2f2ff15dc8b20dc102f02f4007484268c4
+        commit: committed
+        push: pushed
+        ci_wait: ci_wait_pending
+        full_local_equivalence_gate:
+          state: passed
+          candidate_head: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+          invalidated_runs: []
+      scope:
+        - repair PR68-IFR-001, PR68-IFR-002 and PR68-IR-001
+        - synchronize current tracking and PR metadata
+      non_goals:
+        - change Astra runtime behavior
+        - merge PR #68
+      authoritative_requirements:
+        - source: user_instruction
+          reference: current-chat
+          summary: address PR68 review findings using Remote Desktop Commander
+        - source: repository_instruction
+          reference: Project Instruction
+          summary: use GitHub connector for repository updates and only exact-head CI evidence
+      write_boundary:
+        allowed:
+          - affected handoff evidence files
+          - tasks/tasks-status.md
+          - follow-up report/handoff
+          - PR #68 metadata/comment
+        forbidden:
+          - merge
+      development_policy:
+        method: CodexSkill repository maintenance / non-TDD
+        testing_order: focused validation then repository validator and bundle verification
+      validation:
+        commands:
+          - focused YAML/string/full-body checks
+          - git diff --check
+          - repository validator
+          - worker ZIP build and integrity check
+        required_failure_diagnostics:
+          - failing command stdout/stderr
+          - matching workflow run/job/log/artifact when applicable
+      ci:
+        matching_run: null
+        conclusion: unknown
+      unknown:
+        - final publication exact-head CI conclusion
+      blocked: []
+      remaining_risks:
+        - same independent reviewer closure pending
+  - source_skill: implementation-worker
+    output_contract_version: current-branch-contract
+    content_type: application/yaml
+    payload:
+      mode: review_followup
+      accepted_scope:
+        - PR68-IFR-001 handoff scalar correction
+        - PR68-IR-001 full complete_body restoration
+        - PR68-IFR-002 task ID collision correction
+        - tracking and PR metadata synchronization
+      non_goals:
+        - Astra runtime behavior change
+        - merge
+      requirements_and_design_references:
+        - reports/issue-67-pr68-independent-review-20260908.md
+        - skills/chat-handoff-manager/SKILL.md
+      changed_files_and_purpose:
+        - affected eight PR68 handoff YAML files: lossless evidence repair
+        - tasks/tasks-status.md: T-006 canonical tracking
+        - reports/issue-67-pr68-independent-findings-followup-20260908.md: detailed report
+      intentionally_untouched_areas:
+        - historical T-004 values inside generation-time reports/handoffs
+        - Astra runtime implementation
+      validation_commands_and_results:
+        - focused YAML/string/full-body checks: passed
+        - git diff --check: passed
+        - repository validator: passed
+        - worker ZIP build: passed
+        - ZIP integrity: passed
+      failure_diagnostics_and_artifacts: []
+      verification_capability: local_execution_available
+      validation_evidence:
+        - all local validation commands passed
+      review_target_commit_identity: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+      push_state: pushed
+      matching_ci_evidence: null
+      final_technical_head: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+      administrative_parent: 43e84c2f2ff15dc8b20dc102f02f4007484268c4
+      blocked_items: []
+      unknowns:
+        - final publication exact-head CI conclusion
+      remaining_risks:
+        - same independent reviewer closure pending
+      next_required_action: same independent reviewer performs fix verification; merge remains prohibited
   - source_skill: report-writer
     output_contract_version: current-branch-contract
-    content_type: text/markdown
-    payload: reports/issue-67-pr68-independent-findings-followup-20260908.md
+    content_type: application/yaml
+    payload:
+      report_type: implementation_report
+      complete_body: |
+        # PR #68 独立レビュー指摘対応レポート
+
+        - 日付: 2026-09-08
+        - Repository: `ssaattww/CodexSkill`
+        - Issue: #67
+        - PR: #68
+        - Branch: `feat/issue-67-astra-approval`
+        - Source review: `reports/issue-67-pr68-independent-review-20260908.md`
+        - Merge: 実施しない
+
+        ## 対応対象
+
+        - `PR68-IFR-001 / medium`: handoff YAML内のunquoted ` #` によるscalar切り捨て。
+        - `PR68-IR-001 / medium`: 5 handoffの`report-writer.complete_body`が詳細report全文ではない。
+        - `PR68-IFR-002 / medium`: Issue #67のcanonical task ID `T-004`がmainのIssue #69 `T-004`と衝突。
+
+        ## ローカル実装・検証
+
+        Remote Desktop Commander経由で `C:\Users\donabe\Project\CodexSkill-pr68-fix-20260908` を使用した。
+
+        - 8 handoff YAMLのunquoted ` #` をquoteし、YAML parse後の文字列欠落を0件にした。
+        - 対象5 handoffの`complete_body`を対応するgeneration-time detailed report全文へ復元した。
+        - 5件すべて、改行コードのみ正規化して詳細report本文と全文一致を確認した。
+        - Issue #67のcurrent canonical task IDを`T-006`へ移し、過去report/handoff内の`T-004`はhistorical evidenceとして維持した。
+        - `git diff --check`: success。
+        - `python scripts/verify_skill_repository.py`: exit 0。
+        - `python scripts/build_chatgpt_worker_skills.py --output <artifact>/chatgpt-worker-skills-pr68-fix.zip`: exit 0。
+        - `python -m zipfile -t`: success。
+
+        ## 補足
+
+        CodexSkill repository maintenanceはnon-TDD。RevMem向け診断artifact workflow追加方針は本リポジトリへ適用しない。
+
+        GitHubへの反映はconnector経由で行う。最終publication HEAD確定後、そのSHAと`head_sha`が一致する`pull_request` workflow runだけをCI証拠として採用し、別SHAのrunを代用しない。
+      evidence_sources:
+        - reports/issue-67-pr68-independent-review-20260908.md
+        - local focused validation artifacts
+        - current PR #68 metadata
+      target_identity:
+        branch: feat/issue-67-astra-approval
+        base_ref: main
+        current_head: 43e84c2f2ff15dc8b20dc102f02f4007484268c4
+        reviewed_implementation_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
+      verification:
+        capability: local_execution_available
+        technical_head: 3fb399368b6b53ebceb6ee1ee4f8eb54ec4070c6
+        administrative_parent: 43e84c2f2ff15dc8b20dc102f02f4007484268c4
+        commit_state: committed
+        push_state: pushed
+        ci_wait_state: ci_wait_pending
+      independent_closure:
+        initial_independent_reviewed_head: 0518ed3cc965e00a922e18545a171f2a3cd1084f
+        closure_reviewed_heads: []
+        reviewer_continuity: pending same independent reviewer
+        closure_scope:
+          - finding_or_ci_delta: PR68-IFR-001
+          - finding_or_ci_delta: PR68-IFR-002
+          - finding_or_ci_delta: PR68-IR-001
+        completeness_matrix:
+          - finding_id: PR68-IFR-001
+            required_action: repair unquoted hash scalar truncation
+            production_path: affected PR68 handoff YAML files
+            actual_composition_fixture: YAML parse and intended-string comparison
+            focused_evidence: addressed
+          - finding_id: PR68-IFR-002
+            required_action: remove task ID collision
+            production_path: tasks/tasks-status.md
+            actual_composition_fixture: current main and PR task IDs
+            focused_evidence: addressed
+          - finding_id: PR68-IR-001
+            required_action: restore full report body
+            production_path: five report-writer source payloads
+            actual_composition_fixture: generation-time detailed reports
+            focused_evidence: addressed
+      severity_records:
+        - finding_id: PR68-IFR-001
+          source_severity: medium
+          new_severity: null
+          reason: null
+          approved_by: null
+          record_type: preserved
+        - finding_id: PR68-IFR-002
+          source_severity: medium
+          new_severity: null
+          reason: null
+          approved_by: null
+          record_type: preserved
+        - finding_id: PR68-IR-001
+          source_severity: medium
+          new_severity: null
+          reason: null
+          approved_by: null
+          record_type: preserved
+      persistence:
+        mode: repository_file
+        reserved_paths:
+          - reports/issue-67-pr68-independent-findings-followup-20260908.md
+        report_attestation_head: null
+      concise_pr_comment_body: null
+      unresolved_discrepancies:
+        - final publication exact-head CI is unavailable at generation time
+extensions:
+  - namespace: pr68-independent-followup-runtime
+    payload:
+      git_global_user_name: ssaattww
+      git_global_user_email: 36392290+ssaattww@users.noreply.github.com
+      publication_note: packet is generated before its own persistence commit; future packet commit SHA is intentionally not self-referenced
 next_action:
   type: review
   target_skill: chat-review-worker
-  mode: independent_fix_verification
-  summary: same independent reviewer verifies PR68-IFR-001, PR68-IFR-002, and PR68-IR-001 on current PR state.
+  mode: independent_final_closure
+  summary: same independent reviewer verifies PR68-IFR-001, PR68-IFR-002 and PR68-IR-001 on the current published state.
   instructions:
-    - verify the three source findings by identity and source severity
-    - use current PR HEAD and matching exact-head CI only if such a run exists
-    - do not substitute a run from another SHA
+    - verify each source finding by exact identity and preserved source severity
+    - confirm current tracking uses T-006 while historical T-004 evidence is unchanged
+    - confirm affected handoff scalar content and five full complete_body values
+    - use only a pull_request workflow run whose head_sha matches the review target if such a run exists
+    - if no matching run exists, report CI as not executed and do not substitute another SHA
     - do not merge
   required_attachments_or_references:
     - PR #68
     - reports/issue-67-pr68-independent-review-20260908.md
     - reports/issue-67-pr68-independent-findings-followup-20260908.md
+    - reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml
   requested_authorized_actions:
     - read_repository
     - write_report
@@ -163,4 +569,4 @@ transport:
   method: repository_file
   packet_path: reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml
   packet_url: null
-  transport_note: current HEAD matching CI is absent; this is explicitly retained as unknown rather than substituted.
+  transport_note: packet records generation-time state before its own persistence commit. Current-head CI remains unknown until a matching pull_request run exists; permissions do not transfer to the next chat.
