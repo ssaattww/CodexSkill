@@ -2,9 +2,37 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-08-21
+- Updated: 2026-09-08
 
 ## In Progress
+
+- T-004: Issue #69の用語・文章品質レビューを追加する
+  - Status: 実装・ローカル検証済み、通常・独立レビュー待ち
+  - Phase: Phase 9
+  - Estimate: M
+  - Depends on: 既存のimplementation-worker、review-worker、markdown-word-checker
+  - PR: #71（draft）
+  - Exit Criteria:
+    - 対象側の単独語禁止を緩めず、登録候補以外の日本語化した文も確認する
+    - 変更前後・文脈・定義を入力として、意味・識別性・承認用法・読みやすさを分けて判定する
+    - SHA-256の識別性喪失、byte単位の曖昧化、承認済み複数語の別用法を具体的理由付きで拒否する
+    - 明確な初出説明や適切な日本語表現は文字種だけで拒否しない
+    - 方針判断待ち・証拠不足を合格にせず、単独語許可や不自然な置換で完了させない
+    - 作成担当と既存レビュワーから必須実行し、追加レビュワーを起動しない
+    - 新スキルと18判断例を含む9スキルのZIP、依存検査、階層設計2ファイルと配布設計が一致する
+    - CI前にローカル検証し、成功・失敗の診断結果・stdout・stderrを保存する
+    - 通常・独立レビュー、current HEAD一致のCI確認、PR更新を完了し、マージしない
+  - Output:
+    - `skills/document-wording-review/SKILL.md`
+    - `skills/document-wording-review/references/decision-examples.md`
+    - `design/document-wording-review-design.md`
+    - `reports/issue-69-wording-review-implementation-20260908.md`
+    - `reports/handoffs/issue-69-review-ready-20260908.yaml`
+  - Verification:
+    - 実装HEAD `c5819e3afed8f1947da3ad377dffb6c057127403` のclean作業ツリーで既存4処理成功。CIを起動するpush前に実行した
+    - 9スキル構成、ZIP再生成のバイト一致、依存不足の拒否を確認した
+    - TDDは適用しない。Markdown機械検査は対象設定不在のためunsupportedであり、自己確認と区別する
+    - 通常・独立レビューは未実施。保存後のHEADとCI証拠はPR本文・コメントで追跡する
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
   - Status: 通常review cycle収束、独立最終review待ち
