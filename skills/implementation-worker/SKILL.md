@@ -9,6 +9,10 @@ description: Perform initial implementation or review follow-up from a resolved 
 
 Implement one accepted scope and return implementation evidence to the caller.
 
+## Required Skills
+
+Invoke `document-wording-review` for an author self-check when creating or changing human-facing prose or terminology definitions/approvals. It must run even when mechanical lint is unavailable or reports zero unknown words. A missing dependency is blocked evidence, not a successful check.
+
 ## Required input
 
 Use the output of `work-context-manager`. Do not infer runtime permissions, persistence, delegation, or merge authority.
@@ -39,7 +43,7 @@ targets, and applicable findings.
 2. Read target files, direct dependencies, tests, configuration, and CI entry points.
 3. Confirm required failure diagnostics can be preserved.
 4. Apply the smallest coherent change.
-5. Keep code, tests, documentation, configuration, and workflows aligned with the requirement.
+5. Keep code, tests, documentation, configuration, and workflows aligned with the requirement. Invoke `document-wording-review` for applicable prose changes with before/after context; retain its result separately from mechanical lint and do not claim independent review.
 6. Run focused validation for the inner loop. Record broader validation separately from the repository-defined full local equivalence gate; the latter is executed once for the final publication candidate HEAD after normal convergence, unless a content delta invalidates that exact-HEAD evidence.
 7. Preserve or inspect logs, test results, standard output, standard error, and artifacts for failures.
 8. Return changed files, intentionally untouched areas, commands, results, commits, final HEAD, matching CI evidence, unknowns, and risks.
@@ -69,6 +73,7 @@ Return:
 - changed files and purpose,
 - intentionally untouched areas,
 - validation commands and results,
+- `document_wording_review` author-self-check result, coverage, findings, and policy conflicts, or an evidenced not-applicable disposition,
 - failure diagnostics and artifacts,
 - verification capability and validation evidence,
 - review-target commit identity or explicit pending state,
@@ -78,5 +83,7 @@ Return:
 - next required action.
 
 ## Completion condition
+
+Do not present an implementation as acceptance-ready while its required wording check reports a defect, policy conflict, missing dependency, or incomplete coverage. Return the unresolved state and evidence to the caller.
 
 Complete when the accepted scope is implemented or explicitly blocked, validation is recorded accurately, final HEAD is explicit, implementation evidence is complete, no independent review verdict was issued, and no merge was performed.

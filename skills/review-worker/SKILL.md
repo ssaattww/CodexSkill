@@ -9,6 +9,10 @@ description: Review an implementation against requirements, design, changed file
 
 Perform a complete review of one immutable implementation target and return findings, coverage evidence, a verdict, and the exact reviewed identity to the caller.
 
+## Required Skills
+
+Invoke `document-wording-review` inside this reviewer for document or terminology changes in the authorized review scope. Do not delegate it to another reviewer or reuse an author self-check as review evidence. Missing the required Skill makes this coverage incomplete.
+
 ## Required input
 
 Use the output of `work-context-manager`, plus the implementation diff and available validation evidence. The caller owns reviewer creation, reviewer continuity, persistence, comments, handoff transport, and validation of any later report-attestation commit.
@@ -68,6 +72,7 @@ At minimum evaluate:
 - tests and validation adequacy,
 - current-HEAD CI evidence,
 - report, tracking, and documentation accuracy,
+- document wording through `document-wording-review`, including changed prose that already passes mechanical lint and usages affected by approval changes,
 - regression and maintainability risks.
 
 For every required criterion, record one of:
@@ -77,6 +82,12 @@ For every required criterion, record one of:
 - `held`,
 - `not_applicable`,
 - `unexplored`.
+
+## Wording review gate
+
+For applicable changes, invoke `document-wording-review` with the complete before/after context, definitions, audience, and policy. Keep its coverage and findings separate from mechanical-lint results. Use its contract rather than duplicating vocabulary rules here.
+
+A required wording defect prevents approval even when lint passes. A required policy decision or missing wording evidence makes acceptance incomplete; do not silently downgrade these states to nonblocking held items. A missing lint configuration does not exempt prose review. Preserve the existing reviewer identity and the authorized finding/CI-delta scope during independent closure.
 
 ## Findings
 
@@ -156,6 +167,7 @@ Return:
 - held items,
 - unexplored areas,
 - validation assessment,
+- `document_wording_review` evidence and its separate wording/mechanical states,
 - verdict,
 - remaining risks,
 - next action,

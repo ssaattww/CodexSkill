@@ -17,7 +17,8 @@ Skill外の`shared/`file参照や、複数Skillから同一fileを直接参照�
 ├─ work-context-manager
 ├─ implementation-worker
 ├─ review-worker
-└─ report-writer
+├─ report-writer
+└─ document-wording-review
 
 ChatGPT runtime wrapper
 ├─ chat-implementation-worker
@@ -72,8 +73,15 @@ runtime-neutral coreはvalidation evidence、frozen HEAD、finding completeness�
 - `implementation-worker`
 - `review-worker`
 - `report-writer`
+- `document-wording-review`
 
 core SkillはCodex親、Codex sub-agent、ChatGPT chatのいずれにも依存しない。
+
+## 用語・文章品質レビュー
+
+`implementation-worker` は文章変更後の自己確認として、`review-worker` は文章または用語定義・承認内容が変わるレビューで `document-wording-review` を呼び出す。未登録語ゼロや機械検査未設定でも省略しない。新スキルは既存担当内で意味、用語の識別性、承認された用法、読みやすさを確認し、追加担当の起動や許可一覧の編集を行わない。自己確認は独立レビューではない。
+
+機械検査と文章判定を分けて返す。欠陥、方針判断待ち、証拠不足は必須確認の未完了として保持する。単独語禁止は緩和しない。新スキル内の判断例を含め、4 wrapperと5 coreの計9 Skillを配布する。構造検証だけではモデルの文章判断精度を証明しない。
 
 ## Core Skill責務
 
@@ -185,8 +193,11 @@ chatgpt-worker-skills.zip
 │  └─ SKILL.md
 ├─ review-worker/
 │  └─ SKILL.md
-└─ report-writer/
-   └─ SKILL.md
+├─ report-writer/
+│  └─ SKILL.md
+└─ document-wording-review/
+   ├─ SKILL.md
+   └─ references/decision-examples.md
 ```
 
 このZIPをChatGPTのSkill uploadへ指定し、wrapperと依存core Skillを一括登録する。
@@ -208,7 +219,7 @@ chatgpt-worker-skills.zip
 7. symlink、missing Skill、Skill外`shared/`参照を拒否する。
 8. wrapperとcore Skillを独立root directoryとしてZIPへ収録する。
 9. ZIP rootが検出したSkill集合と一致することを確認する。
-10. 生成ZIPをworkflow artifactとして保存する。
+10. `scripts/run_validation.py` でローカルと同じ検証を実行し、結果JSON/XML、ソース識別情報、処理別stdout/stderrを保存する。診断artifactは成功・失敗の双方で `always()` により保存する（14日保持）。検証開始前の失敗はステップ状態を残す。配布用ZIPは別artifactとして検証成功時だけ保存する。
 11. GitHub Releaseは更新しない。
 
 ### Rolling normal Release

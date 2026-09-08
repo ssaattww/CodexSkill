@@ -24,7 +24,8 @@ ChatGPT wrapperは別workerまたはsub-agentを起動しない。Codex向けwra
 ├─ work-context-manager
 ├─ implementation-worker
 ├─ review-worker
-└─ report-writer
+├─ report-writer
+└─ document-wording-review
 
 runtime wrapper
 ├─ Codex
@@ -51,6 +52,9 @@ runtime wrapper
   - closure前のrequired-action completeness matrixを確認し、不足したfindingをclosure reviewへ渡さない
 - `report-writer`
   - evidenceの意味を変えずにreportと簡易PR commentを生成する
+- `document-wording-review`
+  - `implementation-worker` の自己確認と `review-worker` の文書レビューで、意味・識別性・承認用法・読みやすさを判定する
+  - 既存担当内で実行し、追加の担当起動・編集・用語承認を行わない
 
 全core SkillはCodex親、Codex sub-agent、ChatGPT親chatのいずれにも依存しない。
 
@@ -59,6 +63,12 @@ runtime wrapper
 Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuity、一度だけのfresh independent reviewerと同reviewerによるbounded closure、report path reservation identity、phase-specific report persistence、completion gateを所有する。
 
 ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persistence、chat continuity、cross-chat handoffを所有する。
+
+## 用語・文章品質の確認
+
+`implementation-worker` と `review-worker` は文章・用語定義・承認内容の変更時に `document-wording-review` を必ず呼び出す。前者は自己確認、後者は既存レビュワーによる確認であり、担当の同一性と独立性を変えない。機械検査の成功や未設定を理由に省略しない。登録候補だけでなく、日本語化した本文と承認変更の影響を受ける用例も対象にする。
+
+判定手順は新スキルだけに置く。具体的な受け入れ条件は用語・文章品質レビュー設計に定める。必須の欠陥、方針判断待ち、証拠不足を未登録語ゼロで上書きせず、対象側の単独語禁止を緩和しない。
 
 ## Verification capabilityと状態遷移
 
@@ -322,14 +332,15 @@ ChatGPTへ登録するwrapper Skillは次の4つである。
 - `chat-report-writer`
 - `chat-handoff-manager`
 
-必須依存core Skillは次の4つである。
+必須依存core Skillは次の5つである。
 
 - `work-context-manager`
 - `implementation-worker`
 - `review-worker`
 - `report-writer`
+- `document-wording-review`
 
-GitHub Releaseでは、8 Skillをそれぞれ独立したroot directoryとして含む単一ZIPを配布する。
+GitHub Releaseでは、9 Skillをそれぞれ独立したroot directoryとして含む単一ZIPを配布する。
 
 ```text
 chatgpt-worker-skills.zip
@@ -340,7 +351,8 @@ chatgpt-worker-skills.zip
 ├─ work-context-manager/
 ├─ implementation-worker/
 ├─ review-worker/
-└─ report-writer/
+├─ report-writer/
+└─ document-wording-review/
 ```
 
 各directoryには少なくとも`SKILL.md`が存在し、front matterの`name`とdirectory名を一致させる。
@@ -376,7 +388,7 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 
 ### pull request validation
 
-- `AGENTS.md`、`README.md`、全Skill、`shared/**`、design、tasks、reports、builder、repository validator、workflowの変更で実行する
+- `AGENTS.md`、`README.md`、全Skill、`shared/**`、design、tasks、reports、builder、repository validator、`scripts/run_validation.py`、workflowの変更で実行する
 - forbidden shared runtime pathだけを追加する変更でもvalidation workflowを起動する
 - `opened`、`synchronize`、`reopened`では実PR HEAD SHAをcheckoutする
 - build jobは`contents: read`だけを持ち、checkout credentialを保持しない
@@ -385,7 +397,9 @@ handoff contractを複数Skillから同一fileとして参照しない。`chat-h
 - missing Skill、front matter name不一致、symlink、Skill外shared参照を拒否する
 - 単一`chatgpt-worker-skills.zip`を作成する
 - ZIP rootが検出Skill集合と一致することを確認する
-- ZIPをworkflow artifactとして保存する
+- `scripts/run_validation.py` でローカルとCIの共通検証を実行し、結果JSON/XML、ソース識別情報、標準出力・標準エラーを保存する
+- 成功・失敗のどちらでも診断artifactを `always()` で保存する（14日保持）
+- 配布用ZIPは診断用と分け、検証成功時だけworkflow artifactへ保存する
 - GitHub Releaseは更新しない
 
 ### Rolling normal Release
@@ -474,6 +488,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | `implementation-worker` | initial implementationとreview follow-upを実施する | runtime非依存Skillとして実行 |
 | `review-worker` | initial review、fix verification、independent final reviewとattestation条件を返す | runtime非依存Skillとして実行 |
 | `report-writer` | evidence-faithfulなreport、簡易PR comment、persistence metadataを生成する | runtime非依存Skillとして実行 |
+| `document-wording-review` | 文書変更の意味・識別性・承認用法・読みやすさを確認する | 既存担当内でruntime非依存Skillとして実行 |
 
 ### 計画と追跡
 
