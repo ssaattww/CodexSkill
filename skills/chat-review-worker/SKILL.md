@@ -42,8 +42,9 @@ Use the same normal review chat for initial review and fix verification when ava
 
 ## Execution location
 
-Use the normal-chat location unless the user or Project Instruction selects
-a connected PC. A visible PC connector alone does not authorize connection.
+Use the connected-PC route through Remote Desktop Commander by default.
+Follow an explicit user selection first, then Project Instruction. Use normal
+chat only when one of those authorities explicitly selects it.
 For a selected PC, discover Remote Desktop Commander tools, confirm the
 specified device with a read-only call, and pin subsequent source reads and
 permitted validation to that device. Do not silently change devices or use

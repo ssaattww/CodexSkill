@@ -30,8 +30,9 @@ All three must be installed. Do not replace them with repository-external shared
 
 ## Execution location
 
-Use normal chat unless the user or Project Instruction selects a connected
-PC. Do not infer PC permission from installed tools. For an authorized PC,
+Use the connected-PC route through Remote Desktop Commander by default.
+Follow an explicit user selection first, then Project Instruction. Use normal
+chat only when one of those authorities explicitly selects it. For the PC route,
 discover Remote Desktop Commander tools, confirm the specified device with a
 read-only call, and pin evidence reads to it. Resolve the path, source
 identity, and ownership through `work-context-manager.execution_environment`

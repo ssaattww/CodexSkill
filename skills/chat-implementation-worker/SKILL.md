@@ -33,11 +33,12 @@ All four must be installed. Do not replace them with repository-external shared 
 ## Execution location
 
 Keep both normal-chat and connected-PC execution available. Follow the user's
-explicit selection, then Project Instruction; otherwise use normal chat. Tool
-availability alone is not permission to connect to a PC.
+explicit selection, then Project Instruction; otherwise use the connected-PC
+route through Remote Desktop Commander. Normal chat is the fallback only when
+it is explicitly selected or the governing instruction selects it.
 
 For normal chat, use only the current chat's authorized filesystem and
-executor, if actually available. For a requested connected PC, discover the
+executor, if actually available. For the connected-PC route, discover the
 current Remote Desktop Commander tools, identify the specified device by a
 read-only call, and pin subsequent calls to that device. Use that connector
 for local source reads, edits, dependency checks, and validation.
