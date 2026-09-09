@@ -1,0 +1,155 @@
+name: PR commit artifacts
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  collect:
+    if: ${{ github.event_name != 'push' || !github.event.deleted }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ARTIFACT_DIR: ${{ runner.temp }}/pr-commit-artifacts
+    steps:
+      - name: Resolve the PR and exact commit
+        id: target
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            let headSha, sourceRepository, numbers;
+            if (context.eventName === 'push') {
+              const branch = context.ref.slice('refs/heads/'.length);
+              const pulls = await github.paginate(github.rest.pulls.list, {
+                owner, repo, state: 'open', head: `${owner}:${branch}`, per_page: 100
+              });
+              headSha = context.sha;
+              sourceRepository = `${owner}/${repo}`;
+              numbers = pulls.filter(pr =>
+                pr.state === 'open' && pr.head.ref === branch &&
+                pr.head.repo?.full_name === sourceRepository &&
+                pr.head.sha === headSha
+              ).map(pr => pr.number);
+            } else {
+              const pr = context.payload.pull_request;
+              if (context.payload.action === 'synchronize' &&
+                  pr.head.repo?.full_name === `${owner}/${repo}`) {
+                core.info('Same-repository commit update is handled by the push event.');
+                return;
+              }
+              headSha = pr.head.sha;
+              sourceRepository = pr.head.repo?.full_name;
+              numbers = pr.state === 'open' ? [pr.number] : [];
+            }
+            if (!numbers.length) {
+              core.info('No open PR matches this branch and exact HEAD; nothing to collect.');
+              return;
+            }
+            if (!/^[0-9a-f]{40}$/i.test(headSha) || !sourceRepository) {
+              throw new Error('Missing or invalid PR source identity.');
+            }
+            core.setOutput('head_sha', headSha);
+            core.setOutput('source_repository', sourceRepository);
+            core.setOutput('pr_numbers', numbers.sort((a, b) => a - b).join('-'));
+            core.setOutput('collect', 'true');
+
+      - name: Initialize diagnostic files
+        if: ${{ steps.target.outputs.collect == 'true' }}
+        shell: bash
+        run: |
+          mkdir -p "$ARTIFACT_DIR"
+          touch "$ARTIFACT_DIR/archive.stdout.log" "$ARTIFACT_DIR/archive.stderr.log"
+          touch "$ARTIFACT_DIR/validation-runner.stdout.log" "$ARTIFACT_DIR/validation-runner.stderr.log"
+
+      - name: Checkout the exact PR HEAD without write credentials
+        if: ${{ steps.target.outputs.collect == 'true' }}
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.target.outputs.source_repository }}
+          ref: ${{ steps.target.outputs.head_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Archive committed source files without Git objects
+        if: ${{ steps.target.outputs.collect == 'true' && steps.checkout.outcome == 'success' }}
+        id: archive
+        shell: bash
+        env:
+          TARGET_REF: ${{ steps.target.outputs.head_sha }}
+        run: |
+          set +e
+          (
+            set -euo pipefail
+            actual=$(git rev-parse HEAD)
+            printf '%s\n' "$actual" > "$ARTIFACT_DIR/checked-out-head.txt"
+            test "$actual" = "$TARGET_REF"
+            git archive --format=zip --output="$ARTIFACT_DIR/repository-source.zip" HEAD
+            python3 -m zipfile -t "$ARTIFACT_DIR/repository-source.zip"
+          ) > "$ARTIFACT_DIR/archive.stdout.log" 2> "$ARTIFACT_DIR/archive.stderr.log"
+          status=$?
+          cat "$ARTIFACT_DIR/archive.stdout.log"
+          cat "$ARTIFACT_DIR/archive.stderr.log" >&2
+          exit "$status"
+
+      - name: Validate and retain stdout, stderr and test results
+        if: ${{ !cancelled() && steps.archive.outcome == 'success' }}
+        id: validation
+        shell: bash
+        env:
+          TARGET_REF: ${{ steps.target.outputs.head_sha }}
+        run: |
+          set +e
+          python3 scripts/run_validation.py --output-dir "$ARTIFACT_DIR/validation" \
+            > "$ARTIFACT_DIR/validation-runner.stdout.log" 2> "$ARTIFACT_DIR/validation-runner.stderr.log"
+          status=$?
+          cat "$ARTIFACT_DIR/validation-runner.stdout.log"
+          cat "$ARTIFACT_DIR/validation-runner.stderr.log" >&2
+          exit "$status"
+
+      - name: Record identity and outcomes even after failure
+        if: ${{ always() && steps.target.outputs.collect == 'true' }}
+        shell: bash
+        env:
+          TARGET_REF: ${{ steps.target.outputs.head_sha }}
+          SOURCE_REPOSITORY: ${{ steps.target.outputs.source_repository }}
+          PR_NUMBERS: ${{ steps.target.outputs.pr_numbers }}
+          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+          ARCHIVE_OUTCOME: ${{ steps.archive.outcome }}
+          VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          output = Path(os.environ['ARTIFACT_DIR'])
+          output.mkdir(parents=True, exist_ok=True)
+          keys = ('TARGET_REF', 'SOURCE_REPOSITORY', 'PR_NUMBERS', 'GITHUB_SHA',
+                  'GITHUB_EVENT_NAME', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',
+                  'CHECKOUT_OUTCOME', 'ARCHIVE_OUTCOME', 'VALIDATION_OUTCOME')
+          record = {key: os.environ.get(key) for key in keys}
+          checked = output / 'checked-out-head.txt'
+          record['checked_out_head'] = checked.read_text().strip() if checked.exists() else None
+          record['files_sha256'] = {
+              path.relative_to(output).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+              for path in sorted(output.rglob('*')) if path.is_file()
+          }
+          (output / 'job-status.json').write_text(json.dumps(record, indent=2) + '\n', encoding='utf-8')
+          PY
+
+      - name: Upload source and diagnostics on success and failure
+        if: ${{ always() && steps.target.outputs.collect == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-${{ steps.target.outputs.pr_numbers }}-${{ steps.target.outputs.head_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.ARTIFACT_DIR }}/
+          retention-days: 14
+          if-no-files-found: error
