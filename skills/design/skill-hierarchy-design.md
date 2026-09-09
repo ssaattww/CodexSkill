@@ -64,6 +64,22 @@ Codex wrapperはsub-agent dispatch、reviewer identity、normal review continuit
 
 ChatGPT wrapperはcurrent-chat permission、connector、repository／PR persistence、chat continuity、cross-chat handoffを所有する。
 
+### Astra承認の責務境界（Issue #67）
+
+Astra対応は既存のCodex dispatch体系を拡張し、新しいSkill、core dependency、ChatGPT配布Skillを追加しない。詳細設計はrepositoryの`design/astra-escalation-design.md`と`design/adaptive-agent-assignment-design.md`、実行contractの正本は`sub-agent-task-manager`内の`references/astra-escalation.md`とする。
+
+- `sub-agent-task-manager`が同一taskでの既存モデル実行・blocker証拠、Astra high限定、費用通知、scope付き承認、operationごとのgrant消費と失効を所有する。
+- 通常defaultはLuna／Terra／Solを維持する。Astraは自動floorやavailability fallbackではなく、適格性確認後のproposalとする。
+- 既定の承認は`single_turn`。明示的に選択された`task_until_completion`だけが同一task/scopeの継続を許可する。
+- `codex-delegation-executor`はtask-local evidenceとgrant履歴をtask managerへ渡し、分割された別task/agentへ承認を継承しない。承認待ちやspawn拒否を親のAstra実行／`codex exec`で迂回しない。
+- `review-enforcer`は既存Astra reviewerへの追加依頼、retry、work-starting resume、bounded closureの前にtask managerの`authorization_only`を呼ぶ。同じagentの再利用でも承認gateは省略しない。
+- `authorization_only`はprofile再選定、spawn、reviewer交換、report予約を行わず、operation固有の承認結果を返す。reviewer identity／continuityと独立reviewの終端規則は`review-enforcer`が維持する。
+- 親は承認確認・single-turn grant消費・要求送信を直列化し、結果不明の送信や失敗後に同じgrantを再利用しない。poll、wait、結果取得は新規実行に含めない。
+- `development-orchestrator`はapproval／capability stopを尊重し、継続・handoff・次taskへの移行でgrantを拡大しない。
+- `report-output-manager`のparent-owned `Dispatch profile`へ`astra_authorization.schema_version: 1`を保存する。判定責務はtask managerに残し、deferred attestation中は親側evidenceとして保持する。
+- role/default-role、full-history継承、availability置換、既存agent再利用でも同じgateを適用する。runtime profileが非公開なら`applied: null`を維持し、事前安全確認を省略しない。
+
+既存Sol `xhigh/max`の承認・同一reviewer再利用規則、ChatGPT wrapperのsub-agent起動禁止、配布ZIP構成、core Skillのレビュー意味論は変更しない。
 ## 用語・文章品質の確認
 
 `implementation-worker` と `review-worker` は文章・用語定義・承認内容の変更時に `document-wording-review` を必ず呼び出す。前者は自己確認、後者は既存レビュワーによる確認であり、担当の同一性と独立性を変えない。機械検査の成功や未設定を理由に省略しない。登録候補だけでなく、日本語化した本文と承認変更の影響を受ける用例も対象にする。
@@ -135,6 +151,7 @@ development-orchestrator [親]
 │  ├─ markdown-word-checker
 │  ├─ sub-agent-task-manager [normal reviewer / normal_persistence]
 │  │  └─ review-worker
+│  ├─ sub-agent-task-manager [authorization_only / existing Astra reviewer continuation]
 │  ├─ report-output-manager [normal-review persistence]
 │  │  ├─ work-context-manager
 │  │  └─ report-writer
@@ -487,7 +504,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | --- | --- | --- |
 | `development-orchestrator` | task選定から設計、実装、検証、レビュー、Git提出、pre-freeze gate、final attestation boundaryまでを統括する | 親が実行 |
 | `codex-delegation-executor` | 実作業の委譲先、executor、decomposition policy／dispositionを決め、sub-agent evidenceを統合する | 親が実行 |
-| `sub-agent-task-manager` | sub-agentのscope、model、reasoning、fork、role plan、runtime observability、report persistence契約を固定する | 親が実行 |
+| `sub-agent-task-manager` | sub-agentのscope、model、reasoning、fork、role plan、runtime observability、report persistence契約とAstraの操作単位承認を管理する | 親が実行 |
 | `execution-cost-stabilizer` | retry、parallelism、実行コストを安定化する | 親が実行 |
 | `feedback-autonomy-boundary-manager` | 自律継続と利用者確認の境界を決める | 親が実行 |
 | `skill-authoring-wrapper` | core Skill／runtime wrapperをrepository標準へ揃える | 親が実行 |
@@ -560,6 +577,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 - finding identityとsource severityを維持し、severity変更はsource／new severity、理由、承認主体を明示する。
 - reviewは詳細reportへ記録する。ただしindependent-final `deferred_attestation`ではpassing verdict前にrepository reportを作成せず、structured evidenceをparentが保持し、passing後に同一reservation identityのpathへattestationとしてpersistする。
 - sub-agentのexact final model／reasoningがparent-visibleでないruntimeでは、successful spawnだけを根拠に`applied`を断定しない。`requested`、role plan、planned runtime profile、profile observabilityとexplicit unverified stateを保持する。
+- Astra承認はtask managerが操作単位で確認し、reviewerの同一性やreport予約を変更せずに適用する。承認待ちの継続を実行済みと記録しない。
 - independent-final report reservationは`review-enforcer`がfreeze前に一度だけ所有し、`sub-agent-task-manager`はそのreservation identityを検証・継承して再予約しない。
 - CIは対象current HEAD SHAに紐づくrunだけを使用する。
 - 別SHAのrunを代用しない。

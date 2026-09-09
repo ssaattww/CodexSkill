@@ -19,7 +19,7 @@
 
 ## Dispatch profile
 
-<!-- This section is parent-owned. The child must not infer or rewrite hidden runtime state. -->
+<!-- This section is parent-owned. The child must not infer or rewrite hidden runtime state or authorization evidence. -->
 
 - selection inputs (parent, pre-dispatch):
 - selection source (parent, pre-dispatch):
@@ -27,6 +27,13 @@
 - decomposition policy / disposition (parent, pre-dispatch):
 - proposed profile (parent, pre-dispatch if applicable):
 - approval status / evidence (parent):
+- Astra eligibility / prior-attempt and blocker evidence / expected benefit (parent, if applicable):
+- Astra cost notice / baseline / evidence date / unknown actual cost (parent, if applicable):
+- Astra grant ID / mode / status / explicit approval evidence (parent, if applicable):
+- Astra task / scope / completion conditions / parent context / agent binding (parent, if applicable):
+- Astra per-operation ID / work unit / target HEAD / grant usage and pre-submission consumption / outcome (parent, if applicable):
+- Astra revocation / expiry / invalidation reason and preserved grant history (parent, if applicable):
+- complete `astra_authorization` schema version 1 extension (parent; not applicable for ordinary non-Astra work):
 - requested profile (parent, pre-dispatch):
 - agent role / default-role plan (parent, pre-dispatch):
 - role config evidence / profile effect (parent, pre-dispatch):

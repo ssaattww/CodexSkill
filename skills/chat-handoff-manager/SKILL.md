@@ -44,29 +44,6 @@ target:
   reviewed_head: full_sha | null
   commit_range: string | null
 
-execution_environment:
-  kind: runtime_local | connected_computer | none | unknown
-  tool: string | null
-  machine_id: string | null
-  connection: available | unavailable | not_applicable | unknown
-  os: string | null
-  shell: string | null
-  working_directory: absolute_path | null
-  repository: owner/name | unknown
-  branch: string | unknown
-  head_sha: full_sha | unknown
-  source_state: clean | dirty | snapshot | unknown
-  source_fingerprint: string | null
-  ownership: current_task | other_task | read_only | unknown
-  writable_paths:
-    - string
-  dependencies:
-    - name: string
-      status: available | missing | not_checked
-      evidence: string
-  evidence:
-    - string
-
 verification:
   capability: local_execution_available | remote_ci_only | unknown
   capability_evidence:
@@ -138,8 +115,6 @@ commands:
     result: passed | failed | blocked | not_run
     head_sha: full_sha | unknown
     evidence: string | null
-    execution_environment: object | null
-    source_fingerprint: string | null
 
 tests:
   - name: string
@@ -323,13 +298,6 @@ transport:
 - Do not replace structured evidence with a prose summary when the structured evidence is available.
 - Unknown facts remain unknown; do not guess.
 - CI evidence must belong to the packet's target HEAD.
-- Preserve `execution_environment` from `work-context-manager` in both the
-  typed projection and raw payload. Preserve per-command execution location,
-  source fingerprint, dependency evidence, and diagnostic paths when supplied.
-  A machine-local path is not an uploaded artifact or runtime-local path.
-- Connection success, dependency availability, worktree ownership, and source
-  identity must be rechecked by the receiving chat before reuse. Do not
-  transfer an old machine selection or writable path as new authorization.
 - Current permissions do not automatically transfer to the next chat.
 - Requested next-chat permissions are proposals requiring a new user grant.
 - The handoff does not replace the detailed report.
@@ -338,10 +306,6 @@ transport:
 ## Compatibility
 
 - Writers emit schema version 3.
-- Accept older version 3 packets without `execution_environment` or
-  per-command environment fields. Preserve the original payload, mark absent
-  facts as unknown with `not present in source schema`, and re-resolve them
-  before any operation that needs source identity or computer access.
 - For version 3 packets written with prior enum spellings, normalize
   `push.pending` to `push_pending`, `ci_wait.pending` to `ci_wait_pending`,
   and `ci_wait.completed` to `ci_wait_completed`; preserve the original raw

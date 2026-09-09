@@ -2,7 +2,7 @@
 
 Use this reference after [agent-profile-selection.md](agent-profile-selection.md) has produced an approved or ordinary `requested` dispatch profile.
 
-This reference owns runtime call planning, role/default-role impact analysis, runtime application evidence, and fallback. It does not choose the task profile.
+This reference owns runtime call planning, role/default-role impact analysis, runtime application evidence, and fallback. It does not choose the task profile. For any possible Astra execution, [astra-escalation.md](astra-escalation.md) additionally governs eligibility, high-only profile, task-bound approval, and operation consumption before work starts.
 
 ## Core contract
 
@@ -14,11 +14,11 @@ This reference owns runtime call planning, role/default-role impact analysis, ru
 - Current Codex MultiAgent V2 applies requested model/reasoning overrides before applying the selected/default agent role, so role configuration can replace those values before the child starts.
 - Put the requested model and reasoning effort in the actual spawn call, not only in the task message.
 - For the current GPT-5.6 family, resolve selector tiers to `gpt-5.6-luna`, `gpt-5.6-terra`, or `gpt-5.6-sol` when those models are available.
-- Preserve the selector's exact supported effort value: `none`, `low`, `medium`, `high`, `xhigh`, or `max`.
+- Preserve the selector's exact supported effort value: `none`, `low`, `medium`, `high`, `xhigh`, or `max` for that family. Astra resolves to `gpt-6-astra` and is restricted to `high` by repository policy.
 - `Ultra` is not a `reasoning_effort` value. Multi-agent decomposition must already have been handled by `codex-delegation-executor` when decomposition is permitted.
 - For a fresh specialist with an override, explicitly use `fork_turns: "none"`.
 - An explicit positive partial fork may use an override when its context need is bounded.
-- Do not use an override with `fork_turns: "all"` or omitted `fork_turns`: full-history forks use the runtime's inheritance path.
+- Do not use an override with `fork_turns: "all"` or omitted `fork_turns`: full-history forks use the runtime's inheritance path, which must still pass the applicable cost/authorization gate before execution.
 
 ## Role/default-role planning
 
@@ -35,6 +35,8 @@ Before dispatch:
 
 The expensive Sol approval gate applies to the role-adjusted plan as well as the original selector output. If a role/default role would produce Sol `xhigh` or Sol `max`, create or update the proposal and stop before spawn until the current-task user explicitly approves it.
 
+A role/default role producing Astra must pass its same-task prior-attempt eligibility and scoped approval gate, even when the original requested model was cheaper. Require requested and known planned profile to resolve to Astra high before an Astra call. A role that forces another Astra effort is incompatible; Astra high consent does not authorize it.
+
 If the applicable role/default-role configuration cannot be inspected well enough to determine whether it can change model or reasoning effort, the parent cannot guarantee the expensive-profile gate. Record a role-profile capability gap and stop before dispatch rather than assuming the requested profile will survive role application.
 
 A role that forces a profile below the required automatic floor is also a capability/policy mismatch. Do not silently claim the lower role profile satisfies the task.
@@ -43,21 +45,21 @@ A role that forces a profile below the required automatic floor is also a capabi
 
 Use this order without collapsing the steps:
 
-1. finish task classification and initial profile selection
-2. obtain any required user approval for the initial profile
+1. finish task classification and initial profile selection, including Astra eligibility when applicable
+2. obtain any required user approval for the initial profile and applicable task/turn scope
 3. identify the explicit/default agent role and inspect its profile effect
 4. derive the role-adjusted `planned_runtime_profile`
-5. re-run floor and expensive-profile approval checks when the role changes or locks model/reasoning
+5. re-run floor and expensive-profile approval checks when the role changes or locks model/reasoning, including Astra high-only and scoped authorization checks
 6. record `requested`, `role_plan`, and `planned_runtime_profile`; keep `applied: null`
-7. resolve remaining call constraints such as model availability and fork compatibility without writing `applied`
-8. invoke `collaboration.spawn_agent` with the requested override and explicit role when applicable, or use the required inheritance path
+7. resolve remaining call constraints such as model availability and fork compatibility without writing `applied`; an inherited Astra profile also requires known-safe preflight
+8. immediately before any Astra work-starting call, run its serialized operation gate and consume the single-turn grant or record use of a valid task-wide grant; invoke `collaboration.spawn_agent` with the requested override and explicit role when applicable, or use the required inheritance path only when it satisfies the same authorization constraints
 9. inspect the returned tool evidence and any parent-observable final runtime/config snapshot
 10. only when exact final profile evidence exists, record it in `applied`
 11. if the spawn succeeds but final model/reasoning is not observable, keep `applied: null` and record `application_status: spawn_succeeded_profile_unverified`
-12. if the call rejects the override, record the rejection before considering a parent-owned fallback
-13. if fallback runs, record its profile as exact `applied` only when the fallback execution provides exact configuration evidence
+12. if the call rejects the override, record the rejection before considering a parent-owned fallback; Astra must not use that fallback
+13. if an allowed non-Astra fallback runs, record its profile as exact `applied` only when the fallback execution provides exact configuration evidence
 
-Never use an `applied` value as the input to the spawn call that is supposed to establish that value.
+Never use an `applied` value as the input to the spawn call that is supposed to establish that value. An issued Astra request consumes its single-turn authorization even on rejection, timeout, or unknown start; a retry needs a new grant. Record observed profile mismatches and stop additional work under the Astra reference rather than relabeling the actual result as approved.
 
 ## Call shape
 
@@ -74,7 +76,7 @@ await collaboration.spawn_agent({
 
 Omit `agent_type` only when the call intentionally uses the runtime default role. An omitted role is not equivalent to "no role"; account for the effective default role in `role_plan`.
 
-Keep the task request focused on work, scope, evidence, and report rules. A model name written only in `message` does not configure the spawned agent.
+Keep the task request focused on work, scope, evidence, and report rules. A model name written only in `message` does not configure the spawned agent. The call shape is not a substitute for preflight and authorization; Astra needs its operation-bound grant before invoking it.
 
 ## Pre-spawn evidence shape
 
@@ -98,7 +100,7 @@ application_status: pending_runtime_result
 profile_observability: pending
 ```
 
-`planned_runtime_profile` is planning evidence only. Never rename it to `applied` before runtime proof.
+`planned_runtime_profile` is planning evidence only. Never rename it to `applied` before runtime proof. Astra additionally requires the `astra_authorization` extension and operation record from its reference.
 
 ## Post-spawn evidence
 
@@ -133,12 +135,14 @@ A full-history spawn can have different role behavior from a fresh/partial spawn
 When full history is mandatory:
 
 1. preserve the selected specialization in `requested` as unapplied evidence
-2. determine whether an explicit role will still be applied on that full-history path
-3. omit incompatible model/reasoning overrides when the runtime requires inheritance
+2. determine whether an explicit role will still be applied on that full-history path and establish the effective inherited profile before work starts when needed to enforce the approval gate
+3. omit incompatible model/reasoning overrides when the runtime requires inheritance; omission does not waive approval for the inherited profile
 4. keep `applied` unset until exact final inheritance/role evidence is parent-observable
 5. record `application_status: inherited_parent_profile` only when the final inherited profile is actually established
-6. otherwise use `spawn_succeeded_profile_unverified` or a capability-gap state as appropriate
+6. otherwise use `spawn_succeeded_profile_unverified` after a safely planned call, or a pre-dispatch capability-gap state when the effective inherited profile cannot be safely established
 7. state which context requirement prevented fresh or partial-fork specialization
+
+If inheritance would use Astra, require the same eligibility, exact high profile, and operation-level grant as an explicit Astra override. If these cannot be guaranteed, re-plan fresh/partial context or stop. Do not use parent-profile inheritance to start Astra work without authorization.
 
 Prefer a fresh task-local prompt or bounded positive partial fork when specialization is more important than complete conversational history.
 
@@ -149,7 +153,7 @@ The visible schema and backend acceptance can differ. Treat rejection as a capab
 1. record the rejected requested model, effort, role, fork policy, and error
 2. do not populate `applied` with the rejected request
 3. do not silently downgrade an explicit user or repository override
-4. when policy permits fallback, the parent may run the work through:
+4. when policy permits fallback for a non-Astra task, the parent may run the work through:
 
 ```bash
 codex exec --model <model> -c model_reasoning_effort="<effort>"
@@ -160,25 +164,30 @@ codex exec --model <model> -c model_reasoning_effort="<effort>"
 7. when fallback starts but exact effective model/reasoning still cannot be observed, use an explicit unverified fallback state instead of inventing `applied`
 8. when no compliant fallback exists, keep `applied` unset and record `application_status: capability_gap`
 
-If the selected model is unavailable but the runtime exposes another model in the same or a higher selector tier, the parent may resolve the requested runtime identifier before spawn only when no explicit identifier was pinned. Record the resolution as a constraint and preserve the requested tier. This call-planning resolution still does not populate `applied` before runtime evidence exists.
+Astra authorization is for sub-agent execution only. If Astra spawn fails or the model is unavailable, do not run Astra through parent `codex exec`, switch the parent model, or reuse a consumed grant for another agent. Record the capability gap and return to a non-Astra plan or explicit user decision. The same prohibition applies when a nominally non-Astra fallback could resolve or inherit Astra.
+
+If the selected model is unavailable but the runtime exposes another model in the same or a higher selector tier, the parent may resolve the requested runtime identifier before spawn only when no explicit identifier was pinned. Record the resolution as a constraint and preserve the requested tier. This resolution must re-enter selection and applicable approval checks: Astra is never an automatic same/higher-tier replacement and requires its full eligibility/approval contract. This call-planning resolution still does not populate `applied` before runtime evidence exists.
 
 ## Escalation handling
 
 Profile escalation must return through [agent-profile-selection.md](agent-profile-selection.md). Do not change only the spawn arguments without updating classification and approval evidence.
 
-- raise reasoning effort when the problem remains the same but needs more careful analysis
+- raise reasoning effort when the problem remains the same but needs more careful analysis, except Astra remains fixed to high
 - raise model tier when task nature, uncertainty, change radius, or criticality changed
-- re-run the approval gate when role/default-role planning raises the effective plan to Sol `xhigh` or Sol `max`
+- re-run the approval gate when role/default-role planning raises the effective plan to Sol `xhigh`, Sol `max`, or Astra
+- propose Astra only after its evidenced existing-model attempt and continuation-insufficiency gate, never as automatic escalation
 - return independently separable work to `codex-delegation-executor` only when the caller permits decomposition
+- for an existing Astra agent, route additional work through `sub-agent-task-manager` authorization-only mode without reselecting or respawning the agent
 
 ## Evidence limit
 
-A delegated agent cannot attest to hidden spawn arguments or final parent-side runtime configuration. The parent owns `requested`, `role_plan`, `planned_runtime_profile`, runtime observability, `applied`, and fallback evidence.
+A delegated agent cannot attest to hidden spawn arguments or final parent-side runtime configuration. The parent owns `requested`, `role_plan`, `planned_runtime_profile`, runtime observability, `applied`, fallback, and authorization/consumption evidence.
 
 Current Codex MultiAgent V2 can obtain an internal agent config snapshot for telemetry, but ordinary tool output may hide model/reasoning metadata and return only task identity. Internal telemetry availability is not parent-visible proof unless the runtime explicitly exposes that snapshot to the caller.
 
 ## References
 
 - [Agent profile selection](agent-profile-selection.md)
+- [Astra escalation and authorization](astra-escalation.md)
 - [Codex issue #32031](https://github.com/openai/codex/issues/32031)
 - [Codex MultiAgent V2 spawn implementation](https://github.com/openai/codex/blob/6478a751fde8884b2fdc76486fe23175a8e795d4/codex-rs/core/src/tools/handlers/multi_agents_v2/spawn.rs)

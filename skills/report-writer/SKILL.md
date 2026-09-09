@@ -34,9 +34,6 @@ For an independent-final-review report, require:
 ## Evidence rules
 
 - Preserve exact target identity, including branch, base, current HEAD, reviewed implementation HEAD, relevant commit range, verification capability, separate commit/push/CI-wait state, and report-attestation head when supplied.
-- Preserve supplied `execution_environment`, per-command source fingerprints,
-  dependency checks, and successful/failed diagnostic paths. Keep machine-local
-  paths distinct from uploaded artifacts and current-runtime paths.
 - Do not convert missing, failed, blocked, or unavailable checks into success.
 - Distinguish direct evidence from inference.
 - Keep findings, held items, unexplored areas, unknowns, and remaining risks explicit.
@@ -104,7 +101,6 @@ verification:
   commit_state: commit_pending | committed | not_required | unknown
   push_state: push_pending | pushed | not_required | unauthorized | unknown
   ci_wait_state: ci_wait_pending | ci_wait_completed | not_required | unavailable | unknown
-execution_environment: object | null  # Preserve the supplied work-context object.
 independent_closure:
   initial_independent_reviewed_head: full_sha | null
   closure_reviewed_heads:

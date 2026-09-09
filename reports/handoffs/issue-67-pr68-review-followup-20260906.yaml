@@ -1,0 +1,601 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: review follow-up
+  generated_at: 2026-09-06T18:30:25+09:00
+
+repository: ssaattww/CodexSkill
+issue_or_pr: "Issue #67 / PR #68"
+task_id: T-004
+branch: feat/issue-67-astra-approval
+base_ref: main
+target:
+  current_head: 67928d4afe3f45fadeb153ed3f93288dad2b34a7
+  reviewed_head: 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
+  commit_range: a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3..30a7595559327308893469211080047bf485de16
+verification:
+  capability: remote_ci_only
+  capability_evidence:
+    - technical fix HEAD 30a7595559327308893469211080047bf485de16 has matching pull_request workflow run 34024771335 with completed/success.
+    - Detailed review-follow-up report was already persisted at commit 67928d4afe3f45fadeb153ed3f93288dad2b34a7; this packet itself was not yet committed at generation time, so packet-persistence exact-head CI remained pending.
+  technical_head: 30a7595559327308893469211080047bf485de16
+  administrative_parent: 30a7595559327308893469211080047bf485de16
+  commit:
+    state: committed
+    review_target_sha: 30a7595559327308893469211080047bf485de16
+  push:
+    state: pushed
+    head_sha: 67928d4afe3f45fadeb153ed3f93288dad2b34a7
+  ci_wait:
+    state: ci_wait_pending
+    required_for: route_verification
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
+
+authoritative_requirements:
+  - source: user_instruction
+    reference: current chat
+    summary: "PR #68の指摘対応を行う。"
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: CodexSkill repository maintenanceにはTDDを適用せず、既存validationを使用する。
+  - source: pr
+    reference: "PR #68 review PRR_kwDOSFr3-88AAAABMXfFjg"
+    summary: PR68-R1-001 low。grant複数operation再利用禁止をsingle_turnへ限定し、task_until_completionの継続と整合させる。
+  - source: design
+    reference: design/astra-escalation-design.md
+    summary: A67-09はtask_until_completionで同一scopeの次ターンを有効grantで継続可能とする。
+
+development_policy:
+  method: validation-only
+  testing_order: non-TDD repository maintenance
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - GitHub compare a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3..30a7595559327308893469211080047bf485de16
+    - matching pull_request workflow for 30a7595559327308893469211080047bf485de16
+    - matching pull_request workflow for final persistence HEAD
+  required_failure_diagnostics:
+    - workflow job result
+    - standard output and standard error when a validation step fails
+    - workflow artifact needed to reproduce or investigate validation failure
+blocked: []
+
+authorized_actions:
+  - read_repository
+  - edit_documentation
+  - write_handoff
+  - write_report
+  - commit
+  - push
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: design/astra-escalation-design.md
+      reason: PR68-R1-001の直接原因となる設計文を修正する。
+    - path_or_operation: reports/issue-67-pr68-review-followup-20260906.md
+      reason: 指摘対応の詳細reportを永続化する。
+    - path_or_operation: reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
+      reason: 次worker向けlossless handoffを永続化する。
+    - path_or_operation: "PR #68 review thread and issue comments"
+      reason: 修正証拠、final HEAD、matching CIを記録する。
+  forbidden:
+    - path_or_operation: unrelated source, Skill, workflow, design, tracking cleanup
+      reason: review follow-up scope外。
+    - path_or_operation: merge
+      reason: mergeは利用者が行う。
+
+scope:
+  - PR68-R1-001をfinding identityとsource severityを維持して修正する。
+  - single_turnとtask_until_completionのgrant再利用規則を設計文で明確に分離する。
+  - fix commit、matching CI、report、handoff、PR thread responseを残す。
+non_goals:
+  - Astra runtimeの実動作検証。
+  - 正本referenceの不要な変更。
+  - independent final review verdictの発行。
+  - unrelated cleanup。
+  - merge。
+
+files:
+  changed:
+    - path: design/astra-escalation-design.md
+      purpose: mode無限定だったgrant複数operation再利用禁止をsingle_turnへ限定し、task_until_completionの継続条件を明文化した。
+    - path: reports/issue-67-pr68-review-followup-20260906.md
+      purpose: review finding対応とtechnical-head検証を詳細reportとして保存した。
+    - path: reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
+      purpose: current review-follow-up stateを別chatへlossless transportする。
+  inspected:
+    - path: design/astra-escalation-design.md
+      purpose: finding位置、A67-09、grant lifecycleを確認した。
+    - path: skills/sub-agent-task-manager/references/astra-escalation.md
+      purpose: source reviewで正本が両approval modeを既に区別していることを確認済みの前提として、不要な変更を避けた。
+    - path: tasks/tasks-status.md
+      purpose: "T-004がIssue #67 / PR #68の継続scopeを表していることを確認した。"
+  intentionally_untouched:
+    - path_or_area: skills/sub-agent-task-manager/references/astra-escalation.md
+      reason: PR68-R1-001は設計文の整合性指摘であり、source reviewでは正本contractは既にmodeを区別している。
+    - path_or_area: tasks/tasks-status.md
+      reason: review findingへの直接修正と証跡保存に差分を限定し、既存T-004を維持した。
+    - path_or_area: other Skills / workflows / design docs
+      reason: findingの直接原因ではない。
+
+commands:
+  - command: GitHub compare a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3..30a7595559327308893469211080047bf485de16
+    purpose: fix commitがreview follow-up scopeだけを変更したことを確認する。
+    exit_code: 0
+    result: passed
+    head_sha: 30a7595559327308893469211080047bf485de16
+    evidence: 1 commit ahead、1 file changed、1 addition / 1 deletion。
+  - command: GitHub Actions run 34024771335
+    purpose: technical follow-up HEAD固有のrepository validatorと配布ZIP検証を確認する。
+    exit_code: 0
+    result: passed
+    head_sha: 30a7595559327308893469211080047bf485de16
+    evidence: build job 101463682689 success、artifact 9986689500。
+  - command: final persistence HEAD matching CI
+    purpose: report/handoff保存後のcurrent HEADを別SHA runで代用せず検証する。
+    exit_code: unknown
+    result: not_run
+    head_sha: unknown
+    evidence: handoff persistence後にcallerが実施する。
+
+tests:
+  - name: CodexSkill TDD
+    phase: not_applicable
+    result: not_run
+    head_sha: 30a7595559327308893469211080047bf485de16
+    evidence: AGENTS.mdでrepository maintenanceはnon-TDD。
+  - name: repository validation workflow
+    phase: verification
+    result: passed
+    head_sha: 30a7595559327308893469211080047bf485de16
+    evidence: workflow run 34024771335 / build job 101463682689。
+
+ci:
+  required: true
+  workflow: Validate and release ChatGPT worker skills
+  run_id: null
+  head_sha: 67928d4afe3f45fadeb153ed3f93288dad2b34a7
+  conclusion: unknown
+  artifacts: []
+
+implementation:
+  outcome: completed
+  final_head: 30a7595559327308893469211080047bf485de16
+  commits:
+    - sha: 30a7595559327308893469211080047bf485de16
+      purpose: PR68-R1-001のgrant再利用規則をapproval mode別に明確化する。
+    - sha: 67928d4afe3f45fadeb153ed3f93288dad2b34a7
+      purpose: review follow-up詳細reportを保存するadministrative evidence commit。
+  addressed_findings:
+    - id: PR68-R1-001
+      reviewed_head: 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
+      disposition: addressed
+      evidence: design/astra-escalation-design.mdで別agent転用禁止を維持し、single_turnだけを複数operation再利用禁止、task_until_completionを同一task/scope/agentで有効grant確認後に継続可能とした。
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+    - source severity lowを維持した。
+    - reviewed evidence保存後HEADからfix commitまでの差分は設計書1ファイル1行置換のみ。
+    - technical follow-up HEADのmatching CIはsuccess。
+    - 実装担当としてfix verification verdictは発行していない。
+
+review:
+  mode: fix_verification
+  reviewed_head: 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
+  reviewer:
+    identity: "existing PR #68 normal reviewer"
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: "existing PR #68 normal reviewer"
+      changed: false
+      reason: null
+    independence:
+      implemented_change: unknown
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: unknown
+      evidence:
+        - Review submission PRR_kwDOSFr3-88AAAABMXfFjg recorded PR68-R1-001.
+  verdict: incomplete
+  required_coverage:
+    - criterion: PR68-R1-001 required action
+      disposition: checked_finding
+      evidence: implementation fix exists at 30a7595559327308893469211080047bf485de16; reviewer fix verification has not yet been performed.
+  validation_assessment:
+    - item: technical follow-up HEAD CI
+      result: supported
+      evidence: run 34024771335 head_sha matches 30a7595559327308893469211080047bf485de16 and conclusion is success.
+    - item: reviewer fix verification
+      result: unavailable
+      evidence: implementation worker must not issue a review verdict for its own change.
+  reserved_report_paths: []
+  report_attestation:
+    allowed: not_applicable
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence: []
+  summary:
+    - Normal review verdict before fix was pass_with_held with one low nonblocking finding.
+    - PR68-R1-001 has an implementation disposition of addressed, but review closure remains with the normal reviewer.
+
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/issue-67-pr68-review-followup-20260906.md
+    - reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
+  reviewed_head: 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
+  attestation_head: null
+  pr_comments:
+    - target: "PR #68 review thread PR68-R1-001"
+      url_or_id: "reply 3943547743"
+  summary:
+    - Detailed review-follow-up implementation report persisted.
+    - Final current-HEAD CI and concise PR comment are pending until this handoff is persisted.
+
+findings:
+  - id: PR68-R1-001
+    severity: low
+    origin: introduced_by_change
+    location: design/astra-escalation-design.md:71
+    description: grant複数operation再利用禁止がapproval mode無限定で記述され、task_until_completionとA67-09の継続規則と矛盾していた。
+    impact: 設計書読者がtask_until_completion grantも1 operationで失効すると誤解できる。
+    evidence: "PR #68 review thread PRRT_kwDOSFr3-86fqpKD / comment 3943536154。"
+    required_action: 複数operation再利用禁止をsingle_turnに限定し、task_until_completionは同一task/scope/agentで有効grantをoperationごとに確認して継続可能と明記する。別agent転用禁止は維持する。
+
+held: []
+unexplored:
+  - area: Astra runtime behavior
+    blocker: 実Astra呼び出しは本follow-up scope外。
+    remaining_risk: runtime availability、profile適用、取消時停止能力は未検証。
+    verdict_impact: 本design findingのimplementation dispositionには影響しないが、Astra runtime全体の保証には使えない。
+unknown:
+  - field_or_fact: final persistence HEAD CI
+    reason: handoff fileのcommit SHAがpacket生成時点では存在しないため、永続化後にconnectorで確認する。
+not_applicable:
+  - field_or_area: TDD Red/Green evidence
+    reason: CodexSkill repository maintenanceはnon-TDD。
+  - field_or_area: independent-final report attestation
+    reason: 現在はnormal review follow-upであり、independent final reviewではない。
+remaining_risks:
+  - normal reviewerによるPR68-R1-001 fix verification verdictは未実施。
+  - report/handoff保存後HEADのmatching CIは永続化後に確認する必要がある。
+  - 実Astra runtime動作は未検証。
+
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: uploaded-skill-current
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      issue_or_pr: "Issue #67 / PR #68"
+      task_id: T-004
+      mode: implementation
+      branch: feat/issue-67-astra-approval
+      base_ref: main
+      current_head: a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3
+      reviewed_head: 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
+      scope:
+        - PR68-R1-001のみを修正する。
+      non_goals:
+        - unrelated cleanup
+        - independent review verdict
+        - merge
+      authoritative_requirements:
+        - source: "PR #68 normal review"
+          reference: PR68-R1-001
+          summary: single_turnとtask_until_completionのgrant再利用規則を整合させる。
+      write_boundary:
+        allowed:
+          - design/astra-escalation-design.md
+          - review follow-up report and handoff
+          - PR review-thread response
+        forbidden:
+          - unrelated repository changes
+          - merge
+      development_policy:
+        method: validation-only
+        testing_order: non-TDD
+      validation:
+        commands:
+          - compare fix range
+          - current-head workflow
+        required_failure_diagnostics:
+          - workflow jobs
+          - stdout/stderr on failure
+          - diagnostic artifact when needed
+      ci:
+        matching_run: null
+        conclusion: unknown
+      unknown:
+        - final persistence HEAD CI
+      blocked: []
+      remaining_risks:
+        - reviewer fix verification pending
+  - source_skill: implementation-worker
+    output_contract_version: uploaded-skill-current
+    content_type: application/yaml
+    payload:
+      mode: review follow-up
+      accepted_scope:
+        - PR68-R1-001の直接原因だけを修正する。
+      non_goals:
+        - unrelated cleanup
+        - review verdict
+        - merge
+      requirements_and_design_references:
+        - "PR #68 review PR68-R1-001"
+        - design/astra-escalation-design.md A67-09
+      changed_files:
+        - path: design/astra-escalation-design.md
+          purpose: grant再利用規則をapproval mode別に明確化。
+      intentionally_untouched:
+        - path: skills/sub-agent-task-manager/references/astra-escalation.md
+          reason: review evidence上、正本は既に両modeを区別済み。
+        - path: other repository files
+          reason: finding scope外。
+      validation_commands_and_results:
+        - command: compare a297d69f..30a75955
+          result: passed
+          evidence: one file, one addition, one deletion
+        - command: workflow run 34024771335
+          result: passed
+          evidence: exact head_sha 30a7595559327308893469211080047bf485de16
+      failure_diagnostics_and_artifacts:
+        - type: artifact
+          location: GitHub Actions artifact 9986689500
+          summary: validation ZIP; no failure occurred.
+      commits:
+        - sha: 30a7595559327308893469211080047bf485de16
+          purpose: design fix
+        - sha: 67928d4afe3f45fadeb153ed3f93288dad2b34a7
+          purpose: detailed follow-up report
+      final_head: 30a7595559327308893469211080047bf485de16
+      matching_ci:
+        run_id: 34024771335
+        conclusion: success
+        head_sha: 30a7595559327308893469211080047bf485de16
+        job_id: 101463682689
+        artifact_id: 9986689500
+        artifact_digest: sha256:d2fc0046ec6962b66331c474633d91b4ecbd4fdeaba1582f259e942170e48512
+      unknowns:
+        - final persistence HEAD CI
+      risks:
+        - reviewer fix verification pending
+        - Astra runtime not tested
+      next_required_action: persist handoff, verify final current HEAD CI, post concise PR comment, then normal reviewer fix verification
+  - source_skill: report-writer
+    output_contract_version: uploaded-skill-current
+    content_type: application/yaml
+    payload:
+      report_type: implementation_report
+      complete_body: |
+        # Issue #67 PR #68 指摘対応レポート
+
+        ## メタデータ
+
+        - 日付: 2026-09-06
+        - Repository: `ssaattww/CodexSkill`
+        - Issue: #67
+        - PR: #68
+        - Branch: `feat/issue-67-astra-approval`
+        - Base: `main`
+        - Mode: review follow-up
+        - 対象finding: `PR68-R1-001`
+        - source severity: `low`
+        - 技術レビュー対象HEAD: `8d3f96a0ec5f01247c4092f7bb0f690168ba627e`
+        - review証跡保存後の修正開始HEAD: `a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3`
+        - 修正commit / technical follow-up HEAD: `30a7595559327308893469211080047bf485de16`
+        - Persistence: repository file
+        - Merge: 実施しない
+
+        ## 目的
+
+        PR #68の通常reviewで指摘された`PR68-R1-001`へ、finding identityとsource severityを維持して対応する。
+
+        指摘内容は、`design/astra-escalation-design.md`の「同じgrantを複数agentや複数operationへ使わない」というmode無限定の記述が、`task_until_completion`および受け入れ条件A67-09の継続利用と矛盾する、という設計文の整合性問題である。
+
+        reviewerは正本の`skills/sub-agent-task-manager/references/astra-escalation.md`では両modeが既に区別されていることを確認しており、blocking defectではなく`low`の非blocking findingとして記録した。
+
+        ## 対象範囲
+
+        - `design/astra-escalation-design.md`のgrant再利用規則をapproval mode別に明確化する。
+        - `single_turn`では同じgrantの複数operation再利用を禁止する。
+        - `task_until_completion`では同一task・同一scope・同一agentに限り、operationごとにgrant有効性を確認して継続利用できることを明記する。
+        - 別agentへのgrant転用禁止は維持する。
+
+        ## 対象外
+
+        - Astraの実runtime呼び出し。
+        - `skills/sub-agent-task-manager/references/astra-escalation.md`の変更。正本側はfinding発生時点で両modeを区別済みのため変更不要。
+        - reviewer identity、Sol `xhigh/max`承認、report reservation、independent final review lifecycleの変更。
+        - unrelated cleanup。
+        - merge。
+
+        ## 変更内容
+
+        `design/astra-escalation-design.md`のgrant使用規則を次の意味へ修正した。
+
+        - grantを別agentへ転用しない。
+        - `single_turn`は1回のoperationへ割り当て、同じgrantを複数operationへ再利用しない。
+        - `task_until_completion`は同一task・同一scope・同一agentでgrantが有効な間、operationごとに有効性を確認して継続利用できる。
+        - timeout等で開始可否が不明な`single_turn` grantは再利用しない既存規則を維持する。
+        - 実行前role検査で停止した未消費grantの保持条件も維持する。
+
+        ## 変更ファイル
+
+        - `design/astra-escalation-design.md`
+          - `PR68-R1-001`のmode無限定記述をmode別規則へ置換。
+
+        ## 意図的に変更しなかった範囲
+
+        - `skills/sub-agent-task-manager/references/astra-escalation.md`
+          - source reviewが正本では既に`single_turn`と`task_until_completion`を区別していると確認しており、追加変更はfinding scope外。
+        - `tasks/tasks-status.md`
+          - 本follow-upの実装差分を最小化し、review findingへの直接修正と証跡保存に限定した。既存T-004はPR #68のIssue #67作業を引き続き表している。
+        - その他Skill、workflow、設計書
+          - findingの直接原因ではないため変更なし。
+
+        ## Validation
+
+        ### 差分境界
+
+        GitHub compareで`a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3`から`30a7595559327308893469211080047bf485de16`を比較した。
+
+        - ahead by: 1 commit
+        - changed files: 1
+        - `design/astra-escalation-design.md`: 1 addition / 1 deletion
+
+        finding対応以外のrepository変更はこのcommitへ含めていない。
+
+        ### CI
+
+        technical follow-up HEAD `30a7595559327308893469211080047bf485de16`に紐づくpull_request workflowだけを検証証拠として使用した。
+
+        - workflow: `Validate and release ChatGPT worker skills`
+        - run ID: `34024771335`
+        - run number: `245`
+        - status: `completed`
+        - conclusion: `success`
+        - run head SHA: `30a7595559327308893469211080047bf485de16`
+        - build job: `101463682689`
+        - repository Skill architecture / active link validation: success
+        - ChatGPT wrapper / core Skill ZIP build and verify: success
+        - validation artifact upload: success
+        - artifact ID: `9986689500`
+        - artifact name: `chatgpt-worker-skills-34024771335`
+        - artifact digest: `sha256:d2fc0046ec6962b66331c474633d91b4ecbd4fdeaba1582f259e942170e48512`
+        - artifact workflow head SHA: `30a7595559327308893469211080047bf485de16`
+
+        別SHAのrunをtechnical follow-up HEADのCI証拠として代用していない。
+
+        ## Failure diagnostics
+
+        - CI failureなし。
+        - 標準出力・標準エラーを伴う失敗は観測していない。
+        - failure原因調査用の追加artifactは不要だった。
+        - repository validatorと配布ZIPは既存workflow artifactで保存された。
+
+        ## Review finding disposition
+
+        ### PR68-R1-001
+
+        - source severity: `low`
+        - disposition: addressed by implementation
+        - commit: `30a7595559327308893469211080047bf485de16`
+        - evidence:
+          - mode無限定の複数operation再利用禁止を削除。
+          - `single_turn`だけを再利用禁止とした。
+          - `task_until_completion`では同一task/scope/agentかつ有効grantのoperationごとの確認を明記。
+          - 別agentへの転用禁止を維持。
+        - fix verification: 未実施。本chatは実装担当であり、自身の変更にreview verdictを発行しない。
+
+        ## PR thread response
+
+        review threadへ、修正commit、差分境界、matching CI runを記載して返信した。
+
+        - top-level review comment ID: `3943536154`
+        - reply ID: `3943547743`
+        - thread resolution: reviewerによるfix verification前のため、本実装担当からreview verdictとしては扱わない。
+
+        ## Testing policy
+
+        CodexSkill repository自身の保守であり、repository instructionに従ってTDDは適用しない。今回の変更はMarkdown設計文1行の整合修正で、既存CIのrepository validatorと配布ZIP検証を使用した。
+
+        ## 残存事項・リスク
+
+        - `PR68-R1-001`の実装修正は完了したが、同一normal reviewerによるfix verification verdictはまだない。
+        - Astra実runtime動作、availability、profile適用、取消時の停止能力、実費は本follow-upでも未検証。
+        - 本reportとhandoffを保存するとGit HEADが`30a759...`から進む。保存後のcurrent HEADについては、そのHEADと`head_sha`が一致する新しいworkflow runを確認し、PR commentへ記録する。`34024771335`を保存後HEADのCI証拠へ代用しない。
+
+        ## 次のアクション
+
+        1. 本follow-up reportとschema-v3 handoffを保存する。
+        2. 保存後のPR current HEADを取得する。
+        3. そのcurrent HEADと`head_sha`が一致するpull_request workflow runだけを確認する。
+        4. CI結果と変更概要をPRコメントへ記録する。
+        5. fix verificationはnormal reviewerへ委ねる。
+        6. mergeは行わない。
+      evidence_sources:
+        - "PR #68 review PR68-R1-001"
+        - compare a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3..30a7595559327308893469211080047bf485de16
+        - workflow run 34024771335
+        - artifact 9986689500
+      target_identity:
+        branch: feat/issue-67-astra-approval
+        base_ref: main
+        current_head: 30a7595559327308893469211080047bf485de16
+        reviewed_implementation_head: 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
+      severity_records:
+        - finding_id: PR68-R1-001
+          source_severity: low
+          new_severity: null
+          reason: null
+          approved_by: null
+          record_type: preserved
+      persistence:
+        mode: repository_file
+        reserved_paths:
+          - reports/issue-67-pr68-review-followup-20260906.md
+        report_attestation_head: null
+      concise_pr_comment_body: "PR68-R1-001を30a7595559327308893469211080047bf485de16で修正。single_turnだけを複数operation再利用禁止とし、task_until_completionは同一task/scope/agentでgrant有効性をoperationごとに確認して継続可能と明記。fix HEADのCI run 34024771335はsuccess。report/handoff保存後はfinal current HEAD固有のCIを別途確認する。"
+      unresolved_discrepancies: []
+
+extensions:
+  - namespace: issue67.review_followup
+    payload:
+      finding_id: PR68-R1-001
+      review_thread_id: PRRT_kwDOSFr3-86fqpKD
+      top_level_comment_id: 3943536154
+      implementation_reply_id: 3943547743
+      source_severity: low
+      technical_reviewed_head: 8d3f96a0ec5f01247c4092f7bb0f690168ba627e
+      review_evidence_head: a297d69fab0f28b3dc38cc7ba29edeba49cd5dc3
+      fix_head: 30a7595559327308893469211080047bf485de16
+      fix_ci_run: 34024771335
+      fix_ci_job: 101463682689
+      fix_artifact: 9986689500
+      fix_artifact_digest: sha256:d2fc0046ec6962b66331c474633d91b4ecbd4fdeaba1582f259e942170e48512
+      implementation_disposition: addressed
+      review_closure: pending_fix_verification
+
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: fix verification
+  summary: PR68-R1-001のfix commitと後続report/handoff-only commitsを同一normal reviewerで確認する。
+  instructions:
+    - finding identity PR68-R1-001とsource severity lowを維持する。
+    - technical fixは30a7595559327308893469211080047bf485de16のdesign/astra-escalation-design.md 1行置換として確認する。
+    - single_turnだけが複数operation再利用禁止になり、task_until_completionは同一task/scope/agentでgrant有効性をoperationごとに確認して継続可能か確認する。
+    - 別agent転用禁止が維持されているか確認する。
+    - report/handoff-only administrative commitsをtechnical fixと区別する。
+    - fix verification後のcurrent HEADに必要なCIはhead_sha一致を確認し、別SHA runを代用しない。
+    - mergeしない。
+  required_attachments_or_references:
+    - "PR #68 review thread PRRT_kwDOSFr3-86fqpKD"
+    - reports/issue-67-pr68-review-followup-20260906.md
+    - reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
+    - commit 30a7595559327308893469211080047bf485de16
+    - workflow run 34024771335
+  requested_authorized_actions:
+    - read_repository
+    - write_report
+    - write_handoff
+    - update_pr
+    - comment_pr
+
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-67-pr68-review-followup-20260906.yaml
+  packet_url: null
+  transport_note: このpacket自身のcommit SHAと保存後current HEADのCIは生成時点では存在しない。永続化後、PR metadata/commentでfinal current HEADとmatching CIを記録する。次chatの権限は自動継承しない。

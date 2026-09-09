@@ -23,7 +23,6 @@ FORBIDDEN_LINK_PARTS = (
 )
 REQUIRED_RELEASE_SKILLS = {
     "chat-handoff-manager",
-    "document-wording-review",
     "chat-implementation-worker",
     "chat-report-writer",
     "chat-review-worker",
@@ -33,9 +32,6 @@ REQUIRED_RELEASE_SKILLS = {
     "work-context-manager",
 }
 WRAPPER_DEPENDENCIES = {
-    # Core-to-core dependencies are checked by the same inventory gate.
-    "implementation-worker": {"document-wording-review"},
-    "review-worker": {"document-wording-review"},
     "chat-implementation-worker": {
         "work-context-manager",
         "implementation-worker",

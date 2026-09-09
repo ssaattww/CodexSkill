@@ -6,7 +6,7 @@ delegated taskの性質に応じて、sub-agentへ適切なmodel tier、reasonin
 
 単純なfile数ではなく、task kind、判断負荷、不確実性、変更半径、重要度、反復性、分割可能性、context needを評価する。profileは`proposed`、`requested`、role/default-roleを考慮した`planned_runtime_profile`、runtimeで観測できた場合だけ確定する`applied`を分離し、割当理由、承認状態、runtime observability、fallback、reviewer continuityを証跡として残す。
 
-本設計はIssue #13の「sub-agentの使用modelがSkillへ定義されていない」という問題を解消する。
+本設計はIssue #13の「sub-agentの使用modelがSkillへ定義されていない」という問題を解消する。Issue #67では、既存モデルで行き詰まった同一taskに限り、Astra highをユーザー承認付きで提案する機能を追加する。承認単位・状態遷移・具体的受け入れ条件は[Astraエスカレーション設計](astra-escalation-design.md)に定義する。
 
 ## 設計原則
 
@@ -17,6 +17,7 @@ model tierはtaskが要求する判断能力を表す。
 - Luna: 決定済みの機械的・反復的・高volume作業
 - Terra: 通常のbounded technical work
 - Sol: 不確実、判断中心、高重要度、cross-system、design、難しいdebug、review
+- Astra: 同一taskの既存モデル実行・blocker・継続困難の証拠がある場合だけ提案する、承認付きエスカレーション先。通常の自動floorではない
 
 reasoning effortは同じ問題へどれだけ慎重に取り組むかを表す。
 
@@ -25,6 +26,8 @@ reasoning effortは同じ問題へどれだけ慎重に取り組むかを表す�
 - `high`: 複数条件、debug、design、review
 - `xhigh`: boundedかつ網羅性または重要度が高いaudit
 - `max`: 一つの非常に難しく、本質的に分割不能な問題
+
+AstraだけはIssue #67の指定により`gpt-6-astra` / `high`に固定する。runtimeが他のeffortをサポートしていても自動的に拡張しない。
 
 ### `Sol xhigh` / `Sol max`はapproval-gated
 
@@ -45,6 +48,22 @@ automatic classification
 - implementation、investigation、review、release auditを含む全taskへ適用する
 - role/default roleがrequestedより高いprofileへ上書きする場合も同じgateを再評価する
 
+### Astraは同一taskの実行証拠と操作単位の承認を必要とする
+
+Astraの詳細contractは`sub-agent-task-manager`の[Skill内reference](../skills/sub-agent-task-manager/references/astra-escalation.md)を正本とする。
+
+- まず既存モデルで実行し、blockerとそのまま継続しても解決が見込めない具体的理由を記録する
+- task-specificな期待効果、費用根拠・確認日時・不明費用、対象scopeと次の作業を示してproposalを作成する
+- 既定は1 agent・1 task・1 work-starting operationの`single_turn`承認。追加依頼、再試行、作業再開は新たな承認が必要
+- ユーザーが明示的に選択した`task_until_completion`だけが、同一task/scope/完了条件内の継続を許可する
+- poll、wait、結果取得は新たな作業ではなく、承認を消費しない
+- grantの確認・消費・送信を親が直列化し、送信後のtimeoutや開始不明でもsingle-turn grantを再利用しない
+- task完了、取消、scope拡大、別task/agent/lifecycle、別parent sessionへ承認を暗黙継承しない
+- role、availability置換、full-history継承、reviewer reuse、retryでも同じgateを適用する
+- Astra spawn拒否を親の`codex exec`や親model切替で代用しない
+
+難度、computer use、最初の失敗、一般的な実装指示だけでは適格性や費用承認にならない。既存のSol承認規則をAstraへ流用して継続を無期限許可しない。
+
 ### Ultraはreasoning effortではない
 
 参考記事のUltra相当は、独立workstreamへ分割し親が統合するmulti-agent strategyとして扱う。
@@ -53,7 +72,7 @@ automatic classification
 - 各bounded taskへ`sub-agent-task-manager`が個別profileを選ぶ
 - `reasoning_effort: ultra`は生成しない
 
-ただしcallerがidentity-sensitive lifecycleとして`decomposition_policy: forbidden`を指定したtaskは実行分割しない。
+ただしcallerがidentity-sensitive lifecycleとして`decomposition_policy: forbidden`を指定したtaskは実行分割しない。分割された別taskや追加agentへAstra grantを継承しない。
 
 ### decomposabilityとdecomposition policyを分離する
 
@@ -90,7 +109,8 @@ classification
   -> agent role/default-role planning
   -> planned_runtime_profile
   -> floor / expensive-profile approval recheck
-  -> spawn / inheritance / fallback attempt
+  -> Astra operation authorization / grant consumption when applicable
+  -> spawn / inheritance / permitted fallback attempt
   -> parent-visible runtime evidence
       |-- exact final snapshot -> applied
       `-- hidden/unobservable   -> applied=null + unverified state
@@ -123,6 +143,7 @@ planned_runtime_profile:
 
 - roleがprofileを変更/lockする場合、変更後profileでmodel floorとapproval gateを再評価する
 - roleがSol `xhigh/max`を生む場合、requestedが安価でもuser approvalまでspawnしない
+- roleがAstraを生む場合も既存モデル実行証拠とscope付き承認を要求し、`high`以外を許可しない
 - roleがrequired floorより低いprofileを強制する場合はcapability/policy mismatch
 - applicable role/default-role configの影響を確認できない場合、高コストgateを保証できないためpre-spawn capability gapとして停止する
 - `planned_runtime_profile`は予測であり`applied`ではない
@@ -135,7 +156,7 @@ application_status: spawn_succeeded_profile_unverified
 profile_observability: final_profile_hidden
 ```
 
-とする。
+とする。事前に安全確認できないことを、事後のunverified記録だけで許可しない。
 
 ## 責務配置
 
@@ -143,8 +164,9 @@ profile_observability: final_profile_hidden
 
 - routineなimplementation model確認を要求しない
 - user/repositoryが明示したoverrideやbudget制約だけを取得する
-- Sol `xhigh/max` proposalではuser confirmation boundaryとしてworkflowを停止する
-- executor、assessment、proposal、approval、requested、runtime observabilityをlifecycle evidenceとして保持する
+- Sol `xhigh/max`または適格なAstra high proposalではuser confirmation boundaryとしてworkflowを停止する
+- executor、assessment、proposal、approval、requested、runtime observability、Astra grant/usageをlifecycle evidenceとして保持する
+- 継続や次taskへの移行でAstra承認範囲を拡大しない
 
 ### `codex-delegation-executor`
 
@@ -160,6 +182,7 @@ profile_observability: final_profile_hidden
   - `context_need`
 - write ownership、blocking dependency、parent synthesisを確認する
 - model/reasoningの中央defaultは持たない
+- Astraの既存試行証拠・scope・grant履歴をtask managerへ渡し、main agentや別taskへ迂回しない
 
 ### `sub-agent-task-manager`
 
@@ -173,8 +196,10 @@ profile_observability: final_profile_hidden
 - requested profileのspawn call plan
 - runtime profile observability
 - exact evidenceがある場合だけapplied profile
-- runtime rejection / inheritance / parent-owned fallback evidence
+- runtime rejection / inheritance / 許可されたnon-Astra parent-owned fallback evidence
 - report persistence mode
+
+Astraについては新規・既存agent共通の適格性、scope付き承認、操作単位の消費を所有する。既存agentには`authorization_only`で承認だけを確認し、新規spawn、profile再選定、report再予約を行わない。
 
 ### `review-enforcer`
 
@@ -192,7 +217,7 @@ review lifecycleについて次を所有する。
 - retained independent-review evidence
 - report-attestation lifecycle
 
-new normal / replacement / independent reviewerは`sub-agent-task-manager`経由でdispatchする。
+new normal / replacement / independent reviewerは`sub-agent-task-manager`経由でdispatchする。既存Astra reviewerへの追加作業前にもtask managerの`authorization_only`結果を適用し、identityとreservationは維持する。
 
 ### `report-output-manager`
 
@@ -202,6 +227,7 @@ phaseごとに責務を分ける。
 
 - `work-context-manager` + `report-writer`
 - normal reportのpath予約・作成・永続化
+- parent-owned `Dispatch profile`へAstra適格性・scope・grant・操作消費を保存する。承認の判定はtask managerが所有する
 
 #### independent-final reservation
 
@@ -242,6 +268,8 @@ approval:
 
 非自明な分類にはsource evidenceを付ける。不明な場合は低く見積もらずuncertaintyを上げる。
 
+Astraのproposalまたは実行候補には`astra_authorization.schema_version: 1`を追加する。complete schemaはSkill内referenceを正本とし、eligibility、proposal/cost notice、task/scope/agent/parent binding、grant mode/status/evidence、usage履歴を含む。既存`dispatch_profile.schema_version: 4`とobservability fieldは維持する。旧recordにAstra grantがない場合、承認済みとは扱わない。
+
 ## model floor
 
 | 条件 | 最低tier |
@@ -250,7 +278,7 @@ approval:
 | 通常のbounded implementationまたはfocused verification | Terra |
 | requirement/design、open-ended investigation、cross-system、高重要度、review | Sol |
 
-複数条件が該当する場合は最も高いfloorを採用する。
+複数条件が該当する場合は最も高いfloorを採用する。Astraはこの自動floorに含めない。
 
 ## task default
 
@@ -269,7 +297,7 @@ approval:
 | focused fix verification, replacement reviewerのみ | Terra `high` |
 | independent final review / release audit | propose Sol `xhigh`; approval待ちで停止 |
 
-失敗したdeterministic verificationは同じLuna taskとして再実行せず、investigationへ再分類する。
+失敗したdeterministic verificationは同じLuna taskとして再実行せず、investigationへ再分類する。Astraへ直接切り替える根拠にはしない。
 
 ## reasoning effort gate
 
@@ -293,7 +321,7 @@ Sol `max`は次を満たす場合だけproposal可能とする。
 - userへcost noticeを提示
 - explicit approvalまでdispatchしない
 
-`decomposition_policy: forbidden`はnon-decomposable条件の代替にならない。
+`decomposition_policy: forbidden`はnon-decomposable条件の代替にならない。Astraのeffortはこれらの規則によらず`high`固定である。
 
 ## multi-agent gate
 
@@ -345,6 +373,8 @@ dispatch_profile:
 
 `requested`をactual spawn argumentsへ使う。explicit roleがある場合は`agent_type`もcall planへ含める。default roleを使う場合もrole effectを事前評価する。
 
+Astraの場合はscope/profileを最終確認し、operation IDに紐付くsingle-turn grantを送信直前に消費するか、有効なtask-wide grantの使用を記録する。role/availability/継承経由でも省略しない。
+
 ### spawn後: exact snapshotが見える場合
 
 ```yaml
@@ -366,7 +396,7 @@ profile_observability: final_profile_hidden
 
 spawn成功だけを根拠にrequested/plannedをappliedへcopyしない。
 
-full-history、runtime rejection、fallbackも同じ原則で扱い、exact final evidenceがない場合はunknown/unverifiedを保持する。
+full-history、runtime rejection、fallbackも同じ原則で扱い、exact final evidenceがない場合はunknown/unverifiedを保持する。Astra spawn拒否では親の`codex exec`を代用せずcapability gapを記録する。観測したAstra profileが承認profileと異なる場合は不一致を保存し、追加投入を止めて安全に停止・再計画する。
 
 ## reviewer continuity
 
@@ -374,10 +404,12 @@ full-history、runtime rejection、fallbackも同じ原則で扱い、exact fina
 
 - original profile evidence / observability stateを維持
 - task defaultを再適用しない
-- `application_status: reused_existing_agent_profile`
+- 実際に継続要求を発行した場合は`application_status: reused_existing_agent_profile`
 - reviewer identity、original exact/unverified evidence、continued modeを記録
 
 同じreview lifecycle内で既に承認されたSol `xhigh/max` reviewerを再利用する場合、再承認は不要。replacement reviewerまたは新task lifecycleは新規selectionとしてapproval gateを通す。
+
+Astra reviewerは同じidentityでも別turnなら再承認が必要で、有効な明示的`task_until_completion`だけを例外とする。`sub-agent-task-manager`の`authorization_only`を呼び、承認待ちでもreviewerやreport予約を作り直さない。Astraへの切替のためreviewerを暗黙交換せず、独立reviewerのidentity制約と両立しない場合はlifecycle blockerとする。
 
 ## report persistence
 
@@ -388,7 +420,7 @@ full-history、runtime rejection、fallbackも同じ原則で扱い、exact fina
 - `work-context-manager` + `report-writer`
 - report pathを予約し、dispatch前にstandard templateを作成可能
 - `Dispatch profile` sectionはparent-owned
-- parentがpre-dispatch requested / role plan / planned runtime profileを記録
+- parentがpre-dispatch requested / role plan / planned runtime profileと、該当するAstra grant/usageを記録
 - spawn後にparentがexact appliedまたはunverified stateを記録
 - childはhidden runtime stateを推測せずchild-owned sectionだけを埋める
 
@@ -407,13 +439,14 @@ review中:
 
 - independent reviewerはreserved report fileを作らない
 - structured findings / coverage / commands / verdict / risks / unexploredをparentへ返す
-- parentはreviewer outputとdispatch-profile evidenceをrepository外lifecycle evidenceとして保持
+- parentはreviewer outputとdispatch-profile/authorization evidenceをrepository外lifecycle evidenceとして保持
 
 reviewがfailした場合:
 
 - reserved report pathをpersistしない
 - implementation -> normal fix verificationへ戻る
 - 同じindependent reviewerでbounded finding/CI-delta closureを行う
+- Astraなら追加作業前にscope付き承認を確認する
 
 ### independent final review: attestation persistence
 
@@ -428,8 +461,8 @@ passing verdict後:
 
 ## override優先順位
 
-1. current-task user instruction / explicit expensive-profile approval
-2. unapproved initial/role-adjusted Sol `xhigh/max` mandatory approval gate
+1. current-task user instruction / explicit expensive-profile approval。ただしmodel指定だけではAstraの適格性・scope・費用承認を補完しない
+2. unapproved initial/role-adjusted Sol `xhigh/max` mandatory approval gateとAstra eligibility / operation authorization
 3. existing reviewer continuity
 4. caller-owned decomposition policy
 5. authoritative repository policy
@@ -441,6 +474,7 @@ passing verdict後:
 - fresh specialist + overrideは原則`fork_turns: "none"`
 - bounded historyならexplicit positive partial fork
 - full-historyはruntime inheritance/role pathに従う
+- 継承先がAstraになり得る場合、事前のprofile安全確認とscope付き承認が必要。不明ならfresh/partial再計画または停止
 - specialization優先ならtask-local contextを明示してfresh spawn
 - reviewer continuity reuseは新規forkではない
 
@@ -452,12 +486,13 @@ passing verdict後:
 - local implementationでarchitecture ambiguity判明 -> Sol floor
 - independently separable -> decomposition allowed時だけ`codex-delegation-executor`へ戻る
 - decomposition forbidden時はobserved decomposabilityを保持しsuppressed dispositionを記録
-- 同一problemで慎重さ不足 -> effortを上げる
+- 同一problemで慎重さ不足 -> effortを上げる。ただしAstraはhigh固定
 - problem nature変化 -> model tierを上げる
 - role/default roleでprofile変化 -> floor/approval再評価
 - Sol `xhigh/max`到達 -> proposal化しuser approval stop
+- Astra -> 同一taskの既存実行・blocker・継続困難の証拠を確認してからproposal化し、scope付きapproval stop
 
-existing reviewerがinitial reviewからfix verificationやbounded closureへ移るだけではprofileを再計算しない。
+existing reviewerがinitial reviewからfix verificationやbounded closureへ移るだけではprofileを再計算しない。ただしAstraでは各work-starting operationの承認を再確認する。
 
 ## 代表例
 
@@ -475,7 +510,7 @@ Terra `medium`。module間regression reasoningが必要ならTerra `high`。
 
 ### roleがreasoningを上書きする
 
-selectorがSol `high`をrequestedしても、default roleがSol `xhigh`をlockすることが事前に分かった場合、role-adjusted planをSol `xhigh` proposalへ変換しuser approvalまでspawnしない。role configを確認できずxhigh化の可能性を排除できない場合もspawnしない。
+selectorがSol `high`をrequestedしても、default roleがSol `xhigh`をlockすることが事前に分かった場合、role-adjusted planをSol `xhigh` proposalへ変換しuser approvalまでspawnしない。role configを確認できずxhigh化の可能性を排除できない場合もspawnしない。roleがAstraへ変更する場合もAstraの適格性・high固定・承認を別途確認する。
 
 ### normal reviewとfix verification
 
@@ -489,6 +524,10 @@ single-agent execution policy。review scopeが独立workstreamを含むなら�
 
 通常implementationなら3 bounded taskへ分割可能。各taskへ個別profileを選びparentが統合する。review-enforcerのone-reviewer lifecycleには実行分割を適用しないが、review scopeのdecomposability signalは保持する。
 
+### 既存モデルでは未知の操作ルールを解釈できない
+
+同一taskの実行証拠、未解決の理由、Astraで改善を期待する点を提示してAstra highを提案する。1ターン承認で実行後、追加調査を送る前に再承認する。明示的なtask完了までのgrantが有効なら、同一scope内でそのgrantを確認して継続できる。認証不足だけが原因ならAstraで解決するとは扱わない。
+
 ## 検証方針
 
 CodexSkill repositoryの方針に従いTDDは適用しない。
@@ -498,7 +537,8 @@ CodexSkill repositoryの方針に従いTDDは適用しない。
 - active relative Markdown link検証
 - current PR HEAD SHAと一致するGitHub Actions runの確認
 - requested -> role plan -> spawn -> applied/unverifiedの時系列contract review
-- role/default-roleによるexpensive Sol approval再評価
+- role/default-roleによるexpensive SolおよびAstra approval再評価
+- [Astra設計のA67-01〜A67-20](astra-escalation-design.md)による承認・失効・継続・fallbackのcontract照合
 - hidden final-profile metadata時にexact appliedを断定しないことのreview
 - decomposability signalとdecomposition policy分離のreview
 - reviewer single-agent execution / continuity contract review
@@ -517,9 +557,12 @@ CodexSkill repositoryの方針に従いTDDは適用しない。
 - `reasoning_effort: ultra`
 - multi-agent review lifecycleの新設
 - automatic merge
+- Astraの有料実行やruntimeが提供しない技術的強制機構の追加
 
 ## 関連file
 
+- [Astra escalation design](astra-escalation-design.md)
+- [Astra escalation and authorization](../skills/sub-agent-task-manager/references/astra-escalation.md)
 - [Codex Delegation Executor](../skills/codex-delegation-executor/SKILL.md)
 - [Sub-Agent Task Manager](../skills/sub-agent-task-manager/SKILL.md)
 - [Agent profile selection](../skills/sub-agent-task-manager/references/agent-profile-selection.md)

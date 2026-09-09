@@ -46,7 +46,6 @@ Resolve as much as the available evidence permits:
 - applicable findings and reviewed HEAD,
 - development method and testing order required by the target project,
 - validation commands, workflow entry points, and required failure diagnostics,
-- actual execution location, source identity, dependencies, and ownership,
 - actual local-execution capability and the resulting verification route,
 - matching current-HEAD CI runs, jobs, and artifacts,
 - report and handoff naming rules,
@@ -91,39 +90,6 @@ Record the evidence for that decision. Keep commit, push, and CI wait as
 separate states. This core Skill resolves the route and evidence requirements;
 the runtime wrapper owns authorized push and any CI waiting behavior.
 
-## Execution environment evidence
-
-Keep execution location separate from `verification_capability`. The caller
-selects an authorized tool and requested location; this core Skill resolves
-the evidence, not a vendor-specific connection or permission policy.
-
-- Record the actual machine, shell, absolute working directory, repository,
-  branch, HEAD, source state, ownership, and allowed writes before execution.
-- Compare the observed source with the target resolved from authoritative
-  repository evidence. A different HEAD or another task's dirty worktree is
-  not a usable substitute. Do not switch, reset, clean, or stash another
-  task's work to manufacture a match. An authorized separate worktree or
-  source snapshot must have its own identity and output directory.
-- A successful connection alone does not prove that required commands or
-  dependencies work. Record each required dependency as available, missing,
-  or not checked; missing required tools cannot produce passing validation.
-- For dirty or reconstructed sources, preserve a content manifest or diff
-  fingerprint as well as the baseline HEAD. Record which files and untracked
-  inputs the fingerprint covers; a baseline SHA alone is insufficient.
-- Bind each validation result to its actual execution environment and source
-  identity. Keep command, exit status, results, stdout, stderr, and diagnostic
-  logs for both success and failure when execution is authorized. Report any
-  missing evidence instead of treating an attempted command as success.
-- Before publication, compare the intended repository tree with the locally
-  validated content. Changed content invalidates the affected evidence.
-- Recheck identity and authorization after reconnection, location changes,
-  unexpected concurrent edits, and before writes or reuse of evidence.
-  An unavailable requested location blocks dependent operations; capability
-  classification does not authorize a silent fallback or skipped gate.
-- Distinguish connected-machine paths, runtime-local paths, and connector
-  file references. Do not expose credentials, complete environment dumps,
-  or unrelated personal files in evidence.
-
 ## Output contract
 
 Return a structured context containing:
@@ -140,28 +106,6 @@ reviewed_head: full_sha | null
 verification_capability: local_execution_available | remote_ci_only | unknown
 verification_capability_evidence:
   - string
-execution_environment:
-  kind: runtime_local | connected_computer | none | unknown
-  tool: string | null
-  machine_id: string | null
-  connection: available | unavailable | not_applicable | unknown
-  os: string | null
-  shell: string | null
-  working_directory: absolute_path | null
-  repository: owner/name | unknown
-  branch: string | unknown
-  head_sha: full_sha | unknown
-  source_state: clean | dirty | snapshot | unknown
-  source_fingerprint: string | null
-  ownership: current_task | other_task | read_only | unknown
-  writable_paths:
-    - string
-  dependencies:
-    - name: string
-      status: available | missing | not_checked
-      evidence: string
-  evidence:
-    - string
 execution_state:
   technical_head: full_sha | unknown
   administrative_parent: full_sha | null

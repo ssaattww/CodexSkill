@@ -30,55 +30,6 @@ All four must be installed. Do not replace them with repository-external shared 
 - Persist the handoff under target-repository rules, or return the complete packet for copy and paste.
 - The user chooses the next chat and merge action.
 
-## Execution location
-
-Keep both normal-chat and connected-PC execution available. Follow the user's
-explicit selection, then Project Instruction; otherwise use the connected-PC
-route through Remote Desktop Commander. Normal chat is the fallback only when
-it is explicitly selected or the governing instruction selects it.
-
-For normal chat, use only the current chat's authorized filesystem and
-executor, if actually available. For the connected-PC route, discover the
-current Remote Desktop Commander tools, identify the specified device by a
-read-only call, and pin subsequent calls to that device. Use that connector
-for local source reads, edits, dependency checks, and validation.
-
-Pass the observations to `work-context-manager` and use its
-`execution_environment` contract before editing. Keep another task's worktree
-unchanged; create a separate worktree from the connector-confirmed target
-only when authorized. Use absolute paths and a task-specific diagnostic
-output directory. Recheck identity on reconnect or unexpected changes.
-Prepare dependencies only inside the authorized worktree or task scratch
-area; administrator access, global installation, machine configuration, and
-authentication changes require separate approval. Missing dependencies or a
-failed requested connection remain blocked, not an automatic route switch.
-
-Use the GitHub connector for GitHub repository reads and updates, published
-commits and branch updates, Issues, PRs, and comments. PC access does not
-authorize replacing it with terminal `gh`, authenticated Git network
-operations, or direct REST calls. Local Git inspection, worktree isolation,
-and preparing content do not grant publication permission.
-
-Run authorized local validation before a CI-triggering publication, preserving
-both successful and failed results, stdout, stderr, and required diagnostic
-logs. Compare the publication tree with validated local content; bind dirty
-source evidence to its fingerprint, not only its baseline HEAD. Follow the
-verification-route rules below for separate publication and CI states.
-
-## Document wording self-check
-
-When `implementation-worker` requires `document-wording-review`, follow the
-[ChatGPT self-check procedure](references/document-wording-self-check.md).
-The current chat must read the actual Skill, references, and changed prose
-itself through the selected route. On the connected-PC route, acquire that
-material and check tool dependencies using Remote Desktop Commander on the
-verified PC; do not assume dependencies are resolved inside ChatGPT.
-
-Return `author_self_check` evidence, including actual read ranges and source
-identity, through the implementation result to the report and handoff. Keep
-mechanical command outcomes separate. No additional agent is involved, and
-neither result is proof that normal or independent review was performed.
-
 ## Verification-route execution
 
 Use the capability resolved by `work-context-manager`, rather than assuming a
@@ -105,7 +56,7 @@ Pass the selected mode and resolved context to `implementation-worker`.
 
 ## Boundaries
 
-- Do not start another worker or sub-agent, including agent CLIs through a PC terminal.
+- Do not start another worker or sub-agent.
 - Do not implement rules locally when the required Skill is unavailable; report the missing dependency.
 - Do not issue an independent review verdict.
 - Do not exceed current-chat permissions.

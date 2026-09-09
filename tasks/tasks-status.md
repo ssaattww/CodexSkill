@@ -2,10 +2,119 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-08
+- Updated: 2026-09-09
 
 ## In Progress
 
+- T-006: Issue #67のAstra high承認付きエスカレーション
+  - Status: 再レビューで継続した`PR68-IFR-001`の新規handoff再発9箇所を修正し、最新mainとの競合3ファイルも統合済み。same independent reviewerのbounded fix verification待ち
+  - Scope: 既存agent割当の保守。新規phase計画は追加しない
+  - Historical Task ID: PR branchではIssue #67を`T-004`として追跡していた。mainのIssue #69 `T-004`と衝突したためcurrent trackingは`T-006`へ移し、過去report/handoff内の`T-004`はhistorical evidenceとして変更しない
+  - Depends on: PR #65の既存適応型agent割当
+  - PR: https://github.com/ssaattww/CodexSkill/pull/68
+  - Exit Criteria:
+    - 通常defaultはLuna／Terra／Solを維持し、既存モデルの同一task実行・blocker・継続困難の証拠なしにAstraを提案しない
+    - Astraは`gpt-6-astra` / `high`のみとし、費用・scopeを提示して明示承認まで実行しない
+    - 既定のsingle-turn承認は1回の作業開始だけに使用し、追加依頼・retry・work-starting resumeには再承認を要求する
+    - 明示的task_until_completion承認だけが同一task/scope内の継続を許可し、完了・取消・scope変更等で失効する
+    - role、full-history継承、availability fallback、reviewer再利用でも承認を迂回しない
+    - existing reviewerのidentityとreport reservation、Sol xhigh/maxの既存規則を保持する
+    - 設計のA67-01〜A67-20へcontract対応を記録し、実モデル実行と混同しない
+    - schema-v3 handoffが定義済みenumだけを使用し、generation時点のverification stateとproducer core Skillのcomplete raw outputをlosslessに保持する
+    - tracking、report、handoff、PR本文がnormal review/fix lifecycleの実状態と同期する
+    - 独立最終reviewのrequired findings `PR68-IFR-001`、`PR68-IFR-002`、`PR68-IR-001`をsame independent reviewerがfix verificationし、required finding 0件へ収束する
+    - current PR HEADとhead_shaが一致するCIでrepository validatorと配布ZIP検証が成功する
+    - 詳細report、別handoff、簡易PR commentを保存し、mergeはしない
+  - Output:
+    - `design/astra-escalation-design.md`
+    - `design/adaptive-agent-assignment-design.md`
+    - `design/skill-hierarchy-design.md`と同一内容の`skills/design/skill-hierarchy-design.md`
+    - `skills/sub-agent-task-manager/references/astra-escalation.md`と既存selector／spawn／caller Skill／report template
+    - `reports/issue-67-astra-implementation-20260906.md`
+    - `reports/handoffs/issue-67-pr68-implementation-20260906.yaml`
+    - `reports/issue-67-pr68-normal-review-20260906.md`
+    - `reports/handoffs/issue-67-pr68-normal-review-20260906.yaml`
+    - `reports/issue-67-pr68-review-followup-20260906.md`
+    - `reports/handoffs/issue-67-pr68-review-followup-20260906.yaml`
+    - `reports/issue-67-pr68-fix-verification-r2-20260906.md`
+    - `reports/handoffs/issue-67-pr68-fix-verification-r2-20260906.yaml`
+    - `reports/issue-67-pr68-r2-findings-followup-20260906.md`
+    - `reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml`
+    - `reports/issue-67-pr68-fix-verification-r3-20260906.md`
+    - `reports/handoffs/issue-67-pr68-fix-verification-r3-20260906.yaml`
+    - `reports/issue-67-pr68-r3-finding-followup-20260906.md`
+    - `reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml`
+    - `reports/issue-67-pr68-fix-verification-r4-20260906.md`
+    - `reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml`
+    - `reports/issue-67-pr68-r4-finding-followup-20260906.md`
+    - `reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml`
+    - `reports/issue-67-pr68-fix-verification-r5-20260906.md`
+    - `reports/handoffs/issue-67-pr68-fix-verification-r5-20260906.yaml`
+    - `reports/issue-67-pr68-independent-review-20260908.md`
+    - `reports/issue-67-pr68-independent-findings-followup-20260908.md`
+    - `reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml`
+    - `reports/issue-67-pr68-independent-rereview-followup-20260909.md`
+    - `reports/handoffs/issue-67-pr68-independent-rereview-followup-20260909.yaml`
+  - Review History:
+    - initial normal review on implementation HEAD `8d3f96a0ec5f01247c4092f7bb0f690168ba627e`: `pass_with_held`; `PR68-R1-001 / low` 1件、required finding 0件
+    - `PR68-R1-001` fix commit: `30a7595559327308893469211080047bf485de16`。single_turnだけを複数operation再利用禁止にし、task_until_completionの同一task/scope/agent継続を明記
+    - R2 fix verification on target HEAD `87549104916a1a04d62aa0508099c857b1844840`: `PR68-R1-001` resolved
+    - R2 new findings: `PR68-R2-001 / medium / required`、`PR68-R2-002 / medium / required`、`PR68-R2-003 / low / nonblocking`; verdict `fail`
+    - R2 review report commit: `58da9092de9225b81066e3c60956363587bd2d8e`
+    - R2 review handoff/evidence HEAD: `498d5b3eb16a26219cc5939bc0cc38c574f5f11e`
+    - R3 fix verification on target HEAD `7515f13e9bfc27a8c416786a39ddfaa71d31ac99`: R2-001/002/003は全件resolved。新規`PR68-R3-001 / medium / required`を検出しverdict `fail`
+    - R3 review report commit: `0acf85d6e075c1489f5f721d72b8d60037b0fc47`
+    - R3 review handoff/evidence HEAD: `54bc25ecb05c57b705f7f442335f515d7c4f52b5`
+    - R4 fix verification on target HEAD `776be2c1a18ce680157f84771c681197166662c0`: `PR68-R3-001` resolved。新規`PR68-R4-001 / medium / required`を検出しverdict `fail`
+    - R4 review report commit: `f936f5fc60a426770a6408155852f7a98cf203bc`
+    - R4 review handoff/evidence HEAD: `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`
+    - R5 fix verification on target HEAD `dbd534af603bfb51d1bfc30609d446ca0ad0281b`: `PR68-R4-001` resolved、verdict `pass`。normal review cycle収束
+    - 独立最終review on target HEAD `0518ed3cc965e00a922e18545a171f2a3cd1084f`: `PR68-IFR-001 / medium / required`、`PR68-IFR-002 / medium / required`、`PR68-IR-001 / medium / required`を検出しverdict `fail`
+    - 2026-09-09再レビュー on target HEAD `443bbde6ebeff6d1ace79bd942dfd8255d02eeb2`: `PR68-IFR-002` resolved、`PR68-IR-001`は利用者指示により合否阻害から除外、`PR68-IFR-001 / medium / required`のみ新規handoffの未引用` #` 9箇所再発として継続
+  - Current Review Follow-up:
+    - `PR68-R1-001`: reviewer resolved確認済み。source severity `low`維持
+    - `PR68-R2-001`: reviewer resolved確認済み。source severity `medium`維持
+    - `PR68-R2-002`: reviewer resolved確認済み。source severity `medium`維持
+    - `PR68-R2-003`: reviewer resolved確認済み。source severity `low`維持
+    - `PR68-R3-001`: reviewer resolved確認済み。source severity `medium`維持
+    - `PR68-R4-001`: 旧`T-004` R3同期で誤削除したT-002 historical Output参照15件を復元 commit `91785d8a16a613303818db2495de39f179e3c3d4`
+    - `PR68-R4-001`: 旧`T-004` R3同期内容を維持し、その他T-002 historyは内容変更なし
+    - R4-001 follow-up detailed report commit: `8f2963c3353f614887996d4c56b88cdc0b2b1edf`
+    - R4-001 follow-up handoff commit: `9a0c32ad88102ca1e4b3c4f5e92841d5a02efe20`
+    - R5 reviewer closure: same normal reviewerが`PR68-R4-001` resolvedを確認し、normal review cycleはpassで収束
+    - `PR68-IFR-001`: 8 handoff YAMLのunquoted ` #` scalarをquoteし、parse後のfull intended stringを保持
+    - `PR68-IR-001`: 5 handoffのreport-writer `complete_body`を対応するgeneration-time detailed report全文へ復元
+    - `PR68-IFR-002`: current task IDを`T-006`へ移し、mainのIssue #69 `T-004`を保持。historical report/handoffの旧`T-004`は変更しない
+    - independent reviewer closure: pending same independent reviewer fix verification
+    - `PR68-IFR-001`再レビュー対応: `reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml`の9 plain scalarをquoteし、PyYAML解析後の期待全文一致を確認
+    - 最新main `a4d1157713ab424a3cfda657b70dcda452567657`を統合し、hierarchy 2ファイルと`tasks/tasks-status.md`の3競合を両側の内容を保持して解消
+    - current task IDは`T-006/#67`、`T-004/#69`、`T-005/#70`で重複なし
+  - Verification:
+    - verification_capability: `local_execution_available`。DonabeThinkBookの専用worktreeでlocal validation executorを利用可能
+    - initial implementation reviewed HEAD `8d3f96a0ec5f01247c4092f7bb0f690168ba627e`のmatching run `34023404043`: success
+    - R1 technical fix HEAD `30a7595559327308893469211080047bf485de16`のmatching run `34024771335`: success
+    - R1 follow-up evidence HEAD `87549104916a1a04d62aa0508099c857b1844840`のmatching run `34024920108`: success
+    - R2 review evidence HEAD `498d5b3eb16a26219cc5939bc0cc38c574f5f11e`のmatching run `34025568242`: success、build job `101465801846`、artifact `9986931628`
+    - R2 final tracking HEAD `7515f13e9bfc27a8c416786a39ddfaa71d31ac99`のmatching run `34026378145`: success、build job `101467967385`、artifact `9987175046`
+    - R3 review evidence HEAD `54bc25ecb05c57b705f7f442335f515d7c4f52b5`のmatching run `34027989571`: success、build job `101472279361`、artifact `9987667737`、digest `sha256:fa58ddd50a5948a02166908c7d1e19a5a74b7e068c90583631200ade424a211f`
+    - R3 technical fix HEAD `b7e03ec7c847875fa1753cea3ea8814f8006f320`のmatching run `34028776760`: success、build job `101474391195`、artifact `9987905877`、digest `sha256:6192d76b6f1646aba123a682a607438ca53e35868edbb1ed2ad9a4e420a66ce3`
+    - R3-001修正版handoffはPyYAML parseとcurrent schema enum／producer-output contract照合を実施しsuccess。repository CIは`reports/handoffs/*.yaml`のschema enumを自動検証しないため別証拠として保持
+    - R4 reviewed HEAD `776be2c1a18ce680157f84771c681197166662c0`のmatching run `34029006173`: success、build job `101475006449`、artifact `9987975129`
+    - R4 review evidence HEAD `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`のmatching run `34031903220`: success、build job `101482851378`、artifact `9988882650`
+    - R4 technical fix HEAD `91785d8a16a613303818db2495de39f179e3c3d4`のmatching run `34032315339`: success、build job `101483978974`、artifact `9989013493`、digest `sha256:668fa28b4c645fb2f00977e7a4217d75456949ed8a0b912764cd38f7719334a8`
+    - R5 reviewed HEAD `dbd534af603bfb51d1bfc30609d446ca0ad0281b`のmatching run `34032752514`: success、build job `101485236418`、artifact `9989152500`
+    - independent reviewed HEAD `0518ed3cc965e00a922e18545a171f2a3cd1084f`のmatching run `34038814249`: success。independent review後のreport保存HEAD `16cc1e33133ea1b2f666ced15261be1609965261`にはreview時点でmatching runなし
+    - TDDはCodexSkill方針によりnot applicable。Astraの有料runtime実行は未実施
+    - Markdown lintはrepository rootに`tools/`と`package.json`がないためunsupported。active relative linkはCI validator対象
+    - 本tracking保存後のcurrent HEADについて、そのSHAとhead_shaが一致する新しいpull_request runだけを最終route evidenceとして確認しPR commentへ記録する。上記の旧runを代用しない
+    - Issue #67 handoff全体: PyYAML parse success、未引用plain scalar ` #` 0件、新規handoffの期待9値全文一致
+    - 5 handoffの`report-writer.complete_body`は対応するgeneration-time詳細report全文と一致
+    - hierarchy設計2ファイルはmain統合後もbyte-identical
+    - DonabeThinkBook `C:\Users\taiga\CodexProjects\CodexSkill-pr68` のclean HEAD `483d1431d7e2e42d9284f11a05812988438ebc4f`で `scripts/run_validation.py` 4項目と`git diff --check`がsuccess
+    - focused validation r4: quote fix 9行、Issue #67 handoff 11件parse、unquoted plain scalar ` #` 0件、5 `complete_body`全文一致、task ID重複0件、hierarchy同期を確認
+    - generation-time HEAD `483d1431d7e2e42d9284f11a05812988438ebc4f` のmatching `pull_request` run `34313886086`: completed / success、build job `102345931831`、artifact `10089345834`
+    - 本report/handoff/tracking persistence commit後の新HEADは自己参照せず、push後のexact-head CIをPR commentへ記録する
+  - Administrative state: 独立review指摘修正のtracking生成時は`commit_pending`。本tracking自身を含む将来SHAを自己参照せず、永続化結果・push・exact-head CIはPR metadata/commentへ保存する
 - T-004: Issue #69の用語・文章品質レビューを追加する
   - Status: 旧HEADの通常レビュー済み。#70経路の組み込み・実機自己点検済み、修正確認・独立レビュー待ち
   - Phase: Phase 9

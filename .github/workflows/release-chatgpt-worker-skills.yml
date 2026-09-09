@@ -16,7 +16,6 @@ on:
       - "reports/**"
       - "scripts/build_chatgpt_worker_skills.py"
       - "scripts/verify_skill_repository.py"
-      - "scripts/run_validation.py"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
   push:
     branches:
@@ -31,7 +30,6 @@ on:
       - "reports/**"
       - "scripts/build_chatgpt_worker_skills.py"
       - "scripts/verify_skill_repository.py"
-      - "scripts/run_validation.py"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
   release:
     types:
@@ -52,63 +50,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout target HEAD without write credentials
-        id: checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ env.TARGET_REF }}
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Validate locally equivalent commands and retain logs
-        id: validation
+      - name: Validate repository Skill architecture and active links
         shell: bash
         run: |
-          set +e
-          python3 scripts/run_validation.py --output-dir validation-artifacts \
-            >validation-runner.stdout.log 2>validation-runner.stderr.log
-          status=$?
-          set -e
-          mkdir -p validation-artifacts
-          mv validation-runner.stdout.log validation-runner.stderr.log validation-artifacts/
-          cat validation-artifacts/validation-runner.stdout.log
-          cat validation-artifacts/validation-runner.stderr.log >&2
-          exit "$status"
+          set -euo pipefail
+          python3 scripts/verify_skill_repository.py
 
-      - name: Record outcome even when validation could not start
-        if: ${{ always() }}
+      - name: Build and verify ChatGPT wrapper and core Skill ZIP
         shell: bash
-        env:
-          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
-          VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
         run: |
-          python3 - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-          output = Path("validation-artifacts")
-          output.mkdir(parents=True, exist_ok=True)
-          keys = ("TARGET_REF", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "CHECKOUT_OUTCOME", "VALIDATION_OUTCOME")
-          (output / "job-status.json").write_text(
-              json.dumps({key: os.environ.get(key) for key in keys}, indent=2) + "\n",
-              encoding="utf-8",
-          )
-          PY
+          set -euo pipefail
+          python3 scripts/build_chatgpt_worker_skills.py \
+            --output chatgpt-worker-skills.zip
+          python3 -m zipfile -l chatgpt-worker-skills.zip
 
-      - name: Upload diagnostics on success and failure
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: skill-validation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: validation-artifacts/
-          retention-days: 14
-          if-no-files-found: error
-
-      - name: Upload validated release bundle
-        if: ${{ success() }}
+      - name: Upload validation artifact
         uses: actions/upload-artifact@v4
         with:
           name: chatgpt-worker-skills-${{ github.run_id }}
-          path: validation-artifacts/chatgpt-worker-skills.zip
+          path: chatgpt-worker-skills.zip
           if-no-files-found: error
 
   publish-rolling-release:

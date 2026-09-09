@@ -40,34 +40,6 @@ Use the same normal review chat for initial review and fix verification when ava
 - Persist normal-review and fix-verification handoffs under target-repository rules, or return complete packets.
 - The user chooses the next chat and merge action.
 
-## Execution location
-
-Use the connected-PC route through Remote Desktop Commander by default.
-Follow an explicit user selection first, then Project Instruction. Use normal
-chat only when one of those authorities explicitly selects it.
-For a selected PC, discover Remote Desktop Commander tools, confirm the
-specified device with a read-only call, and pin subsequent source reads and
-permitted validation to that device. Do not silently change devices or use
-normal chat as fallback when the requested connection fails.
-
-Invoke `work-context-manager` to verify `execution_environment`, the exact
-reviewed source, worktree ownership, and required dependencies. Recheck on
-reconnection or concurrent changes. Keep other tasks' worktrees untouched;
-use an authorized separate worktree or snapshot when isolation is needed.
-Write validation outputs outside the reviewed source and preserve results,
-stdout, stderr, and diagnostics on success and failure. Runtime dependencies
-may be prepared only in authorized task scratch space, without modifying the
-reviewed tree, global installations, machine settings, or authentication.
-
-Use the GitHub connector for remote repository evidence, report commits, PR
-updates, comments, and exact-head CI. Do not bypass it with terminal `gh`,
-authenticated Git network operations, or REST calls. PC access does not permit
-product, test, configuration, or workflow fixes, nor launching an agent CLI.
-Read the reviewed text and required Skill references in the current chat;
-machine checks do not establish semantic review or reviewer independence.
-Pass environment and source-bound validation evidence unchanged to reporting
-and handoff. Connection success alone does not satisfy a validation gate.
-
 ## Normal review flow
 
 1. Invoke `work-context-manager` for the current committed review target, requirements, design, previous findings, reports, tracking, and matching evidence.

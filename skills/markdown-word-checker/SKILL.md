@@ -13,8 +13,6 @@ Keep Markdown terminology checks in one reusable skill so Markdown-writing and r
 
 This skill reads repo-specific configuration under the target repository's `tools/lint/` directory when it exists. It does not define global project terminology in CodexSkill.
 
-Mechanical success does not certify preserved meaning, approved usage, or readable prose. Those decisions belong to `document-wording-review`, invoked by the author/reviewer caller with complete context. Keep the two results separate. A hook payload or unknown-word list alone is not a wording review.
-
 ## Execution owner
 
 Run this skill as: `parent`
@@ -180,7 +178,7 @@ Use this table for lint findings and extracted candidates. It is internal to thi
 
 | Candidate | Route |
 | --- | --- |
-| typo, redundant English, or context-poor wording | Propose a meaning-preserving body correction and pass changed prose to the caller's `document-wording-review`. Japanese wording or a compound phrase is not automatically acceptable. If no suitable policy-compliant expression is established, return the conflict for a policy decision rather than forcing a translation. |
+| typo, redundant English, or context-poor wording | Fix the Markdown body. Prefer a context-bearing compound phrase or Japanese wording when a standalone word is too broad. |
 | term that names a new concept and should remain allowed | Candidate `term` in `markdown-whitelist.yaml` with a meaning-bearing `description`. |
 | alternate spelling that should remain valid for the same concept | Candidate `aliases` entry. Do not mix different concepts into aliases. |
 | spelling that should be corrected to a canonical form | Candidate `prh.yml` rule. Treat it as a correction, not an allowed alias. |

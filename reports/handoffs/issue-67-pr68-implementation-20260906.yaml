@@ -1,0 +1,588 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: initial_implementation
+  generated_at: '2026-09-06'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'Issue #67 / PR #68'
+task_id: T-004
+branch: feat/issue-67-astra-approval
+base_ref: main
+target:
+  current_head: &snapshot 97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e
+  reviewed_head: null
+  commit_range: 6507727986329e34e69da3680a00824eb1fbfe13...97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e
+verification:
+  capability: remote_ci_only
+  capability_evidence:
+    - technical snapshot 97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e has matching pull_request workflow run 34023178976 with completed/success.
+    - Detailed implementation report was already persisted at commit 3c426b5b63ffcd32a1f9d7a38dc014dda70f6ee9; this packet itself was not yet committed at generation time, so packet-persistence exact-head CI remained pending.
+  technical_head: *snapshot
+  administrative_parent: null
+  commit:
+    state: committed
+    review_target_sha: *snapshot
+  push:
+    state: pushed
+    head_sha: 3c426b5b63ffcd32a1f9d7a38dc014dda70f6ee9
+  ci_wait:
+    state: ci_wait_pending
+    required_for: route_verification
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
+authoritative_requirements: &requirements
+  - source: user_instruction
+    reference: current-chat
+    summary: '#67対応、設計書更新、PR作成まで。mergeしない。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: CodexSkill保守はnon-TDD。関連Skillを読み既存責務に統合する。
+  - source: repository_instruction
+    reference: Project Instruction
+    summary: GitHub操作はconnector。CIは対象PR current HEADとrun head_shaが一致するものだけ。詳細reportと別の簡易PR commentを保存する。
+  - source: issue
+    reference: https://github.com/ssaattww/CodexSkill/issues/67
+    summary: 既存モデルで問題発生かつ継続困難の場合に、Astra highを対象taskのsub-agentとしてユーザー承認後に使用。原則ターンごと承認、明示オプションはtask完了まで。
+  - source: design
+    reference: design/astra-escalation-design.md
+    summary: 承認状態、scope、消費、失効、迂回防止とA67-01〜20。
+  - source: design
+    reference: design/adaptive-agent-assignment-design.md
+    summary: 既存selector、role計画、observability、reviewer continuityとの統合。
+development_policy: &policy
+  method: non-TDD Skill and design maintenance
+  testing_order: post-implementation repository validation and explicit contract inspection
+  governing_source: Project Instruction and AGENTS.md
+validation_plan: &validation_plan
+  commands:
+    - python3 scripts/verify_skill_repository.py
+    - python3 scripts/build_chatgpt_worker_skills.py --output chatgpt-worker-skills.zip
+    - python3 -m zipfile -l chatgpt-worker-skills.zip
+    - Python/PyYAML parse and assertions on connector-fetched Astra authorization YAML example
+  required_failure_diagnostics:
+    - 既存workflow run、job、失敗step、利用可能なログとartifactを対象HEADに紐付ける。
+    - このworkflowのartifactは配布ZIPであり、テスト結果・stdout・stderrの専用診断bundleではない。
+    - RevMem向け診断artifact追加方針はCodexSkillに適用しない。workflowは変更していない。
+blocked: []
+authorized_actions:
+  - read_repository
+  - edit_documentation
+  - write_handoff
+  - write_report
+  - create_branch
+  - commit
+  - push
+  - create_pr
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: Issue67に必要な既存Skill、設計、tracking、report、handoff
+      reason: 本chatの実装・設計更新指示
+    - path_or_operation: PR68作成・更新・簡易reportコメント
+      reason: Project Instructionと本chatのPR作成指示
+  forbidden:
+    - path_or_operation: mergeまたはauto-merge
+      reason: 利用者が行う
+    - path_or_operation: 未承認の有料Astra実行・親model切替・nested agent
+      reason: Skill実装の要求はモデル利用承認ではない
+    - path_or_operation: connectorを迂回するrepository読み書き、CIによるコード更新
+      reason: GitHub connector境界
+scope: &scope
+  - 既存sub-agent-task-managerへAstra highの適格性・承認・operation gateを追加
+  - role・availability・継承・fallback・reviewer継続と上位callerの整合
+  - 設計、階層ミラー、report template、T-004 trackingの同期
+non_goals: &non_goals
+  - 通常Luna/Terra/Sol defaultや既存Sol承認規則の変更
+  - runtime本体の強制機構、料金API、実Astra呼び出し
+  - ChatGPT配布集合、core Skill、workflow、TDD方針の変更
+  - 自分の実装に対する独立review verdictまたはmerge
+files:
+  changed: &changed
+    - path: design/astra-escalation-design.md
+      purpose: 承認ライフサイクルとA67-01〜20
+    - path: design/adaptive-agent-assignment-design.md
+      purpose: 既存適応型割り当てへの統合
+    - path: design/skill-hierarchy-design.md
+      purpose: 承認責務とauthorization-onlyの階層反映
+    - path: skills/design/skill-hierarchy-design.md
+      purpose: 階層設計のbyte-identicalミラー
+    - path: skills/sub-agent-task-manager/references/astra-escalation.md
+      purpose: 適格性、費用、scope、grant、操作消費の正本
+    - path: skills/sub-agent-task-manager/SKILL.md
+      purpose: new-dispatchとauthorization-onlyの接続
+    - path: skills/sub-agent-task-manager/references/agent-profile-selection.md
+      purpose: 自動選択からAstraを分離し承認後だけrequestedへ昇格
+    - path: skills/sub-agent-task-manager/references/spawn-agent-model-overrides.md
+      purpose: role、継承、availability、fallbackの承認迂回防止
+    - path: skills/codex-delegation-executor/SKILL.md
+      purpose: task-local証拠とgrantの引継ぎ、別taskや親への迂回防止
+    - path: skills/development-orchestrator/SKILL.md
+      purpose: 上位workflowがapproval/capability stopを保持
+    - path: skills/review-enforcer/SKILL.md
+      purpose: reviewer identity維持とAstra継続の操作単位承認
+    - path: skills/report-output-manager/references/sub-agent-report-template.md
+      purpose: parent-owned Astra証拠欄
+    - path: tasks/tasks-status.md
+      purpose: T-004と具体的受け入れ条件・検証・出力先の追跡
+  inspected:
+    - path: AGENTS.md
+      purpose: governing repository policy
+    - path: .github/workflows/release-chatgpt-worker-skills.yml
+      purpose: exact-HEAD checkout、validator、ZIP、artifactと診断収集範囲
+    - path: scripts/verify_skill_repository.py
+      purpose: CI検証範囲
+    - path: skills/design-doc-maintainer/SKILL.md
+      purpose: 設計影響と既存設計保持
+    - path: skills/design-executor/SKILL.md
+      purpose: 設計編集契約
+    - path: skills/markdown-word-checker/SKILL.md
+      purpose: repository lint配線不在の判定
+    - path: skills/skill-authoring-wrapper/SKILL.md
+      purpose: 既存Skill責務への統合
+    - path: skills/progress-sync-manager/SKILL.md
+      purpose: trackingとcommit_pendingの意味を保持
+  intentionally_untouched: &untouched
+    - path_or_area: workflows、validator、ChatGPT wrapper/core package集合
+      reason: AstraのCodex dispatch契約追加であり配布runtime変更ではない
+    - path_or_area: 通常Luna/Terra/Sol default、Sol xhigh/max同一reviewer承認
+      reason: Issue67で既存選定を置換しない
+    - path_or_area: 他Issueのtracking履歴
+      reason: 今回の対象外。編集中の誤字混入は元に戻した
+commands: &commands
+  - command: python3 scripts/verify_skill_repository.py
+    purpose: 全repository Skill構造・依存・active links・階層同期
+    exit_code: unknown
+    result: passed
+    head_sha: *snapshot
+    evidence: 'CI run 34023178976 / build job 101459387233 / validator step success; numeric exit code not exposed in API'
+  - command: python3 scripts/build_chatgpt_worker_skills.py --output chatgpt-worker-skills.zip
+    purpose: 従来8つのChatGPT wrapper/core Skill ZIP生成・検証
+    exit_code: unknown
+    result: passed
+    head_sha: *snapshot
+    evidence: 'CI run 34023178976 / build job 101459387233 / build step success'
+  - command: python3 -m zipfile -l chatgpt-worker-skills.zip
+    purpose: ZIP構造一覧
+    exit_code: unknown
+    result: passed
+    head_sha: *snapshot
+    evidence: 'CI run 34023178976 / build job 101459387233 / build step success'
+  - command: Python/PyYAML parse and assertions on connector-fetched Astra authorization YAML example
+    purpose: high proposal、pending single_turn、approval null、usage空の構文・初期状態
+    exit_code: 0
+    result: passed
+    head_sha: *snapshot
+    evidence: current-chat container stdout。取得例のみに対する確認でありfull repository検証ではない
+  - command: repository-defined Markdown lint
+    purpose: Markdown表記検証
+    exit_code: unknown
+    result: not_run
+    head_sha: *snapshot
+    evidence: repository rootにtoolsとpackage.jsonなし。active link検証は別のCI validatorで実施
+  - command: live Astra sub-agent execution
+    purpose: 実環境のavailability/profile/承認運用検証
+    exit_code: unknown
+    result: not_run
+    head_sha: *snapshot
+    evidence: 有料runtime実行を要求・承認されていない
+tests:
+  - name: repository architecture and bundle validation
+    phase: verification
+    result: passed
+    head_sha: *snapshot
+    evidence: https://github.com/ssaattww/CodexSkill/actions/runs/34023178976
+  - name: A67-01 through A67-20 contract inspection
+    phase: verification
+    result: passed
+    head_sha: *snapshot
+    evidence: 実装reportの照合表。本文の対応確認であり20件のruntime自動テストではない
+  - name: TDD Red/Green
+    phase: not_applicable
+    result: not_run
+    head_sha: *snapshot
+    evidence: CodexSkill maintenance is non-TDD
+ci: &ci
+  required: true
+  workflow: .github/workflows/release-chatgpt-worker-skills.yml
+  run_id: 34023178976
+  head_sha: *snapshot
+  conclusion: success
+  artifacts:
+    - id: 9986182499
+      name: chatgpt-worker-skills-34023178976
+      purpose: CIが生成・検証した既存ChatGPT Skill ZIP。Astra専用runtimeテスト結果ではない
+implementation:
+  outcome: completed
+  final_head: *snapshot
+  commits: &commits
+    - sha: 0647191803dc76b540736585fbe45f0cb6e58ca3
+      purpose: Astra設計追加
+    - sha: 7ef661c214e630da89b8831ceba12fa131488caa
+      purpose: authoritative Astra reference
+    - sha: bd3a4e2f7f639314f7df4b6e9affd27d9ffc2c72
+      purpose: selector統合
+    - sha: 621d0fe8c2ff86474420ee4aa2f396b93e7da22e
+      purpose: task manager統合
+    - sha: 4907ecb30795cc887f8eb3a30f22827c932a1c20
+      purpose: runtimeとfallbackのgate
+    - sha: 8332e479440bf72cd45ba312e416106d52a688ab
+      purpose: reviewer継続の承認
+    - sha: 48deb4cd08b5c02b1ae35f8809e603f96ddd5800
+      purpose: orchestrator統合
+    - sha: 09edb21e9d215c5d110f3fb2dc3b0a53b450fe9e
+      purpose: delegation統合
+    - sha: ab2eab72dc5cc077edab7ce107f6d0f95d6f210b
+      purpose: report template
+    - sha: c9bd9e7cf9a4c54081e85c25ef5642a9e886afd0
+      purpose: adaptive design更新
+    - sha: 8bdb6aa77c668ff9b13aaa6b3e302f57dcbd393e
+      purpose: hierarchy正本・ミラーの同時同期
+    - sha: d5b777a3056e7ac15a6f7e31e714d31df6566b49
+      purpose: T-004追跡
+    - sha: 97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e
+      purpose: 出力先確定と無関係な履歴の復元
+  addressed_findings: []
+  failure_diagnostics: &diagnostics
+    - type: artifact
+      location: https://api.github.com/repos/ssaattww/CodexSkill/actions/artifacts/9986182499
+      summary: '配布ZIP、18678 bytes、expired=false、sha256:9b2341a402846222d0279af33d67687f911d4dda7957a64b415e6321af8f301c。ローカルdownloadは未実施'
+    - type: other
+      location: https://github.com/ssaattww/CodexSkill/actions/runs/34023178976
+      summary: HEAD一致、build job 101459387233の各検証stepがsuccess。失敗を示す結果はない
+    - type: standard_output
+      location: current-chat container execution
+      summary: connector取得のAstra YAML例parse/assertがPASS、exit 0
+  blocked_items: []
+  summary:
+    - Astra highを自動defaultから除外し、同一taskの既存モデル実行証拠と明示承認を必須化
+    - single_turnと明示task_until_completion、grant消費・失効、継続・fallbackの境界を追加
+    - 既存caller、report、設計、trackingを整合させPR68を作成
+review:
+  mode: not_applicable
+  reviewed_head: unknown
+  reviewer:
+    identity: unknown
+    role: not_applicable
+    continuity:
+      previous_reviewer_identity: null
+      changed: false
+      reason: 実装chatでreviewerを起動していない
+    independence:
+      implemented_change: unknown
+      implemented_review_fix: unknown
+      served_as_normal_reviewer: unknown
+      inherited_conversation: unknown
+      evidence: []
+  verdict: not_applicable
+  required_coverage: []
+  validation_assessment:
+    - item: independent review
+      result: not_applicable
+      evidence: 実装workerはreview verdictを発行しない。次の独立chatで実施する
+  reserved_report_paths: []
+  report_attestation:
+    allowed: not_applicable
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence:
+      - 独立reviewのfreeze、予約、passing verdict、attestation commitは存在しない
+  summary:
+    - 通常review・独立最終reviewは未実施
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths: &report_paths
+    - reports/issue-67-astra-implementation-20260906.md
+  reviewed_head: null
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - 詳細reportは3c426b5b63ffcd32a1f9d7a38dc014dda70f6ee9へ保存済み
+    - このpacket保存後の最終HEAD CIと簡易reportコメントはPR metadataに別途記録する
+findings: []
+held: []
+unexplored:
+  - area: live Astra runtime
+    blocker: 実モデル使用の実行・承認は本taskの対象外
+    remaining_risk: ユーザー環境のmodel availability、role、observability、停止機能は未確認
+    verdict_impact: runtime成功を主張しない
+  - area: independent review
+    blocker: 実装chatは自分の変更のreviewerにならない
+    remaining_risk: 独立したcontract reviewが未実施
+    verdict_impact: review passを主張しない
+unknown:
+  - field_or_fact: 実際のCodex費用・usageとruntime availability
+    reason: API標準単価だけではユーザー契約の費用・利用可否を確定できない
+  - field_or_fact: packetを含む最終publication HEADとCI
+    reason: 自己のcommit前には存在しない。PR68の最終commentとcurrent HEADから取得する
+not_applicable:
+  - field_or_area: TDDと診断artifact workflowの追加
+    reason: RevMem向け方針はCodexSkill保守へ適用しない
+  - field_or_area: review-worker source output
+    reason: この実装chatで呼び出していないため出力を捏造しない
+remaining_risks: &risks
+  - Skillは運用contractでありruntimeレベルの強制機構ではない
+  - live Astra呼び出し、独立review、repository定義Markdown lint、built-in skill-creator validatorは未実施
+  - final publication HEADはこのsnapshotと異なる。古いCIを代用しない
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      issue_or_pr: 'Issue #67 / PR #68'
+      task_id: T-004
+      mode: implementation
+      branch: feat/issue-67-astra-approval
+      base_ref: main
+      current_head: *snapshot
+      reviewed_head: null
+      scope: *scope
+      non_goals: *non_goals
+      authoritative_requirements: *requirements
+      write_boundary:
+        allowed: [Issue67関連Skill, design, tasks/tasks-status.md, reports, PR68]
+        forbidden: [merge, 未承認有料model実行, connector迂回, 無関係な履歴変更]
+      development_policy:
+        method: non-TDD Skill and design maintenance
+        testing_order: post-implementation repository validation and explicit contract inspection
+      validation: *validation_plan
+      ci:
+        matching_run: https://github.com/ssaattww/CodexSkill/actions/runs/34023178976
+        conclusion: success
+      unknown:
+        - 実際のCodex費用とユーザーruntime設定
+        - 後続report/handoffを含むpublication HEADとCI
+      blocked: []
+      remaining_risks: *risks
+  - source_skill: implementation-worker
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      mode: initial_implementation
+      accepted_scope: *scope
+      non_goals: *non_goals
+      requirements_and_design_references: *requirements
+      changed_files_and_purpose: *changed
+      intentionally_untouched_areas: *untouched
+      validation_commands_and_results: *commands
+      failure_diagnostics_and_artifacts: *diagnostics
+      commit_identities: *commits
+      final_head: *snapshot
+      matching_ci: *ci
+      blocked_items: []
+      unknowns:
+        - 実際のruntime availability/profile observabilityと費用
+        - report/handoff保存後の最終HEAD CI
+      remaining_risks: *risks
+      next_required_action: report/handoff保存後のcurrent HEAD固有CIとPR本文・簡易commentを確認し、別chatへreviewを引き継ぐ
+  - source_skill: report-writer
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      report_type: implementation_report
+      complete_body: |
+        # Issue #67 Astra承認付きエスカレーション実装レポート
+
+        ## 対象と状態
+
+        - 日付: 2026-09-06
+        - Repository: `ssaattww/CodexSkill`
+        - Issue: [#67](https://github.com/ssaattww/CodexSkill/issues/67)
+        - PR: [#68](https://github.com/ssaattww/CodexSkill/pull/68)
+        - Branch: `feat/issue-67-astra-approval`
+        - Base: `main` / `6507727986329e34e69da3680a00824eb1fbfe13`
+        - Skill・設計のtechnical HEAD: `8bdb6aa77c668ff9b13aaa6b3e302f57dcbd393e`
+        - 追跡表を含む生成元HEAD: `97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e`
+        - 実装状態: 要求されたSkill・設計変更をcommit/pushし、PR作成済み。
+        - Review状態: 本chatは実装担当。独立reviewは未実施で、review verdictを発行していない。
+        - Persistence: 通常のimplementation report。independent-review attestationではない。
+
+        本reportとhandoffのcommit SHAは生成時点で存在しないため`commit_pending`とし、保存後のPR current HEAD、対応するCI、簡易reportコメントのURLはPR metadata／commentへ記録する。本書のCIを、後続の別SHAのCIに代用しない。
+
+        ## 要求・作業方針
+
+        Issue #67は、既存モデルを先に使用し、問題が発生して継続しても解決が見込めない場合だけ、ユーザー承認付きでAstraを対象taskのsub-agentとして使用する要求である。継続は原則ターンごとの承認とし、明示オプションとしてtask完了までの承認を認め、reasoning effortはhighに固定する。
+
+        Project Instruction、root `AGENTS.md`、添付ZIPの`chat-implementation-worker`、`work-context-manager`、`implementation-worker`、`report-writer`、`chat-handoff-manager`を基準とした。GitHubの参照・更新・commit/push・PR操作はconnectorで実施した。CodexSkill自身の保守はnon-TDDであり、RevMem向けのRed先行・診断artifact workflow追加は適用しない。
+
+        既存workflowを開始時に確認した。`.github/workflows/release-chatgpt-worker-skills.yml`はrepository validator、配布ZIP生成・構造確認、ZIP artifact保存を持つが、失敗時のテスト結果・標準出力・標準エラーをまとめる専用診断artifactは持たない。上記の適用境界によりworkflowは変更しなかった。
+
+        ## 設計と実装内容
+
+        | 変更file | 目的 |
+        | --- | --- |
+        | `design/astra-escalation-design.md` | 要求、状態遷移、承認範囲、具体的受け入れ条件A67-01〜20を追加 |
+        | `design/adaptive-agent-assignment-design.md` | 既存の選定・runtime適用・report・reviewer continuity設計へAstraを統合 |
+        | `design/skill-hierarchy-design.md`、`skills/design/skill-hierarchy-design.md` | 承認管理の責務とauthorization-only呼び出しを同一内容で同期 |
+        | `skills/sub-agent-task-manager/references/astra-escalation.md` | 適格性、費用通知、grant、操作単位の消費・失効、迂回防止の正本 |
+        | `skills/sub-agent-task-manager/SKILL.md` | 新規dispatchと既存agent向けauthorization-onlyを接続 |
+        | `skills/sub-agent-task-manager/references/agent-profile-selection.md` | Astraを自動default/floorにせず、適格性と承認後だけ選定 |
+        | `skills/sub-agent-task-manager/references/spawn-agent-model-overrides.md` | role、継承、availability、fallback経路でも承認を確認 |
+        | `skills/codex-delegation-executor/SKILL.md` | task-local証拠とgrantを渡し、別agent/taskや親実行への迂回を禁止 |
+        | `skills/development-orchestrator/SKILL.md` | 承認・capability stopを上位flowで保持 |
+        | `skills/review-enforcer/SKILL.md` | 同じAstra reviewerへの追加作業にもauthorization-onlyを適用 |
+        | `skills/report-output-manager/references/sub-agent-report-template.md` | parent-ownedの適格性・承認・scope・操作消費証拠を追加 |
+        | `tasks/tasks-status.md` | T-004、具体的終了条件、生成元HEADの検証、report参照を追加 |
+
+        新規Skillは追加せず、承認管理は既存`sub-agent-task-manager`へ集約した。Skill-gap判定は`update existing skill`。別の恒常的feedback ledger変更は行っていない。
+
+        ### 承認の具体的な挙動
+
+        `single_turn`は1 agent・1 taskに対する1回のboundedな作業要求を許可する。開始要求の送信直前にgrantを消費し、返答後の`send_input`、retry、実作業を再開するresumeには新たな承認を要求する。内部tool呼び出しごとには分割しない。poll、wait、既存結果の取得は新規実行ではない。
+
+        `task_until_completion`はユーザーが明示的に選択した同一task/scope/完了条件内だけで継続できる。各操作前に有効性を確認し、完了・取消・scope拡大・別task/agent/lifecycle・別parent sessionへ移行したgrantは利用しない。無制限retryや暗黙のPR全体承認とは扱わない。
+
+        親が確認・消費・送信を直列化する。要求を送った後のtimeout、拒否、開始不明でもsingle-turn grantを再使用しない。既存agentの承認確認だけの場合はprofileを再選定せず、spawnやreport再予約を行わない。
+
+        role/default role、full-history継承、availability置換を含め、Astraは`gpt-6-astra` / `high`だけを許可する。profileが安全に解決できなければ実行前にcapability gapとして停止する。spawn成功からexact appliedを推測せず、非公開なら`applied: null`を保持する。Astra spawn失敗を親の`codex exec`や親モデル切替で代用しない。
+
+        ## 受け入れ条件の照合
+
+        以下は実装担当によるSkill本文とのcontract照合であり、自動テスト20件の成功や実モデルの実行結果を表さない。正本は`references/astra-escalation.md`。独立reviewの代替でもない。
+
+        | ID | 条件 | 対応箇所・確認結果 |
+        | --- | --- | --- |
+        | A67-01 | 通常task | selectorの通常default/floorはLuna/Terra/Solのまま |
+        | A67-02 | 既存モデル未実行 | Eligibility before proposalがAstraを除外 |
+        | A67-03 | 試行・blocker・期待効果あり | Proposal and explicit consentでproposal提示、requested未設定 |
+        | A67-04 | 無応答・repository policyだけ | 明示consentがない限りpending・実行なし |
+        | A67-05 | 次の1ターンを承認 | Authorization modesとoperation gateで単一operationへ消費 |
+        | A67-06 | poll・wait・結果取得 | 新しい作業・承認消費に含めない |
+        | A67-07 | 追加依頼・retry・作業再開 | single-turnなら新たなgrantが必要 |
+        | A67-08 | timeout・二重投入 | issued requestは消費済み、親が直列化して再利用しない |
+        | A67-09 | task完了まで明示承認 | 同一scopeの有効grantを操作ごとに確認して継続 |
+        | A67-10 | 完了・取消・別scope/agent/session | 失効またはbinding不一致として元grantを利用しない |
+        | A67-11 | 拒否・費用不明 | Astraを除外、不明費用は不明と明示 |
+        | A67-12 | roleが通常モデルをAstraへ変更 | selector/spawn両方で同じ適格性・承認gateを再適用 |
+        | A67-13 | Astra high以外・未知の継承 | 高さ固定・事前安全確認を満たさずcapability gap |
+        | A67-14 | availability fallback | Astraを自動higher-tier置換にしない |
+        | A67-15 | Astra spawn拒否 | 親codex execへ迂回せずcapability gap |
+        | A67-16 | Astra reviewer継続 | authorization-only、identityとreport予約を維持 |
+        | A67-17 | 既存Sol xhigh/max reviewer | 同一lifecycle再利用の従来承認を保持 |
+        | A67-18 | final profile非公開 | applied=nullとunverifiedを維持 |
+        | A67-19 | 実profile不一致 | 不一致を保存し追加投入停止・安全な停止を検討 |
+        | A67-20 | 認証不足・一般的実装指示 | モデル変更で解消できないblockerや費用承認とは扱わない |
+
+        ## 検証結果
+
+        Repository全体はconnector経由のremote CIで検証した。ローカルにはrepository全体を展開しておらず、full local validationや`git diff --check`を実施したとは記録しない。
+
+        | 検証 | 結果・証拠 |
+        | --- | --- |
+        | `python3 scripts/verify_skill_repository.py` | 生成元HEADのCI build jobでsuccess。Skill構造、依存、active relative link、階層設計同期等 |
+        | `python3 scripts/build_chatgpt_worker_skills.py --output chatgpt-worker-skills.zip` | 同じCI jobでsuccess |
+        | `python3 -m zipfile -l chatgpt-worker-skills.zip` | ZIP生成・検証stepでsuccess |
+        | ZIP artifact upload | 同じHEADのrunでsuccess、下記ID/digest参照 |
+        | Astra YAML例の構文 | connector取得の例をPython/PyYAMLでparseしexit 0。high proposal、pending single-turn、承認null、usage空をassert |
+        | A67-01〜20 | 上表の本文照合。runtime実行テストではない |
+        | Markdown lint | `tools/`と`package.json`不在のためrepository定義lintはunsupported |
+        | built-in skill-creator validator | 確認したローカルSkill配置に存在せず未実施。CI repository validatorとは区別 |
+        | 実Astra呼び出し・費用消費 | 未実施 |
+        | 独立review | 未実施 |
+
+        ### 生成元HEADと一致するCI
+
+        - HEAD: `97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e`
+        - Event: `pull_request`、PR #68
+        - Run: [34023178976](https://github.com/ssaattww/CodexSkill/actions/runs/34023178976)、`completed / success`
+        - Build job: `101459387233`、validator・ZIP build・artifact uploadの各stepがsuccess
+        - Artifact: `9986182499` / `chatgpt-worker-skills-34023178976`
+        - Artifact digest: `sha256:9b2341a402846222d0279af33d67687f911d4dda7957a64b415e6321af8f301c`
+        - Artifact size: 18,678 bytes、確認時expired=false
+        - Publish/release jobs: PR eventのためskipped
+
+        runとartifactの`head_sha`が上記HEADと一致することをAPIで確認した。Artifactの保存・metadataを確認したが、binary ZIPをローカルへdownloadして別途調べたとは主張しない。配布ZIPは従来の8つのChatGPT wrapper/core Skillであり、AstraのCodex用referenceを新たに同梱する変更ではない。
+
+        technical HEAD `8bdb6aa77c668ff9b13aaa6b3e302f57dcbd393e`にもrun `34022757470`のsuccessがあるが、本reportでは追跡表を含む生成元HEADのrunを主証拠とする。report/handoff保存後の最終HEADは、さらにそのHEAD固有のrunを確認してPR commentへ記録する。
+
+        ## 費用根拠と不明点
+
+        [公式Astraモデル説明](https://developers.openai.com/api/docs/models/gpt-6-astra)でモデルIDとhigh対応を確認した。2026-09-06確認の[公式API pricing](https://developers.openai.com/api/docs/pricing)では、standard短contextの100万tokenあたり入力/出力はAstraが10/50米ドル、Solが4/20米ドルで、同条件の単価比は2.5倍。Issue記載の2.4倍は要求者の前提として区別した。
+
+        実際のCodex契約での費用・usage、token量、context長、cache、tier、tool費用を含む総額は不明であり、固定倍率として実装しない。実際の承認提案時に利用条件と費用情報を再確認し、不明点を明示するcontractにした。利用者環境でのモデルavailability、role設定、profile observability、停止機能は実行確認していない。
+
+        ## 意図して変更しなかった範囲
+
+        通常のLuna/Terra/Sol default、Sol xhigh/maxの既存承認、reviewer identityと独立reviewの終端規則、ChatGPT core/wrapperの配布集合、workflowとvalidator実装は変更していない。他Issueのtracking履歴は内容を維持した。Astra利用を強制するruntimeコード、料金API、nested agent、親モデル切替、mergeは対象外。
+
+        ## 残る確認と引き継ぎ
+
+        本変更は運用Skillのcontractであり、runtimeレベルの技術的強制機構を実装したものではない。独立したreviewerによる本文・経路の検証と、許可された実環境でのavailability／profile確認は未実施である。未実施項目を合格へ置き換えない。
+
+        引き継ぎは別成果物`reports/handoffs/issue-67-pr68-implementation-20260906.yaml`へschema version 3で保存する。次のreview chatはPR current HEADをconnectorで再取得し、同じHEADのCIだけを採用する。本chatの書込権限やAstra承認を継承しない。
+
+        PRはreview用に提出する。mergeは行わず、利用者が判断する。
+      evidence_sources:
+        - https://github.com/ssaattww/CodexSkill/issues/67
+        - https://github.com/ssaattww/CodexSkill/pull/68
+        - https://github.com/ssaattww/CodexSkill/actions/runs/34023178976
+        - repository files at 97c7958da5e7fd84e21e7dde5b5d31ac8df7b54e
+        - current-chat YAML example parse/assert output
+        - https://developers.openai.com/api/docs/models/gpt-6-astra
+        - https://developers.openai.com/api/docs/pricing
+      target_identity:
+        branch: feat/issue-67-astra-approval
+        base_ref: main
+        current_head: *snapshot
+        reviewed_implementation_head: null
+      severity_records: []
+      persistence:
+        mode: repository_file
+        reserved_paths: *report_paths
+        report_attestation_head: null
+      concise_pr_comment_body: null
+      unresolved_discrepancies: []
+extensions:
+  - namespace: codexskill.issue67.publication
+    payload:
+      verification_capability: remote_ci_only
+      technical_head: 8bdb6aa77c668ff9b13aaa6b3e302f57dcbd393e
+      evidence_snapshot_head: *snapshot
+      snapshot_commit_state: committed
+      snapshot_push_state: pushed
+      snapshot_ci_wait_state: ci_wait_completed
+      report_commit: 3c426b5b63ffcd32a1f9d7a38dc014dda70f6ee9
+      packet_commit_state_at_generation: commit_pending
+      final_publication_ci_wait_state_at_generation: ci_wait_pending
+      final_publication_evidence_location: https://github.com/ssaattww/CodexSkill/pull/68
+      target_semantics: target.current_headは保存前の証拠snapshot。packet自身を含む最終HEADではない。PRの現在HEADと最終コメントを再取得する。
+      astra_used: false
+      astra_grants_issued: []
+      source_contract_version_note: 添付core Skillの出力契約に版番号がないためunknown。packet schemaは3。
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: initial_review
+  summary: 利用者が開始する別review chatでPR68をレビューする
+  instructions:
+    - 現chatの書込権限やmodel承認は継承しない。次chatの指示から権限を解決する
+    - PR current HEAD、最新差分、Issue67、設計、詳細report、最終CIコメントをGitHub connectorで取得する
+    - current HEADとrun head_shaが一致しないsnapshot CIを現HEADの合格根拠にしない
+    - A67-01〜20に加え、追加依頼・retry・継承・role・availability・reviewer identity・report ownershipの迂回を確認する
+    - 通常review後の独立最終reviewは既存lifecycleに従う。実装担当を独立reviewerと扱わない
+    - mergeしない
+  required_attachments_or_references:
+    - https://github.com/ssaattww/CodexSkill/pull/68
+    - https://github.com/ssaattww/CodexSkill/issues/67
+    - reports/issue-67-astra-implementation-20260906.md
+    - design/astra-escalation-design.md
+    - chatgpt-worker-skills.zip
+  requested_authorized_actions:
+    - read_repository
+    - write_report
+    - write_handoff
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-67-pr68-implementation-20260906.yaml
+  packet_url: https://github.com/ssaattww/CodexSkill/blob/feat/issue-67-astra-approval/reports/handoffs/issue-67-pr68-implementation-20260906.yaml
+  transport_note: 詳細reportとは別成果物。source_payloadsには呼び出した3 core Skillの全出力を保持し、report本文を省略しない。未呼出review-workerの出力は生成しない。
