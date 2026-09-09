@@ -15,8 +15,6 @@ jobs:
     if: ${{ github.event_name != 'push' || !github.event.deleted }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      ARTIFACT_DIR: ${{ runner.temp }}/pr-commit-artifacts
     steps:
       - name: Resolve the PR and exact commit
         id: target
@@ -63,6 +61,8 @@ jobs:
       - name: Initialize diagnostic files
         if: ${{ steps.target.outputs.collect == 'true' }}
         shell: bash
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/pr-commit-artifacts
         run: |
           mkdir -p "$ARTIFACT_DIR"
           touch "$ARTIFACT_DIR/archive.stdout.log" "$ARTIFACT_DIR/archive.stderr.log"
@@ -83,6 +83,7 @@ jobs:
         id: archive
         shell: bash
         env:
+          ARTIFACT_DIR: ${{ runner.temp }}/pr-commit-artifacts
           TARGET_REF: ${{ steps.target.outputs.head_sha }}
         run: |
           set +e
@@ -104,6 +105,7 @@ jobs:
         id: validation
         shell: bash
         env:
+          ARTIFACT_DIR: ${{ runner.temp }}/pr-commit-artifacts
           TARGET_REF: ${{ steps.target.outputs.head_sha }}
         run: |
           set +e
@@ -118,6 +120,7 @@ jobs:
         if: ${{ always() && steps.target.outputs.collect == 'true' }}
         shell: bash
         env:
+          ARTIFACT_DIR: ${{ runner.temp }}/pr-commit-artifacts
           TARGET_REF: ${{ steps.target.outputs.head_sha }}
           SOURCE_REPOSITORY: ${{ steps.target.outputs.source_repository }}
           PR_NUMBERS: ${{ steps.target.outputs.pr_numbers }}
@@ -150,6 +153,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pr-${{ steps.target.outputs.pr_numbers }}-${{ steps.target.outputs.head_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ env.ARTIFACT_DIR }}/
+          path: ${{ runner.temp }}/pr-commit-artifacts/
           retention-days: 14
           if-no-files-found: error
