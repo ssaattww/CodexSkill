@@ -35,7 +35,7 @@ verification:
 authoritative_requirements:
   - source: user_instruction
     reference: current-chat
-    summary: PR #68の独立レビュー指摘へ対応し、Remote Desktop Commanderを使用する。
+    summary: 'PR #68の独立レビュー指摘へ対応し、Remote Desktop Commanderを使用する。'
   - source: repository_instruction
     reference: Project Instruction
     summary: repository更新・PR操作はGitHub connectorを使い、current HEADとhead_shaが一致するrunだけをCI証拠として採用する。mergeしない。
@@ -79,7 +79,7 @@ write_boundary:
       reason: required detailed implementation report
     - path_or_operation: reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml
       reason: lossless implementation handoff
-    - path_or_operation: PR #68 metadata and conversation comment
+    - path_or_operation: 'PR #68 metadata and conversation comment'
       reason: synchronize review status and publish concise result
   forbidden:
     - path_or_operation: merge or auto-merge
@@ -87,12 +87,12 @@ write_boundary:
 scope:
   - repair unquoted hash scalar truncation in eight handoff YAML files
   - restore full generation-time report bodies in five handoffs
-  - move current Issue #67 tracking from T-004 to non-conflicting T-006 while preserving historical T-004 evidence
+  - 'move current Issue #67 tracking from T-004 to non-conflicting T-006 while preserving historical T-004 evidence'
   - synchronize PR body with R5 pass and independent review follow-up state
 non_goals:
   - change Astra runtime behavior
   - execute paid Astra runtime
-  - merge PR #68
+  - 'merge PR #68'
 files:
   changed:
     - path: reports/handoffs/issue-67-pr68-fix-verification-r2-20260906.yaml
@@ -261,7 +261,7 @@ review:
         required_action: remove current task ID collision with main T-004
         production_path: tasks/tasks-status.md
         actual_composition_fixture: current main and PR task IDs
-        focused_evidence: addressed; Issue #67 current task is T-006
+        focused_evidence: 'addressed; Issue #67 current task is T-006'
       - finding_id: PR68-IR-001
         required_action: restore full generation-time report body in five handoffs
         production_path: affected report-writer source_payloads
@@ -350,7 +350,7 @@ source_payloads:
         - synchronize current tracking and PR metadata
       non_goals:
         - change Astra runtime behavior
-        - merge PR #68
+        - 'merge PR #68'
       authoritative_requirements:
         - source: user_instruction
           reference: current-chat
@@ -363,7 +363,7 @@ source_payloads:
           - affected handoff evidence files
           - tasks/tasks-status.md
           - follow-up report/handoff
-          - PR #68 metadata/comment
+          - 'PR #68 metadata/comment'
         forbidden:
           - merge
       development_policy:
@@ -473,7 +473,7 @@ source_payloads:
       evidence_sources:
         - reports/issue-67-pr68-independent-review-20260908.md
         - local focused validation artifacts
-        - current PR #68 metadata
+        - 'current PR #68 metadata'
       target_identity:
         branch: feat/issue-67-astra-approval
         base_ref: main
@@ -556,7 +556,7 @@ next_action:
     - if no matching run exists, report CI as not executed and do not substitute another SHA
     - do not merge
   required_attachments_or_references:
-    - PR #68
+    - 'PR #68'
     - reports/issue-67-pr68-independent-review-20260908.md
     - reports/issue-67-pr68-independent-findings-followup-20260908.md
     - reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml
