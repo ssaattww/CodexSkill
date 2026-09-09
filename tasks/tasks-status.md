@@ -2,12 +2,12 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-08
+- Updated: 2026-09-09
 
 ## In Progress
 
 - T-006: Issue #67のAstra high承認付きエスカレーション
-  - Status: normal review cycleはR5でpass。独立最終reviewで検出された`PR68-IFR-001`、`PR68-IFR-002`、`PR68-IR-001`をimplementation側でaddressedし、same independent reviewerのfix verification待ち
+  - Status: 再レビューで継続した`PR68-IFR-001`の新規handoff再発9箇所を修正し、最新mainとの競合3ファイルも統合済み。same independent reviewerのbounded fix verification待ち
   - Scope: 既存agent割当の保守。新規phase計画は追加しない
   - Historical Task ID: PR branchではIssue #67を`T-004`として追跡していた。mainのIssue #69 `T-004`と衝突したためcurrent trackingは`T-006`へ移し、過去report/handoff内の`T-004`はhistorical evidenceとして変更しない
   - Depends on: PR #65の既存適応型agent割当
@@ -51,6 +51,9 @@
     - `reports/issue-67-pr68-fix-verification-r5-20260906.md`
     - `reports/handoffs/issue-67-pr68-fix-verification-r5-20260906.yaml`
     - `reports/issue-67-pr68-independent-review-20260908.md`
+    - `reports/issue-67-pr68-independent-findings-followup-20260908.md`
+    - `reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml`
+    - `reports/issue-67-pr68-independent-rereview-followup-20260909.md`
   - Review History:
     - initial normal review on implementation HEAD `8d3f96a0ec5f01247c4092f7bb0f690168ba627e`: `pass_with_held`; `PR68-R1-001 / low` 1件、required finding 0件
     - `PR68-R1-001` fix commit: `30a7595559327308893469211080047bf485de16`。single_turnだけを複数operation再利用禁止にし、task_until_completionの同一task/scope/agent継続を明記
@@ -66,6 +69,7 @@
     - R4 review handoff/evidence HEAD: `ca4efa2935141a9fed1c2c1713e216f3d73c3dfc`
     - R5 fix verification on target HEAD `dbd534af603bfb51d1bfc30609d446ca0ad0281b`: `PR68-R4-001` resolved、verdict `pass`。normal review cycle収束
     - 独立最終review on target HEAD `0518ed3cc965e00a922e18545a171f2a3cd1084f`: `PR68-IFR-001 / medium / required`、`PR68-IFR-002 / medium / required`、`PR68-IR-001 / medium / required`を検出しverdict `fail`
+    - 2026-09-09再レビュー on target HEAD `443bbde6ebeff6d1ace79bd942dfd8255d02eeb2`: `PR68-IFR-002` resolved、`PR68-IR-001`は利用者指示により合否阻害から除外、`PR68-IFR-001 / medium / required`のみ新規handoffの未引用` #` 9箇所再発として継続
   - Current Review Follow-up:
     - `PR68-R1-001`: reviewer resolved確認済み。source severity `low`維持
     - `PR68-R2-001`: reviewer resolved確認済み。source severity `medium`維持
@@ -81,6 +85,9 @@
     - `PR68-IR-001`: 5 handoffのreport-writer `complete_body`を対応するgeneration-time detailed report全文へ復元
     - `PR68-IFR-002`: current task IDを`T-006`へ移し、mainのIssue #69 `T-004`を保持。historical report/handoffの旧`T-004`は変更しない
     - independent reviewer closure: pending same independent reviewer fix verification
+    - `PR68-IFR-001`再レビュー対応: `reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml`の9 plain scalarをquoteし、PyYAML解析後の期待全文一致を確認
+    - 最新main `a4d1157713ab424a3cfda657b70dcda452567657`を統合し、hierarchy 2ファイルと`tasks/tasks-status.md`の3競合を両側の内容を保持して解消
+    - current task IDは`T-006/#67`、`T-004/#69`、`T-005/#70`で重複なし
   - Verification:
     - verification_capability: `remote_ci_only`
     - initial implementation reviewed HEAD `8d3f96a0ec5f01247c4092f7bb0f690168ba627e`のmatching run `34023404043`: success
@@ -99,7 +106,66 @@
     - TDDはCodexSkill方針によりnot applicable。Astraの有料runtime実行は未実施
     - Markdown lintはrepository rootに`tools/`と`package.json`がないためunsupported。active relative linkはCI validator対象
     - 本tracking保存後のcurrent HEADについて、そのSHAとhead_shaが一致する新しいpull_request runだけを最終route evidenceとして確認しPR commentへ記録する。上記の旧runを代用しない
+    - Issue #67 handoff全体: PyYAML parse success、未引用plain scalar ` #` 0件、新規handoffの期待9値全文一致
+    - 5 handoffの`report-writer.complete_body`は対応するgeneration-time詳細report全文と一致
+    - hierarchy設計2ファイルはmain統合後もbyte-identical
   - Administrative state: 独立review指摘修正のtracking生成時は`commit_pending`。本tracking自身を含む将来SHAを自己参照せず、永続化結果・push・exact-head CIはPR metadata/commentへ保存する
+- T-004: Issue #69の用語・文章品質レビューを追加する
+  - Status: 旧HEADの通常レビュー済み。#70経路の組み込み・実機自己点検済み、修正確認・独立レビュー待ち
+  - Phase: Phase 9
+  - Estimate: M
+  - Depends on: 既存のimplementation-worker、review-worker、markdown-word-checker。#70のPR #72はmain取り込み済み
+  - PR: #71（draft）
+  - Exit Criteria:
+    - 対象側の単独語禁止を緩めず、登録候補以外の日本語化した文も確認する
+    - 変更前後・文脈・定義を入力として、意味・識別性・承認用法・読みやすさを分けて判定する
+    - SHA-256の識別性喪失、byte単位の曖昧化、承認済み複数語の別用法を具体的理由付きで拒否する
+    - 明確な初出説明や適切な日本語表現は文字種だけで拒否しない
+    - 方針判断待ち・証拠不足を合格にせず、単独語許可や不自然な置換で完了させない
+    - 作成担当と既存レビュワーから必須実行し、追加レビュワーを起動しない
+    - 新スキルと18判断例を含む9スキルのZIP、依存検査、階層設計2ファイルと配布設計が一致する
+    - Chat自身がRDC経由でスキルと変更前後を読み、read_evidenceと機械検査結果を分けて保持する
+    - 接続失敗、依存不足、資料の省略、対象変更を成功扱いにせず、単独語禁止を維持する
+    - CI前にローカル検証し、成功・失敗の診断結果・stdout・stderrを保存する
+    - 通常・独立レビュー、current HEAD一致のCI確認、PR更新を完了し、マージしない
+  - Output:
+    - `skills/document-wording-review/SKILL.md`
+    - `skills/document-wording-review/references/decision-examples.md`
+    - `design/document-wording-review-design.md`
+    - `reports/issue-69-wording-review-implementation-20260908.md`
+    - `reports/handoffs/issue-69-review-ready-20260908.yaml`
+  - Verification:
+    - 実装HEAD `c5819e3afed8f1947da3ad377dffb6c057127403` のclean作業ツリーで既存4処理成功。CIを起動するpush前に実行した
+    - 9スキル構成、ZIP再生成のバイト一致、依存不足の拒否を確認した
+    - TDDは適用しない。Markdown機械検査は対象設定不在のためunsupportedであり、自己確認と区別する
+    - 通常レビューは74794fdに対して実施済みで、残件I69-DEP-70は経路の組み込み・実機確認だった
+    - #70経路を利用する自己点検手順、読解の取得証拠、PC側依存確認を追加した。4検証成功と依存不足・終了値7の失敗ログ保存を実機確認した
+    - 詳細: `reports/issue-69-rdc-self-check-followup-20260908.md`
+    - 修正確認・独立最終レビューは未実施。保存後HEADとCI証拠はPR本文・コメントで追跡する
+
+- T-005: Issue #70として通常チャットとPC接続の作業経路を整備する
+  - Status: 実装・ローカル検証済み、通常・独立レビュー待ち
+  - Phase: Phase 10
+  - Estimate: M
+  - Depends on: 既存のChatGPT worker構成と検証能力の判定
+  - Design: `design/chat-execution-environment-design.md`
+  - Exit Criteria:
+    - 既存3種類のworkerで通常チャットとRemote Desktop Commanderの経路を選択できる
+    - 接続先、作業ツリー、HEAD、未コミット変更、依存ツール、権限を確認し、指定外への切り替えを行わない
+    - サブエージェントを起動せず、GitHub操作をGitHubコネクタに限定する
+    - 他タスクのツリーを変更せず、Windowsの専用ワークツリーで検証を行う
+    - CIより先にローカル検証を行い、成功・失敗の結果とstdout/stderrを保存する
+    - 検証対象と公開内容を照合し、CIはPR current HEADに一致するrunだけを確認する
+    - #69の文書自己点検に渡す資料と証拠を定義し、#69の組み込み完了とは分ける
+    - 既存repository検査、8スキルZIP、設計同期を検証し、通常・独立レビューを受ける
+    - 詳細報告、引き継ぎ、PR、簡易PRコメントを保存し、マージしない
+  - Notes:
+    - T-004とPhase 9は別作業のPR #71で使用中のため重複させない
+    - CodexSkillの方針に従いTDDは適用しない
+    - `C:/Users/donabe/Project/CodexSkill-issue-70` を使用する
+    - 既存repository検査、ZIP生成・整合性・収録内容・再現性、設計同期、差分検査は成功
+    - 診断保存の確認用に意図的な終了値7を実行し、stdout/stderrを保存した。TDDのRedではない
+    - 公開後のHEAD、CI、報告保存先はPRへ記録する。実装者の自己確認をレビュー済みとはしない
 
 - T-003: Issue #62としてlocal executionとremote-CI-onlyの検証経路を分離する
   - Status: 通常review cycle収束、独立最終review待ち
