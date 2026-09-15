@@ -57,7 +57,7 @@ PR #72はmerged済みで、当時の通常レビューは`pass_with_held`、requ
 
 handoff YAMLはタスク専用scratchに導入した`yaml`パーサーで構文解析し、schema version 3とnext actionを確認した。repository依存は変更していない。
 
-report／handoff／trackingを含むfinal publication candidateの初回検証は全項目passした。その後、同じ`--output-dir`を再利用した再実行はrunnerの出力先新規性チェックによりexit 2となり、validation step自体は開始されなかった。この失敗stdout/stderrも保持した。最終内容は新しい保存先`C:\Users\donabe\Project\CodexSkill-issue-73-artifacts\final-validation-r2`で再実行し、`git diff --check`、repository、bundle、ZIP integrity、ZIP contents、hierarchy byte一致、handoff YAML parseが全てpassした。
+report／handoff／trackingを含むpublication candidateでは、同じ--output-dirを再利用した再実行がrunnerの出力先新規性チェックによりexit 2となり、validation step自体は開始されなかった。この失敗stdout/stderrも保持した。その後は毎回新規保存先で再実行し、git diff --check、repository、bundle、ZIP integrity、ZIP contents、hierarchy byte一致、handoff YAML parseが全てpassした。losslessなsource payload補強後の最終検証結果と診断保存先は、永続化後のPR commentへ記録する。
 
 検証済みtechnical HEADは`ce445faa71eedf60b73ee9497bd1d6c1d484ec7c`。このreportとhandoffの保存でGit HEADは更新されるため、最終CIはreport/handoff commit後のPR current HEADに一致する`pull_request` runだけを確認する。`ce445fa`以前のrunは最終CIの代用にしない。
 
