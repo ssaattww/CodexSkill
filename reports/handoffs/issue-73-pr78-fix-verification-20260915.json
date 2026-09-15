@@ -1,0 +1,1069 @@
+{
+  "schema_version": 3,
+  "producer": {
+    "skill": "chat-review-worker",
+    "mode": "fix verification",
+    "generated_at": "2026-09-15T11:53:48.291235+00:00"
+  },
+  "repository": "ssaattww/CodexSkill",
+  "issue_or_pr": "Issue #73 / PR #78",
+  "task_id": "T-007",
+  "branch": "issue-73-rdc-git",
+  "base_ref": "main",
+  "target": {
+    "current_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+    "reviewed_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+    "commit_range": "ae63a10abd1797d7fc81f234ad7b2bfb947054dd..90a255fe57b5b6751b8f687279b0cde0481e5a4a"
+  },
+  "execution_environment": {
+    "kind": "connected_computer",
+    "tool": "Remote Desktop Commander",
+    "machine_id": "FA780",
+    "connection": "available",
+    "os": "Windows 11",
+    "shell": "powershell.exe",
+    "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+    "repository": "ssaattww/CodexSkill",
+    "branch": "issue-73-rdc-git",
+    "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+    "source_state": "clean",
+    "source_fingerprint": "git-head:90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+    "ownership": "current_task",
+    "writable_paths": [
+      "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+      "C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1"
+    ],
+    "dependencies": [
+      {
+        "name": "git",
+        "status": "available",
+        "evidence": "RDC git inspection succeeded"
+      },
+      {
+        "name": "python",
+        "status": "available",
+        "evidence": "current-HEAD repository validation succeeded"
+      },
+      {
+        "name": "node/yaml",
+        "status": "available",
+        "evidence": "focused YAML schema check succeeded"
+      }
+    ],
+    "evidence": [
+      "FA780 pinned by read-only discovery",
+      "Issue #73 dedicated worktree clean at current PR HEAD"
+    ]
+  },
+  "verification": {
+    "capability": "local_execution_available",
+    "capability_evidence": [
+      "RDC current-HEAD validation pass"
+    ],
+    "technical_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+    "administrative_parent": null,
+    "commit": {
+      "state": "committed",
+      "review_target_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a"
+    },
+    "push": {
+      "state": "pushed",
+      "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a"
+    },
+    "ci_wait": {
+      "state": "ci_wait_completed",
+      "required_for": "route_verification"
+    },
+    "final_publication": {
+      "sequence": "not_applicable",
+      "pr_action": "update"
+    }
+  },
+  "authoritative_requirements": [
+    {
+      "source": "user_instruction",
+      "reference": "current chat",
+      "summary": "Re-review PR #78 using RDC"
+    },
+    {
+      "source": "report",
+      "reference": "reports/issue-73-pr78-normal-review-20260915.md",
+      "summary": "Preserve four finding identities and severities"
+    },
+    {
+      "source": "skill",
+      "reference": "skills/review-worker/SKILL.md",
+      "summary": "Completeness matrix is required before finding-limited closure"
+    }
+  ],
+  "development_policy": {
+    "method": "validation-only review",
+    "testing_order": "closure readiness before fix verification",
+    "governing_source": "AGENTS.md + review-worker"
+  },
+  "validation_plan": {
+    "commands": [
+      "python scripts/run_validation.py --output-dir C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1",
+      "focused checks for PR78-NR-001..004",
+      "closure readiness matrix check"
+    ],
+    "required_failure_diagnostics": [
+      "stdout",
+      "stderr",
+      "results",
+      "source identity"
+    ]
+  },
+  "blocked": [
+    {
+      "item": "formal finding closure",
+      "reason": "mandatory completeness matrix absent",
+      "required_input_or_decision": "Provide matrix for PR78-NR-001..004"
+    }
+  ],
+  "authorized_actions": [
+    "read_repository",
+    "write_handoff",
+    "write_report",
+    "commit",
+    "push",
+    "update_pr",
+    "comment_pr"
+  ],
+  "write_boundary": {
+    "allowed": [
+      {
+        "path_or_operation": "review report/handoff only",
+        "reason": "fix verification persistence"
+      }
+    ],
+    "forbidden": [
+      {
+        "path_or_operation": "implementation/design/tracking fixes",
+        "reason": "reviewer boundary"
+      },
+      {
+        "path_or_operation": "merge",
+        "reason": "user-owned action"
+      }
+    ]
+  },
+  "scope": [
+    "closure readiness and fix verification for PR78-NR-001..004"
+  ],
+  "non_goals": [
+    "implement findings",
+    "merge",
+    "independent final review"
+  ],
+  "files": {
+    "changed": [],
+    "inspected": [
+      {
+        "path": "follow-up changed files",
+        "purpose": "preliminary fix presence"
+      },
+      {
+        "path": "reports/handoffs/issue-73-pr78-review-followup-20260915.json",
+        "purpose": "closure readiness evidence"
+      },
+      {
+        "path": "skills/review-worker/SKILL.md",
+        "purpose": "closure gate contract"
+      }
+    ],
+    "intentionally_untouched": [
+      {
+        "path_or_area": "implementation/design/tracking",
+        "reason": "review-only boundary"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "command": "python scripts/run_validation.py --output-dir C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1",
+      "purpose": "current-HEAD repository/bundle/ZIP validation",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+      "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1\\results.json",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows 11",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git inspection succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "current-HEAD repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "focused YAML schema check succeeded"
+          }
+        ],
+        "evidence": [
+          "FA780 pinned by read-only discovery",
+          "Issue #73 dedicated worktree clean at current PR HEAD"
+        ]
+      },
+      "source_fingerprint": "git-head:90a255fe57b5b6751b8f687279b0cde0481e5a4a"
+    },
+    {
+      "command": "focused checks for PR78-NR-001..004",
+      "purpose": "preliminary non-verdict fix presence checks",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+      "evidence": "RDC command outputs in current review chat",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows 11",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git inspection succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "current-HEAD repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "focused YAML schema check succeeded"
+          }
+        ],
+        "evidence": [
+          "FA780 pinned by read-only discovery",
+          "Issue #73 dedicated worktree clean at current PR HEAD"
+        ]
+      },
+      "source_fingerprint": "git-head:90a255fe57b5b6751b8f687279b0cde0481e5a4a"
+    },
+    {
+      "command": "closure readiness matrix check",
+      "purpose": "verify mandatory fix-verification input",
+      "exit_code": 1,
+      "result": "failed",
+      "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+      "evidence": "follow-up handoff completeness_matrix empty; PR comment contains no matrix",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows 11",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git inspection succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "current-HEAD repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "focused YAML schema check succeeded"
+          }
+        ],
+        "evidence": [
+          "FA780 pinned by read-only discovery",
+          "Issue #73 dedicated worktree clean at current PR HEAD"
+        ]
+      },
+      "source_fingerprint": "git-head:90a255fe57b5b6751b8f687279b0cde0481e5a4a"
+    }
+  ],
+  "tests": [
+    {
+      "name": "current HEAD repository validation",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+      "evidence": "review evidence results.json"
+    },
+    {
+      "name": "closure readiness completeness matrix",
+      "phase": "verification",
+      "result": "failed",
+      "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+      "evidence": "matrix absent"
+    }
+  ],
+  "ci": {
+    "required": true,
+    "workflow": "Validate and release ChatGPT worker skills",
+    "run_id": 34959670925,
+    "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+    "conclusion": "success",
+    "artifacts": []
+  },
+  "implementation": {
+    "outcome": "not_applicable",
+    "final_head": "unknown",
+    "commits": [],
+    "addressed_findings": [],
+    "failure_diagnostics": [],
+    "blocked_items": [],
+    "summary": [
+      "review-only chat"
+    ]
+  },
+  "review": {
+    "mode": "fix_verification",
+    "reviewed_implementation_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+    "previous_reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "previous_review_artifact_head": "ae63a10abd1797d7fc81f234ad7b2bfb947054dd",
+    "reviewer": {
+      "identity": "same current ChatGPT normal-review chat",
+      "role": "normal_reviewer",
+      "continuity": {
+        "previous_reviewer_identity": "same current ChatGPT normal-review chat",
+        "changed": false,
+        "reason": null
+      },
+      "independence": {
+        "implemented_change": false,
+        "implemented_review_fix": false,
+        "served_as_normal_reviewer": true,
+        "inherited_conversation": true,
+        "evidence": [
+          "Same conversation that issued PR78-NR-001..004."
+        ]
+      }
+    },
+    "required_coverage": [
+      {
+        "criterion": "closure readiness evidence",
+        "disposition": "unexplored",
+        "evidence": "Required completeness matrix is absent; closure review must not start."
+      },
+      {
+        "criterion": "preliminary technical fix presence",
+        "disposition": "checked_no_finding",
+        "evidence": "All four focused checks show expected fix content, but not used for closure verdict."
+      },
+      {
+        "criterion": "current-HEAD validation and CI",
+        "disposition": "checked_no_finding",
+        "evidence": "Local validation passed and exact-head run 34959670925 succeeded."
+      }
+    ],
+    "findings": [
+      {
+        "id": "PR78-NR-001",
+        "severity": "medium",
+        "origin": "coverage_miss",
+        "location": "design/chat-worker-skill-design.md:278",
+        "description": "Embedded RevMem Project Instruction was inconsistent with RDC publication route.",
+        "impact": "Could restore connector publication path.",
+        "evidence": "Initial normal review report.",
+        "required_action": "Synchronize embedded instruction with RDC commit/push and connector responsibilities."
+      },
+      {
+        "id": "PR78-NR-002",
+        "severity": "medium",
+        "origin": "introduced_by_change",
+        "location": "reports/handoffs/issue-73-rdc-git-20260915.yaml:176,184,192",
+        "description": "commands[].execution_environment used string instead of object|null.",
+        "impact": "Lossless execution-location evidence was not preserved.",
+        "evidence": "Initial review bad_count=3.",
+        "required_action": "Preserve execution_environment object for each command and validate type."
+      },
+      {
+        "id": "PR78-NR-003",
+        "severity": "medium",
+        "origin": "introduced_by_change",
+        "location": "design/chat-execution-environment-design.md / design/skill-hierarchy-design.md",
+        "description": "Historical #69 state and current package contract conflicted.",
+        "impact": "Current distribution contract was ambiguous.",
+        "evidence": "Initial review plus generated ZIP roots.",
+        "required_action": "Separate historical and current state and align design with actual package."
+      },
+      {
+        "id": "PR78-NR-004",
+        "severity": "low",
+        "origin": "introduced_by_change",
+        "location": "tasks/phases-status.md / tasks/tasks-status.md",
+        "description": "Phase/task tracking was stale.",
+        "impact": "Next worker could misread workflow state.",
+        "evidence": "Initial review tracking comparison.",
+        "required_action": "Synchronize phase/task tracking with current normal-review follow-up state."
+      }
+    ],
+    "finding_completeness_matrix": [
+      {
+        "finding_id": "PR78-NR-001",
+        "required_action": "Synchronize embedded instruction with RDC commit/push and connector responsibilities.",
+        "production_path": null,
+        "actual_composition_fixture": null,
+        "focused_evidence": null,
+        "disposition": "missing_input"
+      },
+      {
+        "finding_id": "PR78-NR-002",
+        "required_action": "Preserve execution_environment object for each command and validate type.",
+        "production_path": null,
+        "actual_composition_fixture": null,
+        "focused_evidence": null,
+        "disposition": "missing_input"
+      },
+      {
+        "finding_id": "PR78-NR-003",
+        "required_action": "Separate historical and current state and align design with actual package.",
+        "production_path": null,
+        "actual_composition_fixture": null,
+        "focused_evidence": null,
+        "disposition": "missing_input"
+      },
+      {
+        "finding_id": "PR78-NR-004",
+        "required_action": "Synchronize phase/task tracking with current normal-review follow-up state.",
+        "production_path": null,
+        "actual_composition_fixture": null,
+        "focused_evidence": null,
+        "disposition": "missing_input"
+      }
+    ],
+    "held": [],
+    "unexplored": [
+      {
+        "area": "formal finding closure",
+        "blocker": "completeness matrix absent from follow-up handoff and PR comment",
+        "remaining_risk": "Findings cannot be formally resolved.",
+        "verdict_impact": "incomplete"
+      }
+    ],
+    "validation_assessment": [
+      {
+        "item": "local repository validation",
+        "result": "supported",
+        "evidence": "current HEAD pass"
+      },
+      {
+        "item": "focused fix presence",
+        "result": "supported",
+        "evidence": "all four preliminary checks pass"
+      },
+      {
+        "item": "closure readiness matrix",
+        "result": "unavailable",
+        "evidence": "matrix is empty/absent"
+      }
+    ],
+    "verdict": "incomplete",
+    "remaining_risks": [
+      "PR78-NR-001..004 remain open until closure readiness evidence is supplied."
+    ],
+    "next_action": {
+      "type": "implementation",
+      "target_skill": "chat-implementation-worker",
+      "mode": "review follow-up",
+      "summary": "Persist a complete closure matrix for all four findings, then return to this reviewer."
+    },
+    "reserved_report_paths": [],
+    "report_attestation_allowed": false
+  },
+  "report": {
+    "report_type": "verification_report",
+    "outcome": "created",
+    "persistence_mode": "repository_file",
+    "paths": [
+      "reports/issue-73-pr78-fix-verification-20260915.md"
+    ],
+    "reviewed_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+    "attestation_head": null,
+    "pr_comments": [],
+    "summary": [
+      "fix verification incomplete because closure matrix is absent"
+    ]
+  },
+  "findings": [
+    {
+      "id": "PR78-NR-001",
+      "severity": "medium",
+      "origin": "coverage_miss",
+      "location": "design/chat-worker-skill-design.md:278",
+      "description": "Embedded RevMem Project Instruction was inconsistent with RDC publication route.",
+      "impact": "Could restore connector publication path.",
+      "evidence": "Initial normal review report.",
+      "required_action": "Synchronize embedded instruction with RDC commit/push and connector responsibilities."
+    },
+    {
+      "id": "PR78-NR-002",
+      "severity": "medium",
+      "origin": "introduced_by_change",
+      "location": "reports/handoffs/issue-73-rdc-git-20260915.yaml:176,184,192",
+      "description": "commands[].execution_environment used string instead of object|null.",
+      "impact": "Lossless execution-location evidence was not preserved.",
+      "evidence": "Initial review bad_count=3.",
+      "required_action": "Preserve execution_environment object for each command and validate type."
+    },
+    {
+      "id": "PR78-NR-003",
+      "severity": "medium",
+      "origin": "introduced_by_change",
+      "location": "design/chat-execution-environment-design.md / design/skill-hierarchy-design.md",
+      "description": "Historical #69 state and current package contract conflicted.",
+      "impact": "Current distribution contract was ambiguous.",
+      "evidence": "Initial review plus generated ZIP roots.",
+      "required_action": "Separate historical and current state and align design with actual package."
+    },
+    {
+      "id": "PR78-NR-004",
+      "severity": "low",
+      "origin": "introduced_by_change",
+      "location": "tasks/phases-status.md / tasks/tasks-status.md",
+      "description": "Phase/task tracking was stale.",
+      "impact": "Next worker could misread workflow state.",
+      "evidence": "Initial review tracking comparison.",
+      "required_action": "Synchronize phase/task tracking with current normal-review follow-up state."
+    }
+  ],
+  "held": [],
+  "unexplored": [
+    {
+      "area": "formal finding closure",
+      "blocker": "completeness matrix absent from follow-up handoff and PR comment",
+      "remaining_risk": "Findings cannot be formally resolved.",
+      "verdict_impact": "incomplete"
+    }
+  ],
+  "unknown": [],
+  "not_applicable": [
+    "independent final attestation: normal review cycle"
+  ],
+  "remaining_risks": [
+    "PR78-NR-001..004 remain open until closure readiness evidence is supplied"
+  ],
+  "source_payloads": [
+    {
+      "source_skill": "work-context-manager",
+      "output_contract_version": "current",
+      "content_type": "application/json",
+      "payload": {
+        "repository": "ssaattww/CodexSkill",
+        "issue_or_pr": "PR #78",
+        "task_id": "T-007",
+        "mode": "review",
+        "branch": "issue-73-rdc-git",
+        "base_ref": "main",
+        "current_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+        "reviewed_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+        "verification_capability": "local_execution_available",
+        "verification_capability_evidence": [
+          "RDC local executor available and current-HEAD validation executed"
+        ],
+        "execution_environment": {
+          "kind": "connected_computer",
+          "tool": "Remote Desktop Commander",
+          "machine_id": "FA780",
+          "connection": "available",
+          "os": "Windows 11",
+          "shell": "powershell.exe",
+          "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "repository": "ssaattww/CodexSkill",
+          "branch": "issue-73-rdc-git",
+          "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+          "source_state": "clean",
+          "source_fingerprint": "git-head:90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+          "ownership": "current_task",
+          "writable_paths": [
+            "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+            "C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1"
+          ],
+          "dependencies": [
+            {
+              "name": "git",
+              "status": "available",
+              "evidence": "RDC git inspection succeeded"
+            },
+            {
+              "name": "python",
+              "status": "available",
+              "evidence": "current-HEAD repository validation succeeded"
+            },
+            {
+              "name": "node/yaml",
+              "status": "available",
+              "evidence": "focused YAML schema check succeeded"
+            }
+          ],
+          "evidence": [
+            "FA780 pinned by read-only discovery",
+            "Issue #73 dedicated worktree clean at current PR HEAD"
+          ]
+        },
+        "scope": [
+          "fix verification readiness for PR78-NR-001..004"
+        ],
+        "non_goals": [
+          "implement findings",
+          "merge",
+          "independent final review"
+        ],
+        "authoritative_requirements": [
+          {
+            "source": "user_instruction",
+            "reference": "current chat",
+            "summary": "Re-review PR #78 using RDC"
+          },
+          {
+            "source": "report",
+            "reference": "reports/issue-73-pr78-normal-review-20260915.md",
+            "summary": "Preserve four finding identities and severities"
+          },
+          {
+            "source": "skill",
+            "reference": "skills/review-worker/SKILL.md",
+            "summary": "Completeness matrix is required before finding-limited closure"
+          }
+        ],
+        "write_boundary": {
+          "allowed": [
+            "review report/handoff only"
+          ],
+          "forbidden": [
+            "implementation/design/tracking fixes",
+            "merge"
+          ]
+        },
+        "development_policy": {
+          "method": "validation-only review",
+          "testing_order": "closure readiness before fix verification",
+          "governing_source": "AGENTS.md + review-worker"
+        },
+        "validation": {
+          "commands": [
+            "python scripts/run_validation.py --output-dir C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1",
+            "focused checks for PR78-NR-001..004",
+            "closure readiness matrix check"
+          ],
+          "required_failure_diagnostics": [
+            "stdout",
+            "stderr",
+            "results",
+            "source identity"
+          ]
+        },
+        "ci": {
+          "matching_run": "34959670925",
+          "conclusion": "success"
+        },
+        "unknown": [],
+        "blocked": [
+          "formal fix verification: completeness matrix absent"
+        ],
+        "remaining_risks": [
+          "four source findings remain open"
+        ]
+      }
+    },
+    {
+      "source_skill": "review-worker",
+      "output_contract_version": "current",
+      "content_type": "application/json",
+      "payload": {
+        "mode": "fix_verification",
+        "reviewed_implementation_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+        "previous_reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "previous_review_artifact_head": "ae63a10abd1797d7fc81f234ad7b2bfb947054dd",
+        "reviewer": {
+          "identity": "same current ChatGPT normal-review chat",
+          "role": "normal_reviewer",
+          "continuity": {
+            "previous_reviewer_identity": "same current ChatGPT normal-review chat",
+            "changed": false,
+            "reason": null
+          },
+          "independence": {
+            "implemented_change": false,
+            "implemented_review_fix": false,
+            "served_as_normal_reviewer": true,
+            "inherited_conversation": true,
+            "evidence": [
+              "Same conversation that issued PR78-NR-001..004."
+            ]
+          }
+        },
+        "required_coverage": [
+          {
+            "criterion": "closure readiness evidence",
+            "disposition": "unexplored",
+            "evidence": "Required completeness matrix is absent; closure review must not start."
+          },
+          {
+            "criterion": "preliminary technical fix presence",
+            "disposition": "checked_no_finding",
+            "evidence": "All four focused checks show expected fix content, but not used for closure verdict."
+          },
+          {
+            "criterion": "current-HEAD validation and CI",
+            "disposition": "checked_no_finding",
+            "evidence": "Local validation passed and exact-head run 34959670925 succeeded."
+          }
+        ],
+        "findings": [
+          {
+            "id": "PR78-NR-001",
+            "severity": "medium",
+            "origin": "coverage_miss",
+            "location": "design/chat-worker-skill-design.md:278",
+            "description": "Embedded RevMem Project Instruction was inconsistent with RDC publication route.",
+            "impact": "Could restore connector publication path.",
+            "evidence": "Initial normal review report.",
+            "required_action": "Synchronize embedded instruction with RDC commit/push and connector responsibilities."
+          },
+          {
+            "id": "PR78-NR-002",
+            "severity": "medium",
+            "origin": "introduced_by_change",
+            "location": "reports/handoffs/issue-73-rdc-git-20260915.yaml:176,184,192",
+            "description": "commands[].execution_environment used string instead of object|null.",
+            "impact": "Lossless execution-location evidence was not preserved.",
+            "evidence": "Initial review bad_count=3.",
+            "required_action": "Preserve execution_environment object for each command and validate type."
+          },
+          {
+            "id": "PR78-NR-003",
+            "severity": "medium",
+            "origin": "introduced_by_change",
+            "location": "design/chat-execution-environment-design.md / design/skill-hierarchy-design.md",
+            "description": "Historical #69 state and current package contract conflicted.",
+            "impact": "Current distribution contract was ambiguous.",
+            "evidence": "Initial review plus generated ZIP roots.",
+            "required_action": "Separate historical and current state and align design with actual package."
+          },
+          {
+            "id": "PR78-NR-004",
+            "severity": "low",
+            "origin": "introduced_by_change",
+            "location": "tasks/phases-status.md / tasks/tasks-status.md",
+            "description": "Phase/task tracking was stale.",
+            "impact": "Next worker could misread workflow state.",
+            "evidence": "Initial review tracking comparison.",
+            "required_action": "Synchronize phase/task tracking with current normal-review follow-up state."
+          }
+        ],
+        "finding_completeness_matrix": [
+          {
+            "finding_id": "PR78-NR-001",
+            "required_action": "Synchronize embedded instruction with RDC commit/push and connector responsibilities.",
+            "production_path": null,
+            "actual_composition_fixture": null,
+            "focused_evidence": null,
+            "disposition": "missing_input"
+          },
+          {
+            "finding_id": "PR78-NR-002",
+            "required_action": "Preserve execution_environment object for each command and validate type.",
+            "production_path": null,
+            "actual_composition_fixture": null,
+            "focused_evidence": null,
+            "disposition": "missing_input"
+          },
+          {
+            "finding_id": "PR78-NR-003",
+            "required_action": "Separate historical and current state and align design with actual package.",
+            "production_path": null,
+            "actual_composition_fixture": null,
+            "focused_evidence": null,
+            "disposition": "missing_input"
+          },
+          {
+            "finding_id": "PR78-NR-004",
+            "required_action": "Synchronize phase/task tracking with current normal-review follow-up state.",
+            "production_path": null,
+            "actual_composition_fixture": null,
+            "focused_evidence": null,
+            "disposition": "missing_input"
+          }
+        ],
+        "held": [],
+        "unexplored": [
+          {
+            "area": "formal finding closure",
+            "blocker": "completeness matrix absent from follow-up handoff and PR comment",
+            "remaining_risk": "Findings cannot be formally resolved.",
+            "verdict_impact": "incomplete"
+          }
+        ],
+        "validation_assessment": [
+          {
+            "item": "local repository validation",
+            "result": "supported",
+            "evidence": "current HEAD pass"
+          },
+          {
+            "item": "focused fix presence",
+            "result": "supported",
+            "evidence": "all four preliminary checks pass"
+          },
+          {
+            "item": "closure readiness matrix",
+            "result": "unavailable",
+            "evidence": "matrix is empty/absent"
+          }
+        ],
+        "verdict": "incomplete",
+        "remaining_risks": [
+          "PR78-NR-001..004 remain open until closure readiness evidence is supplied."
+        ],
+        "next_action": {
+          "type": "implementation",
+          "target_skill": "chat-implementation-worker",
+          "mode": "review follow-up",
+          "summary": "Persist a complete closure matrix for all four findings, then return to this reviewer."
+        },
+        "reserved_report_paths": [],
+        "report_attestation_allowed": false
+      }
+    },
+    {
+      "source_skill": "report-writer",
+      "output_contract_version": "current",
+      "content_type": "application/json",
+      "payload": {
+        "report_type": "verification_report",
+        "complete_body": "# PR #78 修正確認報告\n\n## メタデータ\n\n- Repository: `ssaattww/CodexSkill`\n- Issue: `#73 git操作のrdc化`\n- PR: `#78`\n- Review mode requested: `fix_verification`\n- Previous reviewed HEAD: `85c47515cbe086824746534ffb6cf6398894a63a`\n- Previous review artifact HEAD: `ae63a10abd1797d7fc81f234ad7b2bfb947054dd`\n- Current target HEAD: `90a255fe57b5b6751b8f687279b0cde0481e5a4a`\n- Reviewer continuity: 前回normal reviewと同じChatGPT chat\n- Execution environment: RDC / `FA780` / `C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git`\n- Verdict: `incomplete`\n- Merge: 実施しない\n\n## Closure readiness\n\n`review-worker`はfinding-limited closure開始前に、各findingについて次の4項目を揃えたcompleteness matrixを必須としている。\n\n- required action\n- production path\n- actual composition fixture\n- focused validation evidence\n\nfollow-up handoff `reports/handoffs/issue-73-pr78-review-followup-20260915.json` では、`review.independent_closure.completeness_matrix` が空配列であり、raw source payloadにもclosure用matrixが存在しない。PR commentにもmatrixはない。\nこのため formal なfinding closureは開始条件を満たさず、4件をresolvedとは判定しない。previous finding identity / severityはそのまま維持する。\n\n## Preliminary verification\n\nclosure verdictには使用しない事前確認として、current HEADで次を確認した。\n\n### PR78-NR-001 / medium\n\n- 旧「リポジトリの参照・更新…GitHub connector」文言は埋め込みRevMem例から消えている。\n- `認可されたgit commit／pushは接続PC上でRDC経由` の指示が存在する。\n- 修正方向はrequired actionと一致する。\n\n### PR78-NR-002 / medium\n\n- Issue #73 implementation handoffの3 `commands[].execution_environment` は全てobject。\n- `machine_id=FA780`、`repository=ssaattww/CodexSkill`を保持する。\n- YAML parse focused checkは `bad_count=0`。\n\n### PR78-NR-003 / medium\n\n- execution design / hierarchy designは#70当時、#69統合履歴、current #73 packageを分離して記述している。\n- current builder生成ZIP rootは8件。\n- `document-wording-review`はcurrent package / skill treeに存在しない。\n- hierarchy設計2ファイルはbyte-identical。\n\n### PR78-NR-004 / low\n\n- `tasks/phases-status.md` のUpdatedは`2026-09-15`。\n- Phase 11 / T-007はrequired findings修正済み・same normal reviewer fix verification待ちへ同期されている。\n## Validation\n\n- RDC worktree: clean / `90a255fe57b5b6751b8f687279b0cde0481e5a4a`\n- `python scripts/run_validation.py --output-dir C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1`: pass\n- repository / bundle / ZIP integrity / ZIP contents: all pass\n- `git diff --check ae63a10...90a255f`: pass\n- PR78-NR-001 focused check: expected new text present, old text absent\n- PR78-NR-002 focused schema check: pass (`bad_count=0`)\n- PR78-NR-003 focused package check: 8 roots / hierarchy mirror equal\n- PR78-NR-004 focused tracking check: pass\n- Exact-head CI: `Validate and release ChatGPT worker skills` run `34959670925`, HEAD `90a255fe57b5b6751b8f687279b0cde0481e5a4a`, build success\n\n## Finding dispositions\n\n- `PR78-NR-001 / medium`: open / not formally re-verified\n- `PR78-NR-002 / medium`: open / not formally re-verified\n- `PR78-NR-003 / medium`: open / not formally re-verified\n- `PR78-NR-004 / low`: open / not formally re-verified\n\ntechnical fixのpreliminary evidenceは4件とも良好だが、closure readiness gateを満たしていないためresolvedへ変更しない。\n\n## Required next action\n\nimplementation follow-upで4 findingそれぞれについて、`finding_id`、`required_action`、`production_path`、`actual_composition_fixture`、`focused_evidence`を持つcompleteness matrixを保存する。matrixはreview対象HEADに結び付け、repositoryへ変更を加えた場合は新しいcurrent HEADをfix verification対象とする。\n\nmatrix保存後、この同じnormal reviewer chatで`fix_verification`を再開する。独立最終レビューにはまだ進まない。mergeは行わない。\n",
+        "evidence_sources": [
+          "RDC current-HEAD worktree",
+          "previous normal review report/handoff",
+          "follow-up report/handoff",
+          "GitHub exact-head CI"
+        ],
+        "target_identity": {
+          "branch": "issue-73-rdc-git",
+          "base_ref": "main",
+          "current_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+          "reviewed_implementation_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a"
+        },
+        "verification": {
+          "capability": "local_execution_available",
+          "technical_head": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+          "administrative_parent": null,
+          "commit_state": "commit_pending",
+          "push_state": "pushed",
+          "ci_wait_state": "ci_wait_completed"
+        },
+        "execution_environment": {
+          "kind": "connected_computer",
+          "tool": "Remote Desktop Commander",
+          "machine_id": "FA780",
+          "connection": "available",
+          "os": "Windows 11",
+          "shell": "powershell.exe",
+          "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "repository": "ssaattww/CodexSkill",
+          "branch": "issue-73-rdc-git",
+          "head_sha": "90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+          "source_state": "clean",
+          "source_fingerprint": "git-head:90a255fe57b5b6751b8f687279b0cde0481e5a4a",
+          "ownership": "current_task",
+          "writable_paths": [
+            "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+            "C:\\Users\\donabe\\Project\\CodexSkill-pr78-fixverify-20260915-r1"
+          ],
+          "dependencies": [
+            {
+              "name": "git",
+              "status": "available",
+              "evidence": "RDC git inspection succeeded"
+            },
+            {
+              "name": "python",
+              "status": "available",
+              "evidence": "current-HEAD repository validation succeeded"
+            },
+            {
+              "name": "node/yaml",
+              "status": "available",
+              "evidence": "focused YAML schema check succeeded"
+            }
+          ],
+          "evidence": [
+            "FA780 pinned by read-only discovery",
+            "Issue #73 dedicated worktree clean at current PR HEAD"
+          ]
+        },
+        "independent_closure": {
+          "initial_independent_reviewed_head": null,
+          "closure_reviewed_heads": [],
+          "reviewer_continuity": null,
+          "closure_scope": [],
+          "completeness_matrix": []
+        },
+        "severity_records": [
+          {
+            "finding_id": "PR78-NR-001",
+            "source_severity": "medium",
+            "new_severity": null,
+            "reason": null,
+            "approved_by": null,
+            "record_type": "preserved"
+          },
+          {
+            "finding_id": "PR78-NR-002",
+            "source_severity": "medium",
+            "new_severity": null,
+            "reason": null,
+            "approved_by": null,
+            "record_type": "preserved"
+          },
+          {
+            "finding_id": "PR78-NR-003",
+            "source_severity": "medium",
+            "new_severity": null,
+            "reason": null,
+            "approved_by": null,
+            "record_type": "preserved"
+          },
+          {
+            "finding_id": "PR78-NR-004",
+            "source_severity": "low",
+            "new_severity": null,
+            "reason": null,
+            "approved_by": null,
+            "record_type": "preserved"
+          }
+        ],
+        "persistence": {
+          "mode": "repository_file",
+          "reserved_paths": [
+            "reports/issue-73-pr78-fix-verification-20260915.md"
+          ],
+          "report_attestation_head": null
+        },
+        "concise_pr_comment_body": "PR #78 fix verification is incomplete because the mandatory four-finding completeness matrix is absent. Preliminary focused checks pass; source findings remain open.",
+        "unresolved_discrepancies": [
+          "Follow-up handoff declares four addressed findings but does not provide the closure-readiness completeness matrix required by review-worker."
+        ]
+      }
+    }
+  ],
+  "extensions": [
+    {
+      "namespace": "normal_fix_verification.closure_readiness",
+      "payload": {
+        "matrix": [
+          {
+            "finding_id": "PR78-NR-001",
+            "required_action": "Synchronize embedded instruction with RDC commit/push and connector responsibilities.",
+            "production_path": null,
+            "actual_composition_fixture": null,
+            "focused_evidence": null,
+            "disposition": "missing_input"
+          },
+          {
+            "finding_id": "PR78-NR-002",
+            "required_action": "Preserve execution_environment object for each command and validate type.",
+            "production_path": null,
+            "actual_composition_fixture": null,
+            "focused_evidence": null,
+            "disposition": "missing_input"
+          },
+          {
+            "finding_id": "PR78-NR-003",
+            "required_action": "Separate historical and current state and align design with actual package.",
+            "production_path": null,
+            "actual_composition_fixture": null,
+            "focused_evidence": null,
+            "disposition": "missing_input"
+          },
+          {
+            "finding_id": "PR78-NR-004",
+            "required_action": "Synchronize phase/task tracking with current normal-review follow-up state.",
+            "production_path": null,
+            "actual_composition_fixture": null,
+            "focused_evidence": null,
+            "disposition": "missing_input"
+          }
+        ],
+        "status": "missing"
+      }
+    }
+  ],
+  "next_action": {
+    "type": "implementation",
+    "target_skill": "chat-implementation-worker",
+    "mode": "review follow-up",
+    "summary": "Persist a complete closure matrix for PR78-NR-001..004, then return to the same normal reviewer.",
+    "instructions": [
+      "Preserve source finding IDs and severities.",
+      "Bind every matrix row to the review target HEAD."
+    ],
+    "required_attachments_or_references": [
+      "reports/issue-73-pr78-fix-verification-20260915.md",
+      "reports/handoffs/issue-73-pr78-fix-verification-20260915.json"
+    ],
+    "requested_authorized_actions": [
+      "read_repository",
+      "write_report",
+      "write_handoff",
+      "commit",
+      "push",
+      "update_pr",
+      "comment_pr"
+    ]
+  },
+  "transport": {
+    "method": "repository_file",
+    "packet_path": "reports/handoffs/issue-73-pr78-fix-verification-20260915.json",
+    "packet_url": null,
+    "transport_note": "Recheck current HEAD, source identity, connection and permissions before reuse."
+  }
+}
