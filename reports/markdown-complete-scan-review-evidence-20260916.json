@@ -1,0 +1,893 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-15T20:45:14.122094+00:00",
+  "reviewed_implementation_head": "279b8da9ffe954f78fd8461555be429f1bdcc100",
+  "base_head": "106ea5dcf12c4805756351fb9381df220b94f044",
+  "reproduction_results": {
+    "reviewed_head": "279b8da9ffe954f78fd8461555be429f1bdcc100",
+    "base_head": "106ea5dcf12c4805756351fb9381df220b94f044",
+    "dependencies": {
+      "sudachipy": "0.6.11",
+      "sudachidict_core": "20260428",
+      "PyYAML": "6.0.3"
+    },
+    "python": "3.13.7 (main, Aug 28 2025, 17:07:40) [Clang 20.1.4 ]",
+    "node": "v22.13.1",
+    "cspell": "9.8.0",
+    "records": [
+      {
+        "name": "base-boundary",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_checker.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ギア' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 48033
+      },
+      {
+        "name": "base-shifted",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_checker.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ギア' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 48036
+      },
+      {
+        "name": "base-explicit-note.txt",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_checker.py",
+          "--files",
+          "note.txt"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- note.txt:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": null
+      },
+      {
+        "name": "base-explicit-note.md",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_checker.py",
+          "--files",
+          "note.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- note.md:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": null
+      },
+      {
+        "name": "head-boundary",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 48033
+      },
+      {
+        "name": "head-shifted",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ギア' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 48036
+      },
+      {
+        "name": "head-explicit-note.txt",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--files",
+          "note.txt"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-explicit-note.md",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--files",
+          "note.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- note.md:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": null
+      },
+      {
+        "name": "head-english",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 15
+      },
+      {
+        "name": "head-katakana",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ジッタ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 9
+      },
+      {
+        "name": "head-kanji",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 39
+      },
+      {
+        "name": "head-approved",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 17
+      },
+      {
+        "name": "head-hiragana",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 37
+      },
+      {
+        "name": "head-adjacent",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 35
+      },
+      {
+        "name": "head-suffix",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHostx' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 18
+      },
+      {
+        "name": "head-underscore",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHost_xyz' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 21
+      },
+      {
+        "name": "head-footnote-label",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 27
+      },
+      {
+        "name": "head-footnote-body",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 24
+      },
+      {
+        "name": "head-footnote-multiline",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:3: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 42
+      },
+      {
+        "name": "head-code",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 41
+      },
+      {
+        "name": "head-link-label",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 51
+      },
+      {
+        "name": "head-long-multiline",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:6002: 'ジッタ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 114010
+      },
+      {
+        "name": "head-long-line",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:2: 'ジッタ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "input_bytes": 96010
+      },
+      {
+        "name": "head-compound-dot",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 35
+      },
+      {
+        "name": "head-compound-hyphen",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 35
+      },
+      {
+        "name": "base-cspell-approved",
+        "command": [
+          "node",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_cspell.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "base-cspell-suffix",
+        "command": [
+          "node",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_cspell.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "base-cspell-hiragana",
+        "command": [
+          "node",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_cspell.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "base-cspell-kanji-right",
+        "command": [
+          "node",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_cspell.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "base-cspell-kanji-left",
+        "command": [
+          "node",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_cspell.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "base-cspell-compound-dot",
+        "command": [
+          "node",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_cspell.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "base-cspell-compound-hyphen",
+        "command": [
+          "node",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_cspell.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "base-cspell-footnote",
+        "command": [
+          "node",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/base_cspell.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 1,
+        "stdout": "note.md:1:3 - Unknown word (note)\n",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-cspell-approved",
+        "command": [
+          "node",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/run-cspell-markdown.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-cspell-suffix",
+        "command": [
+          "node",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/run-cspell-markdown.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 1,
+        "stdout": "note.md:1:1 - Unknown word (Tracker)\nnote.md:1:9 - Unknown word (Debug)\nnote.md:1:14 - Unknown word (Hostx)\n",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-cspell-hiragana",
+        "command": [
+          "node",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/run-cspell-markdown.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-cspell-kanji-right",
+        "command": [
+          "node",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/run-cspell-markdown.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 1,
+        "stdout": "note.md:1:1 - Unknown word (Tracker)\nnote.md:1:9 - Unknown word (Debug)\nnote.md:1:14 - Unknown word (Host)\n",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-cspell-kanji-left",
+        "command": [
+          "node",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/run-cspell-markdown.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 1,
+        "stdout": "note.md:1:3 - Unknown word (Tracker)\nnote.md:1:11 - Unknown word (Debug)\nnote.md:1:16 - Unknown word (Host)\n",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-cspell-compound-dot",
+        "command": [
+          "node",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/run-cspell-markdown.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-cspell-compound-hyphen",
+        "command": [
+          "node",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/run-cspell-markdown.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-cspell-footnote",
+        "command": [
+          "node",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/run-cspell-markdown.js",
+          "--no-progress",
+          "--no-summary",
+          "note.md"
+        ],
+        "exit_code": 1,
+        "stdout": "note.md:1:10 - Unknown word (qzxvunknownword)\n",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "head-python-kanji-right",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 23
+      },
+      {
+        "name": "head-python-kanji-left",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py",
+          "--stdin",
+          "probe.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": 23
+      },
+      {
+        "name": "python-syntax",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXbeUUr/bin/python",
+          "-c",
+          "import ast,pathlib; ast.parse(pathlib.Path(__import__('sys').argv[1]).read_text())",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "node-syntax",
+        "command": [
+          "node",
+          "--check",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/skills/review-enforcer/scripts/run-cspell-markdown.js"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      },
+      {
+        "name": "diff-check",
+        "command": [
+          "git",
+          "-C",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916",
+          "diff",
+          "--check",
+          "106ea5dcf12c4805756351fb9381df220b94f044...279b8da9ffe954f78fd8461555be429f1bdcc100"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "input_bytes": null
+      }
+    ],
+    "chunk_checks": [
+      {
+        "name": "empty",
+        "input_bytes": 0,
+        "chunks": 0,
+        "pass": true
+      },
+      {
+        "name": "ascii",
+        "input_bytes": 100001,
+        "chunks": 3,
+        "pass": true
+      },
+      {
+        "name": "kanji",
+        "input_bytes": 120000,
+        "chunks": 3,
+        "pass": true
+      },
+      {
+        "name": "emoji",
+        "input_bytes": 100004,
+        "chunks": 3,
+        "pass": true
+      },
+      {
+        "name": "lines",
+        "input_bytes": 70000,
+        "chunks": 2,
+        "pass": true
+      },
+      {
+        "name": "crlf",
+        "input_bytes": 80000,
+        "chunks": 2,
+        "pass": true
+      },
+      {
+        "name": "boundary",
+        "input_bytes": 48033,
+        "chunks": 2,
+        "pass": true
+      },
+      {
+        "name": "mixed",
+        "input_bytes": 176000,
+        "chunks": 4,
+        "pass": true
+      },
+      {
+        "name": "exact48k",
+        "input_bytes": 48000,
+        "chunks": 1,
+        "pass": true
+      },
+      {
+        "name": "short",
+        "input_bytes": 7,
+        "chunks": 1,
+        "pass": true
+      },
+      {
+        "name": "unicode-lines",
+        "input_bytes": 90000,
+        "chunks": 2,
+        "pass": true
+      }
+    ]
+  },
+  "reproduction_program": {
+    "language": "Python",
+    "source": "import importlib.util, importlib.metadata, json, os, pathlib, subprocess, sys, types\nimport yaml\nROOT = pathlib.Path('/home/ibis/AI/CodexSkill-pr81-review-20260916')\nOUT = pathlib.Path(__file__).parent\nFIX = OUT / 'fixture'\nHEAD = '279b8da9ffe954f78fd8461555be429f1bdcc100'\nBASE = '106ea5dcf12c4805756351fb9381df220b94f044'\nSCRIPT = 'skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py'\nCSPELL = 'skills/review-enforcer/scripts/run-cspell-markdown.js'\nassert subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip() == HEAD\n(FIX/'tools/lint/markdown-whitelist.yaml').write_text(yaml.safe_dump({'entries':[\n {'term':'Tracker.DebugHost','description':'せつめい'}, {'term':'API','description':'せつめい'}]},allow_unicode=True))\nrecords=[]\ndef run(name, command, text=None):\n p=subprocess.run(command,cwd=FIX,input=text,text=True,capture_output=True,timeout=60)\n (OUT/(name+'.stdout.log')).write_text(p.stdout)\n (OUT/(name+'.stderr.log')).write_text(p.stderr)\n records.append({'name':name,'command':command,'exit_code':p.returncode,\n  'stdout':p.stdout,'stderr':p.stderr,'input_bytes':None if text is None else len(text.encode())})\n return p.returncode\npy_scripts={'base':OUT/'base_checker.py','head':ROOT/SCRIPT}\njs_scripts={'base':OUT/'base_cspell.js','head':ROOT/CSPELL}\nfor version, script in py_scripts.items():\n for label,text in [('boundary','あ'*15999+'ギア'+'あ'*10),('shifted','あ'*16000+'ギア'+'あ'*10)]:\n  run(version+'-'+label,[sys.executable,str(script),'--stdin','probe.md'],text)\n for target in ['note.txt','note.md']:\n  (FIX/target).write_text('qzxvunknownword')\n  run(version+'-explicit-'+target,[sys.executable,str(script),'--files',target])\nfor label,text in [('english','qzxvunknownword'),('katakana','ジッタ'),\n ('kanji','一般的な名詞を検査します。'),('approved','Tracker.DebugHost'),\n ('hiragana','Tracker.DebugHostとTracker.DebugHost'),('adjacent','Tracker.DebugHost Tracker.DebugHost'),\n ('suffix','Tracker.DebugHostx'),('underscore','Tracker.DebugHost_xyz'),\n ('footnote-label','本文[^qzxvlabel]です。'),('footnote-body','[^note]: qzxvunknownword'),\n ('footnote-multiline','[^note]: せつめい\\n\\n    qzxvunknownword'),\n ('code','```\\nqzxvunknownword\\n```\\n`qzxvunknownword`'),\n ('link-label','[qzxvunknownword](https://example.invalid/qzxvpath)'),\n ('long-multiline','仕様の説明。\\n'*6000+'\\nジッタ'),\n ('long-line','あ'*32000+'\\nジッタ'),('compound-dot','Tracker.DebugHost.Tracker.DebugHost'),\n ('compound-hyphen','Tracker.DebugHost-Tracker.DebugHost')]:\n run('head-'+label,[sys.executable,str(ROOT/SCRIPT),'--stdin','probe.md'],text)\nfor version,script in js_scripts.items():\n for label,text in [('approved','Tracker.DebugHost'),('suffix','Tracker.DebugHostx'),\n  ('hiragana','Tracker.DebugHostと'),('kanji-right','Tracker.DebugHost構成'),\n  ('kanji-left','構成Tracker.DebugHost'),('compound-dot','Tracker.DebugHost.Tracker.DebugHost'),\n  ('compound-hyphen','Tracker.DebugHost-Tracker.DebugHost'),('footnote','[^note]: qzxvunknownword')]:\n  (FIX/'note.md').write_text(text)\n  run(version+'-cspell-'+label,['node',str(script),'--no-progress','--no-summary','note.md'])\nfor label,text in [('kanji-right','Tracker.DebugHost構成'),('kanji-left','構成Tracker.DebugHost')]:\n run('head-python-'+label,[sys.executable,str(ROOT/SCRIPT),'--stdin','probe.md'],text)\nrun('python-syntax',[sys.executable,'-c',\"import ast,pathlib; ast.parse(pathlib.Path(__import__('sys').argv[1]).read_text())\",str(ROOT/SCRIPT)])\nrun('node-syntax',['node','--check',str(ROOT/CSPELL)])\nrun('diff-check',['git','-C',str(ROOT),'diff','--check',BASE+'...'+HEAD])\nspec=importlib.util.spec_from_file_location('probe_checker',ROOT/SCRIPT)\nm=importlib.util.module_from_spec(spec);sys.modules[spec.name]=m;spec.loader.exec_module(m)\nchunk_checks=[]\nfor name,text in [('empty',''),('ascii','a'*100001),('kanji','漢'*40000),\n ('emoji','🙂'*25001),('lines','説明\\n'*10000),('crlf','説明\\r\\n'*10000),\n ('boundary','あ'*15999+'ギア'+'あ'*10),('mixed','abc漢🙂\\n'*16000),\n ('exact48k','あ'*16000),('short','説明\\n'),('unicode-lines','説明\\u2028'*10000)]:\n chunks=list(m.iter_sudachi_chunks(text));position=0\n for offset,chunk in chunks:\n  assert offset==position;position+=len(chunk);assert len(chunk.encode())<=48000\n assert ''.join(c for _,c in chunks)==text\n chunk_checks.append({'name':name,'input_bytes':len(text.encode()),'chunks':len(chunks),'pass':True})\nsummary={'reviewed_head':HEAD,'base_head':BASE,\n 'dependencies':{n:importlib.metadata.version(n) for n in ['sudachipy','sudachidict_core','PyYAML']},\n 'python':sys.version,'node':subprocess.check_output(['node','--version'],text=True).strip(),\n 'cspell':json.loads((FIX/'node_modules/cspell/package.json').read_text())['version'],\n 'records':records,'chunk_checks':chunk_checks}\n(OUT/'probe-results.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\\n')\nfor row in records:print(row['name'],row['exit_code'])\nprint('chunk checks:',len(chunk_checks),'passed')\nprint('saved:',OUT/'probe-results.json')\n",
+    "note": "一時的な再現に使用した本文。ROOT・OUTおよび既存の比較元スクリプトと検証用設定を同等に準備して実行する。恒久テストとして追加していない。"
+  },
+  "baseline_sources": {
+    "python": "#!/usr/bin/env python3\n\"\"\"Check Markdown vocabulary against tools/lint/markdown-whitelist.yaml.\"\"\"\n\nfrom __future__ import annotations\n\nimport argparse\nimport json\nimport os\nimport re\nimport subprocess\nimport sys\nimport unicodedata\nfrom collections import Counter\nfrom dataclasses import dataclass, field\nfrom pathlib import Path\nfrom typing import Iterable\n\n\nTARGET_CONFIG = Path(\"tools/lint/markdown-targets.json\")\nWHITELIST_PATH = Path(\"tools/lint/markdown-whitelist.yaml\")\nTARGET_SUFFIXES = (\".md\", \".txt\")\nDEPENDENCY_HINT = (\n    \"Missing dependency: {module}. Run `pip install -r tools/lint/requirements.txt` \"\n    \"from the target repository root.\"\n)\n\nENGLISH_RE = re.compile(r\"(?<![A-Za-z0-9])[A-Za-z][A-Za-z0-9]*(?:[._-][A-Za-z0-9]+)*\")\nFENCE_RE = re.compile(r\"^[ \\t]*(```|~~~)[^\\n]*(?:\\n[\\s\\S]*?)?^[ \\t]*\\1[^\\n]*(?=\\n|$)\", re.MULTILINE)\nINLINE_CODE_RE = re.compile(r\"`[^`\\n]+`\")\nFOOTNOTE_DEF_RE = re.compile(r\"^\\[\\^[^\\]]+\\]:.*$\", re.MULTILINE)\nURL_RE = re.compile(r\"https?://[^\\s)]+\")\nMAILTO_RE = re.compile(r\"mailto:[^\\s)]+\")\nHTML_COMMENT_RE = re.compile(r\"<!--[\\s\\S]*?-->\")\nREFERENCE_LINK_RE = re.compile(r\"^\\[[^\\]\\n]+\\]:\\s+\\S+.*$\", re.MULTILINE)\nINLINE_LINK_RE = re.compile(r\"!?\\[[^\\]\\n]+\\]\\([^)]+\\)\")\nKATAKANA_RE = re.compile(r\"[\\u30A0-\\u30FF]\")\nCJK_RE = re.compile(r\"[\\u3400-\\u9FFF]\")\n\n\n@dataclass\nclass Whitelist:\n    entries: list[dict]\n    terms: set[str]\n    value_pattern: re.Pattern[str] | None\n\n\n@dataclass\nclass Violation:\n    source: str\n    line: int\n    token: str\n    normalized: str\n    kind: str\n\n\n@dataclass\nclass UnknownWord:\n    word: str\n    normalized: str\n    kind: str\n    count: int = 0\n    sources: Counter[str] = field(default_factory=Counter)\n\n\ndef main() -> int:\n    args = parse_args()\n    yaml_module = import_yaml()\n    tokenizer_obj, split_mode = create_sudachi_tokenizer()\n    root = Path.cwd()\n    target_config = read_target_config(root)\n    stdin_text = sys.stdin.read() if args.stdin else None\n    whitelist = read_whitelist(root, yaml_module, args.stdin, stdin_text)\n\n    inputs = read_inputs(root, target_config, whitelist, args.stdin, stdin_text, args.files, args.changed)\n    violations: list[Violation] = []\n    unknown_words: dict[tuple[str, str], UnknownWord] = {}\n\n    for relative_path, text in inputs:\n        cleaned = mask_whitelist_values(strip_markdown_noise(text), whitelist.value_pattern)\n        check_english_tokens(relative_path, cleaned, whitelist, violations, unknown_words)\n        check_japanese_tokens(relative_path, cleaned, tokenizer_obj, split_mode, whitelist, violations, unknown_words)\n\n    if args.list_unknown:\n        print_unknown_words(unknown_words)\n\n    if violations:\n        print(\"Markdown whitelist violations:\", file=sys.stderr)\n        for violation in violations[:200]:\n            print(\n                f\"- {violation.source}:{violation.line}: '{violation.token}' \"\n                f\"({violation.kind}) is not in tools/lint/markdown-whitelist.yaml.\",\n                file=sys.stderr,\n            )\n        if len(violations) > 200:\n            print(f\"- ... {len(violations) - 200} more violations\", file=sys.stderr)\n        return 1\n\n    return 0\n\n\ndef parse_args() -> argparse.Namespace:\n    parser = argparse.ArgumentParser(description=\"Check Markdown vocabulary with SudachiPy.\")\n    parser.add_argument(\"--files\", nargs=\"+\", help=\"Specific .md/.txt files to inspect.\")\n    parser.add_argument(\"--changed\", action=\"store_true\", help=\"Inspect changed .md/.txt files only.\")\n    parser.add_argument(\"--stdin\", metavar=\"PATH\", help=\"Read one file body from stdin and use PATH for diagnostics.\")\n    parser.add_argument(\"--list-unknown\", action=\"store_true\", help=\"Print unknown normalized tokens.\")\n    return parser.parse_args()\n\n\ndef import_yaml():\n    try:\n        import yaml\n    except ImportError as exc:\n        print(DEPENDENCY_HINT.format(module=exc.name or \"PyYAML\"), file=sys.stderr)\n        raise SystemExit(2) from exc\n    return yaml\n\n\ndef create_sudachi_tokenizer():\n    try:\n        from sudachipy import dictionary\n        from sudachipy import tokenizer as sudachi_tokenizer\n    except ImportError as exc:\n        print(DEPENDENCY_HINT.format(module=exc.name or \"SudachiPy\"), file=sys.stderr)\n        raise SystemExit(2) from exc\n\n    try:\n        return dictionary.Dictionary().create(), sudachi_tokenizer.Tokenizer.SplitMode.C\n    except Exception as exc:\n        print(DEPENDENCY_HINT.format(module=\"SudachiPy dictionary\"), file=sys.stderr)\n        print(f\"SudachiPy initialization failed: {exc}\", file=sys.stderr)\n        raise SystemExit(2) from exc\n\n\ndef read_target_config(root: Path) -> dict[str, list[str]]:\n    config_path = root / TARGET_CONFIG\n    if not config_path.exists():\n        print(f\"{config_path}: missing. Run this script from the target repository root.\", file=sys.stderr)\n        raise SystemExit(2)\n\n    data = json.loads(config_path.read_text(encoding=\"utf-8\"))\n    return {\n        \"ignoreDirectories\": list(data.get(\"ignoreDirectories\") or []),\n        \"ignoredPrefixes\": [normalize_prefix(prefix) for prefix in data.get(\"ignoredPrefixes\") or []],\n    }\n\n\ndef read_whitelist(root: Path, yaml_module, stdin_path: str | None, stdin_text: str | None) -> Whitelist:\n    if stdin_path and is_whitelist_path(stdin_path):\n        data = yaml_module.safe_load(stdin_text or \"\") or {}\n        path_label = stdin_path\n    else:\n        whitelist_path = root / WHITELIST_PATH\n        if not whitelist_path.exists():\n            print(f\"{whitelist_path}: missing. Run this script from the target repository root.\", file=sys.stderr)\n            raise SystemExit(2)\n        data = yaml_module.safe_load(whitelist_path.read_text(encoding=\"utf-8\")) or {}\n        path_label = str(WHITELIST_PATH)\n\n    entries = data.get(\"entries\") if isinstance(data, dict) else None\n    if not isinstance(entries, list):\n        raise ValueError(f\"{path_label}: entries must be a list.\")\n\n    terms: set[str] = set()\n    values: list[str] = []\n    for index, entry in enumerate(entries, start=1):\n        if not isinstance(entry, dict):\n            raise ValueError(f\"{path_label}: entry #{index} must be a mapping.\")\n        term = entry.get(\"term\")\n        description = entry.get(\"description\")\n        if not isinstance(term, str) or not term.strip():\n            raise ValueError(f\"{path_label}: entry #{index} must include term.\")\n        if not isinstance(description, str) or not description.strip():\n            raise ValueError(f\"{path_label}: entry '{term}' must include description.\")\n\n        aliases = normalize_aliases(entry.get(\"aliases\"))\n        for value in [term, *aliases]:\n            values.append(value)\n            terms.add(normalize_term(value))\n\n    return Whitelist(entries=entries, terms=terms, value_pattern=build_whitelist_value_pattern(values))\n\n\ndef normalize_aliases(aliases) -> list[str]:\n    if aliases is None:\n        return []\n    if isinstance(aliases, str):\n        return [aliases]\n    if isinstance(aliases, list) and all(isinstance(item, str) for item in aliases):\n        return aliases\n    raise ValueError(\"aliases must be a string or a list of strings.\")\n\n\ndef read_inputs(\n    root: Path,\n    target_config: dict[str, list[str]],\n    whitelist: Whitelist,\n    stdin_path: str | None,\n    stdin_text: str | None,\n    explicit_files: list[str] | None,\n    changed: bool,\n) -> list[tuple[str, str]]:\n    if stdin_path:\n        normalized_stdin_path = normalize_path(Path(stdin_path))\n        if is_whitelist_path(stdin_path):\n            return read_whitelist_value_inputs(normalized_stdin_path, whitelist.entries)\n        return [(normalized_stdin_path, stdin_text or \"\")]\n\n    files = select_target_files(root, target_config, explicit_files, changed)\n    inputs = [\n        (normalize_path(file_path.relative_to(root)), file_path.read_text(encoding=\"utf-8\"))\n        for file_path in files\n    ]\n    inputs.extend(read_whitelist_description_inputs(whitelist.entries))\n    return inputs\n\n\ndef read_whitelist_description_inputs(entries: list[dict]) -> list[tuple[str, str]]:\n    return [\n        (f\"{WHITELIST_PATH}:{entry['term']} [whitelist description]\", entry[\"description\"])\n        for entry in entries\n    ]\n\n\ndef read_whitelist_value_inputs(relative_path: str, entries: list[dict]) -> list[tuple[str, str]]:\n    inputs: list[tuple[str, str]] = []\n    for entry in entries:\n        for value in [entry[\"term\"], *normalize_aliases(entry.get(\"aliases\"))]:\n            inputs.append((f\"{relative_path}:{entry['term']} [whitelist value]\", value))\n        inputs.append((f\"{relative_path}:{entry['term']} [whitelist description]\", entry[\"description\"]))\n    return inputs\n\n\ndef select_target_files(\n    root: Path,\n    target_config: dict[str, list[str]],\n    explicit_files: list[str] | None,\n    changed: bool,\n) -> list[Path]:\n    if explicit_files is not None:\n        candidates = [resolve_candidate(root, file_name) for file_name in explicit_files]\n    elif changed:\n        candidates = [root / file_name for file_name in list_changed_files(root)]\n    else:\n        candidates = list_all_target_files(root, target_config)\n\n    root_resolved = root.resolve()\n    return sorted(\n        {\n            path.resolve()\n            for path in candidates\n            if path is not None and path.exists() and path.is_file() and is_target_file(path)\n            and not is_ignored(normalize_path(path.resolve().relative_to(root_resolved)), target_config)\n        },\n        key=lambda item: normalize_path(item.relative_to(root_resolved)),\n    )\n\n\ndef resolve_candidate(root: Path, file_name: str) -> Path | None:\n    path = Path(file_name)\n    if path.is_absolute():\n        try:\n            path.resolve().relative_to(root.resolve())\n        except ValueError:\n            return None\n        return path\n    return root / path\n\n\ndef list_changed_files(root: Path) -> set[str]:\n    candidates: set[str] = set()\n    git_commands = [\n        [\"diff\", \"--name-only\", \"--diff-filter=ACMR\"],\n        [\"diff\", \"--cached\", \"--name-only\", \"--diff-filter=ACMR\"],\n        [\"ls-files\", \"--others\", \"--exclude-standard\"],\n    ]\n    for args in git_commands:\n        result = subprocess.run([\"git\", *args], cwd=root, text=True, stdout=subprocess.PIPE, check=False)\n        if result.returncode != 0:\n            continue\n        for line in result.stdout.splitlines():\n            file_name = line.strip()\n            if file_name:\n                candidates.add(file_name)\n    return candidates\n\n\ndef list_all_target_files(root: Path, target_config: dict[str, list[str]]) -> list[Path]:\n    files: list[Path] = []\n    ignore_directories = set(target_config[\"ignoreDirectories\"])\n    ignored_prefixes = target_config[\"ignoredPrefixes\"]\n\n    for current_root, directory_names, file_names in os.walk(root):\n        current = Path(current_root)\n        relative_current = normalize_path(current.relative_to(root)) if current != root else \"\"\n        directory_names[:] = [\n            directory_name\n            for directory_name in directory_names\n            if directory_name not in ignore_directories\n            and not prefix_ignored(join_path(relative_current, directory_name) + \"/\", ignored_prefixes)\n        ]\n        for file_name in file_names:\n            path = current / file_name\n            relative_path = normalize_path(path.relative_to(root))\n            if is_target_file(path) and not is_ignored(relative_path, target_config):\n                files.append(path)\n    return files\n\n\ndef is_target_file(path: Path) -> bool:\n    return path.suffix.lower() in TARGET_SUFFIXES\n\n\ndef is_ignored(relative_path: str, target_config: dict[str, list[str]]) -> bool:\n    segments = relative_path.split(\"/\")\n    return (\n        any(segment in set(target_config[\"ignoreDirectories\"]) for segment in segments)\n        or prefix_ignored(relative_path, target_config[\"ignoredPrefixes\"])\n    )\n\n\ndef prefix_ignored(relative_path: str, ignored_prefixes: Iterable[str]) -> bool:\n    return any(relative_path.startswith(prefix) for prefix in ignored_prefixes)\n\n\ndef normalize_prefix(prefix: str) -> str:\n    return normalize_path(prefix)\n\n\ndef normalize_path(path: str | Path) -> str:\n    return str(path).replace(os.sep, \"/\")\n\n\ndef is_whitelist_path(path: str | Path) -> bool:\n    path_object = Path(path)\n    if path_object.is_absolute():\n        try:\n            path_object = path_object.resolve().relative_to(Path.cwd().resolve())\n        except ValueError:\n            return False\n    normalized = normalize_path(path_object)\n    if normalized.startswith(\"./\"):\n        normalized = normalized[2:]\n    return normalized == normalize_path(WHITELIST_PATH)\n\n\ndef join_path(left: str, right: str) -> str:\n    return f\"{left}/{right}\" if left else right\n\n\ndef strip_markdown_noise(text: str) -> str:\n    cleaned = FENCE_RE.sub(blank_preserving, text)\n    cleaned = INLINE_CODE_RE.sub(blank_preserving, cleaned)\n    cleaned = FOOTNOTE_DEF_RE.sub(blank_preserving, cleaned)\n    cleaned = URL_RE.sub(blank_preserving, cleaned)\n    cleaned = MAILTO_RE.sub(blank_preserving, cleaned)\n    cleaned = HTML_COMMENT_RE.sub(blank_preserving, cleaned)\n    cleaned = REFERENCE_LINK_RE.sub(strip_reference_link_address, cleaned)\n    cleaned = INLINE_LINK_RE.sub(strip_inline_link_address, cleaned)\n    return cleaned\n\n\ndef blank_preserving(value: str | re.Match[str]) -> str:\n    text = value.group(0) if isinstance(value, re.Match) else value\n    return re.sub(r\"[^\\n]\", \" \", text)\n\n\ndef strip_reference_link_address(match: re.Match[str]) -> str:\n    value = match.group(0)\n    return re.sub(r\":\\s+\\S+.*$\", lambda address: \":\" + blank_preserving(address.group(0)[1:]), value)\n\n\ndef strip_inline_link_address(match: re.Match[str]) -> str:\n    value = match.group(0)\n    return re.sub(r\"\\([^)]+\\)\", blank_preserving, value)\n\n\ndef mask_whitelist_values(text: str, value_pattern: re.Pattern[str] | None) -> str:\n    if value_pattern is None:\n        return text\n\n    def replace(match: re.Match[str]) -> str:\n        return f\"{match.group(1)}{blank_preserving(match.group(2))}\"\n\n    return value_pattern.sub(replace, text)\n\n\ndef build_whitelist_value_pattern(values: list[str]) -> re.Pattern[str] | None:\n    alternatives = [\n        re.escape(value).replace(r\"\\ \", r\"\\s+\")\n        for value in sorted(set(values), key=len, reverse=True)\n        if len(value) > 1\n    ]\n    if not alternatives:\n        return None\n    boundary = r\"A-Za-z0-9\\u3040-\\u30FF\\u3400-\\u9FFF\"\n    return re.compile(rf\"(^|[^{boundary}])({'|'.join(alternatives)})(?=$|[^{boundary}])\", re.IGNORECASE)\n\n\ndef check_english_tokens(\n    source: str,\n    text: str,\n    whitelist: Whitelist,\n    violations: list[Violation],\n    unknown_words: dict[tuple[str, str], UnknownWord],\n) -> None:\n    for match in ENGLISH_RE.finditer(text):\n        token = match.group(0)\n        if len(token) <= 1 or any(character.isdigit() for character in token):\n            continue\n        normalized = normalize_term(token)\n        if normalized not in whitelist.terms:\n            line = line_number_at(text, match.start())\n            record_violation(source, line, token, normalized, \"english\", violations, unknown_words)\n\n\ndef check_japanese_tokens(\n    source: str,\n    text: str,\n    tokenizer_obj,\n    split_mode,\n    whitelist: Whitelist,\n    violations: list[Violation],\n    unknown_words: dict[tuple[str, str], UnknownWord],\n) -> None:\n    cursor = 0\n    for morpheme in tokenizer_obj.tokenize(text, split_mode):\n        token = morpheme.surface()\n        index = text.find(token, cursor)\n        if index == -1:\n            index = cursor\n        cursor = index + len(token)\n\n        if not should_check_japanese(token, morpheme):\n            continue\n\n        normalized = normalize_term(sudachi_value(morpheme, \"normalized_form\") or token)\n        reading = normalize_term(sudachi_value(morpheme, \"reading_form\"))\n        surface_normalized = normalize_term(token)\n        if {normalized, reading, surface_normalized} & whitelist.terms:\n            continue\n\n        kind = \"japanese\" if CJK_RE.search(token) else \"katakana\"\n        line = line_number_at(text, index)\n        record_violation(source, line, token, normalized, kind, violations, unknown_words)\n\n\ndef should_check_japanese(surface: str, morpheme) -> bool:\n    if not (KATAKANA_RE.search(surface) or CJK_RE.search(surface)):\n        return False\n    normalized = normalize_term(surface).replace(\"・\", \"\").replace(\"ー\", \"\").replace(\".\", \"\").replace(\"_\", \"\").replace(\"-\", \"\")\n    if len(normalized) <= 1:\n        return False\n    part_of_speech = morpheme.part_of_speech()\n    return bool(part_of_speech) and part_of_speech[0] == \"名詞\"\n\n\ndef sudachi_value(morpheme, name: str) -> str:\n    value = getattr(morpheme, name, None)\n    if value is None:\n        return \"\"\n    result = value()\n    return \"\" if result == \"*\" else str(result)\n\n\ndef normalize_term(value: str) -> str:\n    return unicodedata.normalize(\"NFKC\", value).casefold()\n\n\ndef record_violation(\n    source: str,\n    line: int,\n    token: str,\n    normalized: str,\n    kind: str,\n    violations: list[Violation],\n    unknown_words: dict[tuple[str, str], UnknownWord],\n) -> None:\n    violations.append(Violation(source, line, token, normalized, kind))\n    key = (kind, normalized)\n    current = unknown_words.get(key)\n    if current is None:\n        current = UnknownWord(token, normalized, kind)\n        unknown_words[key] = current\n    current.count += 1\n    current.sources[source] += 1\n\n\ndef print_unknown_words(unknown_words: dict[tuple[str, str], UnknownWord]) -> None:\n    for item in sorted(unknown_words.values(), key=lambda value: (value.kind, value.normalized)):\n        sources = \",\".join(f\"{source}:{count}\" for source, count in sorted(item.sources.items()))\n        print(f\"{item.kind}\\t{item.word}\\t{item.normalized}\\t{item.count}\\t{sources}\")\n\n\ndef line_number_at(text: str, index: int) -> int:\n    return text.count(\"\\n\", 0, index) + 1\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n",
+    "javascript": "\"use strict\";\n\nconst fs = require(\"fs\");\nconst os = require(\"os\");\nconst path = require(\"path\");\nconst { spawnSync } = require(\"child_process\");\nconst { createRequire } = require(\"module\");\n\nconst root = process.cwd();\nconst requireFromRepo = createRequire(path.join(root, \"package.json\"));\nconst YAML = requireFromRepo(\"yaml\");\nconst whitelistPath = path.join(root, \"tools\", \"lint\", \"markdown-whitelist.yaml\");\nconst baseConfigPath = path.join(root, \"cspell.config.jsonc\");\nconst baseConfig = JSON.parse(fs.readFileSync(baseConfigPath, \"utf8\"));\n\nconst whitelist = YAML.parse(fs.readFileSync(whitelistPath, \"utf8\"));\nconst entries = Array.isArray(whitelist.entries) ? whitelist.entries : [];\nconst values = entries.flatMap(entryValues).filter(Boolean);\nconst dictionaryTerms = values.filter((value) => !/[\\s._:<>-]/.test(value));\nconst ignoredValues = values.filter((value) => /[\\s._:<>-]/.test(value));\nconst markdownLinkTargetPatterns = [\n  \"/\\\\]\\\\(\\\\s*<?[^)\\\\s>]+>?(?:\\\\s+[^)]*)?\\\\s*\\\\)/g\",\n  \"/\\\\]:\\\\s+\\\\S+.*$/gm\"\n];\nconst yamlKeyPatterns = [\n  \"/^\\\\s*-?\\\\s*(version|entries|term|aliases|description):/gm\"\n];\n\nif (values.length === 0) {\n  throw new Error(`${whitelistPath}: entries must contain at least one term.`);\n}\n\nconst tempDir = fs.mkdtempSync(path.join(os.tmpdir(), \"codexskill-cspell-\"));\nconst dictionaryPath = path.join(tempDir, \"markdown-whitelist.txt\");\nconst configPath = path.join(tempDir, \"cspell.config.json\");\n\nfs.writeFileSync(dictionaryPath, `${dictionaryTerms.join(\"\\n\")}\\n`, \"utf8\");\nfs.writeFileSync(\n  configPath,\n  JSON.stringify(\n    {\n      ...baseConfig,\n      dictionaryDefinitions: [\n        ...(baseConfig.dictionaryDefinitions || []),\n        {\n          name: \"markdown-whitelist\",\n          path: dictionaryPath,\n          addWords: true\n        }\n      ],\n      dictionaries: [...(baseConfig.dictionaries || []), \"markdown-whitelist\"],\n      ignoreRegExpList: [\n        ...markdownLinkTargetPatterns,\n        ...yamlKeyPatterns,\n        ...ignoredValues.map((value) => whitelistValuePattern(value)),\n        ...(baseConfig.ignoreRegExpList || [])\n      ]\n    },\n    null,\n    2\n  ),\n  \"utf8\"\n);\n\nconst cspellBin = path.join(root, \"node_modules\", \".bin\", process.platform === \"win32\" ? \"cspell.cmd\" : \"cspell\");\nconst result = spawnSync(cspellBin, [\"--no-default-configuration\", \"--config\", configPath, ...process.argv.slice(2)], {\n  cwd: root,\n  stdio: \"inherit\"\n});\n\nfs.rmSync(tempDir, { recursive: true, force: true });\nprocess.exit(result.status === null ? 1 : result.status);\n\nfunction entryValues(entry) {\n  return [entry.term, ...normalizeAliases(entry.aliases)].filter(Boolean);\n}\n\nfunction normalizeAliases(aliases) {\n  if (!aliases) {\n    return [];\n  }\n\n  return Array.isArray(aliases) ? aliases : [aliases];\n}\n\nfunction whitelistValuePattern(value) {\n  const escaped = escapeRegExp(value).replace(/\\s+/g, \"\\\\s+\");\n  return `/${escaped}/giu`;\n}\n\nfunction escapeRegExp(value) {\n  return value.replace(/[.*+?^${}()|[\\]\\\\]/g, \"\\\\$&\");\n}\n"
+  },
+  "fixture": {
+    "whitelist": "entries:\n- description: せつめい\n  term: Tracker.DebugHost\n- description: せつめい\n  term: API\n",
+    "targets": "{\"ignoreDirectories\": [\"node_modules\", \".git\"], \"ignoredPrefixes\": []}",
+    "cspell_config": "{\n  \"$schema\": \"https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json\",\n  \"version\": \"0.2\",\n  \"language\": \"en,ja\",\n  \"useGitignore\": false,\n  \"globRoot\": \".\",\n  \"files\": [\n    \"**/*.md\"\n  ],\n  \"ignorePaths\": [\n    \"node_modules/**\",\n    \".git/**\",\n    \".codex-dotnet-home/**\",\n    \".codex-nuget-packages/**\",\n    \"**/bin/**\",\n    \"**/obj/**\",\n    \"reports/**\",\n    \"tools/lint/excluded/**\",\n    \"Tracker/Design/Core/Ref/**\",\n    \"SslProto/src/external/ssl-game-controller/**\",\n    \"SslProto/src/external/ssl-simulation-protocol/**\"\n  ],\n  \"patterns\": [\n    {\n      \"name\": \"markdown-fenced-code\",\n      \"pattern\": \"/^```[\\\\s\\\\S]*?^```/gm\"\n    },\n    {\n      \"name\": \"markdown-inline-code\",\n      \"pattern\": \"/`[^`\\\\n]+`/g\"\n    },\n    {\n      \"name\": \"non-latin-non-japanese-script\",\n      \"pattern\": \"/[\\\\u10A0-\\\\u10FF]+/g\"\n    }\n  ],\n  \"ignoreRegExpList\": [\n    \"Urls\",\n    \"Email\",\n    \"CommitHash\",\n    \"markdown-fenced-code\",\n    \"markdown-inline-code\",\n    \"non-latin-non-japanese-script\"\n  ]\n}\n",
+    "dependencies": {
+      "sudachipy": "0.6.11",
+      "sudachidict_core": "20260428",
+      "PyYAML": "6.0.3"
+    },
+    "node_dependencies_note": "IbisDuckにインストール済みのcspell 9.8.0とyamlを一時fixtureから参照。IbisDuck自体は変更していない。"
+  },
+  "changed_source_sha256": {
+    "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py": "b062107996ebb170c7861deff1cc312acc722d38cbdc52a5857008f2a93b1a7f",
+    "skills/review-enforcer/scripts/run-cspell-markdown.js": "4aaedca1df4d2f3b3dc88356cc747735bd6106b04f1fc4830bab01ae1ca3e3d4"
+  },
+  "full_validation": {
+    "schema_version": 1,
+    "started_at": "2026-09-15T20:34:32.330044+00:00",
+    "status": "pass",
+    "steps": [
+      {
+        "name": "repository",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmp58Y4C5/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/scripts/verify_skill_repository.py"
+        ],
+        "started_at": "2026-09-15T20:34:32.339648+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "repository.stdout.log",
+        "stderr": "repository.stderr.log",
+        "duration_seconds": 0.031717,
+        "finished_at": "2026-09-15T20:34:32.371375+00:00"
+      },
+      {
+        "name": "bundle",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmp58Y4C5/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916/scripts/build_chatgpt_worker_skills.py",
+          "--repo-root",
+          "/home/ibis/AI/CodexSkill-pr81-review-20260916",
+          "--output",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-15T20:34:32.371538+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "bundle.stdout.log",
+        "stderr": "bundle.stderr.log",
+        "duration_seconds": 0.031828,
+        "finished_at": "2026-09-15T20:34:32.403374+00:00"
+      },
+      {
+        "name": "zip-integrity",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmp58Y4C5/bin/python",
+          "-c",
+          "import sys, zipfile; archive = zipfile.ZipFile(sys.argv[1]); bad = archive.testzip(); archive.close(); print('Invalid CRC: ' + bad if bad else 'ZIP integrity verified'); sys.exit(1 if bad else 0)",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-15T20:34:32.403555+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-integrity.stdout.log",
+        "stderr": "zip-integrity.stderr.log",
+        "duration_seconds": 0.031776,
+        "finished_at": "2026-09-15T20:34:32.435339+00:00"
+      },
+      {
+        "name": "zip-contents",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmp58Y4C5/bin/python",
+          "-m",
+          "zipfile",
+          "-l",
+          "/tmp/codexskill-pr81-review-20260916-dlysut7d/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-15T20:34:32.435516+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-contents.stdout.log",
+        "stderr": "zip-contents.stderr.log",
+        "duration_seconds": 0.031671,
+        "finished_at": "2026-09-15T20:34:32.467195+00:00"
+      }
+    ],
+    "python": "3.13.7",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "ci": {
+      "GITHUB_RUN_ID": null,
+      "GITHUB_RUN_ATTEMPT": null,
+      "GITHUB_EVENT_NAME": null,
+      "TARGET_REF": null
+    },
+    "finished_at": "2026-09-15T20:34:32.467389+00:00"
+  },
+  "full_validation_source_head": "279b8da9ffe954f78fd8461555be429f1bdcc100",
+  "full_validation_logs": {
+    "bundle.stderr.log": "",
+    "zip-integrity.stderr.log": "",
+    "bundle.stdout.log": "Built /tmp/codexskill-pr81-review-20260916-dlysut7d/full-validation/chatgpt-worker-skills.zip\n- chat-handoff-manager\n- chat-implementation-worker\n- chat-report-writer\n- chat-review-worker\n- implementation-worker\n- report-writer\n- review-worker\n- work-context-manager\n",
+    "repository.stderr.log": "",
+    "zip-contents.stderr.log": "",
+    "repository.stdout.log": "Verified: Skill names and dependencies are consistent, active relative Markdown links resolve, deleted shared-runtime paths are absent, no Skill uses symlinks, and hierarchy designs are synchronized.\n",
+    "zip-integrity.stdout.log": "ZIP integrity verified\n",
+    "zip-contents.stdout.log": "File Name                                             Modified             Size\nchat-handoff-manager/SKILL.md                  1980-01-01 00:00:00        13923\nchat-implementation-worker/SKILL.md            1980-01-01 00:00:00         2675\nchat-report-writer/SKILL.md                    1980-01-01 00:00:00         1649\nchat-review-worker/SKILL.md                    1980-01-01 00:00:00         6314\nimplementation-worker/SKILL.md                 1980-01-01 00:00:00         3647\nreport-writer/SKILL.md                         1980-01-01 00:00:00         7250\nreview-worker/SKILL.md                         1980-01-01 00:00:00         8945\nwork-context-manager/SKILL.md                  1980-01-01 00:00:00         5202\n"
+  },
+  "ci": {
+    "required": false,
+    "workflow": "Validate and release ChatGPT worker skills",
+    "run_id": 34969144592,
+    "head_sha": "279b8da9ffe954f78fd8461555be429f1bdcc100",
+    "conclusion": "success",
+    "artifacts": [
+      {
+        "id": 10396730778,
+        "name": "chatgpt-worker-skills-34969144592",
+        "purpose": "exact-headのSkill配布物。メタデータの存在を確認し、ダウンロードは未実施。"
+      }
+    ],
+    "additional_runs": [
+      {
+        "run_id": 34969144491,
+        "workflow": "PR commit artifacts",
+        "head_sha": "279b8da9ffe954f78fd8461555be429f1bdcc100",
+        "conclusion": "success",
+        "note": "ワークフロー全体の結果のみ確認。実行ステップの検証証拠としては使用しない。"
+      }
+    ],
+    "requirement_note": "この通常レビューはローカル検証経路。マージ時の必須チェック設定は未確認。"
+  },
+  "findings": [
+    {
+      "id": "R81-01",
+      "severity": "medium",
+      "priority": "P2",
+      "origin": "introduced_by_change",
+      "location": "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:517-525",
+      "description": "分割境界をまたぐ未登録の片仮名語が見逃される。",
+      "impact": "文書中の位置だけで許可一覧違反の検出結果が変わり、検査が誤って成功する。",
+      "evidence": "「あ」15999文字 + 「ギア」 + 「あ」10文字（48033 bytes）を --stdin probe.md に渡すと、base は exit 1 でギアを検出し、HEAD は exit 0。同じ本文の先頭に「あ」を1文字加えると HEAD も exit 1。11種類の再結合確認は通るが、語の判定は保持されていない。",
+      "required_action": "分割境界周辺の語を元の文脈で検査できる方式にし、語を保持できない場合を成功扱いにしない。2文字語・長い片仮名語・境界前後の位置と行番号を確認する。"
+    },
+    {
+      "id": "R81-02",
+      "severity": "medium",
+      "priority": "P2",
+      "origin": "introduced_by_change",
+      "location": "skills/review-enforcer/scripts/run-cspell-markdown.js:89-90",
+      "description": "登録済みの英語複合語に漢字が隣接すると cspell が誤検出する。",
+      "impact": "許可された識別子を日本語文中で使えなくなり、Python の許可判定と cspell の判定が食い違う。",
+      "evidence": "Tracker.DebugHost を許可した状態で、Tracker.DebugHost構成 と 構成Tracker.DebugHost は base cspell が exit 0、HEAD cspell が exit 1（Tracker / Debug / Host を拒否）。HEAD Python は同じ入力を exit 0 にする。ひらがな隣接の Tracker.DebugHostと は成功する。",
+      "required_action": "英語識別子の継続文字と日本語本文の境界を区別し、登録語の漢字隣接を許可しつつ Tracker.DebugHostx は拒否する。前後両側と Python/cspell の組合せを確認する。"
+    },
+    {
+      "id": "R81-03",
+      "severity": "medium",
+      "priority": "P2",
+      "origin": "introduced_by_change",
+      "location": "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:21",
+      "description": "--files で明示指定した .txt が無警告で検査対象から捨てられる。",
+      "impact": "使用者が指定したファイルを検査していないのに成功を返す。help は引き続き .md/.txt 対応と案内している。",
+      "evidence": "未登録語 qzxvunknownword を含む note.txt に --files note.txt を実行すると base は exit 1、HEAD は stderr 空の exit 0。同じ内容の note.md は HEAD でも exit 1。",
+      "required_action": "暗黙探索から .txt を除外する方針は維持できるが、明示指定時は検査するか非対応をエラーとして返す。--files / --changed の help と実際の契約を同期する。"
+    },
+    {
+      "id": "R81-04",
+      "severity": "medium",
+      "priority": "P2",
+      "origin": "pre_existing",
+      "location": "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:393-394; skills/review-enforcer/scripts/run-cspell-markdown.js:89-90",
+      "description": "複合語の境界修正後も、ドット・ハイフンによる未登録の連結語が通る。",
+      "impact": "登録した複合語だけを許可する契約に対して、登録語を連結した未登録の識別子まで許可される。",
+      "evidence": "Tracker.DebugHost を許可すると、未登録の Tracker.DebugHost.Tracker.DebugHost と Tracker.DebugHost-Tracker.DebugHost が HEAD の Python/cspell とも exit 0。英語検出の ENGLISH_RE はこれらを1語として扱うが、その前に部分語がマスクされる。base cspell でも成功するため、新規退行ではなく今回の境界厳密化に残る既存欠陥。",
+      "required_action": "英語語彙の継続子として使う . / - と文末の句読点を区別し、未登録の全体語を部分マスクしない。単独登録語、文末ピリオド、ドット・ハイフン・アンダースコアでの連結を両検査器で確認する。"
+    }
+  ]
+}

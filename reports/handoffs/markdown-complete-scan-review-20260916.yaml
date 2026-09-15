@@ -1,0 +1,809 @@
+schema_version: 3
+producer:
+  skill: chat-review-worker
+  mode: initial_review
+  generated_at: '2026-09-15T20:45:14.122094+00:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #81'
+task_id: null
+branch: fix/markdown-lint-complete-scan
+base_ref: main
+target:
+  current_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  reviewed_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  commit_range: 106ea5dcf12c4805756351fb9381df220b94f044...279b8da9ffe954f78fd8461555be429f1bdcc100
+verification:
+  capability: local_execution_available
+  capability_evidence: &id001
+  - RDC経由でUbuntuの分離ワークツリーと実依存版を使用し、既存検証と実CLI比較を実行した。
+  technical_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  administrative_parent: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  commit:
+    state: commit_pending
+    review_target_sha: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  push:
+    state: push_pending
+    head_sha: unknown
+  ci_wait:
+    state: not_required
+    required_for: not_required
+  final_publication:
+    sequence: not_applicable
+    pr_action: not_required
+authoritative_requirements: &id004
+- source: user_instruction
+  reference: 現在の依頼
+  summary: 'PR #81をレビューする。実装修正・マージは実施しない。'
+- source: repository_instruction
+  reference: AGENTS.md
+  summary: Skill優先。CodexSkillの保守は非TDD。既存検証と構文・配布物・契約確認を使用する。
+- source: pr
+  reference: https://github.com/ssaattww/CodexSkill/pull/81
+  summary: 長文の全文検査、通常漢字の対象除外、脚注本文検査、複合許可語の境界厳密化、通常対象のMarkdown限定。
+development_policy:
+  method: non-TDD
+  testing_order: 既存検証、構文確認、一時的な実CLI比較
+  governing_source: AGENTS.md
+validation_plan: &id005
+  commands:
+  - python scripts/run_validation.py --output-dir <new-directory>
+  - python /tmp/codexskill-pr81-review-20260916-dlysut7d/reproduce.py
+  required_failure_diagnostics:
+  - 標準出力・標準エラー・終了コード・対象SHAを保持
+blocked: []
+authorized_actions:
+- read_repository
+- write_report
+- write_handoff
+- create_branch
+- commit
+- push
+- comment_pr
+write_boundary:
+  allowed:
+  - path_or_operation: reports/markdown-complete-scan-review-20260916.md
+    reason: 通常レビューの記録・証拠・引き継ぎ
+  - path_or_operation: reports/markdown-complete-scan-review-evidence-20260916.json
+    reason: 通常レビューの記録・証拠・引き継ぎ
+  - path_or_operation: reports/handoffs/markdown-complete-scan-review-20260916.yaml
+    reason: 通常レビューの記録・証拠・引き継ぎ
+  forbidden:
+  - path_or_operation: 実装・設計・設定・ワークフロー・許可一覧
+    reason: レビュー依頼であり指摘修正は実施しない。
+  - path_or_operation: マージと他作業の変更
+    reason: 依頼範囲外
+scope: &id002
+- PRの全差分2ファイルと直接の呼び出し・設定・既存検証のレビュー
+non_goals: &id003
+- 実装修正
+- 許可一覧の変更
+- TDD導入
+- マージ
+files:
+  changed:
+  - path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    purpose: 長文分割・漢字対象・脚注・許可語境界・拡張子の変更
+  - path: skills/review-enforcer/scripts/run-cspell-markdown.js
+    purpose: 脚注と複合許可語の境界変更
+  inspected:
+  - path: AGENTS.md
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: skills/chat-review-worker/SKILL.md
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: skills/work-context-manager/SKILL.md
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: skills/review-worker/SKILL.md
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: skills/report-writer/SKILL.md
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: skills/chat-handoff-manager/SKILL.md
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: skills/review-enforcer/SKILL.md
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: skills/review-enforcer/scripts/run-cspell-markdown.js
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: skills/review-enforcer/scripts/list-markdown-targets.js
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: scripts/run_validation.py
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: design/review-enforcer-markdown-whitelist-rebuild-design.md
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  - path: .github/workflows/pr-commit-artifacts.yml
+    purpose: レビュー対象または規約・契約・実行経路の確認
+  intentionally_untouched:
+  - path_or_area: PRの全実装ファイル
+    reason: レビュー担当は修正をしない。
+  - path_or_area: IbisDuckと元のCodexSkillワークツリー
+    reason: 別作業を保護し、検証は分離作業領域で行う。
+commands:
+- command: python scripts/run_validation.py --output-dir /tmp/codexskill-pr81-review-20260916-dlysut7d/full-validation
+  purpose: 既存の4項目を実行
+  exit_code: 0
+  result: passed
+  head_sha: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  evidence: reports/markdown-complete-scan-review-evidence-20260916.json full_validation
+- command: uv run --no-project --with sudachipy==0.6.11 --with sudachidict-core==20260428 --with pyyaml==6.0.3 python
+    /tmp/codexskill-pr81-review-20260916-dlysut7d/reproduce.py
+  purpose: 比較観測を記録するプログラムの実行。終了0は全比較の合格を意味せず、実CLIの退行・残件を記録した。
+  exit_code: 0
+  result: passed
+  head_sha: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  evidence: reports/markdown-complete-scan-review-evidence-20260916.json reproduction_results
+tests:
+- name: 分割の再結合・上限・オフセット11種類
+  phase: verification
+  result: passed
+  head_sha: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  evidence: reports/markdown-complete-scan-review-evidence-20260916.json reproduction_results.chunk_checks
+- name: 用語検査の意味的な契約
+  phase: verification
+  result: failed
+  head_sha: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  evidence: reports/markdown-complete-scan-review-evidence-20260916.json findings
+ci:
+  required: false
+  workflow: Validate and release ChatGPT worker skills
+  run_id: 34969144592
+  head_sha: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  conclusion: success
+  artifacts:
+  - id: 10396730778
+    name: chatgpt-worker-skills-34969144592
+    purpose: exact-headのSkill配布物。メタデータの存在を確認し、ダウンロードは未実施。
+  additional_runs:
+  - run_id: 34969144491
+    workflow: PR commit artifacts
+    head_sha: 279b8da9ffe954f78fd8461555be429f1bdcc100
+    conclusion: success
+    note: ワークフロー全体の結果のみ確認。実行ステップの検証証拠としては使用しない。
+  requirement_note: この通常レビューはローカル検証経路。マージ時の必須チェック設定は未確認。
+implementation:
+  outcome: not_applicable
+  final_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  commits: []
+  addressed_findings: []
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+  - レビュー中の実装修正はない。
+review:
+  mode: initial_review
+  reviewed_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  reviewer:
+    identity: chatgpt-pr81-normal-review-20260916
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: null
+      changed: false
+      reason: 初回の通常レビュー
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+      - プロジェクトの以前の作業方針を参照したが、実装・修正はこのチャットで実施していない。
+      - 独立最終レビューではない。
+  verdict: fail
+  required_coverage: &id007
+  - criterion: requirement and design conformance
+    disposition: checked_finding
+    evidence: R81-01..04。PRの5つの変更目的と比較。既存設計の脚注説明差は H-DOC。
+  - criterion: correctness and edge cases
+    disposition: checked_finding
+    evidence: 分割境界、漢字隣接、連結子、脚注、長文の実行結果。
+  - criterion: scope discipline
+    disposition: checked_finding
+    evidence: R81-03。差分は2ファイルに限定。
+  - criterion: changed files and dependencies
+    disposition: checked_finding
+    evidence: Python/cspell全差分、CLI本体、対象列挙、実利用側の設定と依存版を確認。
+  - criterion: API and compatibility
+    disposition: checked_finding
+    evidence: R81-02/03。baseとHEADを同じ依存版で比較。
+  - criterion: error handling and diagnostics
+    disposition: checked_finding
+    evidence: R81-03はファイル未検査を成功にする。実行ログを保持。
+  - criterion: security and secret handling
+    disposition: checked_no_finding
+    evidence: 今回差分に認証・外部送信・権限変更なし。検証は分離した作業領域で実行。
+  - criterion: validation adequacy
+    disposition: checked_finding
+    evidence: 既存4項目は通るが、実CLIの追加確認で退行を再現。検査用コードやworkflowの恒久追加は行わない。
+  - criterion: current-HEAD CI
+    disposition: checked_no_finding
+    evidence: 279b8da の pull_request CI 2件 success。build job成功とartifact作成を確認。
+  - criterion: report and documentation accuracy
+    disposition: held
+    evidence: 'H-DOC: 既存の許可一覧再構築設計は脚注定義行を除外と記載するが、PRは本文を検査へ変更。'
+  - criterion: regression and maintainability
+    disposition: checked_finding
+    evidence: R81-01..03はbaseからの退行。R81-04は既存の残件として区別。
+  independent_closure:
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: []
+  validation_assessment: &id011
+  - item: 既存リポジトリ検証
+    result: supported
+    evidence: 対象HEADでrepository/bundle/zip-integrity/zip-contentsの4項目が成功。
+  - item: 構文と差分形式
+    result: supported
+    evidence: Python AST解析、node --check、git diff --checkが成功。
+  - item: 分割・再結合・オフセット
+    result: supported
+    evidence: 11種類の入力で48000 bytes以下、再結合一致、オフセット維持を確認。
+  - item: 実CLIの契約検証
+    result: failed
+    evidence: 46件の比較・実行記録。3件の退行と1件の境界修正残件を再現。全46件の成功を意味しない。
+  - item: 現在の技術HEADのCI
+    result: supported
+    evidence: buildジョブと配布物メタデータを確認。Sudachi/cspellの意味的正しさを保証する検証ではない。
+  reserved_report_paths:
+  - reports/markdown-complete-scan-review-20260916.md
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence:
+    - 通常レビューのため独立最終レビューの承認コミットではない。
+  summary:
+  - 'P2 4件: 新規退行3件と既存の境界修正残件1件。'
+report:
+  report_type: review_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+  - reports/markdown-complete-scan-review-20260916.md
+  - reports/markdown-complete-scan-review-evidence-20260916.json
+  reviewed_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+  attestation_head: null
+  pr_comments: []
+  summary:
+  - 生成時点は記録コミット・push前。完了した記録コミットSHAと投稿先はPRコメントを参照。
+findings: &id008
+- id: R81-01
+  severity: medium
+  priority: P2
+  origin: introduced_by_change
+  location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:517-525
+  description: 分割境界をまたぐ未登録の片仮名語が見逃される。
+  impact: 文書中の位置だけで許可一覧違反の検出結果が変わり、検査が誤って成功する。
+  evidence: 「あ」15999文字 + 「ギア」 + 「あ」10文字（48033 bytes）を --stdin probe.md に渡すと、base は exit 1 でギアを検出し、HEAD は exit 0。同じ本文の先頭に「あ」を1文字加えると
+    HEAD も exit 1。11種類の再結合確認は通るが、語の判定は保持されていない。
+  required_action: 分割境界周辺の語を元の文脈で検査できる方式にし、語を保持できない場合を成功扱いにしない。2文字語・長い片仮名語・境界前後の位置と行番号を確認する。
+- id: R81-02
+  severity: medium
+  priority: P2
+  origin: introduced_by_change
+  location: skills/review-enforcer/scripts/run-cspell-markdown.js:89-90
+  description: 登録済みの英語複合語に漢字が隣接すると cspell が誤検出する。
+  impact: 許可された識別子を日本語文中で使えなくなり、Python の許可判定と cspell の判定が食い違う。
+  evidence: Tracker.DebugHost を許可した状態で、Tracker.DebugHost構成 と 構成Tracker.DebugHost は base cspell が exit 0、HEAD cspell
+    が exit 1（Tracker / Debug / Host を拒否）。HEAD Python は同じ入力を exit 0 にする。ひらがな隣接の Tracker.DebugHostと は成功する。
+  required_action: 英語識別子の継続文字と日本語本文の境界を区別し、登録語の漢字隣接を許可しつつ Tracker.DebugHostx は拒否する。前後両側と Python/cspell の組合せを確認する。
+- id: R81-03
+  severity: medium
+  priority: P2
+  origin: introduced_by_change
+  location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:21
+  description: --files で明示指定した .txt が無警告で検査対象から捨てられる。
+  impact: 使用者が指定したファイルを検査していないのに成功を返す。help は引き続き .md/.txt 対応と案内している。
+  evidence: 未登録語 qzxvunknownword を含む note.txt に --files note.txt を実行すると base は exit 1、HEAD は stderr 空の exit 0。同じ内容の
+    note.md は HEAD でも exit 1。
+  required_action: 暗黙探索から .txt を除外する方針は維持できるが、明示指定時は検査するか非対応をエラーとして返す。--files / --changed の help と実際の契約を同期する。
+- id: R81-04
+  severity: medium
+  priority: P2
+  origin: pre_existing
+  location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:393-394; skills/review-enforcer/scripts/run-cspell-markdown.js:89-90
+  description: 複合語の境界修正後も、ドット・ハイフンによる未登録の連結語が通る。
+  impact: 登録した複合語だけを許可する契約に対して、登録語を連結した未登録の識別子まで許可される。
+  evidence: Tracker.DebugHost を許可すると、未登録の Tracker.DebugHost.Tracker.DebugHost と Tracker.DebugHost-Tracker.DebugHost
+    が HEAD の Python/cspell とも exit 0。英語検出の ENGLISH_RE はこれらを1語として扱うが、その前に部分語がマスクされる。base cspell でも成功するため、新規退行ではなく今回の境界厳密化に残る既存欠陥。
+  required_action: 英語語彙の継続子として使う . / - と文末の句読点を区別し、未登録の全体語を部分マスクしない。単独登録語、文末ピリオド、ドット・ハイフン・アンダースコアでの連結を両検査器で確認する。
+held: &id009
+- item: 'H-DOC: 既存設計の脚注除外説明'
+  reason: design/review-enforcer-markdown-whitelist-rebuild-design.md は脚注定義行を検査対象外と記載。現在のPR説明は脚注本文を検査する。
+  owner: 実装担当
+  remaining_risk: 保守者が古い除外説明を参照する可能性。
+  verdict_impact: 文書同期の確認事項。今回のfail判定はR81-01..04による。
+unexplored: &id010
+- area: Windows上の実CLI実行
+  blocker: 実CLI検証は依存が揃ったUbuntu環境で実施。Windows側は対象SHAとソースを確認。
+  remaining_risk: Windows固有の起動経路は未確認。
+  verdict_impact: Windows動作成功とは主張しない。確認済みの4件についてはfailを判断できる。
+unknown:
+- field_or_fact: マージ時の必須チェック設定
+  reason: 通常レビューではブランチ保護設定を確認していない。
+not_applicable:
+- field_or_area: TDD・実装修正・独立最終レビュー・マージ
+  reason: 今回の依頼は通常レビュー。
+remaining_risks: &id006
+- R81-01..04が未修正。
+- Windows上の実CLIは未実行。
+source_payloads:
+- source_skill: work-context-manager
+  output_contract_version: repository@279b8da9ffe954f78fd8461555be429f1bdcc100
+  content_type: application/json
+  payload:
+    repository: ssaattww/CodexSkill
+    issue_or_pr: 'PR #81'
+    task_id: null
+    mode: review
+    branch: fix/markdown-lint-complete-scan
+    base_ref: main
+    current_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+    reviewed_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+    verification_capability: local_execution_available
+    verification_capability_evidence: *id001
+    execution_state:
+      technical_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+      administrative_parent: 279b8da9ffe954f78fd8461555be429f1bdcc100
+      commit: commit_pending
+      push: push_pending
+      ci_wait: not_required
+      full_local_equivalence_gate:
+        state: passed
+        candidate_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+        invalidated_runs: []
+    scope: *id002
+    non_goals: *id003
+    authoritative_requirements: *id004
+    write_boundary:
+      allowed:
+      - reports/markdown-complete-scan-review-20260916.md
+      - reports/markdown-complete-scan-review-evidence-20260916.json
+      - reports/handoffs/markdown-complete-scan-review-20260916.yaml
+      - レビュー専用の一時検証データ
+      forbidden:
+      - 実装・設定・ワークフローの修正
+      - 他作業の変更
+      - マージ
+    development_policy:
+      method: non-TDD
+      testing_order: 既存検証、構文確認、実CLIの一時的な再現確認のみ
+    validation: *id005
+    ci:
+      matching_run: '34969144592'
+      conclusion: success
+    unknown:
+    - マージ時の必須チェック設定は未確認。
+    blocked: []
+    remaining_risks: *id006
+- source_skill: review-worker
+  output_contract_version: repository@279b8da9ffe954f78fd8461555be429f1bdcc100
+  content_type: application/json
+  payload:
+    review_mode: initial review
+    reviewed_implementation_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    independent_review_continuity: not_applicable
+    bounded_closure_scope: []
+    base: 106ea5dcf12c4805756351fb9381df220b94f044
+    commit_range: 106ea5dcf12c4805756351fb9381df220b94f044...279b8da9ffe954f78fd8461555be429f1bdcc100
+    reviewer:
+      identity: chatgpt-pr81-normal-review-20260916
+      role: normal_reviewer
+      independence_evidence:
+      - 現在のチャットでは実装・指摘修正を行っていない。
+      - 独立最終レビューではなく、初回の通常レビューとして実施した。
+    required_coverage: *id007
+    findings: *id008
+    finding_completeness_matrix:
+    - finding_id: R81-01
+      required_action: 分割境界周辺の語を元の文脈で検査できる方式にし、語を保持できない場合を成功扱いにしない。2文字語・長い片仮名語・境界前後の位置と行番号を確認する。
+      production_path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:517-525
+      actual_composition_fixture: 「あ」15999文字 + 「ギア」 + 「あ」10文字（48033 bytes）を --stdin probe.md に渡すと、base は exit 1
+        でギアを検出し、HEAD は exit 0。同じ本文の先頭に「あ」を1文字加えると HEAD も exit 1。11種類の再結合確認は通るが、語の判定は保持されていない。
+      focused_evidence: reports/markdown-complete-scan-review-evidence-20260916.json
+      disposition: fix_required; current fixture reproduces failure, not closure evidence
+    - finding_id: R81-02
+      required_action: 英語識別子の継続文字と日本語本文の境界を区別し、登録語の漢字隣接を許可しつつ Tracker.DebugHostx は拒否する。前後両側と Python/cspell の組合せを確認する。
+      production_path: skills/review-enforcer/scripts/run-cspell-markdown.js:89-90
+      actual_composition_fixture: Tracker.DebugHost を許可した状態で、Tracker.DebugHost構成 と 構成Tracker.DebugHost は base cspell
+        が exit 0、HEAD cspell が exit 1（Tracker / Debug / Host を拒否）。HEAD Python は同じ入力を exit 0 にする。ひらがな隣接の Tracker.DebugHostと
+        は成功する。
+      focused_evidence: reports/markdown-complete-scan-review-evidence-20260916.json
+      disposition: fix_required; current fixture reproduces failure, not closure evidence
+    - finding_id: R81-03
+      required_action: 暗黙探索から .txt を除外する方針は維持できるが、明示指定時は検査するか非対応をエラーとして返す。--files / --changed の help と実際の契約を同期する。
+      production_path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:21
+      actual_composition_fixture: 未登録語 qzxvunknownword を含む note.txt に --files note.txt を実行すると base は exit 1、HEAD
+        は stderr 空の exit 0。同じ内容の note.md は HEAD でも exit 1。
+      focused_evidence: reports/markdown-complete-scan-review-evidence-20260916.json
+      disposition: fix_required; current fixture reproduces failure, not closure evidence
+    - finding_id: R81-04
+      required_action: 英語語彙の継続子として使う . / - と文末の句読点を区別し、未登録の全体語を部分マスクしない。単独登録語、文末ピリオド、ドット・ハイフン・アンダースコアでの連結を両検査器で確認する。
+      production_path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:393-394; skills/review-enforcer/scripts/run-cspell-markdown.js:89-90
+      actual_composition_fixture: Tracker.DebugHost を許可すると、未登録の Tracker.DebugHost.Tracker.DebugHost と Tracker.DebugHost-Tracker.DebugHost
+        が HEAD の Python/cspell とも exit 0。英語検出の ENGLISH_RE はこれらを1語として扱うが、その前に部分語がマスクされる。base cspell でも成功するため、新規退行ではなく今回の境界厳密化に残る既存欠陥。
+      focused_evidence: reports/markdown-complete-scan-review-evidence-20260916.json
+      disposition: fix_required; current fixture reproduces failure, not closure evidence
+    severity_reclassification_records: []
+    held: *id009
+    unexplored: *id010
+    validation_assessment: *id011
+    verdict: fail
+    remaining_risks: *id006
+    next_action: 実装担当によるR81-01..04の修正と同じ通常レビュー担当での再確認。
+    reserved_report_paths:
+    - reports/markdown-complete-scan-review-20260916.md
+    report_attestation_allowed: false
+    attestation_conditions: 'not_applicable: normal review, no independent-final attestation'
+- source_skill: report-writer
+  output_contract_version: repository@279b8da9ffe954f78fd8461555be429f1bdcc100
+  content_type: application/json
+  payload:
+    report_type: review_report
+    complete_body: '# Markdown全文検査の通常レビュー
+
+
+      作成日時: 2026-09-15T20:45:14.122094+00:00
+
+
+      対象: ssaattww/CodexSkill PR #81
+
+
+      レビュー方式: 初回の通常レビュー。実装・修正はこのチャットでは行っていない。
+
+
+      判定: **fail（要修正）**。中優先度（P2）4件。うち3件は今回の退行、1件は今回の境界厳密化に残る既存欠陥。
+
+
+      ## 対象の固定
+
+
+      - ブランチ: `fix/markdown-lint-complete-scan`
+
+      - 比較元: `106ea5dcf12c4805756351fb9381df220b94f044`
+
+      - レビューした実装HEAD: `279b8da9ffe954f78fd8461555be429f1bdcc100`
+
+      - 比較範囲: `106ea5dcf12c4805756351fb9381df220b94f044...279b8da9ffe954f78fd8461555be429f1bdcc100`
+
+      - レビュー担当: `chatgpt-pr81-normal-review-20260916`
+
+
+      技術的な判定は上記HEADに対するもの。この記録・証拠・引き継ぎの保存コミットは通常レビューの記録用であり、独立最終レビューの承認コミットではない。保存コミット自身のSHAはコミット後のPRコメントで記録する。
+
+
+      ## 確認した変更
+
+
+      長文分割、漢字名詞の検査対象除外、脚注IDだけの除外、複合許可語の境界判定、通常の対象拡張子を確認した。実装変更はPythonとJavaScriptの2ファイル。AGENTS.mdの非TDD方針に従い、実行用の恒久テストやワークフローは追加していない。
+
+
+      ## 指摘
+
+
+      ### R81-01 / P2 / 分割境界をまたぐ未登録の片仮名語が見逃される。
+
+
+      - 重大度: `medium`
+
+      - 発生区分: `introduced_by_change`
+
+      - 場所: `skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:517-525`
+
+
+      **影響:** 文書中の位置だけで許可一覧違反の検出結果が変わり、検査が誤って成功する。
+
+
+      **再現と根拠:** 「あ」15999文字 + 「ギア」 + 「あ」10文字（48033 bytes）を --stdin probe.md に渡すと、base は exit 1 でギアを検出し、HEAD は exit
+      0。同じ本文の先頭に「あ」を1文字加えると HEAD も exit 1。11種類の再結合確認は通るが、語の判定は保持されていない。
+
+
+      **必要な対応:** 分割境界周辺の語を元の文脈で検査できる方式にし、語を保持できない場合を成功扱いにしない。2文字語・長い片仮名語・境界前後の位置と行番号を確認する。
+
+
+      ### R81-02 / P2 / 登録済みの英語複合語に漢字が隣接すると cspell が誤検出する。
+
+
+      - 重大度: `medium`
+
+      - 発生区分: `introduced_by_change`
+
+      - 場所: `skills/review-enforcer/scripts/run-cspell-markdown.js:89-90`
+
+
+      **影響:** 許可された識別子を日本語文中で使えなくなり、Python の許可判定と cspell の判定が食い違う。
+
+
+      **再現と根拠:** Tracker.DebugHost を許可した状態で、Tracker.DebugHost構成 と 構成Tracker.DebugHost は base cspell が exit 0、HEAD
+      cspell が exit 1（Tracker / Debug / Host を拒否）。HEAD Python は同じ入力を exit 0 にする。ひらがな隣接の Tracker.DebugHostと は成功する。
+
+
+      **必要な対応:** 英語識別子の継続文字と日本語本文の境界を区別し、登録語の漢字隣接を許可しつつ Tracker.DebugHostx は拒否する。前後両側と Python/cspell の組合せを確認する。
+
+
+      ### R81-03 / P2 / --files で明示指定した .txt が無警告で検査対象から捨てられる。
+
+
+      - 重大度: `medium`
+
+      - 発生区分: `introduced_by_change`
+
+      - 場所: `skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:21`
+
+
+      **影響:** 使用者が指定したファイルを検査していないのに成功を返す。help は引き続き .md/.txt 対応と案内している。
+
+
+      **再現と根拠:** 未登録語 qzxvunknownword を含む note.txt に --files note.txt を実行すると base は exit 1、HEAD は stderr 空の exit
+      0。同じ内容の note.md は HEAD でも exit 1。
+
+
+      **必要な対応:** 暗黙探索から .txt を除外する方針は維持できるが、明示指定時は検査するか非対応をエラーとして返す。--files / --changed の help と実際の契約を同期する。
+
+
+      ### R81-04 / P2 / 複合語の境界修正後も、ドット・ハイフンによる未登録の連結語が通る。
+
+
+      - 重大度: `medium`
+
+      - 発生区分: `pre_existing`
+
+      - 場所: `skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:393-394; skills/review-enforcer/scripts/run-cspell-markdown.js:89-90`
+
+
+      **影響:** 登録した複合語だけを許可する契約に対して、登録語を連結した未登録の識別子まで許可される。
+
+
+      **再現と根拠:** Tracker.DebugHost を許可すると、未登録の Tracker.DebugHost.Tracker.DebugHost と Tracker.DebugHost-Tracker.DebugHost
+      が HEAD の Python/cspell とも exit 0。英語検出の ENGLISH_RE はこれらを1語として扱うが、その前に部分語がマスクされる。base cspell でも成功するため、新規退行ではなく今回の境界厳密化に残る既存欠陥。
+
+
+      **必要な対応:** 英語語彙の継続子として使う . / - と文末の句読点を区別し、未登録の全体語を部分マスクしない。単独登録語、文末ピリオド、ドット・ハイフン・アンダースコアでの連結を両検査器で確認する。
+
+
+      ## 実行確認
+
+
+      Ubuntu上で、実際のSudachiPyとcspellを使用した。比較元とレビュー対象で同じ依存版・入力・許可一覧を使った。再現用許可一覧の説明は「せつめい」とし、比較元の漢字検査が終了コードに混入しないようにした。
+
+
+      | 項目 | 結果 |
+
+      |---|---|
+
+      | 既存リポジトリ検証・配布物生成 | repository、bundle、zip-integrity、zip-contentsの4項目成功 |
+
+      | 構文・差分形式 | Python AST解析、node --check、git diff --check成功 |
+
+      | 分割性質 | 11種類で上限・再結合・オフセット保持を確認 |
+
+      | 実CLI・比較など | 46件の記録。検査による意図した拒否と不具合の再現を含み、全件成功という意味ではない |
+
+      | 脚注 | 参照IDは除外、定義本文と複数行本文の未登録英語は検出 |
+
+      | 通常漢字・未登録語 | 通常漢字を許容し、未登録英語・片仮名を検出 |
+
+      | 長文末尾 | 114,010 bytesの本文末尾を6002行目として検出。96,010 bytesの長い行を含む本文も末尾を2行目として検出 |
+
+
+      依存版: Python 3.12.3、Node.js 22.13.1、SudachiPy 0.6.11、SudachiDict core 20260428、PyYAML 6.0.3、cspell 9.8.0。
+
+
+      詳細コマンド、実際の標準出力・標準エラー・終了コード、再現用入力を構築するプログラム本文は `reports/markdown-complete-scan-review-evidence-20260916.json`
+      に保存した。プログラムは証拠JSON内の文字列として保持し、恒久テストとしては追加していない。
+
+
+      ## CIの確認
+
+
+      レビューした実装HEADと一致する実行を確認した。`34969144592` のbuildジョブはリポジトリ構造・リンク検証、配布物生成、アップロードが成功。配布物IDは `10396730778`（メタデータを確認、ダウンロードは未実施）。リリース用3ジョブはスキップ。`34969144491`
+      もワークフロー全体はsuccessだが、実行ステップの検証証拠としては使用しない。
+
+
+      既存CIの成功は、今回検出した用語検査の意味的正しさを保証しない。記録保存後の新しいHEADのCI結果を、上記実装HEADの結果と混同しない。マージ時の必須チェック設定は未確認。
+
+
+      ## 観点別の確認結果
+
+
+      | 観点 | 状態 | 根拠 |
+
+      |---|---|---|
+
+      | requirement and design conformance | checked_finding | R81-01..04。PRの5つの変更目的と比較。既存設計の脚注説明差は H-DOC。 |
+
+      | correctness and edge cases | checked_finding | 分割境界、漢字隣接、連結子、脚注、長文の実行結果。 |
+
+      | scope discipline | checked_finding | R81-03。差分は2ファイルに限定。 |
+
+      | changed files and dependencies | checked_finding | Python/cspell全差分、CLI本体、対象列挙、実利用側の設定と依存版を確認。 |
+
+      | API and compatibility | checked_finding | R81-02/03。baseとHEADを同じ依存版で比較。 |
+
+      | error handling and diagnostics | checked_finding | R81-03はファイル未検査を成功にする。実行ログを保持。 |
+
+      | security and secret handling | checked_no_finding | 今回差分に認証・外部送信・権限変更なし。検証は分離した作業領域で実行。 |
+
+      | validation adequacy | checked_finding | 既存4項目は通るが、実CLIの追加確認で退行を再現。検査用コードやworkflowの恒久追加は行わない。 |
+
+      | current-HEAD CI | checked_no_finding | 279b8da の pull_request CI 2件 success。build job成功とartifact作成を確認。 |
+
+      | report and documentation accuracy | held | H-DOC: 既存の許可一覧再構築設計は脚注定義行を除外と記載するが、PRは本文を検査へ変更。 |
+
+      | regression and maintainability | checked_finding | R81-01..03はbaseからの退行。R81-04は既存の残件として区別。 |
+
+
+      ## 保留・未確認
+
+
+      **H-DOC（実装担当への文書同期確認）:** 既存の `design/review-enforcer-markdown-whitelist-rebuild-design.md` には脚注定義行を除外するとある一方、PRは脚注本文の検査を明示している。この差は保留として残す。今回のfail判定はR81-01からR81-04に基づく。
+
+
+      Windows側でもレビュー対象SHAとソースを確認したが、実CLIの検証はUbuntu側で行った。Windows固有の起動経路は未確認であり、Windows動作成功とは判定していない。
+
+
+      ## 読んだ資料
+
+
+      - `AGENTS.md`
+
+      - `skills/chat-review-worker/SKILL.md`
+
+      - `skills/work-context-manager/SKILL.md`
+
+      - `skills/review-worker/SKILL.md`
+
+      - `skills/report-writer/SKILL.md`
+
+      - `skills/chat-handoff-manager/SKILL.md`
+
+      - `skills/review-enforcer/SKILL.md`
+
+      - `skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py`
+
+      - `skills/review-enforcer/scripts/run-cspell-markdown.js`
+
+      - `skills/review-enforcer/scripts/list-markdown-targets.js`
+
+      - `scripts/run_validation.py`
+
+      - `design/review-enforcer-markdown-whitelist-rebuild-design.md`
+
+      - `.github/workflows/pr-commit-artifacts.yml`
+
+
+      加えて、語彙抽出スクリプトの先頭220行、実利用側IbisDuckのpackage.json・cspell設定・対象一覧設定・Python依存一覧、GitHubのPR情報とCIジョブ・配布物メタデータを確認した。語彙抽出スクリプト全体を精査したとは主張しない。
+
+
+      ## 次の対応
+
+
+      実装担当がR81-01からR81-04を修正し、指摘ごとに必要な対応・本番の処理経路・実際に組み合わせて動作を確認する入力・検証結果を対応付ける。境界の前後、両検査器、明示指定と暗黙探索を含めて確認したコミットを、同じ通常レビューチャットへ再レビューに出す。
+
+
+      引き継ぎ: `reports/handoffs/markdown-complete-scan-review-20260916.yaml`。今回、実装・許可一覧・設計・ワークフローは修正せず、マージも行っていない。
+
+      '
+    evidence_sources:
+    - reports/markdown-complete-scan-review-evidence-20260916.json
+    - https://github.com/ssaattww/CodexSkill/pull/81
+    - https://github.com/ssaattww/CodexSkill/actions/runs/34969144592
+    target_identity:
+      branch: fix/markdown-lint-complete-scan
+      base_ref: main
+      current_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+      reviewed_implementation_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+    verification:
+      capability: local_execution_available
+      technical_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+      administrative_parent: 279b8da9ffe954f78fd8461555be429f1bdcc100
+      commit_state: commit_pending
+      push_state: push_pending
+      ci_wait_state: not_required
+    independent_closure:
+      initial_independent_reviewed_head: null
+      closure_reviewed_heads: []
+      reviewer_continuity: null
+      closure_scope: []
+      completeness_matrix: []
+    severity_records:
+    - finding_id: R81-01
+      source_severity: medium
+      new_severity: null
+      reason: null
+      approved_by: null
+      record_type: preserved
+    - finding_id: R81-02
+      source_severity: medium
+      new_severity: null
+      reason: null
+      approved_by: null
+      record_type: preserved
+    - finding_id: R81-03
+      source_severity: medium
+      new_severity: null
+      reason: null
+      approved_by: null
+      record_type: preserved
+    - finding_id: R81-04
+      source_severity: medium
+      new_severity: null
+      reason: null
+      approved_by: null
+      record_type: preserved
+    persistence:
+      mode: repository_file
+      reserved_paths:
+      - reports/markdown-complete-scan-review-20260916.md
+      - reports/markdown-complete-scan-review-evidence-20260916.json
+      - reports/handoffs/markdown-complete-scan-review-20260916.yaml
+      report_attestation_head: null
+    concise_pr_comment_body: '## 通常レビュー: 要修正
+
+
+      対象実装HEAD: `279b8da9ffe954f78fd8461555be429f1bdcc100`。**P2 4件（新規退行3件、既存の境界修正残件1件）**。
+
+
+      - **R81-01**: 分割境界をまたぐ未登録の片仮名語が見逃される。 (`skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:517-525`)
+
+      - **R81-02**: 登録済みの英語複合語に漢字が隣接すると cspell が誤検出する。 (`skills/review-enforcer/scripts/run-cspell-markdown.js:89-90`)
+
+      - **R81-03**: --files で明示指定した .txt が無警告で検査対象から捨てられる。 (`skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:21`)
+
+      - **R81-04**: 複合語の境界修正後も、ドット・ハイフンによる未登録の連結語が通る。 (`skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:393-394;
+      skills/review-enforcer/scripts/run-cspell-markdown.js:89-90`)
+
+
+      既存のリポジトリ検証・配布物生成4項目、構文確認、分割性質11種類は成功。ただし実CLI比較で上記4件を再現。対象HEADのbuild CIも成功しているが、これらの意味的な不具合は検出されていない。
+
+
+      詳細レポート: `reports/markdown-complete-scan-review-20260916.md`
+
+      再現証拠: `reports/markdown-complete-scan-review-evidence-20260916.json`
+
+      引き継ぎ: `reports/handoffs/markdown-complete-scan-review-20260916.yaml`
+
+
+      実装修正・マージはしていません。'
+    unresolved_discrepancies:
+    - 'H-DOC: 脚注の扱いに関する既存設計とPR説明の差。'
+extensions:
+- namespace: review-evidence
+  payload:
+    path: reports/markdown-complete-scan-review-evidence-20260916.json
+    records: 46
+    chunk_checks: 11
+    note: 完全なコマンド・標準出力・標準エラー・入力再現コードは証拠JSONに保存。
+next_action:
+  type: implementation
+  target_skill: chat-implementation-worker
+  mode: fix
+  summary: R81-01からR81-04を修正し、同じ通常レビュー担当へ再確認を依頼する。
+  instructions:
+  - 'R81-01: 分割境界周辺の語を元の文脈で検査できる方式にし、語を保持できない場合を成功扱いにしない。2文字語・長い片仮名語・境界前後の位置と行番号を確認する。'
+  - 'R81-02: 英語識別子の継続文字と日本語本文の境界を区別し、登録語の漢字隣接を許可しつつ Tracker.DebugHostx は拒否する。前後両側と Python/cspell の組合せを確認する。'
+  - 'R81-03: 暗黙探索から .txt を除外する方針は維持できるが、明示指定時は検査するか非対応をエラーとして返す。--files / --changed の help と実際の契約を同期する。'
+  - 'R81-04: 英語語彙の継続子として使う . / - と文末の句読点を区別し、未登録の全体語を部分マスクしない。単独登録語、文末ピリオド、ドット・ハイフン・アンダースコアでの連結を両検査器で確認する。'
+  - 必要な対応・本番経路・実際の組合せ入力・検証証拠を指摘ごとに対応付ける。
+  required_attachments_or_references:
+  - reports/markdown-complete-scan-review-20260916.md
+  - reports/markdown-complete-scan-review-evidence-20260916.json
+  - reports/handoffs/markdown-complete-scan-review-20260916.yaml
+  requested_authorized_actions:
+  - read_repository
+  - edit_code
+  - write_report
+  - write_handoff
+  - commit
+  - push
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/markdown-complete-scan-review-20260916.yaml
+  packet_url: null
+  transport_note: 生成時の完全な記録。後続コミットの自己SHAは埋めず、公開後にPRコメントで記録する。次チャットの書き込みは新たな利用者依頼による。
