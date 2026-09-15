@@ -86,6 +86,12 @@ function normalizeAliases(aliases) {
 
 function whitelistValuePattern(value) {
   const escaped = escapeRegExp(value).replace(/\s+/g, "\\s+");
+  if (/[A-Za-z0-9]/.test(value)) {
+    const identifier = "A-Za-z0-9_";
+    const connector = "._-";
+    return `/(?<![${identifier}])(?<![${identifier}][${connector}])${escaped}(?![${identifier}])(?![${connector}][${identifier}])/giu`;
+  }
+
   const boundary = "A-Za-z0-9_\\u30A0-\\u30FF\\u3400-\\u9FFF";
   return `/(?<![${boundary}])${escaped}(?![${boundary}])/giu`;
 }

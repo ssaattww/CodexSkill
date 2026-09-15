@@ -19,6 +19,7 @@ from typing import Iterable
 TARGET_CONFIG = Path("tools/lint/markdown-targets.json")
 WHITELIST_PATH = Path("tools/lint/markdown-whitelist.yaml")
 TARGET_SUFFIXES = (".md",)
+EXPLICIT_TARGET_SUFFIXES = (".md", ".txt")
 DEPENDENCY_HINT = (
     "Missing dependency: {module}. Run `pip install -r tools/lint/requirements.txt` "
     "from the target repository root."
@@ -101,7 +102,7 @@ def main() -> int:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check Markdown vocabulary with SudachiPy.")
     parser.add_argument("--files", nargs="+", help="Specific .md/.txt files to inspect.")
-    parser.add_argument("--changed", action="store_true", help="Inspect changed .md/.txt files only.")
+    parser.add_argument("--changed", action="store_true", help="Inspect changed .md files only.")
     parser.add_argument("--stdin", metavar="PATH", help="Read one file body from stdin and use PATH for diagnostics.")
     parser.add_argument("--list-unknown", action="store_true", help="Print unknown normalized tokens.")
     return parser.parse_args()
@@ -244,12 +245,13 @@ def select_target_files(
     else:
         candidates = list_all_target_files(root, target_config)
 
+    target_suffixes = EXPLICIT_TARGET_SUFFIXES if explicit_files is not None else TARGET_SUFFIXES
     root_resolved = root.resolve()
     return sorted(
         {
             path.resolve()
             for path in candidates
-            if path is not None and path.exists() and path.is_file() and is_target_file(path)
+            if path is not None and path.exists() and path.is_file() and is_target_file(path, target_suffixes)
             and not is_ignored(normalize_path(path.resolve().relative_to(root_resolved)), target_config)
         },
         key=lambda item: normalize_path(item.relative_to(root_resolved)),
@@ -307,8 +309,8 @@ def list_all_target_files(root: Path, target_config: dict[str, list[str]]) -> li
     return files
 
 
-def is_target_file(path: Path) -> bool:
-    return path.suffix.lower() in TARGET_SUFFIXES
+def is_target_file(path: Path, suffixes: tuple[str, ...] = TARGET_SUFFIXES) -> bool:
+    return path.suffix.lower() in suffixes
 
 
 def is_ignored(relative_path: str, target_config: dict[str, list[str]]) -> bool:
@@ -383,15 +385,26 @@ def mask_whitelist_values(text: str, value_pattern: re.Pattern[str] | None) -> s
 
 
 def build_whitelist_value_pattern(values: list[str]) -> re.Pattern[str] | None:
-    alternatives = [
-        re.escape(value).replace(r"\ ", r"\s+")
-        for value in sorted(set(values), key=len, reverse=True)
-        if len(value) > 1
-    ]
-    if not alternatives:
+    patterns: list[str] = []
+    for value in sorted(set(values), key=len, reverse=True):
+        if len(value) <= 1:
+            continue
+        escaped = re.escape(value).replace(r"\ ", r"\s+")
+        if re.search(r"[A-Za-z0-9]", value):
+            identifier = r"A-Za-z0-9_"
+            patterns.append(
+                rf"(?<![{identifier}])(?<![{identifier}][._-])"
+                rf"(?:{escaped})"
+                rf"(?![{identifier}])(?![._-][{identifier}])"
+            )
+            continue
+
+        boundary = r"A-Za-z0-9_\u30A0-\u30FF\u3400-\u9FFF"
+        patterns.append(rf"(?<![{boundary}])(?:{escaped})(?![{boundary}])")
+
+    if not patterns:
         return None
-    boundary = r"A-Za-z0-9_\u30A0-\u30FF\u3400-\u9FFF"
-    return re.compile(rf"(?<![{boundary}])(?:{'|'.join(alternatives)})(?![{boundary}])", re.IGNORECASE)
+    return re.compile("|".join(patterns), re.IGNORECASE)
 
 
 def check_english_tokens(
@@ -453,7 +466,7 @@ def iter_sudachi_chunks(text: str) -> Iterable[tuple[int, str]]:
     offset = 0
 
     for line in text.splitlines(keepends=True):
-        line_bytes = len(line.encode("utf-8"))
+        line_bytes = sudachi_input_bytes(line)
         if line_bytes > SUDACHI_MAX_INPUT_BYTES:
             if buffer:
                 yield buffer_offset, "".join(buffer)
@@ -478,7 +491,7 @@ def iter_sudachi_chunks(text: str) -> Iterable[tuple[int, str]]:
 
     if offset < len(text):
         tail = text[offset:]
-        tail_bytes = len(tail.encode("utf-8"))
+        tail_bytes = sudachi_input_bytes(tail)
         if tail_bytes > SUDACHI_MAX_INPUT_BYTES:
             if buffer:
                 yield buffer_offset, "".join(buffer)
@@ -497,20 +510,24 @@ def iter_sudachi_chunks(text: str) -> Iterable[tuple[int, str]]:
         yield buffer_offset, "".join(buffer)
 
 
+def sudachi_input_bytes(text: str) -> int:
+    return len(unicodedata.normalize("NFKC", text).encode("utf-8"))
+
+
 def split_oversized_sudachi_segment(segment: str, base_offset: int) -> Iterable[tuple[int, str]]:
     consumed = 0
     remaining = segment
     safe_boundary = re.compile(r"[\s、。，．,.;:!?！？()（）\[\]{}<>「」『』]")
 
     while remaining:
-        if len(remaining.encode("utf-8")) <= SUDACHI_MAX_INPUT_BYTES:
+        if sudachi_input_bytes(remaining) <= SUDACHI_MAX_INPUT_BYTES:
             yield base_offset + consumed, remaining
             return
 
         low, high = 1, len(remaining)
         while low < high:
             middle = (low + high + 1) // 2
-            if len(remaining[:middle].encode("utf-8")) <= SUDACHI_MAX_INPUT_BYTES:
+            if sudachi_input_bytes(remaining[:middle]) <= SUDACHI_MAX_INPUT_BYTES:
                 low = middle
             else:
                 high = middle - 1
@@ -519,10 +536,22 @@ def split_oversized_sudachi_segment(segment: str, base_offset: int) -> Iterable[
         boundaries = list(safe_boundary.finditer(prefix))
         if boundaries and boundaries[-1].end() >= max(1, cut // 2):
             cut = boundaries[-1].end()
+        cut = preserve_katakana_boundary(remaining, cut)
         part = remaining[:cut]
         yield base_offset + consumed, part
         consumed += cut
         remaining = remaining[cut:]
+
+
+def preserve_katakana_boundary(segment: str, cut: int) -> int:
+    original_cut = cut
+    while 0 < cut < len(segment):
+        left_is_katakana = bool(KATAKANA_RE.fullmatch(segment[cut - 1]))
+        right_is_katakana = bool(KATAKANA_RE.fullmatch(segment[cut]))
+        if not (left_is_katakana or right_is_katakana):
+            break
+        cut -= 1
+    return cut if cut > 0 else original_cut
 
 
 def should_check_japanese(surface: str, morpheme) -> bool:
