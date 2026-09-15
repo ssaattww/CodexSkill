@@ -393,7 +393,7 @@ def build_whitelist_value_pattern(values: list[str]) -> re.Pattern[str] | None:
     ]
     if not alternatives:
         return None
-    boundary = r"A-Za-z0-9_\u3040-\u30FF\u3400-\u9FFF"
+    boundary = r"A-Za-z0-9_\u30A0-\u30FF\u3400-\u9FFF"
     return re.compile(rf"(^|[^{boundary}])({'|'.join(alternatives)})(?=$|[^{boundary}])", re.IGNORECASE)
 
 
