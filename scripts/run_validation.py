@@ -150,6 +150,13 @@ def main() -> int:
         summary["steps"].append(repository_row)
         save_results(output, summary)
 
+        whitelist_path = root / "tools" / "lint" / "markdown-whitelist.yaml"
+        bootstrap_markdown_discovery = (
+            whitelist_path.is_file()
+            and whitelist_path.read_text(encoding="utf-8").strip() == "entries: []"
+        )
+        summary["markdown_terminology"] = {"bootstrap_discovery": bootstrap_markdown_discovery}
+
         npm_executable = shutil.which("npm.cmd" if os.name == "nt" else "npm")
         markdown_row = run_step(
             "markdown-terminology",
@@ -178,8 +185,16 @@ def main() -> int:
             if name == "bundle":
                 bundle_ok = row["status"] == "pass"
             save_results(output, summary)
-        pass_like = {"pass", "needs_user_review"}
-        summary["status"] = "pass" if all(row["status"] in pass_like for row in summary["steps"]) else "failed"
+        def pass_like(row: dict) -> bool:
+            if row["status"] == "pass":
+                return True
+            return (
+                bootstrap_markdown_discovery
+                and row["name"] == "markdown-terminology"
+                and row["status"] == "needs_user_review"
+            )
+
+        summary["status"] = "pass" if all(pass_like(row) for row in summary["steps"]) else "failed"
     except Exception:
         (output / "runner.stderr.log").write_text(traceback.format_exc(), encoding="utf-8")
         summary["steps"].append({"name": "runner", "command": [], "status": "failed",
