@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-08-21
+- Updated: 2026-09-15
 
 ## Phase 1: 契約・設計
 
@@ -113,3 +113,29 @@
   - 通常reviewは一度の全範囲passで`I62-NR-001`〜`003`を一括検出した
   - 同じnormal reviewerのfinding-limited closureで3件を全件closedとし、verdict `pass_with_held`でnormal cycleは収束した
   - 次は全non-final変更をcommitし、別fresh reviewerで独立最終reviewを一度だけ実施する
+
+## Phase 10: 通常チャットとPC接続の作業経路
+
+- Status: In Progress
+- Task: T-005 / Issue #70
+- Design: `design/chat-execution-environment-design.md`
+- Notes:
+  - 既存3種類のChatGPT workerに経路選択を追加し、スキル数は増やさない
+  - 中核スキルの実行場所の記録と、引き継ぎの証拠保持を整備する
+  - Windows上の専用ワークツリーでローカル検証し、GitHubコネクタで公開する
+  - 実装と既存repository検査、8スキルZIPの生成・整合性・収録内容・再現性は確認済み
+  - 通常・独立レビューは未実施。PR #71の変更や#69の受け入れは含めない
+
+## Phase 11: ChatGPT PC接続経路のGit操作
+
+- Status: In Progress (required findings fixed and locally validated; same reviewer fix verification pending)
+- Notes:
+  - Issue #73を対象とする
+  - #70で定義したRemote Desktop Commanderの実行場所契約をcurrent mainへ復元する
+  - PC接続経路のGit commit／pushをRemote Desktop Commander経由へ変更する
+  - GitHub connectorはIssue、PR、PR comment、remote evidence、exact-head CI確認に限定する
+  - RDC経由push失敗時はソース転送や別publication経路へ無断で切り替えない
+  - CodexSkill repository policyによりTDDは適用しない
+  - repository validation、配布ZIP生成、設計同期、exact-head CIを確認し、mergeは利用者が行う
+  - initial normal reviewはreviewed HEAD `85c47515cbe086824746534ffb6cf6398894a63a`に対してverdict `fail`、required finding 4件
+  - `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正を実施し、same normal reviewerのfix verificationへ渡す

@@ -30,6 +30,16 @@ core Skillが作業の意味論を保持する。wrapperはChatGPT固有の権�
 
 wrapperとcore Skillの依存は、同一fileへのpath参照ではなく、install済みSkill名による呼び出しとして表現する。
 
+## 通常チャットとPC接続の作業場所
+
+Issue #70により、通常チャット内の経路を残し、Remote Desktop Commanderで利用者のPCを使う経路を追加する。既存3種類のworkerが同じ中核スキルを呼び出し、接続先の読み取り・編集・検証をPC側で行う。Issue #73では、RDCが利用可能なPC接続経路の認可済みGit commit／pushも同じPC側で行う。新しいworkerやサブエージェントは起動しない。
+
+利用者の明示指定、Project Instructionの順で経路を決め、どちらにも指定がなければRemote Desktop CommanderによるPC接続を基本経路とする。通常チャットは明示指定された場合だけ使い、PC接続に失敗しても無断で別経路へ切り替えない。`work-context-manager` が `execution_environment` として接続先、絶対パス、HEAD、作業ツリー、依存ツール、書き込み範囲を確認し、検証能力とは分けて記録する。
+
+PC接続では、認可されたGit commit／pushをRemote Desktop Commanderで実行し、RDC上のソースをチャット環境へ転送して公開しない。GitHubコネクタはremote repository evidence、Issue・PR・コメント、exact-head CI確認に使う。実装者の自己点検、通常レビュー、独立レビューの境界は変えない。引き継ぎはschema version 3を維持し、実行場所と各検証の対象内容をtyped項目とraw出力に残す。
+
+詳細な開始手順、権限、診断保存、#69への受け渡しは [作業場所とPC接続経路の設計](chat-execution-environment-design.md) を参照する。
+
 ## Verification capabilityと状態遷移
 
 `work-context-manager`は実際に利用可能なtool capabilityを確認し、次のいずれかをcontext、report、handoffへ記録する。runtime名は補助情報であり、route選択の根拠にしない。
@@ -265,7 +275,11 @@ https://github.com/ssaattww/CodexSkill
 
 必要な作業手順やSkillの構成は、この参照リポジトリを確認してください。
 
-リポジトリの参照・更新、IssueとPRの作成・更新、PRコメントの投稿にはGitHub connectorを使用してください。
+GitHub上のremote repository evidence、IssueとPRの作成・更新、PRコメント、current HEADに一致するCIの確認にはGitHub connectorを使用してください。Remote Desktop CommanderによるPC接続経路では、認可されたgit commit／pushは接続PC上でRDC経由で実行してください。RDC上のソースをチャット環境へ転送してcommit／pushしないでください。
+
+通常チャット内で作業する経路と、Remote Desktop Commanderで利用者のPCを使う経路を用意します。基本はRemote Desktop CommanderによるPC接続を使用してください。利用者が通常チャットを明示指定した場合だけ通常チャットを使用してください。PC接続失敗時に別PCや通常チャットへ無断で切り替えないでください。
+
+PC接続時は、接続先、シェル、絶対パス、リポジトリ、HEAD、未コミット変更、依存ツール、書き込み権限を確認してください。他タスクの作業ツリーを変更せず、許可された専用ワークツリーで読み取り・編集・検証・git commit／pushを行ってください。既存Git remote／認証は認可されたpushに使用できますが、認証設定の追加・変更、管理者権限、PC全体の変更には別途承認を得てください。
 
 作業開始時に、テスト失敗時の原因調査に必要な情報をartifactとして保存するworkflowが存在するか確認してください。存在しない場合は、対象workflowへ追加してください。artifactには、少なくともテスト結果、標準出力、標準エラー、および失敗原因の調査に必要なログを含めてください。
 

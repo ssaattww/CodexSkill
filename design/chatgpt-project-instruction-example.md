@@ -17,7 +17,15 @@ https://github.com/ssaattww/CodexSkill
 
 実装・レビュー・レポートは親非依存Skillを使用し、ChatGPTではchat-* wrapper Skillから呼び出してください。
 
-リポジトリの参照・更新、IssueとPRの作成・更新、PRコメントの投稿にはGitHub connectorを使用してください。
+GitHub上のremote repository evidence、IssueとPRの作成・更新、PRコメント、current HEADに一致するCIの確認にはGitHub connectorを使用してください。Remote Desktop CommanderによるPC接続経路では、認可されたgit commit／pushは接続PC上でRDC経由で実行してください。RDC上のソースをチャット環境へ転送してcommit／pushしないでください。
+
+通常チャット内で作業する経路と、Remote Desktop Commanderで利用者のPCを使う経路を用意します。基本はRemote Desktop CommanderによるPC接続を使用してください。利用者が通常チャットを明示指定した場合だけ通常チャットを使用してください。PC接続失敗時に別PCや通常チャットへ無断で切り替えないでください。
+
+PC接続時は、接続先、シェル、絶対パス、リポジトリ、HEAD、未コミット変更、依存ツール、書き込み権限を確認してください。他タスクの作業ツリーを変更せず、許可された専用ワークツリーで読み取り・編集・検証・git commit／pushを行ってください。既存Git remote／認証は認可されたpushに使用できますが、認証設定の追加・変更、管理者権限、PC全体の変更には別途承認を得てください。
+
+ローカル検証が利用可能なら、CIを起動する公開より先に実施し、成功・失敗の結果、stdout/stderr、診断ログを保存してください。ローカル検証した内容と公開する内容を照合し、未コミット変更があれば基点HEADとは別に識別情報を残してください。
+
+どちらの経路でも現在のチャット自身が作業し、別worker・サブエージェント・端末経由のエージェントを起動しないでください。
 
 作業開始時に、テスト失敗時の原因調査に必要な情報をartifactとして保存するworkflowが存在するか確認してください。存在しない場合は、対象workflowへ追加してください。
 

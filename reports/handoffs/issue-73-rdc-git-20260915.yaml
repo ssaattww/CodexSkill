@@ -1,0 +1,585 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: initial implementation
+  generated_at: 2026-09-15T18:15:00+09:00
+repository: ssaattww/CodexSkill
+issue_or_pr: "Issue #73 / PR #78"
+task_id: T-007
+branch: issue-73-rdc-git
+base_ref: main
+target:
+  current_head: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  reviewed_head: null
+  commit_range: 106ea5dcf12c4805756351fb9381df220b94f044..ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+execution_environment: &a2
+  kind: connected_computer
+  tool: Remote Desktop Commander
+  machine_id: FA780
+  connection: available
+  os: Windows
+  shell: powershell.exe
+  working_directory: C:\Users\donabe\Project\CodexSkill-issue-73-rdc-git
+  repository: ssaattww/CodexSkill
+  branch: issue-73-rdc-git
+  head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  source_state: clean
+  source_fingerprint: git-head:ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  ownership: current_task
+  writable_paths:
+    - C:\Users\donabe\Project\CodexSkill-issue-73-rdc-git
+    - C:\Users\donabe\Project\CodexSkill-issue-73-artifacts
+  dependencies:
+    - name: git
+      status: available
+      evidence: RDCでcommit/push成功
+    - name: python
+      status: available
+      evidence: scripts/run_validation.py実行成功
+  evidence:
+    - RDC device FA780をread-only discovery後に固定
+    - "Issue #73専用worktreeをorigin/mainから作成"
+    - Git global設定と認証設定は変更していない
+verification:
+  capability: local_execution_available
+  capability_evidence: &a1
+    - RDC上でrepository validationとbundle validationを実行可能
+  technical_head: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  administrative_parent: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  commit:
+    state: commit_pending
+    review_target_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  push: &a14
+    state: pushed
+    head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  ci_wait:
+    state: ci_wait_pending
+    required_for: merge_gate
+  final_publication:
+    sequence: final_push_then_authorized_pr_create_or_update_then_exact_head_pull_request_ci_wait
+    pr_action: update
+authoritative_requirements: &a5
+  - source: user_instruction
+    reference: current chat
+    summary: "RDCを使ってIssue #73へ対応し、#70の内容も復活させる"
+  - source: issue
+    reference: https://github.com/ssaattww/CodexSkill/issues/73
+    summary: RDCが使える場合はgit commit/pushもRDCで行う
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: CodexSkill保守ではTDDを適用しない
+  - source: design
+    reference: design/chat-execution-environment-design.md
+    summary: PC接続経路、権限、診断、publication境界
+scope: &a3
+  - "PR #72でmainへ入った#70 RDC実行経路の復元"
+  - PC接続経路の認可済みgit commit/pushをRDCへ移す
+  - 関連wrapper、設計、Project Instruction例、trackingの同期
+non_goals: &a4
+  - "Issue #69の欠落内容の復元"
+  - merge
+  - 実装者による独立review verdict
+development_policy: &a7
+  method: validation-only
+  testing_order: repository validation before each CI-triggering push
+  governing_source: AGENTS.md
+validation_plan: &a8
+  commands:
+    - git diff --check
+    - python scripts/run_validation.py --output-dir <artifact-dir>
+    - hierarchy design byte equality check
+  required_failure_diagnostics:
+    - validation result files
+    - standard output
+    - standard error
+    - source identity and logs needed for failure analysis
+blocked: []
+authorized_actions:
+  - read_repository
+  - edit_documentation
+  - write_handoff
+  - write_report
+  - create_branch
+  - commit
+  - push
+  - create_pr
+  - update_pr
+  - comment_pr
+write_boundary: &a6
+  allowed:
+    - path_or_operation: "Issue #73 dedicated worktree"
+      reason: accepted task scope
+    - path_or_operation: "PR #78 metadata/comment"
+      reason: reporting and publication
+  forbidden:
+    - path_or_operation: unrelated worktrees
+      reason: owned by other tasks
+    - path_or_operation: merge
+      reason: user-owned action
+files:
+  changed: &a10
+    - path: design/chat-execution-environment-design.md
+      purpose: define RDC commit/push route and blocked fallback
+    - path: design/chat-worker-skill-design.md
+      purpose: synchronize ChatGPT wrapper behavior
+    - path: design/chatgpt-project-instruction-example.md
+      purpose: update project instruction example
+    - path: design/skill-hierarchy-design.md
+      purpose: synchronize hierarchy contract
+    - path: skills/design/skill-hierarchy-design.md
+      purpose: keep hierarchy mirror byte-identical
+    - path: skills/chat-implementation-worker/SKILL.md
+      purpose: route authorized commit/push through RDC
+    - path: skills/chat-review-worker/SKILL.md
+      purpose: route allowed review report commit/push through RDC
+    - path: skills/chat-report-writer/SKILL.md
+      purpose: route allowed report/handoff commit/push through RDC
+    - path: tasks/tasks-status.md
+      purpose: track T-007
+    - path: tasks/phases-status.md
+      purpose: track Phase 11
+    - path: skills/work-context-manager/SKILL.md
+      purpose: "restore #70 execution-environment evidence contract"
+    - path: skills/implementation-worker/SKILL.md
+      purpose: "restore #70 source-bound validation evidence contract"
+    - path: skills/report-writer/SKILL.md
+      purpose: "restore #70 execution-environment report evidence"
+    - path: skills/chat-handoff-manager/SKILL.md
+      purpose: "restore #70 execution-environment handoff fields"
+    - path: reports/issue-70-remote-desktop-implementation-20260908.md
+      purpose: "restore merged #70 implementation history"
+    - path: reports/issue-70-default-rdc-followup-20260908.md
+      purpose: "restore merged #70 follow-up history"
+    - path: reports/issue-70-pr72-normal-review-20260908.md
+      purpose: "restore merged #70 normal review history"
+    - path: reports/handoffs/issue-70-pr72-normal-review-20260908.yaml
+      purpose: "restore merged #70 review handoff"
+    - path: reports/handoffs/issue-70-remote-desktop-20260908.json
+      purpose: "restore merged #70 implementation handoff"
+  inspected:
+    - path: AGENTS.md
+      purpose: repository development policy
+    - path: .github/workflows/pr-commit-artifacts.yml
+      purpose: verify success/failure diagnostic artifact workflow
+    - path: uploaded chatgpt-worker-skills archive
+      purpose: follow supplied ChatGPT worker contracts
+  intentionally_untouched: &a11
+    - path_or_area: "Issue #69 deleted files"
+      reason: "outside Issue #73 and explicit #70 restoration scope"
+commands: &a12
+  - command: git diff --check
+    purpose: "whitespace validation for #73 implementation"
+    exit_code: 0
+    result: passed
+    head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+    evidence: C:\Users\donabe\Project\CodexSkill-issue-73-artifacts\implementation-validation\diff-check.stdout.log
+    execution_environment: *a2
+    source_fingerprint: git-head:ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  - command: python scripts/run_validation.py
+    purpose: repository and bundle validation
+    exit_code: 0
+    result: passed
+    head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+    evidence: C:\Users\donabe\Project\CodexSkill-issue-73-artifacts\implementation-validation\validation
+    execution_environment: *a2
+    source_fingerprint: git-head:ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  - command: hierarchy byte equality check
+    purpose: design mirror validation
+    exit_code: 0
+    result: passed
+    head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+    evidence: C:\Users\donabe\Project\CodexSkill-issue-73-artifacts\implementation-validation\hierarchy.stdout.log
+    execution_environment: *a2
+    source_fingerprint: git-head:ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+tests:
+  - name: CodexSkill repository validation
+    phase: verification
+    result: passed
+    head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+    evidence: repository, bundle, zip-integrity, zip-contents all pass
+  - name: TDD Red/Green
+    phase: not_applicable
+    result: not_run
+    head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+    evidence: CodexSkill AGENTS.md explicitly disables TDD
+ci: &a15
+  required: true
+  workflow: pull_request validation
+  run_id: null
+  head_sha: unknown
+  conclusion: unknown
+  artifacts: []
+implementation:
+  outcome: completed
+  final_head: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+  commits: &a16
+    - sha: 9832e116cb4939401e4cbf14d58a5b1a854edf6d
+      purpose: "restore reviewed #70 RDC execution route deleted from main"
+    - sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+      purpose: "route authorized git commit/push through RDC for #73"
+  addressed_findings: []
+  failure_diagnostics: &a13 []
+  blocked_items: &a17 []
+  summary:
+    - "#70 reviewed content restored without reverting #68 hierarchy changes"
+    - "#73 commit/push route implemented and locally validated"
+review:
+  mode: not_applicable
+  reviewed_head: unknown
+  reviewer:
+    identity: unknown
+    role: not_applicable
+    continuity:
+      previous_reviewer_identity: null
+      changed: false
+      reason: null
+    independence:
+      implemented_change: unknown
+      implemented_review_fix: unknown
+      served_as_normal_reviewer: unknown
+      inherited_conversation: unknown
+      evidence: []
+  verdict: not_applicable
+  required_coverage: []
+  independent_closure:
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: []
+  validation_assessment: []
+  reserved_report_paths: []
+  report_attestation:
+    allowed: not_applicable
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence: []
+  summary:
+    - "#73 normal/independent review is pending and must be performed by review flow"
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/issue-73-rdc-git-implementation-20260915.md
+    - reports/handoffs/issue-73-rdc-git-20260915.yaml
+  reviewed_head: null
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - detailed implementation report generated before administrative report commit
+findings: []
+held: []
+unexplored: []
+unknown: &a18
+  - field_or_fact: final pull_request CI run
+    reason: report/handoff commit has not been pushed yet
+not_applicable:
+  - field_or_area: TDD Red/Green
+    reason: CodexSkill repository policy disables TDD
+remaining_risks: &a9
+  - "#73 has not yet received normal or independent review"
+  - final exact-head CI must be checked after report/handoff commit
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: current
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      issue_or_pr: "Issue #73 / PR #78"
+      task_id: T-007
+      mode: implementation
+      branch: issue-73-rdc-git
+      base_ref: main
+      current_head: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+      reviewed_head: null
+      verification_capability: local_execution_available
+      verification_capability_evidence: *a1
+      execution_environment: *a2
+      execution_state:
+        technical_head: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+        administrative_parent: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+        commit: commit_pending
+        push: pushed
+        ci_wait: ci_wait_pending
+        full_local_equivalence_gate:
+          state: passed
+          candidate_head: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+          invalidated_runs: []
+      scope: *a3
+      non_goals: *a4
+      authoritative_requirements: *a5
+      write_boundary: *a6
+      development_policy: *a7
+      validation: *a8
+      ci:
+        matching_run: null
+        conclusion: unknown
+      unknown:
+        - "final pull_request CI run: report/handoff commit has not been pushed yet"
+      blocked: []
+      remaining_risks: *a9
+  - source_skill: implementation-worker
+    output_contract_version: current
+    content_type: application/yaml
+    payload:
+      mode: initial implementation
+      accepted_scope: *a3
+      non_goals: *a4
+      requirements_and_design_references: *a5
+      changed_files: *a10
+      intentionally_untouched: *a11
+      validation_commands_and_results: *a12
+      failure_diagnostics_and_artifacts: *a13
+      verification_capability_and_validation_evidence:
+        capability: local_execution_available
+        capability_evidence: *a1
+        commands: *a12
+      review_target_commit_identity: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+      push_state: *a14
+      matching_ci_evidence: *a15
+      final_technical_head: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+      administrative_parent: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+      commits: *a16
+      blocked_items: *a17
+      unknowns: *a18
+      remaining_risks: *a9
+      next_required_action: &a19
+        type: review
+        target_skill: chat-review-worker
+        mode: initial review
+        summary: "Review PR #78 after the final report/handoff commit and exact-head CI evidence are available."
+        instructions:
+          - Use the PR current HEAD after the report/handoff commit.
+          - "Review the restored #70 content and #73 route change together."
+          - "Do not treat PR #72 review or earlier CI as review/CI for the #73 current HEAD."
+        required_attachments_or_references:
+          - reports/issue-73-rdc-git-implementation-20260915.md
+          - reports/handoffs/issue-73-rdc-git-20260915.yaml
+          - https://github.com/ssaattww/CodexSkill/pull/78
+        requested_authorized_actions:
+          - read_repository
+          - write_report
+          - commit
+          - push
+          - update_pr
+          - comment_pr
+  - source_skill: report-writer
+    output_contract_version: current
+    content_type: application/yaml
+    payload:
+      report_type: implementation_report
+      complete_body: "# Issue #73 RDC Git操作対応 実装報告\r
+
+        \r
+
+        ## メタデータ\r
+
+        \r
+
+        - Repository: `ssaattww/CodexSkill`\r
+
+        - Issue: `#73 git操作のrdc化`\r
+
+        - PR: `#78`\r
+
+        - Branch: `issue-73-rdc-git`\r
+
+        - Base: `main` / `106ea5dcf12c4805756351fb9381df220b94f044`\r
+
+        - Technical implementation HEAD: `ce445faa71eedf60b73ee9497bd1d6c1d484ec7c`\r
+
+        - Verification capability: `local_execution_available`\r
+
+        - Development policy: CodexSkill保守のためTDDは`not applicable`\r
+
+        - Merge: 実施しない\r
+
+        \r
+
+        ## 目的\r
+
+        \r
+
+        Remote Desktop Commanderを利用できるPC接続経路では、ファイル操作と検証だけでなく、認可された`git commit`と`git push`も接続PC上でRDC経由で実行する。RDC上のソースをChat環境へ転送して公開内容を再構成する経路は使用しない。\r
+
+        \r
+
+        GitHub connectorはremote repository evidence、Issue、PR、PR comment、current HEADに一致するCI evidenceの取得に使用する。端末`gh`、直接REST呼び出し、無断のGit認証設定変更は許可しない。\r
+
+        \r
+
+        ## #70復元\r
+
+        \r
+
+        current main `106ea5d`では、PR #72でmainへ取り込まれていた#70のRDC実行経路の主要内容が#68取り込み時に欠落していた。#70のsquash merge `62a7ddf3dce5c40df0a7c36a5aff27b4702cb47c`の差分をcurrent mainへ3-wayで復元し、#68/#69の後続内容は保持した。\r
+
+        \r
+
+        復元commitは`9832e116cb4939401e4cbf14d58a5b1a854edf6d`。専用execution-environment設計、ChatGPT wrapper、execution environment evidence契約、#70の実装報告・通常レビュー報告・handoffを復元した。\r
+
+        \r
+
+        PR #72はmerged済みで、当時の通常レビューは`pass_with_held`、required finding 0件だった。これは#70の履歴証拠であり、#73の現行HEADに対するレビューまたはCI証拠としては使用しない。\r
+
+        \r
+
+        ## #73実装内容\r
+
+        \r
+
+        - `chat-implementation-worker`で、接続PC経路のlocal source read/edit/dependency check/validationに加えて、認可されたGit commit/pushをRDCへ固定した。\r
+
+        - `chat-review-worker`で、許可されたreview reportのcommit/pushをRDC経由とし、review対象treeをChat環境へ転送して公開しない契約を追加した。\r
+
+        - `chat-report-writer`で、許可されたreport/handoffのcommit/pushをRDC経由とし、GitHub connectorの責務をremote evidence、PR、comment、CIへ限定した。\r
+
+        - `design/chat-execution-environment-design.md`へ#73のsuperseding ruleを追加し、RDC push失敗時はblockedとして別publication経路へ切り替えないことを定義した。\r
+
+        - `design/chat-worker-skill-design.md`、Project Instruction例、hierarchy設計2ファイルを同じ操作境界へ同期した。\r
+
+        - `tasks/tasks-status.md`へT-007、`tasks/phases-status.md`へPhase 11を追加した。\r
+
+        \r
+
+        ## 実行環境\r
+
+        \r
+
+        - Device: `FA780`\r
+
+        - OS: Windows\r
+
+        - Worktree: `C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git`\r
+
+        - Ownership: Issue #73専用worktree\r
+
+        - Git remote: `origin https://github.com/ssaattww/CodexSkill.git`\r
+
+        - RDC経由でbranch作成、編集、ローカル検証、commit、pushを実施した。\r
+
+        - Git認証設定、global Git設定、管理者設定は変更していない。\r
+
+        \r
+
+        ## 診断artifact workflow確認\r
+
+        \r
+
+        `.github/workflows/pr-commit-artifacts.yml`に、`scripts/run_validation.py`の結果、標準出力、標準エラー、source archive、job statusを成功・失敗の双方で`always()` uploadする処理が存在することを確認した。新しいworkflow追加は不要と判断した。\r
+
+        \r
+
+        ## ローカル検証\r
+
+        \r
+
+        #70復元差分に対し、`git diff --cached --check`と`scripts/run_validation.py`を実施し、repository / bundle / ZIP integrity / ZIP contentsが全てpassした。診断保存先は`C:\\Users\\donabe\\Project\\CodexSkill-issue-73-artifacts\\restore70-validation`。\r
+
+        \r
+
+        #73実装差分に対し、`git diff --check`、`scripts/run_validation.py`、hierarchy設計2ファイルのbyte一致確認を実施し、全てpassした。診断保存先は`C:\\Users\\donabe\\Project\\CodexSkill-issue-73-artifacts\\implementation-validation`。\r
+
+        \r
+
+        handoff YAMLはタスク専用scratchに導入した`yaml`パーサーで構文解析し、schema version 3とnext actionを確認した。repository依存は変更していない。\r
+
+        \r
+
+        report／handoff／trackingを含むpublication candidateでは、同じ--output-dirを再利用した再実行がrunnerの出力先新規性チェックによりexit 2となり、validation step自体は開始されなかった。この失敗stdout/stderrも保持した。その後は毎回新規保存先で再実行し、git diff --check、repository、bundle、ZIP integrity、ZIP contents、hierarchy byte一致、handoff YAML parseが全てpassした。losslessなsource payload補強後の最終検証結果と診断保存先は、永続化後のPR commentへ記録する。\r
+
+        \r
+
+        検証済みtechnical HEADは`ce445faa71eedf60b73ee9497bd1d6c1d484ec7c`。このreportとhandoffの保存でGit HEADは更新されるため、最終CIはreport/handoff commit後のPR current HEADに一致する`pull_request` runだけを確認する。`ce445fa`以前のrunは最終CIの代用にしない。\r
+
+        \r
+
+        ## 未実施・残リスク\r
+
+        \r
+
+        - #73変更に対するnormal reviewおよびindependent final reviewはこの実装chatでは実施していない。実装者自身の確認をreview verdictとして扱わない。\r
+
+        - report/handoff保存後のfinal HEADに対するmatching CIはreport生成時点では未確定。\r
+
+        - 実機で確認したRDC pushは今回のIssue #73 branchへのpushで成功した。認証失敗時のfallbackを実行していないため、失敗時動作は契約上のblocked規則として保持する。\r
+
+        - #69の欠落内容は今回の#70復元・#73 scopeには含めない。\r
+
+        \r
+
+        ## 次の操作\r
+
+        \r
+
+        1. 本reportとhandoffをrepositoryへ保存してcommitする。\r
+
+        2. commit/pushをRDC経由で実行する。\r
+
+        3. GitHub connectorでPR #78を更新し、PR current HEADと一致するworkflow runだけを確認する。\r
+
+        4. 簡易reportをPR commentへ投稿する。\r
+
+        5. mergeは利用者が行う。\r
+
+        \r
+
+        ## Persistence\r
+
+        \r
+
+        - Report path: `reports/issue-73-rdc-git-implementation-20260915.md`\r
+
+        - Handoff path: `reports/handoffs/issue-73-rdc-git-20260915.yaml`\r
+
+        - Report生成時のrepository commit state: `commit_pending`\r
+
+        - Technical HEAD: `ce445faa71eedf60b73ee9497bd1d6c1d484ec7c`\r
+
+        - Administrative parent: `ce445faa71eedf60b73ee9497bd1d6c1d484ec7c`\r\n"
+      evidence_sources:
+        - "Issue #73"
+        - "PR #78"
+        - AGENTS.md
+        - design/chat-execution-environment-design.md
+        - local validation artifacts on FA780
+      target_identity:
+        branch: issue-73-rdc-git
+        base_ref: main
+        current_head: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+        reviewed_implementation_head: null
+      verification:
+        capability: local_execution_available
+        technical_head: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+        administrative_parent: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
+        commit_state: commit_pending
+        push_state: pushed
+        ci_wait_state: ci_wait_pending
+      independent_closure:
+        initial_independent_reviewed_head: null
+        closure_reviewed_heads: []
+        reviewer_continuity: null
+        closure_scope: []
+        completeness_matrix: []
+      severity_records: []
+      persistence:
+        mode: repository_file
+        reserved_paths:
+          - reports/issue-73-rdc-git-implementation-20260915.md
+          - reports/handoffs/issue-73-rdc-git-20260915.yaml
+        report_attestation_head: null
+      concise_pr_comment_body: "Issue #73: #70 RDC経路を復元し、PC接続時のgit commit/pushをRDCへ移行。ローカル検証はpass。最終HEAD一致CIとreviewは別途確認。"
+      unresolved_discrepancies: []
+extensions: []
+next_action: *a19
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-73-rdc-git-20260915.yaml
+  packet_url: null
+  transport_note: "Persisted on PR #78 branch; next chat must re-resolve permissions and current HEAD."

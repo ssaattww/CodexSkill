@@ -1,0 +1,1053 @@
+{
+  "schema_version": 3,
+  "producer": {
+    "skill": "chat-review-worker",
+    "mode": "initial review",
+    "generated_at": "2026-09-15T10:13:40.907375+00:00"
+  },
+  "repository": "ssaattww/CodexSkill",
+  "issue_or_pr": "Issue #73 / PR #78",
+  "task_id": "T-007",
+  "branch": "issue-73-rdc-git",
+  "base_ref": "main",
+  "target": {
+    "current_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "commit_range": "106ea5dcf12c4805756351fb9381df220b94f044..85c47515cbe086824746534ffb6cf6398894a63a"
+  },
+  "execution_environment": {
+    "kind": "connected_computer",
+    "tool": "Remote Desktop Commander",
+    "machine_id": "FA780",
+    "connection": "available",
+    "os": "Windows 11",
+    "shell": "powershell.exe",
+    "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+    "repository": "ssaattww/CodexSkill",
+    "branch": "issue-73-rdc-git",
+    "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "source_state": "clean",
+    "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a",
+    "ownership": "current_task",
+    "writable_paths": [
+      "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+      "C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1"
+    ],
+    "dependencies": [
+      {
+        "name": "git",
+        "status": "available",
+        "evidence": "RDC git inspection succeeded"
+      },
+      {
+        "name": "python",
+        "status": "available",
+        "evidence": "repository validation succeeded"
+      },
+      {
+        "name": "node/yaml",
+        "status": "available",
+        "evidence": "handoff schema type check executed"
+      }
+    ],
+    "evidence": [
+      "RDC device FA780 pinned by read-only discovery",
+      "dedicated Issue #73 worktree",
+      "review source remained at reviewed HEAD during review"
+    ]
+  },
+  "verification": {
+    "capability": "local_execution_available",
+    "capability_evidence": [
+      "RDC local executor available and repository validation executed"
+    ],
+    "technical_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "administrative_parent": null,
+    "commit": {
+      "state": "committed",
+      "review_target_sha": "85c47515cbe086824746534ffb6cf6398894a63a"
+    },
+    "push": {
+      "state": "pushed",
+      "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a"
+    },
+    "ci_wait": {
+      "state": "ci_wait_completed",
+      "required_for": "reviewed implementation evidence"
+    }
+  },
+  "authoritative_requirements": [
+    {
+      "source": "user_instruction",
+      "reference": "current chat",
+      "summary": "Review PR #78 using RDC"
+    },
+    {
+      "source": "issue",
+      "reference": "Issue #73",
+      "summary": "Use RDC for git commit/push when RDC is available"
+    },
+    {
+      "source": "repository_instruction",
+      "reference": "AGENTS.md",
+      "summary": "CodexSkill maintenance is non-TDD"
+    }
+  ],
+  "development_policy": {
+    "method": "validation-only review",
+    "testing_order": "review existing validation plus focused reviewer checks",
+    "governing_source": "AGENTS.md"
+  },
+  "validation_plan": {
+    "commands": [
+      "repository validation",
+      "git diff --check",
+      "hierarchy byte equality",
+      "handoff schema type check"
+    ],
+    "required_failure_diagnostics": [
+      "stdout",
+      "stderr",
+      "results",
+      "source identity"
+    ]
+  },
+  "blocked": [],
+  "authorized_actions": [
+    "read_repository",
+    "write_handoff",
+    "write_report",
+    "commit",
+    "push",
+    "update_pr",
+    "comment_pr"
+  ],
+  "write_boundary": {
+    "allowed": [
+      {
+        "path_or_operation": "review report/handoff only",
+        "reason": "normal review persistence"
+      }
+    ],
+    "forbidden": [
+      {
+        "path_or_operation": "implementation/design/workflow/tracking fixes",
+        "reason": "reviewer must not implement findings"
+      },
+      {
+        "path_or_operation": "merge",
+        "reason": "user-owned action"
+      }
+    ]
+  },
+  "scope": [
+    "normal review of PR #78 current HEAD",
+    "restored #70 content plus #73 route change"
+  ],
+  "non_goals": [
+    "implement findings",
+    "merge",
+    "independent final review"
+  ],
+  "files": {
+    "changed": [
+      {
+        "path": "PR #78 changed-file set",
+        "purpose": "all 21 changed files reviewed"
+      }
+    ],
+    "inspected": [
+      {
+        "path": "scripts/run_validation.py",
+        "purpose": "validation dependency"
+      },
+      {
+        "path": "review-worker contract",
+        "purpose": "review semantics"
+      }
+    ],
+    "intentionally_untouched": [
+      {
+        "path_or_area": "implementation/design/tracking fixes",
+        "reason": "review-only boundary"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "command": "python scripts/run_validation.py --output-dir C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1",
+      "purpose": "repository/bundle/zip validation",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+      "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1\\results.json",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows 11",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git inspection succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "handoff schema type check executed"
+          }
+        ],
+        "evidence": [
+          "RDC device FA780 pinned by read-only discovery",
+          "dedicated Issue #73 worktree",
+          "review source remained at reviewed HEAD during review"
+        ]
+      },
+      "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a"
+    },
+    {
+      "command": "git diff --check 106ea5d...85c4751",
+      "purpose": "diff whitespace validation",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+      "evidence": "RDC command output empty",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows 11",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git inspection succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "handoff schema type check executed"
+          }
+        ],
+        "evidence": [
+          "RDC device FA780 pinned by read-only discovery",
+          "dedicated Issue #73 worktree",
+          "review source remained at reviewed HEAD during review"
+        ]
+      },
+      "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a"
+    },
+    {
+      "command": "hierarchy byte equality check",
+      "purpose": "design mirror validation",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+      "evidence": "equal=True bytes=43650",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows 11",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git inspection succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "handoff schema type check executed"
+          }
+        ],
+        "evidence": [
+          "RDC device FA780 pinned by read-only discovery",
+          "dedicated Issue #73 worktree",
+          "review source remained at reviewed HEAD during review"
+        ]
+      },
+      "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a"
+    },
+    {
+      "command": "handoff command execution_environment type check",
+      "purpose": "schema contract validation",
+      "exit_code": 1,
+      "result": "failed",
+      "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+      "evidence": "three values are string FA780; bad_count=3",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows 11",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git inspection succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "handoff schema type check executed"
+          }
+        ],
+        "evidence": [
+          "RDC device FA780 pinned by read-only discovery",
+          "dedicated Issue #73 worktree",
+          "review source remained at reviewed HEAD during review"
+        ]
+      },
+      "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a"
+    }
+  ],
+  "tests": [
+    {
+      "name": "CodexSkill repository validation",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+      "evidence": "review evidence results.json"
+    },
+    {
+      "name": "handoff schema type check",
+      "phase": "verification",
+      "result": "failed",
+      "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+      "evidence": "PR78-NR-002"
+    }
+  ],
+  "ci": {
+    "required": true,
+    "workflow": "Validate and release ChatGPT worker skills",
+    "run_id": 34953364201,
+    "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "conclusion": "success",
+    "artifacts": []
+  },
+  "implementation": {
+    "outcome": "not_applicable",
+    "final_head": "unknown",
+    "commits": [],
+    "addressed_findings": [],
+    "failure_diagnostics": [],
+    "blocked_items": [],
+    "summary": [
+      "review-only chat"
+    ]
+  },
+  "review": {
+    "mode": "initial_review",
+    "reviewed_implementation_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "initial_independent_reviewed_head": null,
+    "closure_reviewed_heads": [],
+    "base_ref": "main",
+    "commit_range": "106ea5dcf12c4805756351fb9381df220b94f044..85c47515cbe086824746534ffb6cf6398894a63a",
+    "reviewer": {
+      "identity": "current ChatGPT review chat",
+      "role": "normal_reviewer",
+      "continuity": {
+        "previous_reviewer_identity": null,
+        "changed": false,
+        "reason": null
+      },
+      "independence": {
+        "implemented_change": false,
+        "implemented_review_fix": false,
+        "served_as_normal_reviewer": true,
+        "inherited_conversation": false,
+        "evidence": [
+          "review executed in separate current chat using RDC source reads"
+        ]
+      }
+    },
+    "required_coverage": [
+      {
+        "criterion": "requirement and design conformance",
+        "disposition": "checked_finding",
+        "evidence": "PR78-NR-001, PR78-NR-003"
+      },
+      {
+        "criterion": "correctness and edge cases",
+        "disposition": "checked_finding",
+        "evidence": "PR78-NR-002"
+      },
+      {
+        "criterion": "scope discipline and unrelated changes",
+        "disposition": "checked_no_finding",
+        "evidence": "#70 historical report/handoff restoration matches original merge; #69 restoration remains out of scope"
+      },
+      {
+        "criterion": "changed files and direct dependency impact",
+        "disposition": "checked_finding",
+        "evidence": "all 21 changed files and related worker/core contracts inspected"
+      },
+      {
+        "criterion": "API data configuration workflow compatibility",
+        "disposition": "checked_finding",
+        "evidence": "schema v3 command field type mismatch"
+      },
+      {
+        "criterion": "error handling and failure diagnostics",
+        "disposition": "checked_no_finding",
+        "evidence": "RDC push failure remains blocked and diagnostics are retained"
+      },
+      {
+        "criterion": "security and secret handling",
+        "disposition": "checked_no_finding",
+        "evidence": "credential mutation prohibited and secrets not recorded"
+      },
+      {
+        "criterion": "tests and validation adequacy",
+        "disposition": "checked_finding",
+        "evidence": "repository validator passes but does not validate handoff command field type"
+      },
+      {
+        "criterion": "current-HEAD CI evidence",
+        "disposition": "checked_no_finding",
+        "evidence": "run 34953364201 head SHA equals reviewed HEAD and succeeded"
+      },
+      {
+        "criterion": "report tracking documentation accuracy",
+        "disposition": "checked_finding",
+        "evidence": "PR78-NR-001, PR78-NR-003, PR78-NR-004"
+      },
+      {
+        "criterion": "regression and maintainability risks",
+        "disposition": "checked_finding",
+        "evidence": "duplicated instruction and conflicting distribution contract"
+      }
+    ],
+    "findings": [
+      {
+        "id": "PR78-NR-001",
+        "severity": "medium",
+        "origin": "coverage_miss",
+        "location": "design/chat-worker-skill-design.md:278",
+        "description": "埋め込みRevMem向けProject Instruction例が旧GitHub connector指示のままでRDC commit/push規則を含まない",
+        "impact": "#73のpublication経路へ戻る余地がありstandalone例と矛盾する",
+        "evidence": "同文書39行目はRDC commit/push、278行目は旧connector指示",
+        "required_action": "埋め込み例をstandalone例と同じ操作境界へ同期する"
+      },
+      {
+        "id": "PR78-NR-002",
+        "severity": "medium",
+        "origin": "introduced_by_change",
+        "location": "reports/handoffs/issue-73-rdc-git-20260915.yaml:176,184,192",
+        "description": "commands[].execution_environmentがschemaのobject|nullではなく文字列FA780",
+        "impact": "コマンド単位の実行場所証拠をlosslessに保持できない",
+        "evidence": "RDC上のyaml parserで3件ともstring、bad_count=3",
+        "required_action": "契約どおりobjectを保持するか参照方式をschema/producer/consumerで明示し型検証する"
+      },
+      {
+        "id": "PR78-NR-003",
+        "severity": "medium",
+        "origin": "introduced_by_change",
+        "location": "design/chat-execution-environment-design.md:13,87 / design/skill-hierarchy-design.md:91",
+        "description": "復元designの8スキル/#69未マージ記述とhierarchyの現在9スキル記述が矛盾する",
+        "impact": "現行配布構成と#69状態を一意に判断できない",
+        "evidence": "git grepとreview時生成ZIP 8 entries",
+        "required_action": "#70当時の歴史説明と現在状態を分離し実配布構成とhierarchyを同期する"
+      },
+      {
+        "id": "PR78-NR-004",
+        "severity": "low",
+        "origin": "introduced_by_change",
+        "location": "tasks/phases-status.md:5,131",
+        "description": "Phase 11がfinal publication verification pending、Updatedも2026-09-08のまま",
+        "impact": "次workerがpublication verificationを未完了と誤認する",
+        "evidence": "T-007/PR body/exact-head CIは確認済みでnormal review待ち",
+        "required_action": "Phase 11 statusとUpdated日付を現在状態へ同期する"
+      }
+    ],
+    "completeness_matrix": [],
+    "severity_records": [],
+    "held": [],
+    "unexplored": [],
+    "validation_assessment": [
+      {
+        "item": "repository validation",
+        "result": "supported",
+        "evidence": "pass"
+      },
+      {
+        "item": "handoff schema field type",
+        "result": "failed",
+        "evidence": "PR78-NR-002"
+      },
+      {
+        "item": "exact-head CI",
+        "result": "supported",
+        "evidence": "34953364201 success at reviewed HEAD"
+      }
+    ],
+    "verdict": "fail",
+    "remaining_risks": [
+      "independent final review not yet performed"
+    ],
+    "next_action": {
+      "type": "implementation",
+      "target_skill": "chat-implementation-worker",
+      "mode": "review follow-up",
+      "summary": "Fix PR78-NR-001 through PR78-NR-004, then return to this normal reviewer for fix verification"
+    },
+    "reserved_report_paths": [],
+    "report_attestation_allowed": false
+  },
+  "report": {
+    "report_type": "review_report",
+    "outcome": "created",
+    "persistence_mode": "repository_file",
+    "paths": [
+      "reports/issue-73-pr78-normal-review-20260915.md"
+    ],
+    "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "attestation_head": null,
+    "pr_comments": [],
+    "summary": [
+      "normal review verdict fail with four required findings"
+    ]
+  },
+  "findings": [
+    {
+      "id": "PR78-NR-001",
+      "severity": "medium",
+      "origin": "coverage_miss",
+      "location": "design/chat-worker-skill-design.md:278",
+      "description": "埋め込みRevMem向けProject Instruction例が旧GitHub connector指示のままでRDC commit/push規則を含まない",
+      "impact": "#73のpublication経路へ戻る余地がありstandalone例と矛盾する",
+      "evidence": "同文書39行目はRDC commit/push、278行目は旧connector指示",
+      "required_action": "埋め込み例をstandalone例と同じ操作境界へ同期する"
+    },
+    {
+      "id": "PR78-NR-002",
+      "severity": "medium",
+      "origin": "introduced_by_change",
+      "location": "reports/handoffs/issue-73-rdc-git-20260915.yaml:176,184,192",
+      "description": "commands[].execution_environmentがschemaのobject|nullではなく文字列FA780",
+      "impact": "コマンド単位の実行場所証拠をlosslessに保持できない",
+      "evidence": "RDC上のyaml parserで3件ともstring、bad_count=3",
+      "required_action": "契約どおりobjectを保持するか参照方式をschema/producer/consumerで明示し型検証する"
+    },
+    {
+      "id": "PR78-NR-003",
+      "severity": "medium",
+      "origin": "introduced_by_change",
+      "location": "design/chat-execution-environment-design.md:13,87 / design/skill-hierarchy-design.md:91",
+      "description": "復元designの8スキル/#69未マージ記述とhierarchyの現在9スキル記述が矛盾する",
+      "impact": "現行配布構成と#69状態を一意に判断できない",
+      "evidence": "git grepとreview時生成ZIP 8 entries",
+      "required_action": "#70当時の歴史説明と現在状態を分離し実配布構成とhierarchyを同期する"
+    },
+    {
+      "id": "PR78-NR-004",
+      "severity": "low",
+      "origin": "introduced_by_change",
+      "location": "tasks/phases-status.md:5,131",
+      "description": "Phase 11がfinal publication verification pending、Updatedも2026-09-08のまま",
+      "impact": "次workerがpublication verificationを未完了と誤認する",
+      "evidence": "T-007/PR body/exact-head CIは確認済みでnormal review待ち",
+      "required_action": "Phase 11 statusとUpdated日付を現在状態へ同期する"
+    }
+  ],
+  "held": [],
+  "unexplored": [],
+  "unknown": [],
+  "not_applicable": [
+    "independent final report attestation: normal review"
+  ],
+  "remaining_risks": [
+    "independent final review pending after normal cycle"
+  ],
+  "source_payloads": [
+    {
+      "source_skill": "work-context-manager",
+      "output_contract_version": "current",
+      "content_type": "application/json",
+      "payload": {
+        "repository": "ssaattww/CodexSkill",
+        "issue_or_pr": "PR #78",
+        "task_id": "T-007",
+        "mode": "review",
+        "branch": "issue-73-rdc-git",
+        "base_ref": "main",
+        "current_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "verification_capability": "local_execution_available",
+        "verification_capability_evidence": [
+          "RDC local executor available"
+        ],
+        "execution_environment": {
+          "kind": "connected_computer",
+          "tool": "Remote Desktop Commander",
+          "machine_id": "FA780",
+          "connection": "available",
+          "os": "Windows 11",
+          "shell": "powershell.exe",
+          "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "repository": "ssaattww/CodexSkill",
+          "branch": "issue-73-rdc-git",
+          "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+          "source_state": "clean",
+          "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a",
+          "ownership": "current_task",
+          "writable_paths": [
+            "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+            "C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1"
+          ],
+          "dependencies": [
+            {
+              "name": "git",
+              "status": "available",
+              "evidence": "RDC git inspection succeeded"
+            },
+            {
+              "name": "python",
+              "status": "available",
+              "evidence": "repository validation succeeded"
+            },
+            {
+              "name": "node/yaml",
+              "status": "available",
+              "evidence": "handoff schema type check executed"
+            }
+          ],
+          "evidence": [
+            "RDC device FA780 pinned by read-only discovery",
+            "dedicated Issue #73 worktree",
+            "review source remained at reviewed HEAD during review"
+          ]
+        },
+        "execution_state": {
+          "technical_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+          "administrative_parent": null,
+          "commit": "committed",
+          "push": "pushed",
+          "ci_wait": "ci_wait_completed"
+        },
+        "scope": [
+          "normal review PR #78"
+        ],
+        "non_goals": [
+          "implement findings",
+          "merge"
+        ],
+        "authoritative_requirements": [
+          {
+            "source": "user_instruction",
+            "reference": "current chat",
+            "summary": "Review PR #78 using RDC"
+          },
+          {
+            "source": "issue",
+            "reference": "Issue #73",
+            "summary": "Use RDC for git commit/push when RDC is available"
+          },
+          {
+            "source": "repository_instruction",
+            "reference": "AGENTS.md",
+            "summary": "CodexSkill maintenance is non-TDD"
+          }
+        ],
+        "write_boundary": {
+          "allowed": [
+            {
+              "path_or_operation": "review report/handoff only",
+              "reason": "normal review persistence"
+            }
+          ],
+          "forbidden": [
+            {
+              "path_or_operation": "implementation/design/workflow/tracking fixes",
+              "reason": "reviewer must not implement findings"
+            },
+            {
+              "path_or_operation": "merge",
+              "reason": "user-owned action"
+            }
+          ]
+        },
+        "development_policy": {
+          "method": "validation-only review",
+          "testing_order": "review existing validation plus focused reviewer checks",
+          "governing_source": "AGENTS.md"
+        },
+        "validation": {
+          "commands": [
+            "repository validation",
+            "git diff --check",
+            "hierarchy byte equality",
+            "handoff schema type check"
+          ],
+          "required_failure_diagnostics": [
+            "stdout",
+            "stderr",
+            "results",
+            "source identity"
+          ]
+        },
+        "ci": {
+          "matching_run": "34953364201",
+          "conclusion": "success"
+        },
+        "unknown": [],
+        "blocked": [],
+        "remaining_risks": [
+          "independent final review pending"
+        ]
+      }
+    },
+    {
+      "source_skill": "review-worker",
+      "output_contract_version": "current",
+      "content_type": "application/json",
+      "payload": {
+        "mode": "initial_review",
+        "reviewed_implementation_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "initial_independent_reviewed_head": null,
+        "closure_reviewed_heads": [],
+        "base_ref": "main",
+        "commit_range": "106ea5dcf12c4805756351fb9381df220b94f044..85c47515cbe086824746534ffb6cf6398894a63a",
+        "reviewer": {
+          "identity": "current ChatGPT review chat",
+          "role": "normal_reviewer",
+          "continuity": {
+            "previous_reviewer_identity": null,
+            "changed": false,
+            "reason": null
+          },
+          "independence": {
+            "implemented_change": false,
+            "implemented_review_fix": false,
+            "served_as_normal_reviewer": true,
+            "inherited_conversation": false,
+            "evidence": [
+              "review executed in separate current chat using RDC source reads"
+            ]
+          }
+        },
+        "required_coverage": [
+          {
+            "criterion": "requirement and design conformance",
+            "disposition": "checked_finding",
+            "evidence": "PR78-NR-001, PR78-NR-003"
+          },
+          {
+            "criterion": "correctness and edge cases",
+            "disposition": "checked_finding",
+            "evidence": "PR78-NR-002"
+          },
+          {
+            "criterion": "scope discipline and unrelated changes",
+            "disposition": "checked_no_finding",
+            "evidence": "#70 historical report/handoff restoration matches original merge; #69 restoration remains out of scope"
+          },
+          {
+            "criterion": "changed files and direct dependency impact",
+            "disposition": "checked_finding",
+            "evidence": "all 21 changed files and related worker/core contracts inspected"
+          },
+          {
+            "criterion": "API data configuration workflow compatibility",
+            "disposition": "checked_finding",
+            "evidence": "schema v3 command field type mismatch"
+          },
+          {
+            "criterion": "error handling and failure diagnostics",
+            "disposition": "checked_no_finding",
+            "evidence": "RDC push failure remains blocked and diagnostics are retained"
+          },
+          {
+            "criterion": "security and secret handling",
+            "disposition": "checked_no_finding",
+            "evidence": "credential mutation prohibited and secrets not recorded"
+          },
+          {
+            "criterion": "tests and validation adequacy",
+            "disposition": "checked_finding",
+            "evidence": "repository validator passes but does not validate handoff command field type"
+          },
+          {
+            "criterion": "current-HEAD CI evidence",
+            "disposition": "checked_no_finding",
+            "evidence": "run 34953364201 head SHA equals reviewed HEAD and succeeded"
+          },
+          {
+            "criterion": "report tracking documentation accuracy",
+            "disposition": "checked_finding",
+            "evidence": "PR78-NR-001, PR78-NR-003, PR78-NR-004"
+          },
+          {
+            "criterion": "regression and maintainability risks",
+            "disposition": "checked_finding",
+            "evidence": "duplicated instruction and conflicting distribution contract"
+          }
+        ],
+        "findings": [
+          {
+            "id": "PR78-NR-001",
+            "severity": "medium",
+            "origin": "coverage_miss",
+            "location": "design/chat-worker-skill-design.md:278",
+            "description": "埋め込みRevMem向けProject Instruction例が旧GitHub connector指示のままでRDC commit/push規則を含まない",
+            "impact": "#73のpublication経路へ戻る余地がありstandalone例と矛盾する",
+            "evidence": "同文書39行目はRDC commit/push、278行目は旧connector指示",
+            "required_action": "埋め込み例をstandalone例と同じ操作境界へ同期する"
+          },
+          {
+            "id": "PR78-NR-002",
+            "severity": "medium",
+            "origin": "introduced_by_change",
+            "location": "reports/handoffs/issue-73-rdc-git-20260915.yaml:176,184,192",
+            "description": "commands[].execution_environmentがschemaのobject|nullではなく文字列FA780",
+            "impact": "コマンド単位の実行場所証拠をlosslessに保持できない",
+            "evidence": "RDC上のyaml parserで3件ともstring、bad_count=3",
+            "required_action": "契約どおりobjectを保持するか参照方式をschema/producer/consumerで明示し型検証する"
+          },
+          {
+            "id": "PR78-NR-003",
+            "severity": "medium",
+            "origin": "introduced_by_change",
+            "location": "design/chat-execution-environment-design.md:13,87 / design/skill-hierarchy-design.md:91",
+            "description": "復元designの8スキル/#69未マージ記述とhierarchyの現在9スキル記述が矛盾する",
+            "impact": "現行配布構成と#69状態を一意に判断できない",
+            "evidence": "git grepとreview時生成ZIP 8 entries",
+            "required_action": "#70当時の歴史説明と現在状態を分離し実配布構成とhierarchyを同期する"
+          },
+          {
+            "id": "PR78-NR-004",
+            "severity": "low",
+            "origin": "introduced_by_change",
+            "location": "tasks/phases-status.md:5,131",
+            "description": "Phase 11がfinal publication verification pending、Updatedも2026-09-08のまま",
+            "impact": "次workerがpublication verificationを未完了と誤認する",
+            "evidence": "T-007/PR body/exact-head CIは確認済みでnormal review待ち",
+            "required_action": "Phase 11 statusとUpdated日付を現在状態へ同期する"
+          }
+        ],
+        "completeness_matrix": [],
+        "severity_records": [],
+        "held": [],
+        "unexplored": [],
+        "validation_assessment": [
+          {
+            "item": "repository validation",
+            "result": "supported",
+            "evidence": "pass"
+          },
+          {
+            "item": "handoff schema field type",
+            "result": "failed",
+            "evidence": "PR78-NR-002"
+          },
+          {
+            "item": "exact-head CI",
+            "result": "supported",
+            "evidence": "34953364201 success at reviewed HEAD"
+          }
+        ],
+        "verdict": "fail",
+        "remaining_risks": [
+          "independent final review not yet performed"
+        ],
+        "next_action": {
+          "type": "implementation",
+          "target_skill": "chat-implementation-worker",
+          "mode": "review follow-up",
+          "summary": "Fix PR78-NR-001 through PR78-NR-004, then return to this normal reviewer for fix verification"
+        },
+        "reserved_report_paths": [],
+        "report_attestation_allowed": false
+      }
+    },
+    {
+      "source_skill": "report-writer",
+      "output_contract_version": "current",
+      "content_type": "application/json",
+      "payload": {
+        "report_type": "review_report",
+        "complete_body": "# PR #78 通常レビュー報告\n\n## メタデータ\n\n- Repository: `ssaattww/CodexSkill`\n- Issue: `#73 git操作のrdc化`\n- PR: `#78`\n- Review mode: `initial_review`\n- Reviewed implementation HEAD: `85c47515cbe086824746534ffb6cf6398894a63a`\n- Base: `106ea5dcf12c4805756351fb9381df220b94f044`\n- Reviewer: current ChatGPT review chat\n- Execution environment: RDC / `FA780` / `C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git`\n- Verification capability: `local_execution_available`\n- Verdict: `fail`\n- Merge: 実施しない\n\n## 対象と確認方針\n\nIssue #73、T-007、Phase 11、設計、全21変更ファイル、関連Skill、実装report/handoff、PR metadata/comment、current HEAD固有CIを確認した。\n#70復元ファイルは元のmerge内容との一致も確認し、#73で変更されたRDC commit/push境界と現在の文書・handoff契約を重点確認した。\n\n## Findings\n\n### PR78-NR-001 / medium / required\n\n- Origin: `coverage_miss`\n- Location: `design/chat-worker-skill-design.md:278`\n- Description: 文書内のRevMem向けProject Instruction例が、依然として「リポジトリの参照・更新」をGitHub connectorで行うよう指示しており、#73で追加した「PC接続時のgit commit/pushはRDC経由」という規則を含んでいない。\n- Impact: この埋め込み例をProject Instructionとして利用すると、#73が防止しようとしているconnector publication／Chat環境へのソース再構成へ戻る余地が残る。`design/chatgpt-project-instruction-example.md:20`および同文書冒頭の#73説明とも矛盾する。\n- Evidence: `git grep`で同文書39行目はRDC commit/push、278行目は旧connector指示を保持していることを確認した。\n- Required action: 埋め込みProject Instruction例もstandalone例と同じ操作境界へ同期し、GitHub connectorの役割とRDC commit/pushを明記する。\n\n### PR78-NR-002 / medium / required\n\n- Origin: `introduced_by_change`\n- Location: `reports/handoffs/issue-73-rdc-git-20260915.yaml:176,184,192`\n- Description: `chat-handoff-manager`のschemaでは`commands[].execution_environment`が`object | null`だが、Issue #73 handoffの3コマンドは全て文字列`FA780`を格納している。\n- Impact: コマンドごとの実行場所をpath、repository、branch、HEAD、ownership等まで結び付ける新しいlossless transport契約を満たさない。YAML構文解析だけではこの契約違反を検出できない。\n- Evidence: RDC上で既存`yaml` parserを使って型を確認し、3件全て`string`、`bad_count=3`を確認した。repository validatorはpassしているため現行自動検査のcoverage gapでもある。\n- Required action: 各commandへ契約どおりのexecution_environment objectを保持するか、明示的な参照方式をschemaとして定義してproducer/consumer双方を同期し、型を検証する。\n\n### PR78-NR-003 / medium / required\n\n- Origin: `introduced_by_change`\n- Location: `design/chat-execution-environment-design.md:13,87` / `design/skill-hierarchy-design.md:91`\n- Description: 復元したexecution designは「#69の未マージ変更は取り込まない」「既存/更新した8スキル」と現在形で記載する一方、hierarchy designは「#69を統合した現在の配布は9スキル」と記載しており、同一PR内の設計契約が矛盾する。\n- Impact: 現行の配布構成と#69の状態を文書から一意に判断できず、将来の復元・validation・Skill配布で誤った前提を使う可能性がある。今回のRDCローカル生成ZIPは8エントリだった。\n- Evidence: `git grep`と生成ZIPの`zip-contents.stdout.log`を照合した。\n- Required action: #70当時の歴史的説明と現在状態を分離し、#73の範囲で復元しない#69の扱いを現在の事実に合わせて記述する。8/9のどちらを現在契約とするかは実際の配布構成とhierarchyを同期して決める。\n\n### PR78-NR-004 / low / required\n\n- Origin: `introduced_by_change`\n- Location: `tasks/phases-status.md:5,131`\n- Description: Phase 11は`final publication verification pending`のままで、ファイルの`Updated`も`2026-09-08`だが、T-007とPR metadataではcurrent HEAD `85c47515...`のexact-head CI確認済み・normal review待ちになっている。\n- Impact: 次workerが現在のstate machineを誤認し、publication verificationを未完了として扱う。\n- Evidence: `tasks/tasks-status.md`、PR #78 body、exact-head workflow run `34953364201`と不一致。\n- Required action: Phase 11のstatusとUpdated日付を現在状態へ同期する。\n\n## Required coverage\n\n| Criterion | Disposition | Evidence |\n| --- | --- | --- |\n| requirement / design conformance | checked_finding | PR78-NR-001, PR78-NR-003 |\n| correctness / edge cases | checked_finding | PR78-NR-002 |\n| scope discipline / unrelated changes | checked_no_finding | #70 historical reports/handoffsはoriginal mergeと一致、#69復元自体は非scopeとして維持 |\n| changed files / direct dependencies | checked_finding | 21変更file、core/wrapper Skill、design、tracking、handoffを確認 |\n| API / data / configuration / workflow / compatibility | checked_finding | schema v3 command field型不一致 |\n| error handling / failure diagnostics | checked_no_finding | RDC push failureはblocked、validation diagnostics保持を確認 |\n| security / secret handling | checked_no_finding | credential変更禁止・secret非記録の境界を確認 |\n| tests / validation adequacy | checked_finding | repository validatorはpassだがhandoff型不一致を検出しない |\n| current-HEAD CI evidence | checked_no_finding | reviewed HEADとrun head SHA一致、run `34953364201` success |\n| report / tracking / documentation accuracy | checked_finding | PR78-NR-001, PR78-NR-003, PR78-NR-004 |\n| regression / maintainability risk | checked_finding | 重複Project Instructionと相反する配布契約が残存 |\n\n## Validation\n\n- RDC source identity: clean `issue-73-rdc-git` worktree、HEAD `85c47515cbe086824746534ffb6cf6398894a63a`\n- `python scripts/run_validation.py --output-dir C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1`: pass\n- repository / bundle / ZIP integrity / ZIP contents: all pass\n- `git diff --check 106ea5d...85c4751`: pass\n- hierarchy設計2ファイル byte一致: pass\n- handoff YAML syntax: parse可能\n- handoff command execution_environment schema型確認: fail（3件ともstring）\n- Exact-head CI: `Validate and release ChatGPT worker skills` run `34953364201`, head SHA `85c47515...`, build success\n\n## Verdict / next action\n\nVerdictは`fail`。required finding 4件を修正し、同じnormal reviewerで`fix_verification`を行う。\n修正時はfindingごとにrequired action、production/document path、実際の構成を確認するfixture/evidence、focused validationを揃える。\n独立最終レビューはnormal cycle収束後に別chatで実施する。mergeは行わない。\n",
+        "evidence_sources": [
+          "RDC reviewed worktree",
+          "GitHub PR #78 and exact-head CI"
+        ],
+        "target_identity": {
+          "branch": "issue-73-rdc-git",
+          "base_ref": "main",
+          "current_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+          "reviewed_implementation_head": "85c47515cbe086824746534ffb6cf6398894a63a"
+        },
+        "verification": {
+          "capability": "local_execution_available",
+          "technical_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+          "administrative_parent": null,
+          "commit_state": "commit_pending",
+          "push_state": "pushed",
+          "ci_wait_state": "ci_wait_completed"
+        },
+        "execution_environment": {
+          "kind": "connected_computer",
+          "tool": "Remote Desktop Commander",
+          "machine_id": "FA780",
+          "connection": "available",
+          "os": "Windows 11",
+          "shell": "powershell.exe",
+          "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "repository": "ssaattww/CodexSkill",
+          "branch": "issue-73-rdc-git",
+          "head_sha": "85c47515cbe086824746534ffb6cf6398894a63a",
+          "source_state": "clean",
+          "source_fingerprint": "git-head:85c47515cbe086824746534ffb6cf6398894a63a",
+          "ownership": "current_task",
+          "writable_paths": [
+            "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+            "C:\\Users\\donabe\\Project\\CodexSkill-pr78-review-evidence-20260915-r1"
+          ],
+          "dependencies": [
+            {
+              "name": "git",
+              "status": "available",
+              "evidence": "RDC git inspection succeeded"
+            },
+            {
+              "name": "python",
+              "status": "available",
+              "evidence": "repository validation succeeded"
+            },
+            {
+              "name": "node/yaml",
+              "status": "available",
+              "evidence": "handoff schema type check executed"
+            }
+          ],
+          "evidence": [
+            "RDC device FA780 pinned by read-only discovery",
+            "dedicated Issue #73 worktree",
+            "review source remained at reviewed HEAD during review"
+          ]
+        },
+        "independent_closure": {
+          "initial_independent_reviewed_head": null,
+          "closure_reviewed_heads": [],
+          "reviewer_continuity": null,
+          "closure_scope": [],
+          "completeness_matrix": []
+        },
+        "severity_records": [],
+        "persistence": {
+          "mode": "repository_file",
+          "reserved_paths": [
+            "reports/issue-73-pr78-normal-review-20260915.md"
+          ],
+          "report_attestation_head": null
+        },
+        "concise_pr_comment_body": "PR #78 normal review: fail. Required findings PR78-NR-001..004. See detailed report.",
+        "unresolved_discrepancies": []
+      }
+    }
+  ],
+  "extensions": [],
+  "next_action": {
+    "type": "implementation",
+    "target_skill": "chat-implementation-worker",
+    "mode": "review follow-up",
+    "summary": "Fix all four findings and return to the same normal reviewer",
+    "instructions": [
+      "Preserve finding IDs and severities",
+      "Provide completeness matrix before fix verification"
+    ],
+    "required_attachments_or_references": [
+      "reports/issue-73-pr78-normal-review-20260915.md"
+    ],
+    "requested_authorized_actions": [
+      "read_repository",
+      "edit_documentation",
+      "write_report",
+      "write_handoff",
+      "commit",
+      "push",
+      "update_pr",
+      "comment_pr"
+    ]
+  },
+  "transport": {
+    "method": "repository_file",
+    "packet_path": "reports/handoffs/issue-73-pr78-normal-review-20260915.json",
+    "packet_url": null,
+    "transport_note": "Recheck current HEAD, source identity, connection and permissions before reuse."
+  }
+}

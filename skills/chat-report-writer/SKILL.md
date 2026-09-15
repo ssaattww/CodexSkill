@@ -28,6 +28,33 @@ All three must be installed. Do not replace them with repository-external shared
 - Persist the handoff under target-repository rules, or return the complete packet.
 - The user chooses the next chat and merge action.
 
+## Execution location
+
+Use the connected-PC route through Remote Desktop Commander by default.
+Follow an explicit user selection first, then Project Instruction. Use normal
+chat only when one of those authorities explicitly selects it. For the PC route,
+discover Remote Desktop Commander tools, confirm the specified device with a
+read-only call, and pin evidence reads to it. Resolve the path, source
+identity, and ownership through `work-context-manager.execution_environment`
+before reading or saving reports, and recheck after reconnection or change.
+Keep remote-machine paths distinct from current-chat paths and uploaded files.
+
+Use PC access only for existing evidence and authorized report/handoff files.
+Do not execute new tests, install project dependencies, launch agent CLIs,
+change product files, or turn a missing result into a new technical judgment.
+A failed requested connection blocks dependent evidence collection; do not
+switch to another machine or normal chat without authorization.
+
+Use the GitHub connector for remote repository evidence, PR updates,
+comments, and exact-head CI. On the connected-PC route, save authorized report
+and handoff files in the pinned worktree and perform any allowed Git commit and
+push through Remote Desktop Commander with the PC's existing Git remote and
+authentication. Do not transfer the repository tree into the chat runtime for
+publication, use terminal `gh` or direct REST calls, or change authentication
+settings without separate approval. Preserve supplied execution locations,
+source fingerprints, missing dependencies, and successful/failed diagnostic
+evidence without claiming that report generation reran those checks.
+
 ## Boundaries
 
 - Do not start another worker or sub-agent.
