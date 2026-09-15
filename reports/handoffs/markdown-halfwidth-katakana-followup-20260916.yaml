@@ -1,0 +1,315 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: review follow-up
+  generated_at: '2026-09-16T07:59:00+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #81'
+task_id: null
+branch: fix/markdown-lint-complete-scan
+base_ref: main
+target:
+  current_head: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+  reviewed_head: 422207a52e574281147a721113421281cc5a686f
+  commit_range: 422207a52e574281147a721113421281cc5a686f...606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+verification:
+  capability: local_execution_available
+  capability_evidence:
+    - 'FA780専用worktreeで実SudachiPyとrepository full validationを実行可能。'
+  technical_head: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+  administrative_parent: null
+  commit:
+    state: committed
+    review_target_sha: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+  push:
+    state: push_pending
+    head_sha: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+  ci_wait:
+    state: ci_wait_pending
+    required_for: merge_gate
+  final_publication:
+    sequence: final_push_then_exact_head_pull_request_ci_wait
+    pr_action: update
+execution_environment:
+  kind: connected_computer
+  tool: Remote Desktop Commander
+  machine_id: 4eae589f-096b-4362-9bec-0f392d77d44f
+  connection: available
+  os: Windows
+  shell: cmd.exe
+  working_directory: 'C:\Users\donabe\Project\CodexSkill-pr81-fix-20260916'
+  repository: ssaattww/CodexSkill
+  branch: fix/markdown-lint-complete-scan
+  head_sha: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+  source_state: clean_after_implementation_commit
+  ownership: current_task
+  writable_paths:
+    - skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    - reports/markdown-halfwidth-katakana-followup-20260916.md
+    - reports/handoffs/markdown-halfwidth-katakana-followup-20260916.yaml
+authoritative_requirements:
+  - source: review_finding
+    reference: R81-06
+    summary: '半角片仮名をNFKC/normalized formと整合する語彙検査対象にし、長文分割も同じ契約に揃える。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: 'CodexSkill自身の保守は非TDD。既存validationを使用する。'
+development_policy:
+  method: non-TDD
+  testing_order: focused_validation_then_repository_full_validation
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - 'R81-06 focused実CLI 8ケース'
+    - 'R81-01〜05 Python回帰13ケース'
+    - 'python scripts/run_validation.py --output-dir <task scratch>'
+    - 'python -m py_compile; git diff --check'
+  required_failure_diagnostics:
+    - '標準出力・標準エラー・終了コードをtask scratchに保存する。'
+blocked: []
+authorized_actions:
+  - read_repository
+  - edit_code
+  - write_report
+  - write_handoff
+  - commit
+  - push
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      reason: 'R81-06修正'
+    - path_or_operation: reports/markdown-halfwidth-katakana-followup-20260916.md
+      reason: '詳細実装報告'
+    - path_or_operation: reports/handoffs/markdown-halfwidth-katakana-followup-20260916.yaml
+      reason: '次工程へのhandoff'
+  forbidden:
+    - path_or_operation: merge
+      reason: '利用者が実施する。'
+scope:
+  - 'R81-06の修正と検証'
+non_goals:
+  - 'R81-01〜05の再設計'
+  - 'H-DOC保留事項の修正'
+  - 'Windows cspell.cmd起動挙動の修正'
+files:
+  changed:
+    - path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      purpose: '半角片仮名の検査と分割境界をNFKC契約へ統一'
+    - path: reports/markdown-halfwidth-katakana-followup-20260916.md
+      purpose: '詳細報告'
+    - path: reports/handoffs/markdown-halfwidth-katakana-followup-20260916.yaml
+      purpose: 'handoff'
+  inspected:
+    - path: reports/markdown-complete-scan-fix-verification-20260916.md
+      purpose: 'R81-06の原指摘と先行5件resolved確認'
+    - path: .github/workflows/pr-commit-artifacts.yml
+      purpose: '成功/失敗時の診断artifact保存契約確認'
+  intentionally_untouched:
+    - path_or_area: skills/review-enforcer/scripts/run-cspell-markdown.js
+      reason: 'R81-06の原因経路ではない。'
+    - path_or_area: design
+      reason: 'H-DOCは今回scope外。'
+commands:
+  - command: 'R81-06 focused probe'
+    purpose: '全角/半角の未登録・許可済みと48,000 byte境界を確認'
+    exit_code: 0
+    result: passed
+    head_sha: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+    evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\r81-06-results.json'
+  - command: 'R81-01〜05 Python regression probe'
+    purpose: '先行修正の回帰確認'
+    exit_code: 0
+    result: passed
+    head_sha: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+    evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\python-probe-results.json'
+  - command: 'python scripts/run_validation.py --output-dir C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-r81-06'
+    purpose: 'repository-defined full local validation'
+    exit_code: 0
+    result: passed
+    head_sha: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+    evidence: 'repository/bundle/zip-integrity/zip-contents all pass'
+tests:
+  - name: r81-06-focused
+    phase: verification
+    result: passed
+    head_sha: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+    evidence: '8 cases passed including halfwidth boundary fixture.'
+  - name: previous-findings-regression
+    phase: verification
+    result: passed
+    head_sha: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+    evidence: 'R81-01〜05 Python 13 cases passed.'
+ci:
+  required: true
+  workflow: null
+  run_id: null
+  head_sha: unknown
+  conclusion: unknown
+  artifacts: []
+implementation:
+  outcome: completed
+  final_head: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+  commits:
+    - sha: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+      purpose: 'R81-06 半角片仮名検査修正'
+  addressed_findings:
+    - id: R81-06
+      reviewed_head: 422207a52e574281147a721113421281cc5a686f
+      disposition: addressed
+      evidence: '未登録半角をreject、許可済み半角をallow、48,000 byte境界も保持。'
+  failure_diagnostics:
+    - type: standard_output
+      location: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\r81-06-logs'
+      summary: 'focused probe stdout logs'
+    - type: standard_error
+      location: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\r81-06-logs'
+      summary: 'focused probe stderr logs'
+  blocked_items: []
+  summary:
+    - 'R81-06を実装上addressedとした。'
+    - 'fix verificationの判定は通常レビュアーに委ねる。'
+review:
+  mode: not_applicable
+  reviewed_head: unknown
+  reviewer:
+    identity: unknown
+    role: not_applicable
+    continuity:
+      previous_reviewer_identity: chatgpt-pr81-normal-review-20260916
+      changed: false
+      reason: null
+    independence:
+      implemented_change: unknown
+      implemented_review_fix: unknown
+      served_as_normal_reviewer: unknown
+      inherited_conversation: unknown
+      evidence: []
+  verdict: not_applicable
+  required_coverage: []
+  independent_closure:
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: []
+  validation_assessment: []
+  reserved_report_paths: []
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence: []
+  summary:
+    - 'implementation follow-upのためレビュー判定は行わない。'
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/markdown-halfwidth-katakana-followup-20260916.md
+  reviewed_head: null
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - 'R81-06の原因、修正、focused validation、repository validationを記録。'
+findings:
+  - id: R81-06
+    severity: medium
+    origin: pre_existing
+    location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    description: '半角片仮名が許可一覧検査をすり抜ける。'
+    impact: '未承認の半角片仮名語をMarkdown lint経路全体で見逃す。'
+    evidence: '422207aでは半角ｺﾝﾋﾟｭｰﾀｰがexit 0。606b7e7では未登録全角/半角ともexit 1。'
+    required_action: 'NFKC/normalized formで片仮名を判定し、分割境界も同じ契約へ揃える。'
+held:
+  - item: 'H-DOC: 脚注定義本文を検査する現仕様と既存設計の除外記載差'
+    reason: '先行通常レビューから継続し、R81-06のfail根拠とは別。'
+    owner: normal reviewer / implementation owner
+    remaining_risk: '設計記載と現実装の説明差が残る。'
+    verdict_impact: 'R81-06 fix verificationとは別のheld。'
+unexplored: []
+unknown:
+  - field_or_fact: 'final exact-head CI run'
+    reason: 'push前のため未成立。'
+not_applicable:
+  - field_or_area: TDD
+    reason: 'CodexSkill repository maintenanceはAGENTS.mdにより非TDD。'
+  - field_or_area: independent final review verdict
+    reason: 'implementation follow-upでは実施しない。'
+remaining_risks:
+  - 'H-DOC held item remains.'
+  - 'final publication HEADのexact-head CIはpush後に確認する。'
+source_payloads:
+  - source_skill: implementation-worker
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      mode: review follow-up
+      accepted_scope: 'R81-06の修正'
+      non_goals:
+        - 'H-DOC保留事項の修正'
+        - 'Windows cspell.cmd起動挙動の修正'
+        - merge
+      changed_files:
+        - skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      validation:
+        r81_06_focused: '8 cases passed'
+        previous_findings_regression: '13 cases passed'
+        repository_full_validation: '4/4 steps passed'
+      review_target_commit: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+      push_state: push_pending
+      ci_evidence: absent_before_push
+      next_required_action: 'persist report/handoff, final local gate, push, exact-head CI, same normal reviewer fix verification'
+  - source_skill: report-writer
+    output_contract_version: unknown
+    content_type: text/markdown
+    payload:
+      report_type: implementation_report
+      complete_body_path: reports/markdown-halfwidth-katakana-followup-20260916.md
+      evidence_sources:
+        - reports/markdown-complete-scan-fix-verification-20260916.md
+        - reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+        - 'C:\Users\donabe\Project\CodexSkill-pr81-validation\r81-06-results.json'
+        - 'C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-r81-06\results.json'
+      target_identity:
+        branch: fix/markdown-lint-complete-scan
+        base_ref: main
+        current_head: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+        reviewed_implementation_head: null
+      verification:
+        capability: local_execution_available
+        technical_head: 606b7e7d3d7fe000dc97d6541bac7d22c07c0247
+        commit_state: committed
+        push_state: push_pending
+        ci_wait_state: ci_wait_pending
+      concise_pr_comment_body: 'R81-06を修正。半角片仮名の未登録/許可済み、48,000 byte境界、先行5件回帰、repository full validationを確認。exact-head CIはpush後に確認する。'
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: fix_verification
+  summary: '同じ通常レビュアーでR81-06とCI deltaをfix verificationする。'
+  instructions:
+    - '全角/半角の未登録・許可済みと48,000 byte境界fixtureを確認する。'
+    - 'PR current HEADとCI run head SHAが一致する証拠だけを使用する。'
+  required_attachments_or_references:
+    - reports/markdown-halfwidth-katakana-followup-20260916.md
+    - reports/markdown-complete-scan-fix-verification-20260916.md
+  requested_authorized_actions:
+    - read_repository
+    - write_report
+    - write_handoff
+    - commit
+    - push
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/markdown-halfwidth-katakana-followup-20260916.yaml
+  packet_url: null
+  transport_note: 'PR branchへpush後、同じ通常レビュー会話が参照する。'
