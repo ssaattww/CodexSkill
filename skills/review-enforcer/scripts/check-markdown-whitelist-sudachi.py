@@ -18,7 +18,7 @@ from typing import Iterable
 
 TARGET_CONFIG = Path("tools/lint/markdown-targets.json")
 WHITELIST_PATH = Path("tools/lint/markdown-whitelist.yaml")
-TARGET_SUFFIXES = (".md", ".txt")
+TARGET_SUFFIXES = (".md",)
 DEPENDENCY_HINT = (
     "Missing dependency: {module}. Run `pip install -r tools/lint/requirements.txt` "
     "from the target repository root."
@@ -27,14 +27,14 @@ DEPENDENCY_HINT = (
 ENGLISH_RE = re.compile(r"(?<![A-Za-z0-9])[A-Za-z][A-Za-z0-9]*(?:[._-][A-Za-z0-9]+)*")
 FENCE_RE = re.compile(r"^[ \t]*(```|~~~)[^\n]*(?:\n[\s\S]*?)?^[ \t]*\1[^\n]*(?=\n|$)", re.MULTILINE)
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
-FOOTNOTE_DEF_RE = re.compile(r"^\[\^[^\]]+\]:.*$", re.MULTILINE)
+FOOTNOTE_LABEL_RE = re.compile(r"\[\^[^\]\n]+\]")
 URL_RE = re.compile(r"https?://[^\s)]+")
 MAILTO_RE = re.compile(r"mailto:[^\s)]+")
 HTML_COMMENT_RE = re.compile(r"<!--[\s\S]*?-->")
 REFERENCE_LINK_RE = re.compile(r"^\[[^\]\n]+\]:\s+\S+.*$", re.MULTILINE)
 INLINE_LINK_RE = re.compile(r"!?\[[^\]\n]+\]\([^)]+\)")
 KATAKANA_RE = re.compile(r"[\u30A0-\u30FF]")
-CJK_RE = re.compile(r"[\u3400-\u9FFF]")
+SUDACHI_MAX_INPUT_BYTES = 48_000
 
 
 @dataclass
@@ -351,7 +351,7 @@ def join_path(left: str, right: str) -> str:
 def strip_markdown_noise(text: str) -> str:
     cleaned = FENCE_RE.sub(blank_preserving, text)
     cleaned = INLINE_CODE_RE.sub(blank_preserving, cleaned)
-    cleaned = FOOTNOTE_DEF_RE.sub(blank_preserving, cleaned)
+    cleaned = FOOTNOTE_LABEL_RE.sub(blank_preserving, cleaned)
     cleaned = URL_RE.sub(blank_preserving, cleaned)
     cleaned = MAILTO_RE.sub(blank_preserving, cleaned)
     cleaned = HTML_COMMENT_RE.sub(blank_preserving, cleaned)
@@ -393,7 +393,7 @@ def build_whitelist_value_pattern(values: list[str]) -> re.Pattern[str] | None:
     ]
     if not alternatives:
         return None
-    boundary = r"A-Za-z0-9\u3040-\u30FF\u3400-\u9FFF"
+    boundary = r"A-Za-z0-9_\u3040-\u30FF\u3400-\u9FFF"
     return re.compile(rf"(^|[^{boundary}])({'|'.join(alternatives)})(?=$|[^{boundary}])", re.IGNORECASE)
 
 
@@ -423,30 +423,113 @@ def check_japanese_tokens(
     violations: list[Violation],
     unknown_words: dict[tuple[str, str], UnknownWord],
 ) -> None:
-    cursor = 0
-    for morpheme in tokenizer_obj.tokenize(text, split_mode):
-        token = morpheme.surface()
-        index = text.find(token, cursor)
-        if index == -1:
-            index = cursor
-        cursor = index + len(token)
+    for chunk_offset, chunk in iter_sudachi_chunks(text):
+        cursor = 0
+        for morpheme in tokenizer_obj.tokenize(chunk, split_mode):
+            token = morpheme.surface()
+            local_index = chunk.find(token, cursor)
+            if local_index == -1:
+                local_index = cursor
+            cursor = local_index + len(token)
+            index = chunk_offset + local_index
 
-        if not should_check_japanese(token, morpheme):
+            if not should_check_japanese(token, morpheme):
+                continue
+
+            normalized = normalize_term(sudachi_value(morpheme, "normalized_form") or token)
+            reading = normalize_term(sudachi_value(morpheme, "reading_form"))
+            surface_normalized = normalize_term(token)
+            if {normalized, reading, surface_normalized} & whitelist.terms:
+                continue
+
+            line = line_number_at(text, index)
+            record_violation(source, line, token, normalized, "katakana", violations, unknown_words)
+
+
+def iter_sudachi_chunks(text: str) -> Iterable[tuple[int, str]]:
+    if not text:
+        return
+
+    buffer: list[str] = []
+    buffer_bytes = 0
+    buffer_offset = 0
+    offset = 0
+
+    for line in text.splitlines(keepends=True):
+        line_bytes = len(line.encode("utf-8"))
+        if line_bytes > SUDACHI_MAX_INPUT_BYTES:
+            if buffer:
+                yield buffer_offset, "".join(buffer)
+                buffer = []
+                buffer_bytes = 0
+            yield from split_oversized_sudachi_segment(line, offset)
+            offset += len(line)
+            buffer_offset = offset
             continue
 
-        normalized = normalize_term(sudachi_value(morpheme, "normalized_form") or token)
-        reading = normalize_term(sudachi_value(morpheme, "reading_form"))
-        surface_normalized = normalize_term(token)
-        if {normalized, reading, surface_normalized} & whitelist.terms:
-            continue
+        if buffer and buffer_bytes + line_bytes > SUDACHI_MAX_INPUT_BYTES:
+            yield buffer_offset, "".join(buffer)
+            buffer = []
+            buffer_bytes = 0
+            buffer_offset = offset
 
-        kind = "japanese" if CJK_RE.search(token) else "katakana"
-        line = line_number_at(text, index)
-        record_violation(source, line, token, normalized, kind, violations, unknown_words)
+        if not buffer:
+            buffer_offset = offset
+        buffer.append(line)
+        buffer_bytes += line_bytes
+        offset += len(line)
+
+    if offset < len(text):
+        tail = text[offset:]
+        tail_bytes = len(tail.encode("utf-8"))
+        if tail_bytes > SUDACHI_MAX_INPUT_BYTES:
+            if buffer:
+                yield buffer_offset, "".join(buffer)
+                buffer = []
+            yield from split_oversized_sudachi_segment(tail, offset)
+        elif buffer and buffer_bytes + tail_bytes > SUDACHI_MAX_INPUT_BYTES:
+            yield buffer_offset, "".join(buffer)
+            yield offset, tail
+            buffer = []
+        else:
+            if not buffer:
+                buffer_offset = offset
+            buffer.append(tail)
+
+    if buffer:
+        yield buffer_offset, "".join(buffer)
+
+
+def split_oversized_sudachi_segment(segment: str, base_offset: int) -> Iterable[tuple[int, str]]:
+    consumed = 0
+    remaining = segment
+    safe_boundary = re.compile(r"[\s、。，．,.;:!?！？()（）\[\]{}<>「」『』]")
+
+    while remaining:
+        if len(remaining.encode("utf-8")) <= SUDACHI_MAX_INPUT_BYTES:
+            yield base_offset + consumed, remaining
+            return
+
+        low, high = 1, len(remaining)
+        while low < high:
+            middle = (low + high + 1) // 2
+            if len(remaining[:middle].encode("utf-8")) <= SUDACHI_MAX_INPUT_BYTES:
+                low = middle
+            else:
+                high = middle - 1
+        cut = low
+        prefix = remaining[:cut]
+        boundaries = list(safe_boundary.finditer(prefix))
+        if boundaries and boundaries[-1].end() >= max(1, cut // 2):
+            cut = boundaries[-1].end()
+        part = remaining[:cut]
+        yield base_offset + consumed, part
+        consumed += cut
+        remaining = remaining[cut:]
 
 
 def should_check_japanese(surface: str, morpheme) -> bool:
-    if not (KATAKANA_RE.search(surface) or CJK_RE.search(surface)):
+    if not KATAKANA_RE.search(surface):
         return False
     normalized = normalize_term(surface).replace("・", "").replace("ー", "").replace(".", "").replace("_", "").replace("-", "")
     if len(normalized) <= 1:
