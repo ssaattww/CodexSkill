@@ -173,7 +173,7 @@ commands: &a12
     result: passed
     head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
     evidence: C:\Users\donabe\Project\CodexSkill-issue-73-artifacts\implementation-validation\diff-check.stdout.log
-    execution_environment: FA780
+    execution_environment: *a2
     source_fingerprint: git-head:ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
   - command: python scripts/run_validation.py
     purpose: repository and bundle validation
@@ -181,7 +181,7 @@ commands: &a12
     result: passed
     head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
     evidence: C:\Users\donabe\Project\CodexSkill-issue-73-artifacts\implementation-validation\validation
-    execution_environment: FA780
+    execution_environment: *a2
     source_fingerprint: git-head:ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
   - command: hierarchy byte equality check
     purpose: design mirror validation
@@ -189,7 +189,7 @@ commands: &a12
     result: passed
     head_sha: ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
     evidence: C:\Users\donabe\Project\CodexSkill-issue-73-artifacts\implementation-validation\hierarchy.stdout.log
-    execution_environment: FA780
+    execution_environment: *a2
     source_fingerprint: git-head:ce445faa71eedf60b73ee9497bd1d6c1d484ec7c
 tests:
   - name: CodexSkill repository validation
