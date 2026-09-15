@@ -59,10 +59,14 @@ stdout, stderr, and diagnostics on success and failure. Runtime dependencies
 may be prepared only in authorized task scratch space, without modifying the
 reviewed tree, global installations, machine settings, or authentication.
 
-Use the GitHub connector for remote repository evidence, report commits, PR
-updates, comments, and exact-head CI. Do not bypass it with terminal `gh`,
-authenticated Git network operations, or REST calls. PC access does not permit
-product, test, configuration, or workflow fixes, nor launching an agent CLI.
+Use the GitHub connector for remote repository evidence, PR updates,
+comments, and exact-head CI. On the connected-PC route, persist authorized
+review reports in the pinned worktree and perform any allowed Git commit and
+push through Remote Desktop Commander with the PC's existing Git remote and
+authentication. Do not transfer the reviewed tree into the chat runtime for
+publication, use terminal `gh` or direct REST calls, or change authentication
+settings without separate approval. PC access does not permit product, test,
+configuration, or workflow fixes, nor launching an agent CLI.
 Read the reviewed text and required Skill references in the current chat;
 machine checks do not establish semantic review or reviewer independence.
 Pass environment and source-bound validation evidence unchanged to reporting

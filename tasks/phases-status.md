@@ -125,3 +125,15 @@
   - Windows上の専用ワークツリーでローカル検証し、GitHubコネクタで公開する
   - 実装と既存repository検査、8スキルZIPの生成・整合性・収録内容・再現性は確認済み
   - 通常・独立レビューは未実施。PR #71の変更や#69の受け入れは含めない
+
+## Phase 11: ChatGPT PC接続経路のGit操作
+
+- Status: In Progress
+- Notes:
+  - Issue #73を対象とする
+  - #70で定義したRemote Desktop Commanderの実行場所契約をcurrent mainへ復元する
+  - PC接続経路のGit commit／pushをRemote Desktop Commander経由へ変更する
+  - GitHub connectorはIssue、PR、PR comment、remote evidence、exact-head CI確認に限定する
+  - RDC経由push失敗時はソース転送や別publication経路へ無断で切り替えない
+  - CodexSkill repository policyによりTDDは適用しない
+  - repository validation、配布ZIP生成、設計同期、exact-head CIを確認し、mergeは利用者が行う

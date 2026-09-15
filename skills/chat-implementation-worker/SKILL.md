@@ -41,7 +41,9 @@ For normal chat, use only the current chat's authorized filesystem and
 executor, if actually available. For the connected-PC route, discover the
 current Remote Desktop Commander tools, identify the specified device by a
 read-only call, and pin subsequent calls to that device. Use that connector
-for local source reads, edits, dependency checks, and validation.
+for local source reads, edits, dependency checks, validation, and authorized
+Git commit and push operations. Keep commit and push on the pinned PC and
+worktree; do not transfer the source tree into the chat runtime for publication.
 
 Pass the observations to `work-context-manager` and use its
 `execution_environment` contract before editing. Keep another task's worktree
@@ -53,11 +55,12 @@ area; administrator access, global installation, machine configuration, and
 authentication changes require separate approval. Missing dependencies or a
 failed requested connection remain blocked, not an automatic route switch.
 
-Use the GitHub connector for GitHub repository reads and updates, published
-commits and branch updates, Issues, PRs, and comments. PC access does not
-authorize replacing it with terminal `gh`, authenticated Git network
-operations, or direct REST calls. Local Git inspection, worktree isolation,
-and preparing content do not grant publication permission.
+Use the GitHub connector for remote repository evidence, Issues, PRs,
+comments, and exact-head CI evidence. On the connected-PC route, an authorized
+Git push uses the pinned PC's existing Git remote and authentication through
+Remote Desktop Commander. Do not use terminal `gh` or direct REST calls, and
+do not change Git credentials or authentication settings without separate
+approval. Local Git commit or push still requires explicit write permission.
 
 Run authorized local validation before a CI-triggering publication, preserving
 both successful and failed results, stdout, stderr, and required diagnostic

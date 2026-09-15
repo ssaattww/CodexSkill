@@ -2,9 +2,38 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-09
+- Updated: 2026-09-15
 
 ## In Progress
+
+- T-007: Issue #73のGit commit／pushをRDC経由へ変更する
+  - Status: 着手。#70で導入したPC接続経路のcurrent main上の欠落を確認し、必要契約の復元とGit操作経路の変更を実施中
+  - Phase: Phase 11
+  - Estimate: M
+  - Depends on: Issue #70のRemote Desktop Commander作業経路
+  - Scope: ChatGPTのPC接続経路で行うローカルGit commit／pushと、その前提となる実行場所契約
+  - Exit Criteria:
+    - PC接続経路では、対象PC上の読み取り・編集・検証に加えてGit commit／pushもRemote Desktop Commander経由で実行する
+    - GitHub connectorはremote repository evidence、Issue、PR、PR comment、exact-head CI確認に使用し、RDC上のソースをChat環境へ転送してcommit／pushする代替経路にしない
+    - RDC経由のGit pushが失敗した場合はblockedとして記録し、通常チャットやconnector publicationへ無断で切り替えない
+    - terminal `gh`と直接REST呼び出しは禁止を維持し、認証設定変更には別承認を要求する
+    - 別タスクのworktreeを変更せず、接続先・絶対パス・branch・HEAD・source stateを検証証拠へ保持する
+    - commit、push、CI waitを別状態として保持し、CIはPR current HEADとrun head SHAが一致するものだけを使用する
+    - ChatGPT wrapper、execution environment設計、hierarchy設計2ファイル、Project Instruction例が同じ操作境界を示す
+    - repository validator、配布ZIP生成、`git diff --check`、hierarchy設計2ファイル一致が成功する
+    - 詳細report、handoff、簡易PR commentを保存し、PRを作成または更新する。mergeは行わない
+  - Output:
+    - `design/chat-execution-environment-design.md`
+    - `design/chat-worker-skill-design.md`
+    - `design/chatgpt-project-instruction-example.md`
+    - `design/skill-hierarchy-design.md`と`skills/design/skill-hierarchy-design.md`
+    - ChatGPT wrapperと実行場所evidenceを扱うcore Skill
+    - `reports/issue-73-rdc-git-implementation-20260915.md`
+    - `reports/handoffs/issue-73-rdc-git-20260915.yaml`
+  - Verification:
+    - TDDはCodexSkill repository policyによりnot applicable
+    - current main `106ea5dcf12c4805756351fb9381df220b94f044`で#70のexecution contractが欠落していることを確認済み
+    - 最終HEADのmatching `pull_request` runだけをCI evidenceとして記録する
 
 - T-006: Issue #67のAstra high承認付きエスカレーション
   - Status: 再レビューで継続した`PR68-IFR-001`の新規handoff再発9箇所を修正し、最新mainとの競合3ファイルも統合済み。same independent reviewerのbounded fix verification待ち

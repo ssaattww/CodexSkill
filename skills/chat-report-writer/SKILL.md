@@ -45,11 +45,15 @@ change product files, or turn a missing result into a new technical judgment.
 A failed requested connection blocks dependent evidence collection; do not
 switch to another machine or normal chat without authorization.
 
-GitHub repository reads and writes, report commits, PR updates, and comments
-still use the GitHub connector, not terminal `gh`, authenticated Git network
-operations, or REST calls. Preserve supplied execution locations, source
-fingerprints, missing dependencies, and successful/failed diagnostic evidence
-without claiming that report generation reran those checks.
+Use the GitHub connector for remote repository evidence, PR updates,
+comments, and exact-head CI. On the connected-PC route, save authorized report
+and handoff files in the pinned worktree and perform any allowed Git commit and
+push through Remote Desktop Commander with the PC's existing Git remote and
+authentication. Do not transfer the repository tree into the chat runtime for
+publication, use terminal `gh` or direct REST calls, or change authentication
+settings without separate approval. Preserve supplied execution locations,
+source fingerprints, missing dependencies, and successful/failed diagnostic
+evidence without claiming that report generation reran those checks.
 
 ## Boundaries
 

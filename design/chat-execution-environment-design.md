@@ -4,7 +4,7 @@
 
 Issue #70を対象とする。通常のチャット内で作業する経路を残し、Remote Desktop Commanderで利用者のPCを使う経路を追加する。どちらも現在のチャット自身が作業し、実装・レビュー・報告の手順は既存の中核スキルを共用する。
 
-PC接続はファイル操作とコマンド実行の手段であり、別のエージェントを起動する仕組みではない。端末からCodexなどを起動して委任することも、この経路には含めない。
+PC接続はファイル操作、コマンド実行、認可されたGit commit／pushの手段であり、別のエージェントを起動する仕組みではない。端末からCodexなどを起動して委任することも、この経路には含めない。
 
 ## 変更範囲
 
@@ -47,7 +47,11 @@ PC接続はファイル操作とコマンド実行の手段であり、別のエ
 
 ## 操作と権限の境界
 
-PC上の読み取り・編集・検証はRemote Desktop Commanderを使う。GitHub上の参照・更新、Issue、PR、コメント、公開するコミットとブランチ更新はGitHubコネクタを使う。PC接続はGitHubコネクタの障害回避手段ではなく、端末の `gh`、認証付きGit、REST呼び出しへ置き換えない。
+PC上の読み取り・編集・検証に加え、認可されたGit commit／pushはRemote Desktop Commanderを使う。GitHubコネクタはremote repository evidence、Issue、PR、コメント、exact-head CIの取得に使う。接続PCの既存Git remote／認証をpushに利用してよいが、端末の `gh` や直接REST呼び出しへ置き換えず、Git認証設定の追加・変更は別承認とする。RDC上のソースをチャット環境へ転送してcommit／pushする経路は使わない。
+
+## Issue #73によるGit操作の更新
+
+#70でGitHubコネクタ側へ置いていた公開commit／branch更新の責務は、RDCが利用可能なPC接続経路では#73によりRDC上のGit commit／pushへ移す。これにより、PC上で検証したソースをチャット実行環境へ転送して公開内容を再構成しない。GitHubコネクタはremote evidenceとGit HEADを変更しないIssue／PR／comment／CI操作を担う。RDC経由pushが失敗した場合はblockedとして残し、別のpublication経路へ無断で切り替えない。
 
 実装workerは許可された範囲を編集する。レビューworkerは製品コード、テスト、設定、workflowを修正せず、検証出力を対象ソースと分ける。報告workerは証拠の読み取りと許可された報告保存だけを行い、新しいテスト結果や技術的判定を生成しない。
 
@@ -57,9 +61,9 @@ PC上の読み取り・編集・検証はRemote Desktop Commanderを使う。Git
 
 ローカル実行が可能ならCIを起動する公開より先に必要な検証を実施する。成功・失敗のいずれも、検査結果、終了値、標準出力、標準エラー、原因調査に必要なログをタスク別の保存先へ残す。保存できなかった項目は明示する。
 
-未コミット変更を含む検証では、基点HEADだけを検証対象として報告しない。差分または内容一覧で対象を識別する。公開前にGitHubコネクタが作る内容とローカルで検証した内容を照合し、不一致なら検証結果を無効にして再確認する。
+未コミット変更を含む検証では、基点HEADだけを検証対象として報告しない。差分または内容一覧で対象を識別する。commit前にRDC上で検証した内容とcommit予定treeを照合し、不一致なら検証結果を無効にして再確認する。push後はGitHubコネクタでremote branchのHEADを確認する。
 
-GitHubへのcommit、ブランチ更新、CIの待機は別状態を維持する。CIはPRのcurrent HEADとrunのhead SHAが一致するものだけを確認する。HEAD更新後は再取得し、一致するrunがなければCI未実施とする。
+Git commit、Git push、CIの待機は別状態を維持する。PC接続経路のcommit／pushはRDC上で行い、CIはPRのcurrent HEADとrunのhead SHAが一致するものだけを確認する。HEAD更新後は再取得し、一致するrunがなければCI未実施とする。
 
 この変更では、CodexSkillに診断workflowを追加する方針は導入しない。mainのworkflowは成功時の配布ZIP保存のみ。診断workflowの追加は別作業のPR #71で管理されており、本変更へ重複して取り込まない。
 
@@ -83,3 +87,4 @@ schema version 3を維持し、`execution_environment` を追加する。typed�
 6. 更新した8スキルのZIP生成、既存依存検査、階層設計2ファイルの一致が成功する。
 7. #69の文章自己点検に必要な資料と実行証拠の受け渡しを定義し、#69の残作業は完了扱いにしない。
 8. 詳細報告、引き継ぎ、PR、簡易PRコメントを残す。通常・独立レビューは実装者の自己確認とは分け、マージしない。
+9. RDCが利用可能なPC接続経路では認可されたGit commit／pushをRDC上で行い、ソース転送や別publication経路へ無断で切り替えない。
