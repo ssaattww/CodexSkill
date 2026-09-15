@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import shutil
 import subprocess
 import sys
 import time
@@ -35,8 +36,8 @@ def source_identity(root: Path) -> dict:
             identity["head_error"] = "git rev-parse failed"
     except (OSError, subprocess.TimeoutExpired) as error:
         identity["head_error"] = type(error).__name__
-    paths = [root / name for name in ("AGENTS.md", "README.md", ".gitignore")]
-    for name in ("skills", "scripts", "design", "tasks", "reports", ".github"):
+    paths = [root / name for name in ("AGENTS.md", "README.md", ".gitignore", "package.json", "package-lock.json")]
+    for name in ("skills", "scripts", "design", "tasks", "reports", ".github", "tools"):
         paths.extend((root / name).rglob("*"))
     for path in sorted(set(paths)):
         if path.is_file() and not path.is_symlink() and "__pycache__" not in path.parts:
@@ -72,18 +73,44 @@ def run_step(name: str, command: list[str], root: Path, output: Path,
     return row
 
 
+def classify_markdown_discovery(row: dict, output: Path) -> dict:
+    row["unknown_term_count"] = 0
+    if row["status"] == "pass" or row["exit_code"] != 1:
+        return row
+    try:
+        lines = (output / row["stdout"]).read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return row
+    unknown_count = 0
+    for line in lines:
+        word, separator, count = line.rpartition("\t")
+        if separator and word and count.isdigit():
+            unknown_count += 1
+    if unknown_count == 0:
+        return row
+    row["status"] = "needs_user_review"
+    row["reason"] = (
+        f"{unknown_count} unregistered terms found; exact whitelist, prh, and target-exclusion "
+        "changes require user review"
+    )
+    row["unknown_term_count"] = unknown_count
+    print(f"markdown-terminology: needs_user_review ({unknown_count} unknown terms)", flush=True)
+    return row
+
+
 def save_results(output: Path, summary: dict) -> None:
     write_json(output / "results.json", summary)
     steps = summary["steps"]
     suite = ET.Element("testsuite", name="repository-validation", tests=str(len(steps)),
                        failures=str(sum(r["status"] == "failed" for r in steps)),
-                       skipped=str(sum(r["status"] == "skipped" for r in steps)))
+                       skipped=str(sum(r["status"] in {"skipped", "needs_user_review"} for r in steps)))
     for row in steps:
         case = ET.SubElement(suite, "testcase", name=row["name"], time=str(row["duration_seconds"]))
         if row["status"] == "failed":
             ET.SubElement(case, "failure", message=row["reason"] or f"exit {row['exit_code']}").text = row["stderr"]
-        elif row["status"] == "skipped":
-            ET.SubElement(case, "skipped", message=row["reason"] or "not run")
+        elif row["status"] in {"skipped", "needs_user_review"}:
+            fallback = "needs user review" if row["status"] == "needs_user_review" else "not run"
+            ET.SubElement(case, "skipped", message=row["reason"] or fallback)
         ET.SubElement(case, "system-out").text = "See " + row["stdout"]
         ET.SubElement(case, "system-err").text = "See " + row["stderr"]
     ET.ElementTree(suite).write(output / "results.xml", encoding="utf-8", xml_declaration=True)
@@ -112,8 +139,31 @@ def main() -> int:
     try:
         write_json(output / "source.json", source_identity(root))
         archive = output / "chatgpt-worker-skills.zip"
+
+        repository_row = run_step(
+            "repository",
+            [sys.executable, str(root / "scripts/verify_skill_repository.py")],
+            root,
+            output,
+            args.timeout,
+        )
+        summary["steps"].append(repository_row)
+        save_results(output, summary)
+
+        npm_executable = shutil.which("npm.cmd" if os.name == "nt" else "npm")
+        markdown_row = run_step(
+            "markdown-terminology",
+            [npm_executable, "run", "lint:md:unknown"] if npm_executable else [],
+            root,
+            output,
+            args.timeout,
+            None if npm_executable else "npm executable not found",
+        )
+        markdown_row = classify_markdown_discovery(markdown_row, output)
+        summary["steps"].append(markdown_row)
+        save_results(output, summary)
+
         commands = [
-            ("repository", [sys.executable, str(root / "scripts/verify_skill_repository.py")]),
             ("bundle", [sys.executable, str(root / "scripts/build_chatgpt_worker_skills.py"),
                         "--repo-root", str(root), "--output", str(archive)]),
             ("zip-integrity", [sys.executable, "-c",
@@ -128,7 +178,8 @@ def main() -> int:
             if name == "bundle":
                 bundle_ok = row["status"] == "pass"
             save_results(output, summary)
-        summary["status"] = "pass" if all(row["status"] == "pass" for row in summary["steps"]) else "failed"
+        pass_like = {"pass", "needs_user_review"}
+        summary["status"] = "pass" if all(row["status"] in pass_like for row in summary["steps"]) else "failed"
     except Exception:
         (output / "runner.stderr.log").write_text(traceback.format_exc(), encoding="utf-8")
         summary["steps"].append({"name": "runner", "command": [], "status": "failed",
