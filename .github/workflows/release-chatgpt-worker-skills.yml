@@ -213,7 +213,7 @@ jobs:
           prerelease_tag="${major}.${minor}.${next_patch}-pre"
 
           if git rev-parse -q --verify "refs/tags/${prerelease_tag}" >/dev/null; then
-            echo "Prerelease tag already exists: ${prerelease_tag}"
+            echo "Pre-release tag already exists: ${prerelease_tag}"
             exit 1
           fi
 
@@ -225,22 +225,46 @@ jobs:
           name: chatgpt-worker-skills-${{ github.run_id }}
           path: release-dist
 
-      - name: Create versioned prerelease
+      - name: Verify downloaded prerelease asset
         shell: bash
         run: |
           set -euo pipefail
           test -f release-dist/chatgpt-worker-skills.zip
-          tag="${{ steps.version.outputs.tag }}"
-          notes="Automated prerelease for ${GITHUB_SHA}. Upload chatgpt-worker-skills.zip to ChatGPT Skills."
-          gh release create "${tag}" \
+          python3 -m zipfile -l release-dist/chatgpt-worker-skills.zip
+
+      - name: Publish incremented GitHub Pre-release
+        shell: bash
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          notes_file=$(mktemp)
+          {
+            echo "Automated ChatGPT Worker Skills pre-release from main push."
+            echo
+            echo "Source commit: ${GITHUB_SHA}"
+            pr_numbers=$(gh api -H "Accept: application/vnd.github+json" "/repos/${GH_REPO}/commits/${GITHUB_SHA}/pulls" --jq '.[].number' 2>/dev/null || true)
+            if [[ -n "${pr_numbers}" ]]; then
+              echo
+              echo "Related pull requests:"
+              while IFS= read -r pr; do
+                [[ -z "${pr}" ]] && continue
+                echo "- #${pr}"
+              done <<< "${pr_numbers}"
+            fi
+          } > "${notes_file}"
+
+          gh release create "${TAG}" \
             release-dist/chatgpt-worker-skills.zip \
             --target "${GITHUB_SHA}" \
-            --title "ChatGPT Worker Skills ${tag}" \
-            --notes "${notes}" \
-            --prerelease
+            --title "${TAG}" \
+            --notes-file "${notes_file}" \
+            --prerelease \
+            --latest=false
 
-  publish-pr-merge-prerelease:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+  attach-published-release-asset:
+    if: github.event_name == 'release'
     needs: build
     permissions:
       contents: write
@@ -248,6 +272,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.event.release.tag_name }}
     steps:
       - name: Download validated ChatGPT Skill ZIP
         uses: actions/download-artifact@v4
@@ -255,42 +280,18 @@ jobs:
           name: chatgpt-worker-skills-${{ github.run_id }}
           path: release-dist
 
-      - name: Publish PR merge prerelease
+      - name: Verify downloaded release asset
         shell: bash
         run: |
           set -euo pipefail
           test -f release-dist/chatgpt-worker-skills.zip
-          tag="chatgpt-worker-skills-pr-${{ github.event.pull_request.number }}"
-          notes="Automated prerelease for merged PR #${{ github.event.pull_request.number }} at ${{ github.event.pull_request.merge_commit_sha }}."
-          gh release create "${tag}" \
-            release-dist/chatgpt-worker-skills.zip \
-            --target "${{ github.event.pull_request.merge_commit_sha }}" \
-            --title "ChatGPT Worker Skills PR #${{ github.event.pull_request.number }}" \
-            --notes "${notes}" \
-            --prerelease
+          python3 -m zipfile -l release-dist/chatgpt-worker-skills.zip
 
-  upload-manual-release:
-    if: github.event_name == 'release' && !startsWith(github.event.release.tag_name, 'chatgpt-worker-skills-pr-')
-    needs: build
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ github.token }}
-      GH_REPO: ${{ github.repository }}
-    steps:
-      - name: Download validated ChatGPT Skill ZIP
-        uses: actions/download-artifact@v4
-        with:
-          name: chatgpt-worker-skills-${{ github.run_id }}
-          path: release-dist
-
-      - name: Upload validated ZIP to published release
+      - name: Attach ZIP to published release
         shell: bash
         run: |
           set -euo pipefail
-          test -f release-dist/chatgpt-worker-skills.zip
           gh release upload \
-            "${{ github.event.release.tag_name }}" \
+            "${TAG}" \
             release-dist/chatgpt-worker-skills.zip \
             --clobber
