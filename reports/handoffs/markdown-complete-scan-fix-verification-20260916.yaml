@@ -1,0 +1,973 @@
+schema_version: 3
+producer:
+  skill: chat-review-worker
+  mode: fix_verification
+  generated_at: '2026-09-15T22:50:25.139800+00:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #81'
+task_id: null
+branch: fix/markdown-lint-complete-scan
+base_ref: main
+target:
+  current_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  reviewed_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  commit_range: 6a6f33df2498b7cac50c51e8110a3f9c8483cac9...f7b4ac1213c20a6d1bb74e4ce445485755733d13
+execution_environment: &id002
+  kind: connected_computer
+  tool: Remote Desktop Commander
+  machine_id: 75840a70-dea0-4d8c-9bb4-fe97c78bc11e
+  connection: available
+  os: Ubuntu
+  shell: bash
+  working_directory: /home/ibis/AI/CodexSkill-pr81-fixverify-20260916-r1
+  repository: ssaattww/CodexSkill
+  branch: detached HEAD
+  head_sha: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  source_state: clean before report generation
+  ownership: current_task
+  writable_paths:
+  - reports/markdown-complete-scan-fix-verification-20260916.md
+  - reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+  - reports/handoffs/markdown-complete-scan-fix-verification-20260916.yaml
+  - /tmp/pr81-fixverify-r1*
+  dependencies:
+  - name: SudachiPy
+    status: available
+    evidence: 0.6.11 via uv
+  - name: SudachiDict-core
+    status: available
+    evidence: 20260428 via uv
+  - name: PyYAML
+    status: available
+    evidence: 6.0.3 via uv
+  - name: cspell
+    status: available
+    evidence: 9.8.0 from IbisDuck task fixture
+  evidence:
+  - 各terminal command前にlist_sessionsを確認しBlocked:falseがない時だけ実行。
+  - 専用worktreeを使用し他タスクworktreeを変更していない。
+verification:
+  capability: local_execution_available
+  capability_evidence: &id001
+  - RDC Ubuntu dedicated worktreeで現HEADを固定しPython/cspell/full repository validationを実行。
+  technical_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  administrative_parent: null
+  commit:
+    state: commit_pending
+    review_target_sha: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  push:
+    state: push_pending
+    head_sha: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  ci_wait:
+    state: not_required
+    required_for: not_required
+  final_publication:
+    sequence: not_applicable
+    pr_action: update
+authoritative_requirements:
+- source: user_instruction
+  reference: current chat
+  summary: 'PR #81再レビュー。RDC list_sessionsを確認し競合回避。'
+- source: repository_instruction
+  reference: AGENTS.md
+  summary: Skill優先、CodexSkill保守は非TDD。
+- source: report
+  reference: prior review reports
+  summary: R81-01〜05のidentity/severity/required actionを保持。
+development_policy: &id005
+  method: non-TDD
+  testing_order: fix verification only
+  governing_source: AGENTS.md
+validation_plan: &id006
+  commands:
+  - current-head Python focused probes
+  - current-head cspell focused probes
+  - scripts/run_validation.py
+  - python/node syntax and git diff --check
+  required_failure_diagnostics:
+  - stdout/stderr/exit codeをscratchとrepository evidenceに保持
+blocked: []
+authorized_actions:
+- read_repository
+- write_report
+- write_handoff
+- commit
+- push
+- update_pr
+- comment_pr
+write_boundary:
+  allowed:
+  - path_or_operation: reports/markdown-complete-scan-fix-verification-20260916.md
+    reason: fix verification evidence
+  - path_or_operation: reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+    reason: fix verification evidence
+  - path_or_operation: reports/handoffs/markdown-complete-scan-fix-verification-20260916.yaml
+    reason: fix verification evidence
+  forbidden:
+  - path_or_operation: implementation/design/workflow/task changes
+    reason: reviewerは修正しない
+  - path_or_operation: merge
+    reason: 利用者が実施
+scope: &id003
+- R81-01〜05のfix verificationと同 defect classの兄弟ケース確認
+non_goals: &id004
+- R81-06の実装修正
+- H-DOC修正
+- Windows cspell.cmd spawn修正
+- merge
+files:
+  changed:
+  - path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    purpose: R81-01/03/04/05 fix
+  - path: skills/review-enforcer/scripts/run-cspell-markdown.js
+    purpose: R81-02/04 fix
+  - path: reports/markdown-complete-scan-review-followup-20260916.md
+    purpose: implementation report
+  - path: reports/handoffs/markdown-complete-scan-review-followup-20260916.yaml
+    purpose: implementation handoff
+  inspected:
+  - path: design/review-enforcer-markdown-whitelist-rebuild-design.md
+    purpose: 片仮名語の契約確認
+  intentionally_untouched:
+  - path_or_area: implementation files
+    reason: reviewerは実装修正しない
+commands: []
+tests:
+- name: prior-finding-focused-probes
+  phase: verification
+  result: passed
+  head_sha: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  evidence: reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+- name: halfwidth-katakana-sibling
+  phase: verification
+  result: failed
+  head_sha: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  evidence: reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+- name: repository-full-validation
+  phase: verification
+  result: passed
+  head_sha: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  evidence: reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+ci:
+  required: false
+  workflow: Validate and release ChatGPT worker skills
+  run_id: 35028597741
+  head_sha: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  conclusion: success
+  artifacts:
+  - id: 10420910703
+    name: chatgpt-worker-skills-35028597741
+    purpose: exact-head bundle evidence
+implementation:
+  outcome: not_applicable
+  final_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  commits: []
+  addressed_findings: []
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+  - fix verification only
+review:
+  mode: fix_verification
+  reviewed_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  reviewer:
+    identity: chatgpt-pr81-normal-review-20260916
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: chatgpt-pr81-normal-review-20260916
+      changed: false
+      reason: same review chat
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+      - same normal review chat
+  verdict: fail
+  required_coverage: &id008
+  - criterion: requirement and design conformance
+    disposition: checked_finding
+    evidence: R81-01〜05は修正済み。設計の「片仮名語」を半角表記がすり抜けるR81-06を検出。
+  - criterion: correctness and edge cases
+    disposition: checked_finding
+    evidence: 元5件と兄弟ケースを現HEADで直接実行。R81-06のみ未解消。
+  - criterion: scope discipline
+    disposition: checked_no_finding
+    evidence: 実装修正は2スクリプト、後続commitはreport/handoffのみ。
+  - criterion: changed files and dependencies
+    disposition: checked_finding
+    evidence: SudachiPy 0.6.11 / SudachiDict 20260428 / cspell 9.8.0で確認。R81-06はPython checkerのraw surface判定。
+  - criterion: API and compatibility
+    disposition: checked_no_finding
+    evidence: 明示.txtと既存Markdown探索、英語許可語境界の期待動作を確認。
+  - criterion: tests and validation adequacy
+    disposition: checked_finding
+    evidence: 実装側focused probesは元5件を覆うが、半角片仮名の兄弟ケースを含まずR81-06を見逃した。
+  - criterion: current-HEAD CI evidence
+    disposition: checked_no_finding
+    evidence: f7b4acと一致するrun 35028597741 build success、artifact 10420910703。
+  - criterion: report and documentation accuracy
+    disposition: held
+    evidence: H-DOC脚注設計差は継続。implementation handoffのcompleteness_matrixは空だったため本レビューで実証拠から再構築。
+  - criterion: regression and maintainability risks
+    disposition: checked_finding
+    evidence: R81-06はbase 106ea5にも存在するpre-existingの検査漏れ。
+  independent_closure:
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: &id010
+    - finding_id: R81-01
+      required_action: 語境界と元位置を保持して全文検査する。
+      production_path: split_oversized_sudachi_segment / preserve_katakana_boundary
+      actual_composition_fixture: 48,033 bytes境界の「ギア」と2行目「ギアボックス」
+      focused_evidence: '/tmp/pr81-fixverify-r1/python-results.json: boundary, boundary-line2'
+      disposition: resolved
+    - finding_id: R81-02
+      required_action: 漢字隣接を許可しつつASCII継続子は拒否する。
+      production_path: build_whitelist_value_pattern / whitelistValuePattern
+      actual_composition_fixture: Tracker.DebugHostの漢字前後、ASCII prefix/suffix
+      focused_evidence: python-results.json + node-current/results.json
+      disposition: resolved
+    - finding_id: R81-03
+      required_action: 明示.txtを検査しhelpを実契約に同期する。
+      production_path: EXPLICIT_TARGET_SUFFIXES / select_target_files / parse_args
+      actual_composition_fixture: note.txt explicitとimplicit
+      focused_evidence: 'python-results.json: explicit-txt, implicit-txt'
+      disposition: resolved
+    - finding_id: R81-04
+      required_action: 識別子継続子と文末句読点を区別する。
+      production_path: Python/Node whitelist boundary patterns
+      actual_composition_fixture: dot/hyphen/underscore連結、prefix/suffix、terminal period
+      focused_evidence: python-results.json + node-current/results.json
+      disposition: resolved
+    - finding_id: R81-05
+      required_action: 正規化後の入力上限を保証し、語境界と元位置を保持する。
+      production_path: sudachi_input_bytes / iter_sudachi_chunks / split_oversized_sudachi_segment
+      actual_composition_fixture: ㍿×6000 + 改行 + ジッタ
+      focused_evidence: 'python-results.json: normalization + chunk_results'
+      disposition: resolved
+  validation_assessment: &id012
+  - item: prior five findings
+    result: supported
+    evidence: matrix 5/5 resolved
+  - item: new sibling case
+    result: failed
+    evidence: R81-06 halfwidth katakana exit0
+  - item: repository gate
+    result: supported
+    evidence: 4/4 pass
+  - item: current-head CI
+    result: supported
+    evidence: run 35028597741 exact head success
+  reserved_report_paths: []
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence:
+    - normal review fail
+  summary:
+  - R81-01〜05 resolved; R81-06 medium pre-existing found
+report:
+  report_type: review_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+  - reports/markdown-complete-scan-fix-verification-20260916.md
+  - reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+  - reports/handoffs/markdown-complete-scan-fix-verification-20260916.yaml
+  reviewed_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+  attestation_head: null
+  pr_comments: []
+  summary:
+  - fix verification report
+findings:
+- &id009
+  id: R81-06
+  severity: medium
+  origin: pre_existing
+  location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:558
+  description: NFKCで片仮名になる半角カタカナが許可一覧検査を無条件にすり抜ける。
+  impact: 未承認の半角カタカナ語を文書に書いてもMarkdown用語検査が成功し、cspellも日本語語彙を拒否しないためlint経路全体で見逃す。
+  evidence: current HEADで全角「コンピューター」はexit 1で未登録違反になる一方、半角「ｺﾝﾋﾟｭｰﾀｰ」はexit 0・診断なし。SudachiPyは半角surfaceをnormalized_form「コンピューター」の名詞として返す。base
+    106ea5でもexit 0のためpre-existing。
+  required_action: 片仮名判定をraw surfaceだけで早期終了せずNFKC/normalized formを考慮し、半角片仮名も未登録なら拒否する。長文分割の片仮名境界判定も同じ正規化契約に揃え、全角/半角と分割境界の組合せを確認する。
+held: &id011
+- item: H-DOC footnote design mismatch
+  reason: 先行レビューから継続
+  owner: implementation owner
+  remaining_risk: 設計説明差
+  verdict_impact: R81-06とは別のheld
+- item: Windows cspell.cmd spawn
+  reason: scope外の既存挙動
+  owner: implementation owner
+  remaining_risk: Windows wrapper未確認
+  verdict_impact: Ubuntu direct cspellで今回境界契約は確認済み
+unexplored: []
+unknown: []
+not_applicable:
+- field_or_area: independent final review / merge
+  reason: fix verification fail
+remaining_risks: &id007
+- R81-06 unresolved
+- H-DOC held
+- Windows cspell wrapper behavior held
+source_payloads:
+- source_skill: work-context-manager
+  output_contract_version: uploaded-skill
+  content_type: application/json
+  payload:
+    repository: ssaattww/CodexSkill
+    issue_or_pr: 'PR #81'
+    task_id: null
+    mode: review
+    branch: fix/markdown-lint-complete-scan
+    base_ref: main
+    current_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+    reviewed_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+    verification_capability: local_execution_available
+    verification_capability_evidence: *id001
+    execution_environment: *id002
+    execution_state:
+      technical_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+      administrative_parent: null
+      commit: commit_pending
+      push: push_pending
+      ci_wait: not_required
+      full_local_equivalence_gate:
+        state: passed
+        candidate_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+        invalidated_runs: []
+    scope: *id003
+    non_goals: *id004
+    development_policy: *id005
+    validation: *id006
+    ci:
+      matching_run: '35028597741'
+      conclusion: success
+    unknown: []
+    blocked: []
+    remaining_risks: *id007
+- source_skill: review-worker
+  output_contract_version: uploaded-skill
+  content_type: application/json
+  payload:
+    review_mode: fix verification
+    reviewed_implementation_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    base: 6a6f33df2498b7cac50c51e8110a3f9c8483cac9
+    commit_range: 6a6f33df2498b7cac50c51e8110a3f9c8483cac9...f7b4ac1213c20a6d1bb74e4ce445485755733d13
+    reviewer:
+      identity: chatgpt-pr81-normal-review-20260916
+      role: normal_reviewer
+      continuity: same normal review chat
+      independence: not applicable
+    required_coverage: *id008
+    findings:
+    - *id009
+    finding_completeness_matrix: *id010
+    severity_reclassification_records: []
+    resolved_findings:
+    - id: R81-01
+      source_severity: medium
+      disposition: resolved
+      evidence: '/tmp/pr81-fixverify-r1/python-results.json: boundary, boundary-line2'
+    - id: R81-02
+      source_severity: medium
+      disposition: resolved
+      evidence: python-results.json + node-current/results.json
+    - id: R81-03
+      source_severity: medium
+      disposition: resolved
+      evidence: 'python-results.json: explicit-txt, implicit-txt'
+    - id: R81-04
+      source_severity: medium
+      disposition: resolved
+      evidence: python-results.json + node-current/results.json
+    - id: R81-05
+      source_severity: medium
+      disposition: resolved
+      evidence: 'python-results.json: normalization + chunk_results'
+    held: *id011
+    unexplored: []
+    validation_assessment: *id012
+    verdict: fail
+    remaining_risks: *id007
+    next_action: R81-06を修正し同じ通常レビュー会話でfinding/CI deltaを再確認。
+    reserved_report_paths: []
+    report_attestation_allowed: false
+- source_skill: report-writer
+  output_contract_version: uploaded-skill
+  content_type: application/json
+  payload:
+    report_type: review_report
+    complete_body: '# Markdown全文検査 PR #81 fix verification
+
+
+      作成日時: 2026-09-15T22:50:25.139800+00:00
+
+
+      ## 判定
+
+
+      **fail（要修正）**。先行のR81-01〜R81-05はすべてresolved。兄弟ケース確認でpre-existingのR81-06 / mediumを1件検出した。
+
+
+      ## 対象
+
+
+      - reviewed implementation HEAD: `f7b4ac1213c20a6d1bb74e4ce445485755733d13`
+
+      - fix commit: `59dff18e4164d88de85fc44006e144bc5d26472c`
+
+      - previous review publication HEAD: `6a6f33df2498b7cac50c51e8110a3f9c8483cac9`
+
+      - review mode: fix verification
+
+      - reviewer continuity: `chatgpt-pr81-normal-review-20260916`（同じ通常レビュー会話）
+
+
+      実装commit後の`f7b4ac`との差分はreport/handoffのみで、`skills/`配下の差分がないことを確認した。
+
+
+      ## 先行5件のfix verification
+
+
+      | Finding | Required action | Production path | Actual fixture | Focused evidence | Disposition |
+
+      |---|---|---|---|---|---|
+
+      | R81-01 | 語境界と元位置を保持して全文検査する。 | split_oversized_sudachi_segment / preserve_katakana_boundary | 48,033 bytes境界の「ギア」と2行目「ギアボックス」
+      | /tmp/pr81-fixverify-r1/python-results.json: boundary, boundary-line2 | **resolved** |
+
+      | R81-02 | 漢字隣接を許可しつつASCII継続子は拒否する。 | build_whitelist_value_pattern / whitelistValuePattern | Tracker.DebugHostの漢字前後、ASCII
+      prefix/suffix | python-results.json + node-current/results.json | **resolved** |
+
+      | R81-03 | 明示.txtを検査しhelpを実契約に同期する。 | EXPLICIT_TARGET_SUFFIXES / select_target_files / parse_args | note.txt explicitとimplicit
+      | python-results.json: explicit-txt, implicit-txt | **resolved** |
+
+      | R81-04 | 識別子継続子と文末句読点を区別する。 | Python/Node whitelist boundary patterns | dot/hyphen/underscore連結、prefix/suffix、terminal
+      period | python-results.json + node-current/results.json | **resolved** |
+
+      | R81-05 | 正規化後の入力上限を保証し、語境界と元位置を保持する。 | sudachi_input_bytes / iter_sudachi_chunks / split_oversized_sudachi_segment
+      | ㍿×6000 + 改行 + ジッタ | python-results.json: normalization + chunk_results | **resolved** |
+
+
+      実装handoffの`review.independent_closure.completeness_matrix`自体は空だったが、必要な4要素は実装レポート、保存済みprobe、現HEADの再実行から解決できたため、上表をclosure
+      readiness matrixとして確定してからfix verificationを実施した。
+
+
+      ## 新規指摘
+
+
+      ### R81-06 / medium / pre-existing
+
+
+      場所: `skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:558`
+
+
+      NFKCで片仮名になる半角カタカナが許可一覧検査を無条件にすり抜ける。
+
+
+      **影響:** 未承認の半角カタカナ語を文書に書いてもMarkdown用語検査が成功し、cspellも日本語語彙を拒否しないためlint経路全体で見逃す。
+
+
+      **証拠:** current HEADで全角「コンピューター」はexit 1で未登録違反になる一方、半角「ｺﾝﾋﾟｭｰﾀｰ」はexit 0・診断なし。SudachiPyは半角surfaceをnormalized_form「コンピューター」の名詞として返す。base
+      106ea5でもexit 0のためpre-existing。
+
+
+      **必要な対応:** 片仮名判定をraw surfaceだけで早期終了せずNFKC/normalized formを考慮し、半角片仮名も未登録なら拒否する。長文分割の片仮名境界判定も同じ正規化契約に揃え、全角/半角と分割境界の組合せを確認する。
+
+
+      設計は英字語と片仮名語を語彙対象としている。current HEADでは全角`コンピューター`は未登録違反になる一方、半角`ｺﾝﾋﾟｭｰﾀｰ`は無診断でexit 0。SudachiPy自体は後者をnormalized form `コンピューター`の名詞として返すため、tokenizerではなく`should_check_japanese`のraw-surface早期終了が検査漏れの原因である。cspellは全角/半角ともexit
+      0なので別gateも補完しない。
+
+
+      ## Validation
+
+
+      - 現HEAD Python checker: 元5件に対応する15ケースを再実行。元5件は期待通り。半角カタカナだけ期待違反としてexit 0。
+
+      - chunk invariants: NFKC膨張、分割境界、多行、長い半角文字列の4ケースで再結合・offset・48,000 byte上限を確認。
+
+      - 現HEAD cspell wrapper: 11ケースを直接実行し全件期待通り。
+
+      - repository validation: repository / bundle / zip-integrity / zip-contents 全てpass。
+
+      - Python構文、Node構文、`git diff --check`成功。
+
+      - exact-head CI: `35028597741` / head `f7b4ac...` / build success。artifact `10420910703`。
+
+
+      ## Coverage dispositions
+
+
+      | Criterion | Disposition | Evidence |
+
+      |---|---|---|
+
+      | requirement and design conformance | checked_finding | R81-01〜05は修正済み。設計の「片仮名語」を半角表記がすり抜けるR81-06を検出。 |
+
+      | correctness and edge cases | checked_finding | 元5件と兄弟ケースを現HEADで直接実行。R81-06のみ未解消。 |
+
+      | scope discipline | checked_no_finding | 実装修正は2スクリプト、後続commitはreport/handoffのみ。 |
+
+      | changed files and dependencies | checked_finding | SudachiPy 0.6.11 / SudachiDict 20260428 / cspell 9.8.0で確認。R81-06はPython
+      checkerのraw surface判定。 |
+
+      | API and compatibility | checked_no_finding | 明示.txtと既存Markdown探索、英語許可語境界の期待動作を確認。 |
+
+      | tests and validation adequacy | checked_finding | 実装側focused probesは元5件を覆うが、半角片仮名の兄弟ケースを含まずR81-06を見逃した。 |
+
+      | current-HEAD CI evidence | checked_no_finding | f7b4acと一致するrun 35028597741 build success、artifact 10420910703。 |
+
+      | report and documentation accuracy | held | H-DOC脚注設計差は継続。implementation handoffのcompleteness_matrixは空だったため本レビューで実証拠から再構築。
+      |
+
+      | regression and maintainability risks | checked_finding | R81-06はbase 106ea5にも存在するpre-existingの検査漏れ。 |
+
+
+      ## Held / remaining risks
+
+
+      - H-DOC: 脚注定義本文を検査する現仕様と既存設計の除外記載の差は継続。今回のfail根拠とは別。
+
+      - Windowsの既存`cspell.cmd` spawn挙動はscope外。cspellの意味的確認はUbuntuで現HEADを直接実行した。
+
+      - R81-06が未解消のため独立最終レビューには進めない。
+
+
+      ## Next action
+
+
+      R81-06を実装し、全角/半角の未登録・許可済み両方と、48,000 byte分割境界をまたぐ半角片仮名をfocused fixtureに追加する。修正後は同じ通常レビュー会話でR81-06とCI deltaのfix verificationを行う。mergeはしない。
+
+      '
+    evidence_sources:
+    - reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+    - reports/markdown-complete-scan-review-followup-20260916.md
+    - reports/handoffs/markdown-complete-scan-review-followup-20260916.yaml
+    target_identity:
+      branch: fix/markdown-lint-complete-scan
+      base_ref: main
+      current_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+      reviewed_implementation_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+    verification:
+      capability: local_execution_available
+      technical_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+      administrative_parent: null
+      commit_state: commit_pending
+      push_state: push_pending
+      ci_wait_state: not_required
+    severity_records:
+    - finding_id: R81-06
+      source_severity: medium
+      new_severity: null
+      reason: null
+      approved_by: null
+      record_type: preserved
+    persistence:
+      mode: repository_file
+      reserved_paths:
+      - reports/markdown-complete-scan-fix-verification-20260916.md
+      - reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+      - reports/handoffs/markdown-complete-scan-fix-verification-20260916.yaml
+      report_attestation_head: null
+    concise_pr_comment_body: 'R81-01〜05はresolved。R81-06 / medium / pre-existing: 半角カタカナがwhitelist検査をすり抜けるためverdict fail。'
+    unresolved_discrepancies:
+    - H-DOC footnote design mismatch
+extensions:
+- namespace: direct-review-evidence
+  payload:
+    schema_version: 1
+    generated_at: '2026-09-15T22:50:25.139800+00:00'
+    reviewed_head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+    fix_commit: 59dff18e4164d88de85fc44006e144bc5d26472c
+    previous_review_head: 6a6f33df2498b7cac50c51e8110a3f9c8483cac9
+    python_probe:
+      head: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+      records:
+      - name: boundary
+        exit_code: 1
+        stdout: ''
+        stderr: 'Markdown whitelist violations:
+
+          - probe.md:1: ''ギア'' (katakana) is not in tools/lint/markdown-whitelist.yaml.
+
+          '
+        bytes: 48033
+      - name: boundary-line2
+        exit_code: 1
+        stdout: ''
+        stderr: 'Markdown whitelist violations:
+
+          - probe.md:2: ''ギアボックス'' (katakana) is not in tools/lint/markdown-whitelist.yaml.
+
+          '
+        bytes: 48052
+      - name: normalization
+        exit_code: 1
+        stdout: ''
+        stderr: 'Markdown whitelist violations:
+
+          - probe.md:2: ''ジッタ'' (katakana) is not in tools/lint/markdown-whitelist.yaml.
+
+          '
+        bytes: 18010
+      - name: approved
+        exit_code: 0
+        stdout: ''
+        stderr: ''
+        bytes: 17
+      - name: kanji-right
+        exit_code: 0
+        stdout: ''
+        stderr: ''
+        bytes: 23
+      - name: kanji-left
+        exit_code: 0
+        stdout: ''
+        stderr: ''
+        bytes: 23
+      - name: suffix
+        exit_code: 1
+        stdout: ''
+        stderr: 'Markdown whitelist violations:
+
+          - probe.md:1: ''Tracker.DebugHostx'' (english) is not in tools/lint/markdown-whitelist.yaml.
+
+          '
+        bytes: 18
+      - name: prefix
+        exit_code: 1
+        stdout: ''
+        stderr: 'Markdown whitelist violations:
+
+          - probe.md:1: ''x.Tracker.DebugHost'' (english) is not in tools/lint/markdown-whitelist.yaml.
+
+          '
+        bytes: 19
+      - name: dot
+        exit_code: 1
+        stdout: ''
+        stderr: 'Markdown whitelist violations:
+
+          - probe.md:1: ''Tracker.DebugHost.Tracker.DebugHost'' (english) is not in tools/lint/markdown-whitelist.yaml.
+
+          '
+        bytes: 35
+      - name: hyphen
+        exit_code: 1
+        stdout: ''
+        stderr: 'Markdown whitelist violations:
+
+          - probe.md:1: ''Tracker.DebugHost-Tracker.DebugHost'' (english) is not in tools/lint/markdown-whitelist.yaml.
+
+          '
+        bytes: 35
+      - name: underscore
+        exit_code: 1
+        stdout: ''
+        stderr: 'Markdown whitelist violations:
+
+          - probe.md:1: ''Tracker.DebugHost_Tracker.DebugHost'' (english) is not in tools/lint/markdown-whitelist.yaml.
+
+          '
+        bytes: 35
+      - name: terminal-period
+        exit_code: 0
+        stdout: ''
+        stderr: ''
+        bytes: 18
+      - name: halfwidth-katakana
+        exit_code: 0
+        stdout: ''
+        stderr: ''
+        bytes: 24
+        expectation_error: AssertionError(('halfwidth-katakana', 0, ''))
+      - name: explicit-txt
+        exit_code: 1
+        stdout: ''
+        stderr: 'Markdown whitelist violations:
+
+          - note.txt:1: ''qzxvunknownword'' (english) is not in tools/lint/markdown-whitelist.yaml.
+
+          '
+        bytes: null
+      - name: implicit-txt
+        exit_code: 0
+        stdout: ''
+        stderr: ''
+        bytes: null
+      chunk_results:
+      - name: nfkc-growth
+        chunks: 5
+        input_bytes: 36010
+      - name: boundary
+        chunks: 3
+        input_bytes: 99003
+      - name: many-lines
+        chunks: 5
+        input_bytes: 192009
+      - name: halfwidth-long
+        chunks: 3
+        input_bytes: 144000
+    node_probe:
+      source_sha256: 4512c528fa10376572837fc37d4137465d7a1e0fb04d6129e0b472053531b6c2
+      records:
+      - name: approved
+        text: Tracker.DebugHost
+        exit_code: 0
+        expected: 0
+        stdout: ''
+        stderr: ''
+        match: true
+      - name: kanji-right
+        text: Tracker.DebugHost構成
+        exit_code: 0
+        expected: 0
+        stdout: ''
+        stderr: ''
+        match: true
+      - name: kanji-left
+        text: 構成Tracker.DebugHost
+        exit_code: 0
+        expected: 0
+        stdout: ''
+        stderr: ''
+        match: true
+      - name: suffix
+        text: Tracker.DebugHostx
+        exit_code: 1
+        expected: 1
+        stdout: 'note.md:1:1 - Unknown word (Tracker)
+
+          note.md:1:9 - Unknown word (Debug)
+
+          note.md:1:14 - Unknown word (Hostx)
+
+          '
+        stderr: ''
+        match: true
+      - name: prefix
+        text: x.Tracker.DebugHost
+        exit_code: 1
+        expected: 1
+        stdout: 'note.md:1:3 - Unknown word (Tracker)
+
+          note.md:1:11 - Unknown word (Debug)
+
+          note.md:1:16 - Unknown word (Host)
+
+          '
+        stderr: ''
+        match: true
+      - name: dot
+        text: Tracker.DebugHost.Tracker.DebugHost
+        exit_code: 1
+        expected: 1
+        stdout: 'note.md:1:1 - Unknown word (Tracker)
+
+          note.md:1:9 - Unknown word (Debug)
+
+          note.md:1:14 - Unknown word (Host)
+
+          note.md:1:19 - Unknown word (Tracker)
+
+          note.md:1:27 - Unknown word (Debug)
+
+          note.md:1:32 - Unknown word (Host)
+
+          '
+        stderr: ''
+        match: true
+      - name: hyphen
+        text: Tracker.DebugHost-Tracker.DebugHost
+        exit_code: 1
+        expected: 1
+        stdout: 'note.md:1:1 - Unknown word (Tracker)
+
+          note.md:1:9 - Unknown word (Debug)
+
+          note.md:1:14 - Unknown word (Host)
+
+          note.md:1:19 - Unknown word (Tracker)
+
+          note.md:1:27 - Unknown word (Debug)
+
+          note.md:1:32 - Unknown word (Host)
+
+          '
+        stderr: ''
+        match: true
+      - name: underscore
+        text: Tracker.DebugHost_Tracker.DebugHost
+        exit_code: 1
+        expected: 1
+        stdout: 'note.md:1:1 - Unknown word (Tracker)
+
+          note.md:1:9 - Unknown word (Debug)
+
+          note.md:1:14 - Unknown word (Host)
+
+          note.md:1:19 - Unknown word (Tracker)
+
+          note.md:1:27 - Unknown word (Debug)
+
+          note.md:1:32 - Unknown word (Host)
+
+          '
+        stderr: ''
+        match: true
+      - name: terminal-period
+        text: Tracker.DebugHost.
+        exit_code: 0
+        expected: 0
+        stdout: ''
+        stderr: ''
+        match: true
+      - name: double-dot-short
+        text: Tracker.DebugHost..x
+        exit_code: 0
+        expected: 0
+        stdout: ''
+        stderr: ''
+        match: true
+      - name: double-dot-word
+        text: Tracker.DebugHost..unknownword
+        exit_code: 1
+        expected: 1
+        stdout: 'note.md:1:20 - Unknown word (unknownword)
+
+          '
+        stderr: ''
+        match: true
+    repository_validation:
+      schema_version: 1
+      started_at: '2026-09-15T22:44:44.645690+00:00'
+      status: pass
+      steps:
+      - name: repository
+        command:
+        - /home/ibis/.cache/uv/builds-v0/.tmpXfcvYC/bin/python
+        - /home/ibis/AI/CodexSkill-pr81-fixverify-20260916-r1/scripts/verify_skill_repository.py
+        started_at: '2026-09-15T22:44:44.657951+00:00'
+        status: pass
+        exit_code: 0
+        reason: null
+        stdout: repository.stdout.log
+        stderr: repository.stderr.log
+        duration_seconds: 0.031914
+        finished_at: '2026-09-15T22:44:44.689878+00:00'
+      - name: bundle
+        command:
+        - /home/ibis/.cache/uv/builds-v0/.tmpXfcvYC/bin/python
+        - /home/ibis/AI/CodexSkill-pr81-fixverify-20260916-r1/scripts/build_chatgpt_worker_skills.py
+        - --repo-root
+        - /home/ibis/AI/CodexSkill-pr81-fixverify-20260916-r1
+        - --output
+        - /tmp/pr81-fixverify-r1/full-validation/chatgpt-worker-skills.zip
+        started_at: '2026-09-15T22:44:44.690118+00:00'
+        status: pass
+        exit_code: 0
+        reason: null
+        stdout: bundle.stdout.log
+        stderr: bundle.stderr.log
+        duration_seconds: 0.063873
+        finished_at: '2026-09-15T22:44:44.754005+00:00'
+      - name: zip-integrity
+        command:
+        - /home/ibis/.cache/uv/builds-v0/.tmpXfcvYC/bin/python
+        - -c
+        - 'import sys, zipfile; archive = zipfile.ZipFile(sys.argv[1]); bad = archive.testzip(); archive.close(); print(''Invalid
+          CRC: '' + bad if bad else ''ZIP integrity verified''); sys.exit(1 if bad else 0)'
+        - /tmp/pr81-fixverify-r1/full-validation/chatgpt-worker-skills.zip
+        started_at: '2026-09-15T22:44:44.754484+00:00'
+        status: pass
+        exit_code: 0
+        reason: null
+        stdout: zip-integrity.stdout.log
+        stderr: zip-integrity.stderr.log
+        duration_seconds: 0.031984
+        finished_at: '2026-09-15T22:44:44.786482+00:00'
+      - name: zip-contents
+        command:
+        - /home/ibis/.cache/uv/builds-v0/.tmpXfcvYC/bin/python
+        - -m
+        - zipfile
+        - -l
+        - /tmp/pr81-fixverify-r1/full-validation/chatgpt-worker-skills.zip
+        started_at: '2026-09-15T22:44:44.786699+00:00'
+        status: pass
+        exit_code: 0
+        reason: null
+        stdout: zip-contents.stdout.log
+        stderr: zip-contents.stderr.log
+        duration_seconds: 0.031747
+        finished_at: '2026-09-15T22:44:44.818454+00:00'
+      python: 3.13.7
+      platform: Linux-6.8.0-136-generic-x86_64-with-glibc2.39
+      ci:
+        GITHUB_RUN_ID: null
+        GITHUB_RUN_ATTEMPT: null
+        GITHUB_EVENT_NAME: null
+        TARGET_REF: null
+      finished_at: '2026-09-15T22:44:44.818736+00:00'
+    completeness_matrix: *id010
+    new_finding: *id009
+    exact_head_ci:
+      run_id: 35028597741
+      head_sha: f7b4ac1213c20a6d1bb74e4ce445485755733d13
+      conclusion: success
+      job_id: 104581509839
+      artifact_id: 10420910703
+      artifact_digest: sha256:3767efb5f4d959297596fd8958effd80b6d584f8f563e2e58e063515880131d9
+    additional_observations:
+      fullwidth_katakana:
+        text: コンピューター
+        exit_code: 1
+        diagnostic: not in whitelist
+      halfwidth_katakana:
+        text: ｺﾝﾋﾟｭｰﾀｰ
+        exit_code: 0
+        diagnostic: ''
+      base_halfwidth_exit_code: 0
+      sudachi_normalized_form: コンピューター
+      sudachi_part_of_speech: 名詞
+      cspell_fullwidth_exit_code: 0
+      cspell_halfwidth_exit_code: 0
+    scratch_diagnostics:
+    - /tmp/pr81-fixverify-r1
+    - /tmp/pr81-fixverify-r1-node-current
+next_action:
+  type: implementation
+  target_skill: chat-implementation-worker
+  mode: review follow-up
+  summary: R81-06を修正して同じ通常レビュー会話へ戻す。
+  instructions:
+  - 片仮名判定をraw surfaceだけで早期終了せずNFKC/normalized formを考慮し、半角片仮名も未登録なら拒否する。長文分割の片仮名境界判定も同じ正規化契約に揃え、全角/半角と分割境界の組合せを確認する。
+  required_attachments_or_references:
+  - reports/markdown-complete-scan-fix-verification-20260916.md
+  - reports/markdown-complete-scan-fix-verification-evidence-20260916.json
+  - reports/handoffs/markdown-complete-scan-fix-verification-20260916.yaml
+  requested_authorized_actions:
+  - read_repository
+  - edit_code
+  - write_report
+  - write_handoff
+  - commit
+  - push
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/markdown-complete-scan-fix-verification-20260916.yaml
+  packet_url: null
+  transport_note: publication SHA is recorded externally after commit
