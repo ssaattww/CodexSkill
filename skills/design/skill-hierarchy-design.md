@@ -24,8 +24,7 @@ ChatGPT wrapperは別workerまたはsub-agentを起動しない。Codex向けwra
 ├─ work-context-manager
 ├─ implementation-worker
 ├─ review-worker
-├─ report-writer
-└─ document-wording-review
+└─ report-writer
 
 runtime wrapper
 ├─ Codex
@@ -52,9 +51,6 @@ runtime wrapper
   - closure前のrequired-action completeness matrixを確認し、不足したfindingをclosure reviewへ渡さない
 - `report-writer`
   - evidenceの意味を変えずにreportと簡易PR commentを生成する
-- `document-wording-review`
-  - `implementation-worker` の自己確認と `review-worker` の文書レビューで、意味・識別性・承認用法・読みやすさを判定する
-  - 既存担当内で実行し、追加の担当起動・編集・用語承認を行わない
 
 全core SkillはCodex親、Codex sub-agent、ChatGPT親chatのいずれにも依存しない。
 
@@ -80,15 +76,15 @@ Astra対応は既存のCodex dispatch体系を拡張し、新しいSkill、core 
 - role/default-role、full-history継承、availability置換、既存agent再利用でも同じgateを適用する。runtime profileが非公開なら`applied: null`を維持し、事前安全確認を省略しない。
 
 既存Sol `xhigh/max`の承認・同一reviewer再利用規則、ChatGPT wrapperのsub-agent起動禁止、配布ZIP構成、core Skillのレビュー意味論は変更しない。
-## 用語・文章品質の確認
+## #69の用語・文章品質レビュー（履歴）
 
-`implementation-worker` と `review-worker` は文章・用語定義・承認内容の変更時に `document-wording-review` を必ず呼び出す。前者は自己確認、後者は既存レビュワーによる確認であり、担当の同一性と独立性を変えない。機械検査の成功や未設定を理由に省略しない。登録候補だけでなく、日本語化した本文と承認変更の影響を受ける用例も対象にする。
+Issue #69では`document-wording-review`を追加してChatGPT配布を9スキルへ拡張した履歴がある。ただし、#73の基準である#68取り込み後のcurrent mainには同Skillと関連配布変更が存在せず、`scripts/build_chatgpt_worker_skills.py`も4 wrapper + 4 coreの8スキルを配布する。#73は利用者が明示した#70復元だけを対象とし、#69の欠落内容は復元しない。
 
-判定手順は新スキルだけに置く。具体的な受け入れ条件は用語・文章品質レビュー設計に定める。必須の欠陥、方針判断待ち、証拠不足を未登録語ゼロで上書きせず、対象側の単独語禁止を緩和しない。
+したがって現在のChatGPT配布契約は8スキルとする。#69の文書品質レビューを再導入する場合は、別scopeでSkill本体、caller、配布builder、設計を同時に復元・検証する。
 
 ## ChatGPTの2つの作業経路
 
-Issue #70では既存のChatGPT wrapperを拡張し、通常チャット内の経路とRemote Desktop Commanderで利用者のPCを使う経路を提供する。#70単独ではworker数と8スキルの配布構成を維持した。#69を統合した現在の配布は9スキルであり、通常・独立レビューの責務は変更しない。端末経由で別エージェントを起動することも認めない。
+Issue #70では既存のChatGPT wrapperを拡張し、通常チャット内の経路とRemote Desktop Commanderで利用者のPCを使う経路を提供した。#70時点の配布は8スキルだった。その後#69統合時には9スキルへ拡張した履歴があるが、#73の基準である#68取り込み後のcurrent mainでは#69の配布追加が欠落している。#73では#70だけを復元するため、現在の配布は実際のbuilderと一致する8スキルとする。通常・独立レビューの責務は変更せず、端末経由で別エージェントを起動することも認めない。
 
 経路の指定と接続ツールの選択はChatGPT wrapperが担う。利用者の明示指定、Project Instructionの順で経路を決め、指定がなければRemote Desktop CommanderによるPC接続を基本経路とする。通常チャットは明示指定時だけ使う。`work-context-manager` はツール固有の処理を持たず、`execution_environment` として実行場所、対象HEAD、未コミット変更の識別情報、作業ツリーの所有者、依存ツールと権限の証拠を扱う。接続できることと `local_execution_available` は別に確認する。
 
@@ -96,7 +92,7 @@ PC上のファイル操作と検証に加え、PC接続経路の認可されたG
 
 `implementation-worker` は実行場所と対象内容に結び付いた検証結果を返す。`report-writer` と `chat-handoff-manager` は成功・失敗、依存不足、診断保存先を保持する。schema version 3の引き継ぎでは `execution_environment` を追加し、旧packetの欠落はunknownとして再確認する。
 
-詳細はリポジトリ内の `design/chat-execution-environment-design.md` に定義する。#73では#70のPC接続経路を維持したままcommit／pushの実行場所をRDCへ移す。#69の文章自己点検は `chat-implementation-worker` 内の専用手順から中核スキルへ接続する。現在のChatがPC側のスキル・資料・変更前後を自分で読み、取得元の版と読んだ範囲を `read_evidence` へ残す。PC接続や機械検査の成功だけで確認済みとはせず、自己点検と機械検査の結果を報告・引き継ぎへ分けて保持する。
+詳細はリポジトリ内の `design/chat-execution-environment-design.md` に定義する。#73では#70のPC接続経路を維持したままcommit／pushの実行場所をRDCへ移す。#69の文章自己点検との接続は#69統合時の履歴であり、current #73 packageには含めない。
 
 ## Verification capabilityと状態遷移
 
@@ -361,15 +357,14 @@ ChatGPTへ登録するwrapper Skillは次の4つである。
 - `chat-report-writer`
 - `chat-handoff-manager`
 
-必須依存core Skillは次の5つである。
+必須依存core Skillは次の4つである。
 
 - `work-context-manager`
 - `implementation-worker`
 - `review-worker`
 - `report-writer`
-- `document-wording-review`
 
-GitHub Releaseでは、9 Skillをそれぞれ独立したroot directoryとして含む単一ZIPを配布する。
+GitHub Releaseでは、8 Skillをそれぞれ独立したroot directoryとして含む単一ZIPを配布する。
 
 ```text
 chatgpt-worker-skills.zip
@@ -380,8 +375,7 @@ chatgpt-worker-skills.zip
 ├─ work-context-manager/
 ├─ implementation-worker/
 ├─ review-worker/
-├─ report-writer/
-└─ document-wording-review/
+└─ report-writer/
 ```
 
 各directoryには少なくとも`SKILL.md`が存在し、front matterの`name`とdirectory名を一致させる。
@@ -517,7 +511,6 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | `implementation-worker` | initial implementationとreview follow-upを実施する | runtime非依存Skillとして実行 |
 | `review-worker` | initial review、fix verification、independent final reviewとattestation条件を返す | runtime非依存Skillとして実行 |
 | `report-writer` | evidence-faithfulなreport、簡易PR comment、persistence metadataを生成する | runtime非依存Skillとして実行 |
-| `document-wording-review` | 文書変更の意味・識別性・承認用法・読みやすさを確認する | 既存担当内でruntime非依存Skillとして実行 |
 
 ### 計画と追跡
 
