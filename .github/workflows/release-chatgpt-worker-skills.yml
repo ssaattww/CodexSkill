@@ -65,6 +65,18 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Install Markdown terminology dependencies
+        id: markdown_dependencies
+        shell: bash
+        run: |
+          set +e
+          npm ci --ignore-scripts >markdown-dependencies.stdout.log 2>markdown-dependencies.stderr.log
+          status=$?
+          set -e
+          cat markdown-dependencies.stdout.log
+          cat markdown-dependencies.stderr.log >&2
+          exit "$status"
+
       - name: Validate locally equivalent commands and retain logs
         id: validation
         shell: bash
@@ -85,6 +97,7 @@ jobs:
         shell: bash
         env:
           CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+          MARKDOWN_DEPENDENCIES_OUTCOME: ${{ steps.markdown_dependencies.outcome }}
           VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
         run: |
           python3 - <<'PY'
@@ -93,7 +106,18 @@ jobs:
           from pathlib import Path
           output = Path("validation-artifacts")
           output.mkdir(parents=True, exist_ok=True)
-          keys = ("TARGET_REF", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "CHECKOUT_OUTCOME", "VALIDATION_OUTCOME")
+          for name in ("markdown-dependencies.stdout.log", "markdown-dependencies.stderr.log"):
+              source = Path(name)
+              if source.exists():
+                  source.replace(output / name)
+          keys = (
+              "TARGET_REF",
+              "GITHUB_RUN_ID",
+              "GITHUB_RUN_ATTEMPT",
+              "CHECKOUT_OUTCOME",
+              "MARKDOWN_DEPENDENCIES_OUTCOME",
+              "VALIDATION_OUTCOME",
+          )
           (output / "job-status.json").write_text(
               json.dumps({key: os.environ.get(key) for key in keys}, indent=2) + "\n",
               encoding="utf-8",
