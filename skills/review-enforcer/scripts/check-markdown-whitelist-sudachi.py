@@ -379,10 +379,7 @@ def mask_whitelist_values(text: str, value_pattern: re.Pattern[str] | None) -> s
     if value_pattern is None:
         return text
 
-    def replace(match: re.Match[str]) -> str:
-        return f"{match.group(1)}{blank_preserving(match.group(2))}"
-
-    return value_pattern.sub(replace, text)
+    return value_pattern.sub(blank_preserving, text)
 
 
 def build_whitelist_value_pattern(values: list[str]) -> re.Pattern[str] | None:
@@ -394,7 +391,7 @@ def build_whitelist_value_pattern(values: list[str]) -> re.Pattern[str] | None:
     if not alternatives:
         return None
     boundary = r"A-Za-z0-9_\u30A0-\u30FF\u3400-\u9FFF"
-    return re.compile(rf"(^|[^{boundary}])({'|'.join(alternatives)})(?=$|[^{boundary}])", re.IGNORECASE)
+    return re.compile(rf"(?<![{boundary}])(?:{'|'.join(alternatives)})(?![{boundary}])", re.IGNORECASE)
 
 
 def check_english_tokens(
