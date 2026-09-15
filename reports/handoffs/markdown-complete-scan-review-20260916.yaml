@@ -190,7 +190,7 @@ review:
   required_coverage: &id007
   - criterion: requirement and design conformance
     disposition: checked_finding
-    evidence: R81-01..04。PRの5つの変更目的と比較。既存設計の脚注説明差は H-DOC。
+    evidence: R81-01..05。PRの5つの変更目的と比較。既存設計の脚注説明差は H-DOC。
   - criterion: correctness and edge cases
     disposition: checked_finding
     evidence: 分割境界、漢字隣接、連結子、脚注、長文の実行結果。
@@ -220,7 +220,7 @@ review:
     evidence: 'H-DOC: 既存の許可一覧再構築設計は脚注定義行を除外と記載するが、PRは本文を検査へ変更。'
   - criterion: regression and maintainability
     disposition: checked_finding
-    evidence: R81-01..03はbaseからの退行。R81-04は既存の残件として区別。
+    evidence: R81-01..03はbaseからの退行。R81-04/05は既存の残件として区別。
   independent_closure:
     initial_independent_reviewed_head: null
     closure_reviewed_heads: []
@@ -311,17 +311,27 @@ findings: &id008
   evidence: Tracker.DebugHost を許可すると、未登録の Tracker.DebugHost.Tracker.DebugHost と Tracker.DebugHost-Tracker.DebugHost
     が HEAD の Python/cspell とも exit 0。英語検出の ENGLISH_RE はこれらを1語として扱うが、その前に部分語がマスクされる。base cspell でも成功するため、新規退行ではなく今回の境界厳密化に残る既存欠陥。
   required_action: 英語語彙の継続子として使う . / - と文末の句読点を区別し、未登録の全体語を部分マスクしない。単独登録語、文末ピリオド、ドット・ハイフン・アンダースコアでの連結を両検査器で確認する。
+- id: R81-05
+  severity: medium
+  priority: P2
+  origin: pre_existing
+  location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:455-464
+  description: 正規化で入力が膨張すると、48,000バイト未満でもSudachiPyが上限エラーで途中停止する。
+  impact: 元のUTF-8バイト数だけではSudachiPyの入力上限を保証できず、文書末尾まで検査できない。
+  evidence: '「㍿」6000文字 + 改行 + 「ジッタ」（18,010 bytes）を --stdin normalization.md に渡すと、base/HEADとも SudachiError: Input
+    is too long ... was 65539 で停止する。末尾の片仮名語検査に到達しない。これは新規退行ではなく、今回の長文上限修正に残る既存欠陥。'
+  required_action: 正規化後の膨張を考慮して入力上限を保証するか、上限エラーを捕捉して安全に再分割し、分割境界の検査と元の位置を保持する。互換文字の反復を含む入力でも末尾の語を検査できることを確認する。
 held: &id009
 - item: 'H-DOC: 既存設計の脚注除外説明'
   reason: design/review-enforcer-markdown-whitelist-rebuild-design.md は脚注定義行を検査対象外と記載。現在のPR説明は脚注本文を検査する。
   owner: 実装担当
   remaining_risk: 保守者が古い除外説明を参照する可能性。
-  verdict_impact: 文書同期の確認事項。今回のfail判定はR81-01..04による。
+  verdict_impact: 文書同期の確認事項。今回のfail判定はR81-01..05による。
 unexplored: &id010
 - area: Windows上の実CLI実行
   blocker: 実CLI検証は依存が揃ったUbuntu環境で実施。Windows側は対象SHAとソースを確認。
   remaining_risk: Windows固有の起動経路は未確認。
-  verdict_impact: Windows動作成功とは主張しない。確認済みの4件についてはfailを判断できる。
+  verdict_impact: Windows動作成功とは主張しない。確認済みの5件についてはfailを判断できる。
 unknown:
 - field_or_fact: マージ時の必須チェック設定
   reason: 通常レビューではブランチ保護設定を確認していない。
@@ -592,7 +602,7 @@ source_payloads:
       | 長文末尾 | 114,010 bytesの本文末尾を6002行目として検出。96,010 bytesの長い行を含む本文も末尾を2行目として検出 |
 
 
-      依存版: Python 3.12.3、Node.js 22.13.1、SudachiPy 0.6.11、SudachiDict core 20260428、PyYAML 6.0.3、cspell 9.8.0。
+      依存版: Python 3.13.7、Node.js 22.13.1、SudachiPy 0.6.11、SudachiDict core 20260428、PyYAML 6.0.3、cspell 9.8.0。
 
 
       詳細コマンド、実際の標準出力・標準エラー・終了コード、再現用入力を構築するプログラム本文は `reports/markdown-complete-scan-review-evidence-20260916.json`
@@ -689,6 +699,9 @@ source_payloads:
 
       引き継ぎ: `reports/handoffs/markdown-complete-scan-review-20260916.yaml`。今回、実装・許可一覧・設計・ワークフローは修正せず、マージも行っていない。
 
+
+      実行環境の表記訂正: OS標準のPython版ではなく、証拠JSONに記録された検証プロセスのPython 3.13.7を記載した。指摘と再現結果に変更はない。
+
       '
     evidence_sources:
     - reports/markdown-complete-scan-review-evidence-20260916.json
@@ -780,6 +793,13 @@ extensions:
     records: 46
     chunk_checks: 11
     note: 完全なコマンド・標準出力・標準エラー・入力再現コードは証拠JSONに保存。
+- namespace: environment-erratum
+  payload:
+    incorrect: Python 3.12.3
+    correct: Python 3.13.7
+    evidence: reports/markdown-complete-scan-review-evidence-20260916.json reproduction_results.python
+    reason: OS標準のPythonではなくuvで起動した検証プロセスの実測版を記載する。
+    findings_changed: false
 next_action:
   type: implementation
   target_skill: chat-implementation-worker
