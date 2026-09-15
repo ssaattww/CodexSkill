@@ -128,7 +128,7 @@
 
 ## Phase 11: ChatGPT PC接続経路のGit操作
 
-- Status: In Progress (normal review findings follow-up; same reviewer fix verification pending)
+- Status: In Progress (required findings fixed and locally validated; same reviewer fix verification pending)
 - Notes:
   - Issue #73を対象とする
   - #70で定義したRemote Desktop Commanderの実行場所契約をcurrent mainへ復元する

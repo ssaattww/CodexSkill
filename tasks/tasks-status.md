@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-007: Issue #73のGit commit／pushをRDC経由へ変更する
-  - Status: initial normal reviewはfail。`PR78-NR-001`〜`PR78-NR-004`のfollow-up修正を実施中で、full local validationとsame normal reviewerのfix verification待ち
+  - Status: `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正とfull local validation、詳細report／handoff作成まで完了。永続化push後、same normal reviewerのfix verification待ち
   - Phase: Phase 11
   - PR: #78
   - Estimate: M
@@ -31,12 +31,16 @@
     - ChatGPT wrapperと実行場所evidenceを扱うcore Skill
     - `reports/issue-73-rdc-git-implementation-20260915.md`
     - `reports/handoffs/issue-73-rdc-git-20260915.yaml`
+    - `reports/issue-73-pr78-review-followup-20260915.md`
+    - `reports/handoffs/issue-73-pr78-review-followup-20260915.json`
   - Verification:
     - TDDはCodexSkill repository policyによりnot applicable
     - current main `106ea5dcf12c4805756351fb9381df220b94f044`で#70のexecution contractが欠落していることを確認済み
     - 最終HEADのmatching `pull_request` runだけをCI evidenceとして記録する
     - initial normal review: reviewed HEAD `85c47515cbe086824746534ffb6cf6398894a63a`、verdict `fail`、required findings `PR78-NR-001`〜`PR78-NR-004`
     - review成果物commit `ae63a10abd1797d7fc81f234ad7b2bfb947054dd`を取り込み、finding identityとrequired actionを維持してfollow-upする
+    - fix candidate technical HEAD `ac1bff201f8d6f0e8974f3ab5a42b177109a5a15`でrepository/bundle/ZIP/focused validationがsuccess
+    - 4 findingのresolved判定はsame normal reviewerのfix verificationへ委ねる
 
 - T-006: Issue #67のAstra high承認付きエスカレーション
   - Status: 再レビューで継続した`PR68-IFR-001`の新規handoff再発9箇所を修正し、最新mainとの競合3ファイルも統合済み。same independent reviewerのbounded fix verification待ち

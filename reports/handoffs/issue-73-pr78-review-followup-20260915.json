@@ -1,0 +1,1301 @@
+{
+  "schema_version": 3,
+  "producer": {
+    "skill": "chat-implementation-worker",
+    "mode": "review follow-up",
+    "generated_at": "2026-09-15T19:30:00+09:00"
+  },
+  "repository": "ssaattww/CodexSkill",
+  "issue_or_pr": "Issue #73 / PR #78",
+  "task_id": "T-007",
+  "branch": "issue-73-rdc-git",
+  "base_ref": "main",
+  "target": {
+    "current_head": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+    "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "commit_range": "ae63a10abd1797d7fc81f234ad7b2bfb947054dd..ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+  },
+  "execution_environment": {
+    "kind": "connected_computer",
+    "tool": "Remote Desktop Commander",
+    "machine_id": "FA780",
+    "connection": "available",
+    "os": "Windows",
+    "shell": "powershell.exe",
+    "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+    "repository": "ssaattww/CodexSkill",
+    "branch": "issue-73-rdc-git",
+    "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+    "source_state": "clean",
+    "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+    "ownership": "current_task",
+    "writable_paths": [
+      "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+      "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+    ],
+    "dependencies": [
+      {
+        "name": "git",
+        "status": "available",
+        "evidence": "RDC git commit/push succeeded"
+      },
+      {
+        "name": "python",
+        "status": "available",
+        "evidence": "repository validation succeeded"
+      },
+      {
+        "name": "node/yaml",
+        "status": "available",
+        "evidence": "focused handoff type check succeeded"
+      }
+    ],
+    "evidence": [
+      "RDC device FA780 pinned",
+      "Issue #73 dedicated worktree",
+      "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+    ]
+  },
+  "verification": {
+    "capability": "local_execution_available",
+    "capability_evidence": [
+      "RDC local validation available and executed"
+    ],
+    "technical_head": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+    "administrative_parent": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+    "commit": {
+      "state": "commit_pending",
+      "review_target_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+    },
+    "push": {
+      "state": "pushed",
+      "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+    },
+    "ci_wait": {
+      "state": "not_required",
+      "required_for": "not_required"
+    },
+    "final_publication": {
+      "sequence": "not_applicable",
+      "pr_action": "update"
+    }
+  },
+  "authoritative_requirements": [
+    {
+      "source": "user_instruction",
+      "reference": "current chat",
+      "summary": "Address PR #78 review findings using RDC."
+    },
+    {
+      "source": "pr",
+      "reference": "reports/issue-73-pr78-normal-review-20260915.md",
+      "summary": "Preserve finding identity and required actions for PR78-NR-001 through PR78-NR-004."
+    },
+    {
+      "source": "repository_instruction",
+      "reference": "AGENTS.md",
+      "summary": "CodexSkill maintenance is non-TDD."
+    }
+  ],
+  "development_policy": {
+    "method": "validation-only",
+    "testing_order": "focused validation then full local validation before CI-triggering push",
+    "governing_source": "AGENTS.md"
+  },
+  "validation_plan": {
+    "commands": [
+      "git diff --check",
+      "python scripts/run_validation.py",
+      "four finding-focused checks"
+    ],
+    "required_failure_diagnostics": [
+      "stdout",
+      "stderr",
+      "validation results",
+      "source identity"
+    ]
+  },
+  "blocked": [],
+  "authorized_actions": [
+    "read_repository",
+    "edit_documentation",
+    "write_handoff",
+    "write_report",
+    "commit",
+    "push",
+    "update_pr",
+    "comment_pr"
+  ],
+  "write_boundary": {
+    "allowed": [
+      {
+        "path_or_operation": "Issue #73 dedicated worktree",
+        "reason": "review follow-up scope"
+      },
+      {
+        "path_or_operation": "PR #78 metadata/comment",
+        "reason": "follow-up reporting"
+      }
+    ],
+    "forbidden": [
+      {
+        "path_or_operation": "unrelated worktrees",
+        "reason": "other task ownership"
+      },
+      {
+        "path_or_operation": "merge",
+        "reason": "user-owned action"
+      }
+    ]
+  },
+  "scope": [
+    "PR78-NR-001 through PR78-NR-004 follow-up only"
+  ],
+  "non_goals": [
+    "unrelated cleanup",
+    "independent review verdict",
+    "merge"
+  ],
+  "files": {
+    "changed": [
+      {
+        "path": "design/chat-worker-skill-design.md",
+        "purpose": "PR78-NR-001 embedded instruction sync"
+      },
+      {
+        "path": "reports/handoffs/issue-73-rdc-git-20260915.yaml",
+        "purpose": "PR78-NR-002 execution environment object fix"
+      },
+      {
+        "path": "design/chat-execution-environment-design.md",
+        "purpose": "PR78-NR-003 historical/current package split"
+      },
+      {
+        "path": "design/skill-hierarchy-design.md",
+        "purpose": "PR78-NR-003 current 8-skill package contract"
+      },
+      {
+        "path": "skills/design/skill-hierarchy-design.md",
+        "purpose": "PR78-NR-003 hierarchy mirror"
+      },
+      {
+        "path": "tasks/phases-status.md",
+        "purpose": "PR78-NR-004 phase sync"
+      },
+      {
+        "path": "tasks/tasks-status.md",
+        "purpose": "PR78-NR-004 task sync"
+      }
+    ],
+    "inspected": [
+      {
+        "path": "reports/issue-73-pr78-normal-review-20260915.md",
+        "purpose": "source findings"
+      },
+      {
+        "path": "reports/handoffs/issue-73-pr78-normal-review-20260915.json",
+        "purpose": "review continuity"
+      }
+    ],
+    "intentionally_untouched": [
+      {
+        "path_or_area": "Issue #69 implementation files",
+        "reason": "outside #73 follow-up scope"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "command": "git diff --check 85c47515..ac1bff2",
+      "purpose": "follow-up whitespace validation",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+      "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2\\diff-check.stdout.log",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git commit/push succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "focused handoff type check succeeded"
+          }
+        ],
+        "evidence": [
+          "RDC device FA780 pinned",
+          "Issue #73 dedicated worktree",
+          "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+        ]
+      },
+      "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+    },
+    {
+      "command": "python scripts/run_validation.py",
+      "purpose": "repository/bundle/ZIP validation",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+      "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2\\validation",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git commit/push succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "focused handoff type check succeeded"
+          }
+        ],
+        "evidence": [
+          "RDC device FA780 pinned",
+          "Issue #73 dedicated worktree",
+          "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+        ]
+      },
+      "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+    },
+    {
+      "command": "four finding-focused checks",
+      "purpose": "verify required actions",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+      "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2\\focused.stdout.log",
+      "execution_environment": {
+        "kind": "connected_computer",
+        "tool": "Remote Desktop Commander",
+        "machine_id": "FA780",
+        "connection": "available",
+        "os": "Windows",
+        "shell": "powershell.exe",
+        "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+        "repository": "ssaattww/CodexSkill",
+        "branch": "issue-73-rdc-git",
+        "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "source_state": "clean",
+        "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "ownership": "current_task",
+        "writable_paths": [
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+        ],
+        "dependencies": [
+          {
+            "name": "git",
+            "status": "available",
+            "evidence": "RDC git commit/push succeeded"
+          },
+          {
+            "name": "python",
+            "status": "available",
+            "evidence": "repository validation succeeded"
+          },
+          {
+            "name": "node/yaml",
+            "status": "available",
+            "evidence": "focused handoff type check succeeded"
+          }
+        ],
+        "evidence": [
+          "RDC device FA780 pinned",
+          "Issue #73 dedicated worktree",
+          "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+        ]
+      },
+      "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+    }
+  ],
+  "tests": [
+    {
+      "name": "CodexSkill repository validation",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+      "evidence": "repository/bundle/zip all pass"
+    },
+    {
+      "name": "review finding focused validation",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+      "evidence": "PR78-NR-001..004 focused checks pass"
+    },
+    {
+      "name": "TDD Red/Green",
+      "phase": "not_applicable",
+      "result": "not_run",
+      "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+      "evidence": "AGENTS.md disables TDD for CodexSkill"
+    }
+  ],
+  "ci": {
+    "required": false,
+    "workflow": null,
+    "run_id": null,
+    "head_sha": "unknown",
+    "conclusion": "not_applicable",
+    "artifacts": []
+  },
+  "implementation": {
+    "outcome": "completed",
+    "final_head": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+    "commits": [
+      {
+        "sha": "2c471faa9ae8c165f4ae5a0fc3fb4cc295cc3403",
+        "purpose": "PR78-NR-001"
+      },
+      {
+        "sha": "6e0135355a085d40ce47454f436e6d37a35c6c87",
+        "purpose": "PR78-NR-002"
+      },
+      {
+        "sha": "d55e955283fed3ae26a4ce47e98ccb4f51f041a6",
+        "purpose": "PR78-NR-003"
+      },
+      {
+        "sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "purpose": "PR78-NR-004"
+      }
+    ],
+    "addressed_findings": [
+      {
+        "id": "PR78-NR-001",
+        "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "disposition": "addressed",
+        "evidence": "2c471faa9ae8c165f4ae5a0fc3fb4cc295cc3403; embedded instruction focused check pass"
+      },
+      {
+        "id": "PR78-NR-002",
+        "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "disposition": "addressed",
+        "evidence": "6e0135355a085d40ce47454f436e6d37a35c6c87; commands=3 bad_count=0"
+      },
+      {
+        "id": "PR78-NR-003",
+        "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "disposition": "addressed",
+        "evidence": "d55e955283fed3ae26a4ce47e98ccb4f51f041a6; 8 ZIP roots; hierarchy mirrors equal"
+      },
+      {
+        "id": "PR78-NR-004",
+        "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "disposition": "addressed",
+        "evidence": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15; phase/task tracking focused check pass"
+      }
+    ],
+    "failure_diagnostics": [],
+    "blocked_items": [],
+    "summary": [
+      "All four required findings have implementation follow-up changes and focused evidence.",
+      "Resolved verdict is intentionally deferred to the same normal reviewer."
+    ]
+  },
+  "review": {
+    "mode": "initial_review",
+    "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "reviewer": {
+      "identity": "current ChatGPT review chat",
+      "role": "normal_reviewer",
+      "continuity": {
+        "previous_reviewer_identity": "current ChatGPT review chat",
+        "changed": false,
+        "reason": null
+      },
+      "independence": {
+        "implemented_change": false,
+        "implemented_review_fix": false,
+        "served_as_normal_reviewer": true,
+        "inherited_conversation": false,
+        "evidence": [
+          "Initial normal review report/handoff on PR #78"
+        ]
+      }
+    },
+    "verdict": "fail",
+    "required_coverage": [],
+    "independent_closure": {
+      "initial_independent_reviewed_head": null,
+      "closure_reviewed_heads": [],
+      "reviewer_continuity": null,
+      "closure_scope": [],
+      "completeness_matrix": []
+    },
+    "validation_assessment": [],
+    "reserved_report_paths": [],
+    "report_attestation": {
+      "allowed": "not_applicable",
+      "reviewed_implementation_head": null,
+      "allowed_paths": [],
+      "required_first_parent": null,
+      "maximum_commits_after_reviewed_head": null,
+      "forbidden_path_classes": [],
+      "no_later_commits_required": "not_applicable",
+      "validation_status": "not_applicable",
+      "validation_evidence": []
+    },
+    "summary": [
+      "Initial normal review verdict remains fail until same reviewer fix verification."
+    ]
+  },
+  "report": {
+    "report_type": "implementation_report",
+    "outcome": "created",
+    "persistence_mode": "repository_file",
+    "paths": [
+      "reports/issue-73-pr78-review-followup-20260915.md",
+      "reports/handoffs/issue-73-pr78-review-followup-20260915.json"
+    ],
+    "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+    "attestation_head": null,
+    "pr_comments": [],
+    "summary": [
+      "Review follow-up report prepared with commit_pending administrative state."
+    ]
+  },
+  "findings": [
+    {
+      "id": "PR78-NR-001",
+      "severity": "medium",
+      "origin": "coverage_miss",
+      "location": "design/chat-worker-skill-design.md:278",
+      "description": "Embedded RevMem Project Instruction retained old connector publication rule.",
+      "impact": "Could bypass #73 RDC commit/push boundary.",
+      "evidence": "Initial normal review report.",
+      "required_action": "Synchronize embedded instruction with RDC commit/push and connector responsibilities."
+    },
+    {
+      "id": "PR78-NR-002",
+      "severity": "medium",
+      "origin": "introduced_by_change",
+      "location": "reports/handoffs/issue-73-rdc-git-20260915.yaml:176,184,192",
+      "description": "commands[].execution_environment used string FA780 instead of object|null.",
+      "impact": "Violated lossless handoff execution-environment contract.",
+      "evidence": "Initial review bad_count=3.",
+      "required_action": "Preserve execution_environment object for each command and validate type."
+    },
+    {
+      "id": "PR78-NR-003",
+      "severity": "medium",
+      "origin": "introduced_by_change",
+      "location": "design/chat-execution-environment-design.md / design/skill-hierarchy-design.md",
+      "description": "Historical #69 9-skill state conflicted with current 8-skill package.",
+      "impact": "Current package contract was ambiguous.",
+      "evidence": "Initial review plus generated ZIP roots.",
+      "required_action": "Separate historical and current state and align design with actual package."
+    },
+    {
+      "id": "PR78-NR-004",
+      "severity": "low",
+      "origin": "introduced_by_change",
+      "location": "tasks/phases-status.md:5,131",
+      "description": "Phase 11 and Updated date were stale after publication/review.",
+      "impact": "Next worker could misread workflow state.",
+      "evidence": "Initial review tracking comparison.",
+      "required_action": "Synchronize phase/task tracking with current normal-review follow-up state."
+    }
+  ],
+  "held": [],
+  "unexplored": [],
+  "unknown": [
+    {
+      "field_or_fact": "same normal reviewer fix verification result",
+      "reason": "not yet performed"
+    },
+    {
+      "field_or_fact": "final exact-head CI after follow-up report persistence",
+      "reason": "administrative commit not created yet"
+    }
+  ],
+  "not_applicable": [
+    {
+      "field_or_area": "TDD Red/Green",
+      "reason": "CodexSkill repository policy disables TDD"
+    }
+  ],
+  "remaining_risks": [
+    "Finding closure has not yet been verified by the same normal reviewer."
+  ],
+  "extensions": [],
+  "next_action": {
+    "type": "review",
+    "target_skill": "chat-review-worker",
+    "mode": "fix verification",
+    "summary": "Run same-normal-reviewer fix verification for PR78-NR-001 through PR78-NR-004.",
+    "instructions": [
+      "Use the post-follow-up PR current HEAD.",
+      "Verify each required action and focused evidence; do not broaden into unrelated cleanup.",
+      "Preserve finding identity and source severity."
+    ],
+    "required_attachments_or_references": [
+      "reports/issue-73-pr78-normal-review-20260915.md",
+      "reports/handoffs/issue-73-pr78-normal-review-20260915.json",
+      "reports/issue-73-pr78-review-followup-20260915.md",
+      "reports/handoffs/issue-73-pr78-review-followup-20260915.json"
+    ],
+    "requested_authorized_actions": [
+      "read_repository",
+      "write_report",
+      "write_handoff",
+      "commit",
+      "push",
+      "update_pr",
+      "comment_pr"
+    ]
+  },
+  "transport": {
+    "method": "repository_file",
+    "packet_path": "reports/handoffs/issue-73-pr78-review-followup-20260915.json",
+    "packet_url": null,
+    "transport_note": "Same normal reviewer should re-resolve current HEAD and permissions before fix verification."
+  },
+  "source_payloads": [
+    {
+      "source_skill": "work-context-manager",
+      "output_contract_version": "current",
+      "content_type": "application/json",
+      "payload": {
+        "repository": "ssaattww/CodexSkill",
+        "issue_or_pr": "Issue #73 / PR #78",
+        "task_id": "T-007",
+        "mode": "implementation",
+        "branch": "issue-73-rdc-git",
+        "base_ref": "main",
+        "current_head": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+        "verification_capability": "local_execution_available",
+        "verification_capability_evidence": [
+          "RDC local executor available and validation passed"
+        ],
+        "execution_environment": {
+          "kind": "connected_computer",
+          "tool": "Remote Desktop Commander",
+          "machine_id": "FA780",
+          "connection": "available",
+          "os": "Windows",
+          "shell": "powershell.exe",
+          "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+          "repository": "ssaattww/CodexSkill",
+          "branch": "issue-73-rdc-git",
+          "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+          "source_state": "clean",
+          "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+          "ownership": "current_task",
+          "writable_paths": [
+            "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+            "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+          ],
+          "dependencies": [
+            {
+              "name": "git",
+              "status": "available",
+              "evidence": "RDC git commit/push succeeded"
+            },
+            {
+              "name": "python",
+              "status": "available",
+              "evidence": "repository validation succeeded"
+            },
+            {
+              "name": "node/yaml",
+              "status": "available",
+              "evidence": "focused handoff type check succeeded"
+            }
+          ],
+          "evidence": [
+            "RDC device FA780 pinned",
+            "Issue #73 dedicated worktree",
+            "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+          ]
+        },
+        "execution_state": {
+          "technical_head": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+          "administrative_parent": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+          "commit": "commit_pending",
+          "push": "pushed",
+          "ci_wait": "not_required",
+          "full_local_equivalence_gate": {
+            "state": "passed",
+            "candidate_head": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+            "invalidated_runs": []
+          }
+        },
+        "scope": [
+          "PR78-NR-001 through PR78-NR-004 follow-up only"
+        ],
+        "non_goals": [
+          "unrelated cleanup",
+          "merge",
+          "self review verdict"
+        ],
+        "authoritative_requirements": [
+          {
+            "source": "user_instruction",
+            "reference": "current chat",
+            "summary": "Address PR #78 review findings using RDC."
+          },
+          {
+            "source": "pr",
+            "reference": "reports/issue-73-pr78-normal-review-20260915.md",
+            "summary": "Preserve finding identity and required actions for PR78-NR-001 through PR78-NR-004."
+          },
+          {
+            "source": "repository_instruction",
+            "reference": "AGENTS.md",
+            "summary": "CodexSkill maintenance is non-TDD."
+          }
+        ],
+        "write_boundary": {
+          "allowed": [
+            {
+              "path_or_operation": "Issue #73 dedicated worktree",
+              "reason": "review follow-up scope"
+            },
+            {
+              "path_or_operation": "PR #78 metadata/comment",
+              "reason": "follow-up reporting"
+            }
+          ],
+          "forbidden": [
+            {
+              "path_or_operation": "unrelated worktrees",
+              "reason": "other task ownership"
+            },
+            {
+              "path_or_operation": "merge",
+              "reason": "user-owned action"
+            }
+          ]
+        },
+        "development_policy": {
+          "method": "validation-only",
+          "testing_order": "focused validation then full local validation before CI-triggering push",
+          "governing_source": "AGENTS.md"
+        },
+        "validation": {
+          "commands": [
+            "git diff --check",
+            "python scripts/run_validation.py",
+            "four finding-focused checks"
+          ],
+          "required_failure_diagnostics": [
+            "stdout",
+            "stderr",
+            "validation results",
+            "source identity"
+          ]
+        },
+        "ci": {
+          "matching_run": null,
+          "conclusion": "unknown"
+        },
+        "unknown": [
+          "same normal reviewer fix verification pending",
+          "post-persistence exact-head CI unknown"
+        ],
+        "blocked": [],
+        "remaining_risks": [
+          "Finding closure has not yet been verified by the same normal reviewer."
+        ]
+      }
+    },
+    {
+      "source_skill": "implementation-worker",
+      "output_contract_version": "current",
+      "content_type": "application/json",
+      "payload": {
+        "mode": "review follow-up",
+        "accepted_scope": [
+          "PR78-NR-001 through PR78-NR-004 follow-up only"
+        ],
+        "non_goals": [
+          "unrelated cleanup",
+          "independent review verdict",
+          "merge"
+        ],
+        "requirements_and_design_references": [
+          {
+            "source": "user_instruction",
+            "reference": "current chat",
+            "summary": "Address PR #78 review findings using RDC."
+          },
+          {
+            "source": "pr",
+            "reference": "reports/issue-73-pr78-normal-review-20260915.md",
+            "summary": "Preserve finding identity and required actions for PR78-NR-001 through PR78-NR-004."
+          },
+          {
+            "source": "repository_instruction",
+            "reference": "AGENTS.md",
+            "summary": "CodexSkill maintenance is non-TDD."
+          }
+        ],
+        "changed_files": [
+          {
+            "path": "design/chat-worker-skill-design.md",
+            "purpose": "PR78-NR-001 embedded instruction sync"
+          },
+          {
+            "path": "reports/handoffs/issue-73-rdc-git-20260915.yaml",
+            "purpose": "PR78-NR-002 execution environment object fix"
+          },
+          {
+            "path": "design/chat-execution-environment-design.md",
+            "purpose": "PR78-NR-003 historical/current package split"
+          },
+          {
+            "path": "design/skill-hierarchy-design.md",
+            "purpose": "PR78-NR-003 current 8-skill package contract"
+          },
+          {
+            "path": "skills/design/skill-hierarchy-design.md",
+            "purpose": "PR78-NR-003 hierarchy mirror"
+          },
+          {
+            "path": "tasks/phases-status.md",
+            "purpose": "PR78-NR-004 phase sync"
+          },
+          {
+            "path": "tasks/tasks-status.md",
+            "purpose": "PR78-NR-004 task sync"
+          }
+        ],
+        "intentionally_untouched": [
+          {
+            "path_or_area": "Issue #69 implementation files",
+            "reason": "outside #73 follow-up scope"
+          }
+        ],
+        "validation_commands_and_results": [
+          {
+            "command": "git diff --check 85c47515..ac1bff2",
+            "purpose": "follow-up whitespace validation",
+            "exit_code": 0,
+            "result": "passed",
+            "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+            "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2\\diff-check.stdout.log",
+            "execution_environment": {
+              "kind": "connected_computer",
+              "tool": "Remote Desktop Commander",
+              "machine_id": "FA780",
+              "connection": "available",
+              "os": "Windows",
+              "shell": "powershell.exe",
+              "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+              "repository": "ssaattww/CodexSkill",
+              "branch": "issue-73-rdc-git",
+              "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+              "source_state": "clean",
+              "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+              "ownership": "current_task",
+              "writable_paths": [
+                "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+                "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+              ],
+              "dependencies": [
+                {
+                  "name": "git",
+                  "status": "available",
+                  "evidence": "RDC git commit/push succeeded"
+                },
+                {
+                  "name": "python",
+                  "status": "available",
+                  "evidence": "repository validation succeeded"
+                },
+                {
+                  "name": "node/yaml",
+                  "status": "available",
+                  "evidence": "focused handoff type check succeeded"
+                }
+              ],
+              "evidence": [
+                "RDC device FA780 pinned",
+                "Issue #73 dedicated worktree",
+                "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+              ]
+            },
+            "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+          },
+          {
+            "command": "python scripts/run_validation.py",
+            "purpose": "repository/bundle/ZIP validation",
+            "exit_code": 0,
+            "result": "passed",
+            "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+            "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2\\validation",
+            "execution_environment": {
+              "kind": "connected_computer",
+              "tool": "Remote Desktop Commander",
+              "machine_id": "FA780",
+              "connection": "available",
+              "os": "Windows",
+              "shell": "powershell.exe",
+              "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+              "repository": "ssaattww/CodexSkill",
+              "branch": "issue-73-rdc-git",
+              "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+              "source_state": "clean",
+              "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+              "ownership": "current_task",
+              "writable_paths": [
+                "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+                "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+              ],
+              "dependencies": [
+                {
+                  "name": "git",
+                  "status": "available",
+                  "evidence": "RDC git commit/push succeeded"
+                },
+                {
+                  "name": "python",
+                  "status": "available",
+                  "evidence": "repository validation succeeded"
+                },
+                {
+                  "name": "node/yaml",
+                  "status": "available",
+                  "evidence": "focused handoff type check succeeded"
+                }
+              ],
+              "evidence": [
+                "RDC device FA780 pinned",
+                "Issue #73 dedicated worktree",
+                "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+              ]
+            },
+            "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+          },
+          {
+            "command": "four finding-focused checks",
+            "purpose": "verify required actions",
+            "exit_code": 0,
+            "result": "passed",
+            "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+            "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2\\focused.stdout.log",
+            "execution_environment": {
+              "kind": "connected_computer",
+              "tool": "Remote Desktop Commander",
+              "machine_id": "FA780",
+              "connection": "available",
+              "os": "Windows",
+              "shell": "powershell.exe",
+              "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+              "repository": "ssaattww/CodexSkill",
+              "branch": "issue-73-rdc-git",
+              "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+              "source_state": "clean",
+              "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+              "ownership": "current_task",
+              "writable_paths": [
+                "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+                "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+              ],
+              "dependencies": [
+                {
+                  "name": "git",
+                  "status": "available",
+                  "evidence": "RDC git commit/push succeeded"
+                },
+                {
+                  "name": "python",
+                  "status": "available",
+                  "evidence": "repository validation succeeded"
+                },
+                {
+                  "name": "node/yaml",
+                  "status": "available",
+                  "evidence": "focused handoff type check succeeded"
+                }
+              ],
+              "evidence": [
+                "RDC device FA780 pinned",
+                "Issue #73 dedicated worktree",
+                "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+              ]
+            },
+            "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+          }
+        ],
+        "failure_diagnostics_and_artifacts": [],
+        "verification_capability_and_validation_evidence": {
+          "capability": "local_execution_available",
+          "commands": [
+            {
+              "command": "git diff --check 85c47515..ac1bff2",
+              "purpose": "follow-up whitespace validation",
+              "exit_code": 0,
+              "result": "passed",
+              "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+              "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2\\diff-check.stdout.log",
+              "execution_environment": {
+                "kind": "connected_computer",
+                "tool": "Remote Desktop Commander",
+                "machine_id": "FA780",
+                "connection": "available",
+                "os": "Windows",
+                "shell": "powershell.exe",
+                "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+                "repository": "ssaattww/CodexSkill",
+                "branch": "issue-73-rdc-git",
+                "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+                "source_state": "clean",
+                "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+                "ownership": "current_task",
+                "writable_paths": [
+                  "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+                  "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+                ],
+                "dependencies": [
+                  {
+                    "name": "git",
+                    "status": "available",
+                    "evidence": "RDC git commit/push succeeded"
+                  },
+                  {
+                    "name": "python",
+                    "status": "available",
+                    "evidence": "repository validation succeeded"
+                  },
+                  {
+                    "name": "node/yaml",
+                    "status": "available",
+                    "evidence": "focused handoff type check succeeded"
+                  }
+                ],
+                "evidence": [
+                  "RDC device FA780 pinned",
+                  "Issue #73 dedicated worktree",
+                  "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+                ]
+              },
+              "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+            },
+            {
+              "command": "python scripts/run_validation.py",
+              "purpose": "repository/bundle/ZIP validation",
+              "exit_code": 0,
+              "result": "passed",
+              "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+              "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2\\validation",
+              "execution_environment": {
+                "kind": "connected_computer",
+                "tool": "Remote Desktop Commander",
+                "machine_id": "FA780",
+                "connection": "available",
+                "os": "Windows",
+                "shell": "powershell.exe",
+                "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+                "repository": "ssaattww/CodexSkill",
+                "branch": "issue-73-rdc-git",
+                "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+                "source_state": "clean",
+                "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+                "ownership": "current_task",
+                "writable_paths": [
+                  "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+                  "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+                ],
+                "dependencies": [
+                  {
+                    "name": "git",
+                    "status": "available",
+                    "evidence": "RDC git commit/push succeeded"
+                  },
+                  {
+                    "name": "python",
+                    "status": "available",
+                    "evidence": "repository validation succeeded"
+                  },
+                  {
+                    "name": "node/yaml",
+                    "status": "available",
+                    "evidence": "focused handoff type check succeeded"
+                  }
+                ],
+                "evidence": [
+                  "RDC device FA780 pinned",
+                  "Issue #73 dedicated worktree",
+                  "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+                ]
+              },
+              "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+            },
+            {
+              "command": "four finding-focused checks",
+              "purpose": "verify required actions",
+              "exit_code": 0,
+              "result": "passed",
+              "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+              "evidence": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2\\focused.stdout.log",
+              "execution_environment": {
+                "kind": "connected_computer",
+                "tool": "Remote Desktop Commander",
+                "machine_id": "FA780",
+                "connection": "available",
+                "os": "Windows",
+                "shell": "powershell.exe",
+                "working_directory": "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+                "repository": "ssaattww/CodexSkill",
+                "branch": "issue-73-rdc-git",
+                "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+                "source_state": "clean",
+                "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+                "ownership": "current_task",
+                "writable_paths": [
+                  "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-rdc-git",
+                  "C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts"
+                ],
+                "dependencies": [
+                  {
+                    "name": "git",
+                    "status": "available",
+                    "evidence": "RDC git commit/push succeeded"
+                  },
+                  {
+                    "name": "python",
+                    "status": "available",
+                    "evidence": "repository validation succeeded"
+                  },
+                  {
+                    "name": "node/yaml",
+                    "status": "available",
+                    "evidence": "focused handoff type check succeeded"
+                  }
+                ],
+                "evidence": [
+                  "RDC device FA780 pinned",
+                  "Issue #73 dedicated worktree",
+                  "fix candidate HEAD ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+                ]
+              },
+              "source_fingerprint": "git-head:ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+            }
+          ]
+        },
+        "review_target_commit_identity": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "push_state": {
+          "state": "pushed",
+          "head_sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15"
+        },
+        "matching_ci_evidence": null,
+        "final_technical_head": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "administrative_parent": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+        "commits": [
+          {
+            "sha": "2c471faa9ae8c165f4ae5a0fc3fb4cc295cc3403",
+            "purpose": "PR78-NR-001"
+          },
+          {
+            "sha": "6e0135355a085d40ce47454f436e6d37a35c6c87",
+            "purpose": "PR78-NR-002"
+          },
+          {
+            "sha": "d55e955283fed3ae26a4ce47e98ccb4f51f041a6",
+            "purpose": "PR78-NR-003"
+          },
+          {
+            "sha": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+            "purpose": "PR78-NR-004"
+          }
+        ],
+        "addressed_findings": [
+          {
+            "id": "PR78-NR-001",
+            "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+            "disposition": "addressed",
+            "evidence": "2c471faa9ae8c165f4ae5a0fc3fb4cc295cc3403; embedded instruction focused check pass"
+          },
+          {
+            "id": "PR78-NR-002",
+            "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+            "disposition": "addressed",
+            "evidence": "6e0135355a085d40ce47454f436e6d37a35c6c87; commands=3 bad_count=0"
+          },
+          {
+            "id": "PR78-NR-003",
+            "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+            "disposition": "addressed",
+            "evidence": "d55e955283fed3ae26a4ce47e98ccb4f51f041a6; 8 ZIP roots; hierarchy mirrors equal"
+          },
+          {
+            "id": "PR78-NR-004",
+            "reviewed_head": "85c47515cbe086824746534ffb6cf6398894a63a",
+            "disposition": "addressed",
+            "evidence": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15; phase/task tracking focused check pass"
+          }
+        ],
+        "blocked_items": [],
+        "unknowns": [
+          {
+            "field_or_fact": "same normal reviewer fix verification result",
+            "reason": "not yet performed"
+          },
+          {
+            "field_or_fact": "final exact-head CI after follow-up report persistence",
+            "reason": "administrative commit not created yet"
+          }
+        ],
+        "remaining_risks": [
+          "Finding closure has not yet been verified by the same normal reviewer."
+        ],
+        "next_required_action": {
+          "type": "review",
+          "target_skill": "chat-review-worker",
+          "mode": "fix verification",
+          "summary": "Run same-normal-reviewer fix verification for PR78-NR-001 through PR78-NR-004.",
+          "instructions": [
+            "Use the post-follow-up PR current HEAD.",
+            "Verify each required action and focused evidence; do not broaden into unrelated cleanup.",
+            "Preserve finding identity and source severity."
+          ],
+          "required_attachments_or_references": [
+            "reports/issue-73-pr78-normal-review-20260915.md",
+            "reports/handoffs/issue-73-pr78-normal-review-20260915.json",
+            "reports/issue-73-pr78-review-followup-20260915.md",
+            "reports/handoffs/issue-73-pr78-review-followup-20260915.json"
+          ],
+          "requested_authorized_actions": [
+            "read_repository",
+            "write_report",
+            "write_handoff",
+            "commit",
+            "push",
+            "update_pr",
+            "comment_pr"
+          ]
+        }
+      }
+    },
+    {
+      "source_skill": "report-writer",
+      "output_contract_version": "current",
+      "content_type": "application/json",
+      "payload": {
+        "report_type": "implementation_report",
+        "complete_body": "# PR #78 通常レビュー指摘対応報告\n\n## メタデータ\n\n- Repository: `ssaattww/CodexSkill`\n- Issue: `#73 git操作のrdc化`\n- PR: `#78`\n- Mode: `review follow-up`\n- Initial reviewed HEAD: `85c47515cbe086824746534ffb6cf6398894a63a`\n- Initial review artifact HEAD: `ae63a10abd1797d7fc81f234ad7b2bfb947054dd`\n- Fix candidate technical HEAD: `ac1bff201f8d6f0e8974f3ab5a42b177109a5a15`\n- Execution environment: RDC / `FA780` / Issue #73 dedicated worktree\n- Development policy: CodexSkill maintenance, TDD `not applicable`\n- Review verdict: この実装chatでは発行しない\n- Merge: 実施しない\n\n## 対象\n\n通常レビューでrequired finding 4件が報告された。finding identity、severity、reviewed HEADを維持し、各required actionの直接原因と同一欠陥クラスだけを修正した。\n\n参照:\n- `reports/issue-73-pr78-normal-review-20260915.md`\n- `reports/handoffs/issue-73-pr78-normal-review-20260915.json`\n\n## Finding対応\n\n### PR78-NR-001 / medium / required\n\n- Required action: 埋め込みRevMem向けProject Instruction例を#73の操作境界へ同期する。\n- Fix: `design/chat-worker-skill-design.md` の旧connector publication指示を、GitHub connector=remote evidence/Issue/PR/comment/current-HEAD CI、RDC=PC上の認可済みgit commit/pushへ変更した。\n- Commit: `2c471faa9ae8c165f4ae5a0fc3fb4cc295cc3403`\n- Focused evidence: 旧文言が消え、`認可されたgit commit／pushは接続PC上でRDC経由` が存在することを確認。\n\n### PR78-NR-002 / medium / required\n\n- Required action: `commands[].execution_environment`をschemaどおり`object | null`にする。\n- Fix: `reports/handoffs/issue-73-rdc-git-20260915.yaml` の3 commandをtop-level execution environment objectのYAML alias `*a2`へ変更した。\n- Commit: `6e0135355a085d40ce47454f436e6d37a35c6c87`\n- Focused evidence: YAML parse後 `commands=3`, `bad_count=0`。各objectの`machine_id=FA780`、`repository=ssaattww/CodexSkill`を確認。\n\n### PR78-NR-003 / medium / required\n\n- Required action: #70当時の履歴とcurrent package契約を分離し、実際の配布構成へ同期する。\n- Fix: #69統合時の9スキルは履歴、#68後のcurrent main/#73では`document-wording-review`が存在せず、#73では#69を復元しないためcurrent packageは4 wrapper + 4 coreの8スキル、と設計を統一した。\n- Commit: `d55e955283fed3ae26a4ce47e98ccb4f51f041a6`\n- Focused evidence: hierarchy 2ファイルbyte-identical。builderで生成したZIP rootは8件で、`document-wording-review`は含まれない。\n- 同一欠陥クラスとして、execution designの古い「#69未マージ」表現と診断workflowの歴史記述も現在事実と履歴を分離した。\n\n### PR78-NR-004 / low / required\n\n- Required action: Phase 11とUpdated日付を現在状態へ同期する。\n- Fix: `tasks/phases-status.md`を`Updated: 2026-09-15`、Phase 11をnormal review findings follow-up / same reviewer fix verification pendingへ更新した。T-007もinitial review failと4 finding follow-upへ同期した。\n- Commit: `ac1bff201f8d6f0e8974f3ab5a42b177109a5a15`\n- Focused evidence: phases/tasks双方でinitial review fail、`PR78-NR-001`〜`004`、same reviewer fix verification待ちを確認。\n\n## ローカル検証\n\nFix candidate `ac1bff201f8d6f0e8974f3ab5a42b177109a5a15` のclean worktreeで実施した。\n\n- `git diff --check 85c47515...ac1bff2`: success\n- `python scripts/run_validation.py`: success\n  - repository: pass\n  - bundle: pass\n  - ZIP integrity: pass\n  - ZIP contents: pass\n- PR78-NR-001 focused check: pass\n- PR78-NR-002 schema type check: pass (`commands=3`, `bad_count=0`)\n- PR78-NR-003 package check: pass（8 root、hierarchy byte一致）\n- PR78-NR-004 tracking check: pass\n- 診断保存先: `C:\\Users\\donabe\\Project\\CodexSkill-issue-73-review-fix-artifacts\\full-validation-ac1bff2`\n- validationのstdout/stderr、focused check出力、commit/file一覧を保存した。\n- report/handoff/trackingを含む永続化候補でも `git diff --cached --check`、repository / bundle / ZIP、handoff JSON検証を実施し、全項目passを確認した。\n- 永続化候補の診断はIssue #73 review-fix専用artifact directoryへ保存し、最終保存先はPR commentへ記録する。\n\n## CIと公開状態\n\n4 fix commitはすべてRDC経由でcommit/push済み。local routeのnormal review/fix loopではCI完了をfix条件にしない。\n\n本report/handoff/tracking同期をcommit/pushした後、PR current HEADと一致するworkflow runだけを確認し、結果はPR metadata/commentへ記録する。別SHAのrunは代用しない。\n\n## 残リスクと次操作\n\n- 4 findingのresolved判定は実装者では行わない。\n- 同じnormal reviewerによる`fix_verification`が必要。\n- normal review cycle収束後にのみ独立最終レビューへ進む。\n- mergeは利用者が行う。\n\n## Persistence\n\n- Report path: `reports/issue-73-pr78-review-followup-20260915.md`\n- Handoff path: `reports/handoffs/issue-73-pr78-review-followup-20260915.json`\n- Report生成時のcommit state: `commit_pending`\n- Technical HEAD: `ac1bff201f8d6f0e8974f3ab5a42b177109a5a15`\n- Administrative parent: `ac1bff201f8d6f0e8974f3ab5a42b177109a5a15`\n",
+        "evidence_sources": [
+          "PR #78 initial normal review report/handoff",
+          "RDC full validation on fix candidate",
+          "focused evidence for PR78-NR-001 through PR78-NR-004"
+        ],
+        "target_identity": {
+          "branch": "issue-73-rdc-git",
+          "base_ref": "main",
+          "current_head": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+          "reviewed_implementation_head": "85c47515cbe086824746534ffb6cf6398894a63a"
+        },
+        "verification": {
+          "capability": "local_execution_available",
+          "technical_head": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+          "administrative_parent": "ac1bff201f8d6f0e8974f3ab5a42b177109a5a15",
+          "commit_state": "commit_pending",
+          "push_state": "pushed",
+          "ci_wait_state": "not_required"
+        },
+        "independent_closure": {
+          "initial_independent_reviewed_head": null,
+          "closure_reviewed_heads": [],
+          "reviewer_continuity": null,
+          "closure_scope": [],
+          "completeness_matrix": []
+        },
+        "severity_records": [
+          {
+            "finding_id": "PR78-NR-001",
+            "source_severity": "medium",
+            "new_severity": null,
+            "reason": null,
+            "approved_by": null,
+            "record_type": "preserved"
+          },
+          {
+            "finding_id": "PR78-NR-002",
+            "source_severity": "medium",
+            "new_severity": null,
+            "reason": null,
+            "approved_by": null,
+            "record_type": "preserved"
+          },
+          {
+            "finding_id": "PR78-NR-003",
+            "source_severity": "medium",
+            "new_severity": null,
+            "reason": null,
+            "approved_by": null,
+            "record_type": "preserved"
+          },
+          {
+            "finding_id": "PR78-NR-004",
+            "source_severity": "low",
+            "new_severity": null,
+            "reason": null,
+            "approved_by": null,
+            "record_type": "preserved"
+          }
+        ],
+        "persistence": {
+          "mode": "repository_file",
+          "reserved_paths": [
+            "reports/issue-73-pr78-review-followup-20260915.md",
+            "reports/handoffs/issue-73-pr78-review-followup-20260915.json"
+          ],
+          "report_attestation_head": null
+        },
+        "concise_pr_comment_body": "PR #78 review follow-up: PR78-NR-001 through 004 have implementation fixes and focused/full local validation. Same normal reviewer fix verification remains pending.",
+        "unresolved_discrepancies": []
+      }
+    }
+  ]
+}
