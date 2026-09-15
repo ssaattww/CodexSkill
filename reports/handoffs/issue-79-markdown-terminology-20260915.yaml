@@ -1,0 +1,202 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: initial implementation
+  generated_at: 2026-09-15T21:18:00+09:00
+repository: ssaattww/CodexSkill
+issue_or_pr: "Issue #79 / PR pending"
+task_id: null
+branch: issue-79-md-terms-v2
+base_ref: main
+target:
+  current_head: 1daa622d8fb325a1d715686144b2f68731c65a0a
+  reviewed_head: null
+  commit_range: 70cd31fbfdaed3f1b54151a8717e01ad86e329fd..1daa622d8fb325a1d715686144b2f68731c65a0a
+execution_environment:
+  kind: connected_computer
+  tool: Remote Desktop Commander
+  machine_id: FA780
+  connection: available
+  os: Windows
+  shell: powershell.exe
+  working_directory: C:\Users\donabe\Project\CodexSkill-issue-79-md-terms-v2
+  repository: ssaattww/CodexSkill
+  branch: issue-79-md-terms-v2
+  head_sha: 1daa622d8fb325a1d715686144b2f68731c65a0a
+  source_state: clean_before_report_handoff
+  source_fingerprint: git-head:1daa622d8fb325a1d715686144b2f68731c65a0a
+  ownership: current_task
+  writable_paths:
+    - C:\Users\donabe\Project\CodexSkill-issue-79-md-terms-v2
+    - C:\Users\donabe\Project\issue79-scratch
+  dependencies:
+    - name: git
+      status: available
+      evidence: RDCでfetch、worktree作成、commitを実行済み
+    - name: node
+      status: available
+      evidence: Node v24.20.0
+    - name: npm
+      status: available
+      evidence: cmd.exe経由のnpm ciがexit 0
+    - name: python
+      status: available
+      evidence: scripts/run_validation.pyがexit 0
+verification:
+  capability: local_execution_available
+  technical_head: 1daa622d8fb325a1d715686144b2f68731c65a0a
+  administrative_parent: 1daa622d8fb325a1d715686144b2f68731c65a0a
+  commit:
+    state: commit_pending
+    review_target_sha: 1daa622d8fb325a1d715686144b2f68731c65a0a
+  push:
+    state: push_pending
+    head_sha: null
+  ci_wait:
+    state: ci_wait_pending
+    required_for: merge_gate
+  final_publication:
+    sequence: final_push_then_authorized_pr_create_then_exact_head_pull_request_ci_wait
+    pr_action: create
+authoritative_requirements:
+  - source: user_instruction
+    reference: current chat
+    summary: Issue #79へ対応する
+  - source: issue
+    reference: https://github.com/ssaattww/CodexSkill/issues/79
+    summary: CodexSkill自身へrepo-local Markdown用語検査を導入する
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: CodexSkill保守ではTDDを適用しない
+  - source: project_instruction
+    reference: current project instructions
+    summary: RDCでgit操作し、PR/コメントはGitHub connector、exact-head CIのみ採用する
+scope:
+  - repo-local full/focused Markdown用語検査
+  - 未登録英字・カタカナ語の列挙
+  - ローカルとCIの診断保存
+  - 初期whitelist利用者レビュー境界
+non_goals:
+  - 具体的whitelist entriesの無断追加
+  - prh ruleの無断追加
+  - target exclusionの無断追加
+  - document-wording-reviewの代替
+  - merge
+development_policy:
+  method: validation-only
+  tdd: not_applicable
+  governing_source: AGENTS.md
+files:
+  changed:
+    - path: .github/workflows/release-chatgpt-worker-skills.yml
+      purpose: terminology依存導入、診断保存、path trigger
+    - path: .gitignore
+      purpose: node_modulesとvalidation-artifacts除外
+    - path: package.json
+      purpose: full/focused用語検査scriptsとyaml依存
+    - path: package-lock.json
+      purpose: npm依存固定
+    - path: tools/lint/
+      purpose: repo-local対象、許可一覧、実行入口、説明
+    - path: scripts/run_validation.py
+      purpose: full未登録語検査と診断結果統合
+    - path: design/markdown-word-check-skill-design.md
+      purpose: CodexSkill自身への導入設計
+    - path: skills/markdown-word-checker/SKILL.md
+      purpose: repo-local導入時の契約明確化
+  intentionally_untouched:
+    - path_or_area: concrete whitelist term/aliases/description entries
+      reason: 利用者レビューが必要
+    - path_or_area: tools/lint/prh.yml
+      reason: 具体的ruleの利用者レビューが必要
+    - path_or_area: markdown target exclusions
+      reason: 除外拡大は利用者レビューが必要
+    - path_or_area: tasks/tasks-status.md
+      reason: Issue #79の既存task entryがないため新規task IDを作らない
+commands:
+  - command: npm ci
+    execution_location: FA780 via cmd.exe
+    result: pass
+  - command: npm run lint:md:changed:unknown
+    execution_location: FA780 via cmd.exe
+    result: pass without changed Markdown; exit 1 with unknown terms when README was changed
+  - command: python scripts/run_validation.py --output-dir validation-artifacts/issue79-runner-precommit
+    execution_location: FA780 via RDC
+    result: aggregate pass
+validation_assessment:
+  - item: repository validation
+    result: supported
+    evidence: exit 0
+  - item: full Markdown terminology discovery
+    result: supported
+    evidence: 3446 unregistered terms, classified needs_user_review
+  - item: focused Markdown terminology discovery
+    result: supported
+    evidence: changed README produced unknown-term list
+  - item: bundle validation
+    result: supported
+    evidence: bundle, ZIP integrity, ZIP contents all pass
+held_items:
+  - id: I79-WHITELIST-REVIEW
+    reason: 3446 extracted terms are candidates, not approved allowlist entries
+  - id: I79-PRH-REVIEW
+    reason: no concrete spelling-correction rule approved
+  - id: I79-TARGET-REVIEW
+    reason: no target exclusion approved
+review:
+  mode: not_performed_by_implementation_chat
+  reviewed_head: null
+  reviewer: null
+  findings: []
+  reserved_report_paths: []
+  report_attestation:
+    allowed: not_applicable
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence: []
+report:
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/issue-79-markdown-terminology-implementation-20260915.md
+    - reports/handoffs/issue-79-markdown-terminology-20260915.yaml
+  reviewed_head: null
+  attestation_head: null
+  pr_comments: []
+remaining_risks:
+  - initial whitelist remains empty until explicit user review
+  - exact-head pull_request CI is pending until final push and PR creation
+  - semantic/readability review is separate from mechanical terminology checks
+next_action:
+  owner: current chat
+  required:
+    - commit report and handoff
+    - rerun final local validation on committed publication candidate
+    - push with RDC
+    - create PR with GitHub connector
+    - verify only pull_request CI whose head_sha equals PR current HEAD
+    - post concise PR comment
+  requested_authorized_actions:
+    - commit
+    - push
+    - create_pr
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/issue-79-markdown-terminology-20260915.yaml
+  packet_url: null
+  transport_note: publication後のfinal HEADとexact-head CIはPR commentへ記録する
+source_payloads:
+  - source_skill: implementation-worker
+    summary: repo-local terminology wiring implemented and locally validated
+    unresolved:
+      - exact allowlist/prh/exclusion content requires user review
+extensions:
+  original_worktree_preserved: true
+  original_worktree_patch_sha256: 639E37C63C41781694A3C4126CEF528F0FCA2F9BC5307CED56FBBC46A9617D9E
+  merge_performed: false
