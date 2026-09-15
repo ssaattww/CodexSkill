@@ -6,10 +6,10 @@
 - Issue: `#79 CodexSkill自身へMarkdown用語検査を導入する`
 - Branch: `issue-79-md-terms-v2`
 - Base: `main` / `70cd31fbfdaed3f1b54151a8717e01ad86e329fd`
-- Technical implementation HEAD: `1daa622d8fb325a1d715686144b2f68731c65a0a`
+- Technical implementation HEAD: `2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22`
 - Verification capability: `local_execution_available`
 - Development policy: CodexSkill保守のためTDDは`not applicable`
-- PR: report生成時点では未作成
+- PR: `#83`
 - Merge: 実施しない
 
 ## 目的と範囲
@@ -85,7 +85,15 @@ focused経路は、Markdown変更がない状態では`npm run lint:md:changed:u
 
 ## CI / publication state
 
-report生成時点ではbranchは未push、PRは未作成であり、current HEAD一致CIは未実施である。report/handoff保存後の最終commitをRDC経由でpushし、GitHub connectorでPRを作成した後、そのPR current HEADとrunのhead SHAが一致する`pull_request` workflow runだけを最終CI証拠として扱う。
+Initial publication candidate `0f1ef90de28bec1717560424c5b29d5bf7d898ba` was pushed through RDC and PR #83 was created through the GitHub connector. The PR current HEAD was confirmed to match that SHA.
+
+The exact-head `PR commit artifacts` run `34971010463` failed. Diagnostic artifact `pr-83-0f1ef90de28bec1717560424c5b29d5bf7d898ba-34971010463-1` (artifact id `10397407128`, digest `sha256:1c14650444f05c23d1dbbb2fa0acc1deffc0f161aa65833f9da0f702c07d1c2b`) was downloaded and inspected.
+
+Inside the artifact, repository, bundle, ZIP integrity, and ZIP contents passed. `markdown-terminology` exited 1 and stderr reported `Error: Cannot find module 'yaml'`. The direct cause was that `.github/workflows/pr-commit-artifacts.yml` invoked `run_validation.py` without installing the new npm dependency first.
+
+Fix commit `2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22` adds `npm ci --ignore-scripts` to that workflow and retains dependency-install stdout, stderr, and outcome in the success/failure diagnostic artifact. Local reproduction after the fix passed dependency installation and aggregate validation while preserving 3451 unregistered terms as `needs_user_review`.
+
+Because this report/handoff update will create another PR HEAD, final CI must use only new `pull_request` runs whose head SHA equals the new PR current HEAD. Runs for `0f1ef90` remain failure-investigation evidence and are not final CI evidence.
 
 ## 変更対象と非対象
 
@@ -99,20 +107,20 @@ report生成時点ではbranchは未push、PRは未作成であり、current HEA
 
 CI上でnpm依存導入と用語検査が実際に動作することは、PR作成後のcurrent HEAD一致runで確認する必要がある。別SHAのworkflow runは代用しない。
 
-## 次の操作
+## Next action
 
-1. 本reportとhandoffをcommitする。
-2. 最終commit HEADでローカル同等検証を再実行する。
-3. RDC経由でbranchをpushする。
-4. GitHub connectorでPRを作成する。
-5. PR current HEADと一致する`pull_request` workflow runだけを確認する。
-6. 変更内容、ローカル検証、exact-head CI、held項目を簡易PRコメントへ記録する。
-7. mergeは利用者が行う。
+1. Updated report and handoff are committed on top of technical HEAD `2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22`.
+2. Re-run final local validation on that committed publication candidate.
+3. Push the updated branch through RDC.
+4. Confirm PR #83 current HEAD through the GitHub connector.
+5. Accept only `pull_request` workflow runs whose head SHA equals that current HEAD.
+6. Post the concise implementation/verification summary as a PR comment.
+7. Merge remains a user action.
 
 ## Persistence
 
 - Report path: `reports/issue-79-markdown-terminology-implementation-20260915.md`
 - Handoff path: `reports/handoffs/issue-79-markdown-terminology-20260915.yaml`
 - Report生成時のrepository commit state: `commit_pending`
-- Technical HEAD: `1daa622d8fb325a1d715686144b2f68731c65a0a`
-- Administrative parent: `1daa622d8fb325a1d715686144b2f68731c65a0a`
+- Technical HEAD: `2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22`
+- Administrative parent: `2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22`

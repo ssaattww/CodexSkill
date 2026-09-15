@@ -4,14 +4,14 @@ producer:
   mode: initial implementation
   generated_at: 2026-09-15T21:18:00+09:00
 repository: ssaattww/CodexSkill
-issue_or_pr: "Issue #79 / PR pending"
+issue_or_pr: "Issue #79 / PR #83"
 task_id: null
 branch: issue-79-md-terms-v2
 base_ref: main
 target:
-  current_head: 1daa622d8fb325a1d715686144b2f68731c65a0a
+  current_head: 2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22
   reviewed_head: null
-  commit_range: 70cd31fbfdaed3f1b54151a8717e01ad86e329fd..1daa622d8fb325a1d715686144b2f68731c65a0a
+  commit_range: 70cd31fbfdaed3f1b54151a8717e01ad86e329fd..2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22
 execution_environment:
   kind: connected_computer
   tool: Remote Desktop Commander
@@ -22,9 +22,9 @@ execution_environment:
   working_directory: C:\Users\donabe\Project\CodexSkill-issue-79-md-terms-v2
   repository: ssaattww/CodexSkill
   branch: issue-79-md-terms-v2
-  head_sha: 1daa622d8fb325a1d715686144b2f68731c65a0a
+  head_sha: 2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22
   source_state: clean_before_report_handoff
-  source_fingerprint: git-head:1daa622d8fb325a1d715686144b2f68731c65a0a
+  source_fingerprint: git-head:2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22
   ownership: current_task
   writable_paths:
     - C:\Users\donabe\Project\CodexSkill-issue-79-md-terms-v2
@@ -44,11 +44,11 @@ execution_environment:
       evidence: scripts/run_validation.pyがexit 0
 verification:
   capability: local_execution_available
-  technical_head: 1daa622d8fb325a1d715686144b2f68731c65a0a
-  administrative_parent: 1daa622d8fb325a1d715686144b2f68731c65a0a
+  technical_head: 2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22
+  administrative_parent: 2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22
   commit:
     state: commit_pending
-    review_target_sha: 1daa622d8fb325a1d715686144b2f68731c65a0a
+    review_target_sha: 2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22
   push:
     state: push_pending
     head_sha: null
@@ -56,8 +56,8 @@ verification:
     state: ci_wait_pending
     required_for: merge_gate
   final_publication:
-    sequence: final_push_then_authorized_pr_create_then_exact_head_pull_request_ci_wait
-    pr_action: create
+    sequence: final_push_then_authorized_pr_update_then_exact_head_pull_request_ci_wait
+    pr_action: update
 authoritative_requirements:
   - source: user_instruction
     reference: current chat
@@ -168,9 +168,18 @@ report:
   reviewed_head: null
   attestation_head: null
   pr_comments: []
+ci_history:
+  - head_sha: 0f1ef90de28bec1717560424c5b29d5bf7d898ba
+    workflow: PR commit artifacts
+    run_id: 34971010463
+    conclusion: failure
+    artifact_id: 10397407128
+    artifact_digest: sha256:1c14650444f05c23d1dbbb2fa0acc1deffc0f161aa65833f9da0f702c07d1c2b
+    cause: run_validation invoked before npm dependency installation; yaml module missing
+    disposition: fixed by 2f8f736ec06d9fd24a9df8e30bca1b6f2519bf22 and locally revalidated
 remaining_risks:
   - initial whitelist remains empty until explicit user review
-  - exact-head pull_request CI is pending until final push and PR creation
+  - exact-head pull_request CI is pending until the updated report/handoff commit is pushed to PR #83
   - semantic/readability review is separate from mechanical terminology checks
 next_action:
   owner: current chat
@@ -178,7 +187,7 @@ next_action:
     - commit report and handoff
     - rerun final local validation on committed publication candidate
     - push with RDC
-    - create PR with GitHub connector
+    - confirm and update PR #83 with GitHub connector
     - verify only pull_request CI whose head_sha equals PR current HEAD
     - post concise PR comment
   requested_authorized_actions:
