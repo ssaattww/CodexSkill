@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-007: Issue #73のGit commit／pushをRDC経由へ変更する
-  - Status: 着手。#70で導入したPC接続経路のcurrent main上の欠落を確認し、必要契約の復元とGit操作経路の変更を実施中
+  - Status: #70復元と#73実装、ローカル検証、詳細report／handoff作成まで完了。最終report commit／RDC push／exact-head CI確認待ち
   - Phase: Phase 11
   - Estimate: M
   - Depends on: Issue #70のRemote Desktop Commander作業経路
