@@ -7,8 +7,9 @@
 ## In Progress
 
 - T-007: Issue #73のGit commit／pushをRDC経由へ変更する
-  - Status: #70復元と#73実装、ローカル検証、詳細report／handoff作成まで完了。最終report commit／RDC push／exact-head CI確認待ち
+  - Status: #70復元、#73実装、ローカル検証、詳細report／handoff、RDC経由commit／pushまで完了。current HEADのCI結果はPR metadata/commentへ記録し、normal review待ち
   - Phase: Phase 11
+  - PR: #78
   - Estimate: M
   - Depends on: Issue #70のRemote Desktop Commander作業経路
   - Scope: ChatGPTのPC接続経路で行うローカルGit commit／pushと、その前提となる実行場所契約
