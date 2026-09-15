@@ -1,0 +1,174 @@
+{
+  "reviewed_head": "2340ae227091d0e596e0b68d6596489eb6e4adc0",
+  "initial_reviewed_head": "279b8da9ffe954f78fd8461555be429f1bdcc100",
+  "base_head": "106ea5dcf12c4805756351fb9381df220b94f044",
+  "created_at": "2026-09-15T20:55:20.053103+00:00",
+  "source_delta": "A\treports/handoffs/markdown-complete-scan-review-20260916.yaml\nA\treports/markdown-complete-scan-review-20260916.md\nA\treports/markdown-complete-scan-review-evidence-20260916.json",
+  "technical_source_delta": "empty",
+  "records": [
+    {
+      "name": "base",
+      "head_sha": "106ea5dcf12c4805756351fb9381df220b94f044",
+      "script_sha256": "5b32e993185a50a4efd9837446442648ba4534ad01e0e80916345ea224216282",
+      "command": [
+        "/home/ibis/.cache/uv/builds-v0/.tmpzm5sUF/bin/python",
+        "/tmp/codexskill-pr81-normalization-it7s1txb/base.py",
+        "--stdin",
+        "normalization.md"
+      ],
+      "input_expression": "'㍿' * 6000 + '\\nジッタ'",
+      "input_bytes": 18010,
+      "nfkc_bytes": 72010,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/tmp/codexskill-pr81-normalization-it7s1txb/base.py\", line 500, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/tmp/codexskill-pr81-normalization-it7s1txb/base.py\", line 81, in main\n    check_japanese_tokens(relative_path, cleaned, tokenizer_obj, split_mode, whitelist, violations, unknown_words)\n    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/codexskill-pr81-normalization-it7s1txb/base.py\", line 427, in check_japanese_tokens\n    for morpheme in tokenizer_obj.tokenize(text, split_mode):\n                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\nsudachipy.errors.SudachiError: \"Error during tokenization\": Input is too long, it can't be more than 65535 bytes, was 65539\n"
+    },
+    {
+      "name": "original",
+      "head_sha": "279b8da9ffe954f78fd8461555be429f1bdcc100",
+      "script_sha256": "b062107996ebb170c7861deff1cc312acc722d38cbdc52a5857008f2a93b1a7f",
+      "command": [
+        "/home/ibis/.cache/uv/builds-v0/.tmpzm5sUF/bin/python",
+        "/tmp/codexskill-pr81-normalization-it7s1txb/original.py",
+        "--stdin",
+        "normalization.md"
+      ],
+      "input_expression": "'㍿' * 6000 + '\\nジッタ'",
+      "input_bytes": 18010,
+      "nfkc_bytes": 72010,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/tmp/codexskill-pr81-normalization-it7s1txb/original.py\", line 580, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/tmp/codexskill-pr81-normalization-it7s1txb/original.py\", line 81, in main\n    check_japanese_tokens(relative_path, cleaned, tokenizer_obj, split_mode, whitelist, violations, unknown_words)\n    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/codexskill-pr81-normalization-it7s1txb/original.py\", line 425, in check_japanese_tokens\n    for morpheme in tokenizer_obj.tokenize(chunk, split_mode):\n                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nsudachipy.errors.SudachiError: \"Error during tokenization\": Input is too long, it can't be more than 65535 bytes, was 65539\n"
+    },
+    {
+      "name": "current",
+      "head_sha": "2340ae227091d0e596e0b68d6596489eb6e4adc0",
+      "script_sha256": "b062107996ebb170c7861deff1cc312acc722d38cbdc52a5857008f2a93b1a7f",
+      "command": [
+        "/home/ibis/.cache/uv/builds-v0/.tmpzm5sUF/bin/python",
+        "/tmp/codexskill-pr81-normalization-it7s1txb/current.py",
+        "--stdin",
+        "normalization.md"
+      ],
+      "input_expression": "'㍿' * 6000 + '\\nジッタ'",
+      "input_bytes": 18010,
+      "nfkc_bytes": 72010,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/tmp/codexskill-pr81-normalization-it7s1txb/current.py\", line 580, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/tmp/codexskill-pr81-normalization-it7s1txb/current.py\", line 81, in main\n    check_japanese_tokens(relative_path, cleaned, tokenizer_obj, split_mode, whitelist, violations, unknown_words)\n    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/codexskill-pr81-normalization-it7s1txb/current.py\", line 425, in check_japanese_tokens\n    for morpheme in tokenizer_obj.tokenize(chunk, split_mode):\n                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nsudachipy.errors.SudachiError: \"Error during tokenization\": Input is too long, it can't be more than 65535 bytes, was 65539\n"
+    },
+    {
+      "name": "expanded-control",
+      "head_sha": "2340ae227091d0e596e0b68d6596489eb6e4adc0",
+      "script_sha256": "b062107996ebb170c7861deff1cc312acc722d38cbdc52a5857008f2a93b1a7f",
+      "command": [
+        "/home/ibis/.cache/uv/builds-v0/.tmpzm5sUF/bin/python",
+        "/tmp/codexskill-pr81-normalization-it7s1txb/expanded-control.py",
+        "--stdin",
+        "normalization.md"
+      ],
+      "input_expression": "'株式会社' * 6000 + '\\nジッタ'",
+      "input_bytes": 72010,
+      "nfkc_bytes": 72010,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Markdown whitelist violations:\n- normalization.md:2: 'ジッタ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+    }
+  ],
+  "validation": {
+    "schema_version": 1,
+    "started_at": "2026-09-15T20:55:20.082399+00:00",
+    "status": "pass",
+    "steps": [
+      {
+        "name": "repository",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpzm5sUF/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-normalization-review-20260916/scripts/verify_skill_repository.py"
+        ],
+        "started_at": "2026-09-15T20:55:20.094682+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "repository.stdout.log",
+        "stderr": "repository.stderr.log",
+        "duration_seconds": 0.064019,
+        "finished_at": "2026-09-15T20:55:20.158721+00:00"
+      },
+      {
+        "name": "bundle",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpzm5sUF/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-normalization-review-20260916/scripts/build_chatgpt_worker_skills.py",
+          "--repo-root",
+          "/home/ibis/AI/CodexSkill-pr81-normalization-review-20260916",
+          "--output",
+          "/tmp/codexskill-pr81-normalization-it7s1txb/validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-15T20:55:20.159144+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "bundle.stdout.log",
+        "stderr": "bundle.stderr.log",
+        "duration_seconds": 0.032184,
+        "finished_at": "2026-09-15T20:55:20.191340+00:00"
+      },
+      {
+        "name": "zip-integrity",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpzm5sUF/bin/python",
+          "-c",
+          "import sys, zipfile; archive = zipfile.ZipFile(sys.argv[1]); bad = archive.testzip(); archive.close(); print('Invalid CRC: ' + bad if bad else 'ZIP integrity verified'); sys.exit(1 if bad else 0)",
+          "/tmp/codexskill-pr81-normalization-it7s1txb/validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-15T20:55:20.191717+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-integrity.stdout.log",
+        "stderr": "zip-integrity.stderr.log",
+        "duration_seconds": 0.031979,
+        "finished_at": "2026-09-15T20:55:20.223712+00:00"
+      },
+      {
+        "name": "zip-contents",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpzm5sUF/bin/python",
+          "-m",
+          "zipfile",
+          "-l",
+          "/tmp/codexskill-pr81-normalization-it7s1txb/validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-15T20:55:20.223974+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-contents.stdout.log",
+        "stderr": "zip-contents.stderr.log",
+        "duration_seconds": 0.031758,
+        "finished_at": "2026-09-15T20:55:20.255743+00:00"
+      }
+    ],
+    "python": "3.13.7",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "ci": {
+      "GITHUB_RUN_ID": null,
+      "GITHUB_RUN_ATTEMPT": null,
+      "GITHUB_EVENT_NAME": null,
+      "TARGET_REF": null
+    },
+    "finished_at": "2026-09-15T20:55:20.255960+00:00"
+  },
+  "validation_stdout": "repository: pass (exit=0)\nbundle: pass (exit=0)\nzip-integrity: pass (exit=0)\nzip-contents: pass (exit=0)\nDiagnostics: /tmp/codexskill-pr81-normalization-it7s1txb/validation\n",
+  "validation_stderr": "",
+  "dependencies": {
+    "sudachipy": "0.6.11",
+    "sudachidict_core": "20260428",
+    "PyYAML": "6.0.3"
+  },
+  "reproduction_script": "import copy, hashlib, importlib.metadata, json, os, pathlib, platform, subprocess, sys, tempfile, unicodedata\nfrom datetime import datetime, timezone\nimport yaml\nROOT=pathlib.Path('/home/ibis/AI/CodexSkill-pr81-normalization-review-20260916')\nHEAD='2340ae227091d0e596e0b68d6596489eb6e4adc0'\nORIGINAL='279b8da9ffe954f78fd8461555be429f1bdcc100'\nBASE='106ea5dcf12c4805756351fb9381df220b94f044'\nSCRIPT='skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py'\nREPORT='reports/markdown-complete-scan-review-addendum-20260916.md'\nEVIDENCE='reports/markdown-complete-scan-normalization-evidence-20260916.json'\nHANDOFF='reports/handoffs/markdown-complete-scan-review-addendum-20260916.yaml'\ndef git(*args): return subprocess.check_output(['git',*args],cwd=ROOT,text=True).strip()\nassert git('rev-parse','HEAD')==HEAD\nassert not git('status','--porcelain')\nassert not git('diff','--name-only',ORIGINAL,HEAD,'--','skills','scripts','.github','design','tasks')\nOUT=pathlib.Path(tempfile.mkdtemp(prefix='codexskill-pr81-normalization-'))\n(OUT/'tools/lint').mkdir(parents=True)\n(OUT/'tools/lint/markdown-targets.json').write_text('{\"ignoreDirectories\":[],\"ignoredPrefixes\":[]}')\n(OUT/'tools/lint/markdown-whitelist.yaml').write_text('entries:\\n  - term: API\\n    description: せつめい\\n')\nrecords=[]\nfor name,sha,text in [('base',BASE,'㍿'*6000+'\\nジッタ'),('original',ORIGINAL,'㍿'*6000+'\\nジッタ'),('current',HEAD,'㍿'*6000+'\\nジッタ'),('expanded-control',HEAD,'株式会社'*6000+'\\nジッタ')]:\n    source=git('show',sha+':'+SCRIPT)+'\\n'; script=OUT/(name+'.py');script.write_text(source)\n    command=[sys.executable,str(script),'--stdin','normalization.md']\n    p=subprocess.run(command,cwd=OUT,input=text,text=True,capture_output=True,timeout=30)\n    records.append({'name':name,'head_sha':sha,'script_sha256':hashlib.sha256(source.encode()).hexdigest(),'command':command,'input_expression':repr('株式会社' if name=='expanded-control' else '㍿')+' * 6000 + '+repr('\\nジッタ'),'input_bytes':len(text.encode()),'nfkc_bytes':len(unicodedata.normalize('NFKC',text).encode()),'exit_code':p.returncode,'stdout':p.stdout,'stderr':p.stderr})\n    (OUT/(name+'.stdout.log')).write_text(p.stdout);(OUT/(name+'.stderr.log')).write_text(p.stderr)\nassert all('Input is too long' in r['stderr'] for r in records[:3])\nassert 'Input is too long' not in records[3]['stderr'] and \"'ジッタ'\" in records[3]['stderr']\nold=yaml.safe_load((ROOT/'reports/handoffs/markdown-complete-scan-review-20260916.yaml').read_text())\nfinding={'id':'R81-05','severity':'medium','priority':'P2','origin':'pre_existing','location':SCRIPT+':455-467','description':'正規化で入力が膨張すると、48,000バイト未満でもSudachiPyが上限エラーで途中停止する。','impact':'元のUTF-8バイト数だけでは入力上限を保証できず、文書末尾の片仮名語の検査に到達しない。','evidence':'「㍿」6000文字 + 改行 + 「ジッタ」（18,010 bytes、NFKC後72,010 bytes）で、比較元・初回対象・現HEADすべてがInput is too longで停止。あらかじめ「株式会社」に展開した72,010 bytesでは末尾のジッタを検出する。','required_action':'正規化による膨張を考慮して上限を保証するか、上限エラーから安全に再分割する。R81-01の語境界と位置の保持も満たし、末尾まで検査できることを確認する。'}\nnow=datetime.now(timezone.utc).isoformat()\nbody=f'''# Markdown全文検査レビューの追記\n\n作成日時: {now}\n\n通常レビューの続き。判定は **fail（要修正）**。先行報告の4件を変更せず、P2 / medium の既存欠陥R81-05を追加する。現在の必要な対応は合計5件（退行3件、既存欠陥2件）。\n\n## 対象と継続性\n\n初回の実装対象は `{ORIGINAL}`。この追記の確認対象は `{HEAD}`。間の1コミットは先行レビューのMarkdown・証拠JSON・引き継ぎYAMLの3ファイルのみで、実装・Skill・設計・設定・ワークフロー・タスクに変更がないことをgit diffで確認した。先行報告は当時の4件を記録する履歴としてそのまま残した。\n\nR81-01〜04の識別子、重大度、発生区分、再現証拠と必要な対応は [先行レポート](markdown-complete-scan-review-20260916.md) を参照。修正コミットはなく、4件とも未対応。通常レビューを同じ会話で継続しており、独立最終レビューではない。\n\n## R81-05 / P2 / 正規化後の入力上限を保証できない\n\n場所: `{finding['location']}`。発生区分: `pre_existing`。今回の変更による退行ではなく、今回の長文上限修正に残る既存欠陥。\n\n{finding['evidence']}\n\n`iter_sudachi_chunks` は渡された本文のUTF-8バイト数で分割を決めるが、この入力は分割前の計測では上限内に収まる。実行は語彙違反の報告ではなくSudachiErrorのtracebackで終了するため、「全文を検査した上での失敗」ではない。NFKC後のバイト数も証拠に保存した。\n\n**影響:** {finding['impact']}\n\n**必要な対応:** {finding['required_action']}\n\n## 検証とCI\n\n同じ固定依存版で、比較元 `{BASE}`、初回対象、追記対象の3つのソースをgit showから取り出し、実CLIに同じ入力を与えた。加えて展開済みの対照入力を実行した。4件のコマンド、入力構築式、終了コード、標準出力・標準エラー、ソース指紋は [追記の証拠](markdown-complete-scan-normalization-evidence-20260916.json) に保持する。\n\n追記対象 `{HEAD}` とhead SHAが一致するPR CI `35021963776` はsuccess。`35021963788`もsuccessだが、既存のsame-repository synchronize処理では検証本体をスキップするため、独立した用語検査の成功とは扱わない。先行実装HEADのCIは現HEADの証拠に代用していない。これから保存する追記コミットのSHAとCIは生成時点では未成立であり、公開後にPRコメントへ記録する。\n\n## 保留と次の対応\n\n先行報告のH-DOC（脚注の設計記載との不一致）、Windows実CLI未確認、マージ必須チェック設定未確認は継続する。実装修正、恒久テスト追加、設定・ワークフロー変更、mergeは行っていない。\n\n実装担当はR81-01〜05について、必要な対応、修正する処理経路、実際の組合せ入力、修正後HEADに一致する検証結果を提示する。同じ通常レビュー会話で修正確認する。追記の引き継ぎは `reports/handoffs/markdown-complete-scan-review-addendum-20260916.yaml`。\n'''\ngate=subprocess.run([sys.executable,str(ROOT/'scripts/run_validation.py'),'--output-dir',str(OUT/'validation')],cwd=ROOT,capture_output=True,text=True,timeout=90)\n(OUT/'validation.stdout.log').write_text(gate.stdout);(OUT/'validation.stderr.log').write_text(gate.stderr)\nassert gate.returncode==0,gate.stdout+gate.stderr\nvalidation=json.loads((OUT/'validation/results.json').read_text())\nevidence={'reviewed_head':HEAD,'initial_reviewed_head':ORIGINAL,'base_head':BASE,'created_at':now,'source_delta':git('diff','--name-status',ORIGINAL,HEAD),'technical_source_delta':'empty','records':records,'validation':validation,'validation_stdout':gate.stdout,'validation_stderr':gate.stderr,'dependencies':{n:importlib.metadata.version(n) for n in ['sudachipy','sudachidict_core','PyYAML']},'reproduction_script':pathlib.Path(__file__).read_text()}\nenv={'kind':'connected_computer','tool':'Remote Desktop Commander','machine_id':'75840a70-dea0-4d8c-9bb4-fe97c78bc11e','connection':'available','os':platform.platform(),'shell':'bash','working_directory':str(ROOT),'repository':'ssaattww/CodexSkill','branch':'detached HEAD','head_sha':HEAD,'source_state':'clean','source_fingerprint':'git-tree:'+git('rev-parse','HEAD^{tree}'),'ownership':'current_task','writable_paths':[REPORT,EVIDENCE,HANDOFF,str(OUT)],'dependencies':[{'name':n,'status':'available','evidence':v} for n,v in evidence['dependencies'].items()],'evidence':['端末を再確認後、レポート保存HEADで専用worktreeを作成。','追記前はclean。279b8daから変更されたのは先行レビュー資料3ファイルのみ。']}\npacket=copy.deepcopy(old)\npacket['producer']={'skill':'chat-review-worker','mode':'initial_review continuation','generated_at':now}\npacket['target']={'current_head':HEAD,'reviewed_head':HEAD,'commit_range':BASE+'...'+HEAD}\npacket['execution_environment']=env\npacket['findings']=copy.deepcopy(old['findings'])+[finding]\npacket['ci']={'required':False,'workflow':'Validate and release ChatGPT worker skills','run_id':35021963776,'head_sha':HEAD,'conclusion':'success','artifacts':[]}\npacket['review']['reviewed_head']=HEAD\npacket['review']['verdict']='fail'\npacket['review']['summary']=['先行4件を保持しR81-05を追加。P2/medium 5件が未対応。']\npacket['review']['validation_assessment'].append({'item':'normalization expansion','result':'failed','evidence':EVIDENCE+'; current HEADでもSudachiError、展開済み対照では末尾のジッタを検出。'})\nfor row in packet['review']['required_coverage']:\n    if 'error' in row['criterion'] or 'correctness' in row['criterion']: row['evidence']+=' R81-05の上限エラーも実CLIで確認。'\npacket['verification']['technical_head']=HEAD\npacket['verification']['administrative_parent']=None\npacket['verification']['commit']={'state':'commit_pending','review_target_sha':HEAD}\npacket['verification']['push']={'state':'push_pending','head_sha':HEAD}\npacket['verification']['ci_wait']={'state':'not_required','required_for':'not_required'}\npacket['verification']['final_publication']={'sequence':'not_applicable','pr_action':'update'}\npacket['report'].update({'paths':[REPORT,EVIDENCE],'reviewed_head':HEAD,'attestation_head':None,'pr_comments':[{'target':'PR #81','url_or_id':'https://github.com/ssaattww/CodexSkill/pull/81#pullrequestreview-5215600961'}],'summary':['先行報告を変更せず、R81-05を追加した通常レビュー追記。']})\npacket['next_action']['summary']='実装担当がR81-01〜05を対応し、同じ通常レビュー会話で修正確認する。'\npacket['next_action']['instructions'].append(finding['required_action'])\npacket['next_action']['required_attachments_or_references'].extend([REPORT,EVIDENCE,HANDOFF])\npacket['transport']={'method':'repository_file','packet_path':HANDOFF,'packet_url':None,'transport_note':'先行資料は変更せず保持。公開コミットSHAとCIはPRコメントに記録。'}\npacket['write_boundary']['allowed']=[{'path_or_operation':p,'reason':'通常レビューの追記保存'} for p in [REPORT,EVIDENCE,HANDOFF]]\npacket['remaining_risks'].append('R81-05: 正規化時の膨張で全文検査が途中停止する。')\nfor r in records:\n    packet['commands'].append({'command':' '.join(r['command']),'purpose':r['name']+' normalization probe','exit_code':r['exit_code'],'result':'failed','head_sha':r['head_sha'],'evidence':EVIDENCE,'execution_environment':env,'source_fingerprint':r['script_sha256']})\npacket['commands'].append({'command':'python scripts/run_validation.py --output-dir <scratch>/validation','purpose':'追記対象HEADの既存4項目','exit_code':0,'result':'passed','head_sha':HEAD,'evidence':EVIDENCE,'execution_environment':env,'source_fingerprint':env['source_fingerprint']})\npacket['extensions'].append({'namespace':'prior_review_preserved','payload':old})\npacket['extensions'].append({'namespace':'normalization_evidence','payload':evidence})\nfor item in packet['source_payloads']:\n    p=item['payload']\n    if item['source_skill']=='work-context-manager':\n        p.update({'current_head':HEAD,'reviewed_head':HEAD,'execution_environment':env,'ci':packet['ci'],'remaining_risks':packet['remaining_risks']})\n        p['execution_state']={'technical_head':HEAD,'administrative_parent':None,'commit':'commit_pending','push':'push_pending','ci_wait':'not_required','full_local_equivalence_gate':{'state':'passed','candidate_head':HEAD,'invalidated_runs':[]}}\n    elif item['source_skill']=='review-worker':\n        p.update({'reviewed_implementation_head':HEAD,'commit_range':BASE+'...'+HEAD,'findings':packet['findings'],'required_coverage':packet['review']['required_coverage'],'validation_assessment':packet['review']['validation_assessment'],'verdict':'fail','next_action':packet['next_action']['summary']})\n        p.setdefault('finding_completeness_matrix',[]).append({'finding_id':'R81-05','required_action':finding['required_action'],'production_path':'未対応','actual_composition_fixture':'修正後の実CLI確認が必要','focused_evidence':'未提供','disposition':'incomplete'})\n    elif item['source_skill']=='report-writer':\n        p.update({'complete_body':p['complete_body']+'\\n\\n---\\n\\n'+body,'execution_environment':env,'persistence':{'mode':'repository_file','reserved_paths':[REPORT,EVIDENCE],'report_attestation_head':None}})\n        p['target_identity'].update({'current_head':HEAD,'reviewed_implementation_head':HEAD})\n        p['verification'].update({'technical_head':HEAD,'commit_state':'commit_pending','push_state':'push_pending','ci_wait_state':'not_required'})\n        p['evidence_sources'].extend([REPORT,EVIDENCE])\noutputs={REPORT:body,EVIDENCE:json.dumps(evidence,ensure_ascii=False,indent=2)+'\\n',HANDOFF:yaml.safe_dump(packet,allow_unicode=True,sort_keys=False,width=120)}\nassert git('rev-parse','HEAD')==HEAD\nfor rel in outputs: assert not (ROOT/rel).exists(),rel\nfor rel,text in outputs.items(): (ROOT/rel).write_text(text,encoding='utf-8')\nloaded=yaml.safe_load((ROOT/HANDOFF).read_text());assert len(loaded['findings'])==5\nassert loaded['extensions'][-2]['payload']==old\nassert [f['id'] for f in loaded['findings']]==['R81-01','R81-02','R81-03','R81-04','R81-05']\nprint(json.dumps({'head':HEAD,'output_dir':str(OUT),'outputs':list(outputs),'verdict':'fail','findings':5,'normalization_records':len(records),'repository_validation':validation['status']},ensure_ascii=False))\n",
+  "publication_base_head": "a3e3bd506e3f8e56517f5a2d87f19a98785d349e",
+  "python_version": "3.13.7",
+  "python_version_source": "same-executable scripts/run_validation.py results.json"
+}
