@@ -17,6 +17,9 @@ on:
       - "scripts/build_chatgpt_worker_skills.py"
       - "scripts/verify_skill_repository.py"
       - "scripts/run_validation.py"
+      - "package.json"
+      - "package-lock.json"
+      - "tools/lint/**"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
   push:
     branches:
@@ -32,6 +35,9 @@ on:
       - "scripts/build_chatgpt_worker_skills.py"
       - "scripts/verify_skill_repository.py"
       - "scripts/run_validation.py"
+      - "package.json"
+      - "package-lock.json"
+      - "tools/lint/**"
       - ".github/workflows/release-chatgpt-worker-skills.yml"
   release:
     types:
