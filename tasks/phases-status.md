@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-08
+- Updated: 2026-09-15
 
 ## Phase 1: 契約・設計
 
@@ -128,7 +128,7 @@
 
 ## Phase 11: ChatGPT PC接続経路のGit操作
 
-- Status: In Progress (implementation and local validation complete; final publication verification pending)
+- Status: In Progress (normal review findings follow-up; same reviewer fix verification pending)
 - Notes:
   - Issue #73を対象とする
   - #70で定義したRemote Desktop Commanderの実行場所契約をcurrent mainへ復元する
@@ -137,3 +137,5 @@
   - RDC経由push失敗時はソース転送や別publication経路へ無断で切り替えない
   - CodexSkill repository policyによりTDDは適用しない
   - repository validation、配布ZIP生成、設計同期、exact-head CIを確認し、mergeは利用者が行う
+  - initial normal reviewはreviewed HEAD `85c47515cbe086824746534ffb6cf6398894a63a`に対してverdict `fail`、required finding 4件
+  - `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正を実施し、same normal reviewerのfix verificationへ渡す
