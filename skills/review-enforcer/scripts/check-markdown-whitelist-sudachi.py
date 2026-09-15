@@ -543,11 +543,15 @@ def split_oversized_sudachi_segment(segment: str, base_offset: int) -> Iterable[
         remaining = remaining[cut:]
 
 
+def contains_katakana(value: str) -> bool:
+    return bool(KATAKANA_RE.search(unicodedata.normalize("NFKC", value)))
+
+
 def preserve_katakana_boundary(segment: str, cut: int) -> int:
     original_cut = cut
     while 0 < cut < len(segment):
-        left_is_katakana = bool(KATAKANA_RE.fullmatch(segment[cut - 1]))
-        right_is_katakana = bool(KATAKANA_RE.fullmatch(segment[cut]))
+        left_is_katakana = contains_katakana(segment[cut - 1])
+        right_is_katakana = contains_katakana(segment[cut])
         if not (left_is_katakana or right_is_katakana):
             break
         cut -= 1
@@ -555,7 +559,8 @@ def preserve_katakana_boundary(segment: str, cut: int) -> int:
 
 
 def should_check_japanese(surface: str, morpheme) -> bool:
-    if not KATAKANA_RE.search(surface):
+    normalized_form = sudachi_value(morpheme, "normalized_form")
+    if not (contains_katakana(surface) or contains_katakana(normalized_form)):
         return False
     normalized = normalize_term(surface).replace("・", "").replace("ー", "").replace(".", "").replace("_", "").replace("-", "")
     if len(normalized) <= 1:
