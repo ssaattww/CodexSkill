@@ -1,0 +1,406 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: review follow-up
+  generated_at: '2026-09-17T06:36:00+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #81'
+task_id: null
+branch: fix/markdown-lint-complete-scan
+base_ref: main
+target:
+  current_head: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+  reviewed_head: 28823db2a0f3f0354c43ae892f25307b1679159c
+  commit_range: df7c6c6be53e4f3d6e81b4e3c15aef188454b5dc...daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+
+execution_environment:
+  kind: connected_computer
+  tool: Remote Desktop Commander
+  machine_id: 4eae589f-096b-4362-9bec-0f392d77d44f
+  connection: available
+  os: Windows
+  shell: cmd.exe
+  working_directory: 'C:\Users\donabe\Project\CodexSkill-pr81-fix-20260916'
+  repository: ssaattww/CodexSkill
+  branch: fix/markdown-lint-complete-scan
+  head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+  source_state: clean
+  source_fingerprint: null
+  ownership: current_task
+  writable_paths:
+    - skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    - reports/markdown-japanese-surface-whitelist-followup-20260917.md
+    - reports/handoffs/markdown-japanese-surface-whitelist-followup-20260917.yaml
+  dependencies:
+    - name: SudachiPy
+      status: available
+      evidence: '0.6.11 in C:\Users\donabe\Project\CodexSkill-pr81-validation\venv'
+    - name: SudachiDict-core
+      status: available
+      evidence: '20260428 in task scratch venv'
+    - name: PyYAML
+      status: available
+      evidence: '6.0.3 in task scratch venv'
+    - name: cspell
+      status: available
+      evidence: '9.8.0 on RDC device ibis-ThinkBook-14-G7-IML under /tmp/pr81-validation/fixture'
+  evidence:
+    - '各terminal command直前にRDC list_sessionsを確認し、Blocked:false時はコマンドを開始しなかった。'
+    - 'PR #81専用worktreeを使用し、他taskのworktreeは変更していない。'
+    - 'remote review commit df7c6c6...を先にrebaseし、実装commitをその後ろへ載せた。'
+
+verification:
+  capability: local_execution_available
+  capability_evidence:
+    - 'FA780で実SudachiPy checkerとscripts/run_validation.pyを実行可能。'
+    - 'Ubuntu RDCでcspell 9.8.0を直接実行可能。'
+  technical_head: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+  administrative_parent: null
+  commit:
+    state: committed
+    review_target_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+  push:
+    state: pushed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+  ci_wait:
+    state: ci_wait_pending
+    required_for: route_verification
+  final_publication:
+    sequence: final_push_then_authorized_pr_create_or_update_then_exact_head_pull_request_ci_wait
+    pr_action: update
+
+authoritative_requirements:
+  - source: user_instruction
+    reference: 'current chat: Duckで判明した、追加対応が必要な部分の対応'
+    summary: 'Duckで判明した追加の日本語許可判定欠陥をCodexSkill側で修正する。'
+  - source: pr
+    reference: 'PR #81 comment 5704475283'
+    summary: '日本語許可判定を実表記term/aliasへ限定し、Sudachi正規形・読みだけの一致では許可しない。幅差契約は維持する。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: 'CodexSkill保守は非TDD。既存validationを使用し、TDD専用test/workflowを追加しない。'
+development_policy:
+  method: validation-only
+  testing_order: focused validation then regression validation then repository full local gate
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - 'venv\\Scripts\\python.exe duck_normalization_validation.py'
+    - 'venv\\Scripts\\python.exe run_python_only.py'
+    - 'venv\\Scripts\\python.exe r81_06_after.py'
+    - 'venv\\Scripts\\python.exe ir81_independent_after.py'
+    - 'python scripts\\run_validation.py --output-dir <diagnostics>'
+    - 'cspell 9.8.0 direct check for approved and unapproved capture forms on Ubuntu RDC'
+  required_failure_diagnostics:
+    - stdout
+    - stderr
+    - exit status
+    - focused result JSON
+    - repository validation diagnostics
+
+blocked: []
+
+authorized_actions:
+  - read_repository
+  - edit_code
+  - edit_documentation
+  - write_handoff
+  - write_report
+  - commit
+  - push
+  - update_pr
+  - comment_pr
+
+write_boundary:
+  allowed:
+    - path_or_operation: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      reason: direct cause of PR #81 comment 5704475283
+    - path_or_operation: reports/markdown-japanese-surface-whitelist-followup-20260917.md
+      reason: detailed implementation report
+    - path_or_operation: reports/handoffs/markdown-japanese-surface-whitelist-followup-20260917.yaml
+      reason: transportable handoff
+  forbidden:
+    - path_or_operation: tools/lint/markdown-whitelist.yaml
+      reason: Duck側またはrepo側の許可語追加で回避しない
+    - path_or_operation: reports/markdown-complete-scan-independent-final-review-20260916.md
+      reason: independent final reviewer owns reserved report materialization
+    - path_or_operation: merge
+      reason: user performs merge
+
+scope:
+  - 'PR #81 comment 5704475283: normalized/reading-only Japanese whitelist leakage'
+  - 'preserve fullwidth/halfwidth equivalence and previous PR #81 regression fixes'
+  - 'record cspell and whitelist checker results separately'
+non_goals:
+  - Issue #85 attributed quotation lint exception
+  - Duck whitelist term or alias expansion
+  - H-DOC footnote design mismatch
+  - Windows cspell.cmd spawn behavior
+  - merge
+
+files:
+  changed:
+    - path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      purpose: restrict Japanese approval to normalized surface term/explicit alias only
+    - path: reports/markdown-japanese-surface-whitelist-followup-20260917.md
+      purpose: detailed report
+    - path: reports/handoffs/markdown-japanese-surface-whitelist-followup-20260917.yaml
+      purpose: handoff
+  inspected:
+    - path: skills/review-enforcer/scripts/run-cspell-markdown.js
+      purpose: confirm cspell path is not changed by this fix
+    - path: reports/markdown-independent-findings-fix-verification-20260917.md
+      purpose: preserve the completed normal fix-verification result before this new technical change
+  intentionally_untouched:
+    - path_or_area: tools/lint/markdown-whitelist.yaml
+      reason: do not expand approved vocabulary to hide the defect
+    - path_or_area: Issue #85 attributed quotation lint exception
+      reason: separate approved scope
+    - path_or_area: reports/markdown-complete-scan-independent-final-review-20260916.md
+      reason: independent reviewer owns report materialization
+
+commands:
+  - command: 'fixed-SHA 28823db checker --files probe.md with term キャプチャー and input キャプチャ'
+    purpose: reproduce Duck normalized-form leakage before the fix
+    exit_code: 0
+    result: passed
+    head_sha: 28823db2a0f3f0354c43ae892f25307b1679159c
+    evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\duck-normalization-before.json'
+  - command: 'venv\\Scripts\\python.exe duck_normalization_validation.py'
+    purpose: validate surface-only Japanese approval and direct regressions
+    exit_code: 0
+    result: passed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\duck-normalization-results.json'
+  - command: 'venv\\Scripts\\python.exe run_python_only.py'
+    purpose: R81-01 through R81-05 regression coverage
+    exit_code: 0
+    result: passed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    evidence: '13 Python probe records passed'
+  - command: 'venv\\Scripts\\python.exe r81_06_after.py'
+    purpose: halfwidth/fullwidth and 48,000-byte boundary regression coverage
+    exit_code: 0
+    result: passed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    evidence: '8 R81-06 records passed'
+  - command: 'venv\\Scripts\\python.exe ir81_independent_after.py'
+    purpose: IR81-01 and IR81-02 regression coverage
+    exit_code: 0
+    result: passed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    evidence: '15 IR81 focused records passed'
+  - command: 'python scripts\\run_validation.py --output-dir C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-duck-normalization-rebased'
+    purpose: repository-defined full local gate
+    exit_code: 0
+    result: passed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    evidence: 'repository/bundle/zip-integrity/zip-contents all passed'
+  - command: 'cspell 9.8.0 --config cspell.config.jsonc capture-approved.md / capture-unapproved.md'
+    purpose: record cspell behavior separately from whitelist checker
+    exit_code: 0
+    result: passed
+    head_sha: null
+    evidence: '/tmp/pr81-validation/logs/cspell-capture-*.stderr.log and *.exit.txt; both forms exit 0 with zero issues'
+
+tests:
+  - name: Duck Japanese surface approval matrix
+    phase: post_implementation
+    result: passed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    evidence: '10/10 focused cases in duck-normalization-results.json'
+  - name: R81-01 through R81-05 regression
+    phase: regression
+    result: passed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    evidence: '13/13 cases'
+  - name: R81-06 regression
+    phase: regression
+    result: passed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    evidence: '8/8 cases'
+  - name: IR81-01 and IR81-02 regression
+    phase: regression
+    result: passed
+    head_sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    evidence: '15/15 cases'
+ci:
+  required: true
+  workflow: Validate and release ChatGPT worker skills
+  run_id: null
+  head_sha: null
+  conclusion: unknown
+  artifacts: []
+  note: 'final publication management commit is pending; exact-head CI must be resolved after final push and no earlier run may be substituted'
+
+implementation:
+  outcome: completed
+  final_head: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+  commits:
+    - sha: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+      purpose: require approved Japanese surface term or explicit alias for whitelist permission
+  changed_product_code: true
+  addressed_findings:
+    - id: PR81-comment-5704475283
+      reviewed_head: 28823db2a0f3f0354c43ae892f25307b1679159c
+      outcome: addressed_pending_review
+      required_action: 'do not allow unapproved Japanese spelling from Sudachi normalized_form or reading_form alone; preserve NFKC width equivalence'
+      production_path: 'check_japanese_tokens -> surface_normalized -> whitelist.terms; normalized_form retained only as diagnostic_normalized'
+      actual_composition_fixture: 'キャプチャー allow, キャプチャ reject unless explicit alias, 青リンゴ reject against reading-only アオリンゴ, ユーザ reject against normalized-only ユーザー, ギア/ｷﾞｱ width equivalence allow, concatenations reject'
+      focused_evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\duck-normalization-results.json and duck-normalization-logs'
+  diagnostics:
+    - 'C:\Users\donabe\Project\CodexSkill-pr81-validation\duck-normalization-before.json'
+    - 'C:\Users\donabe\Project\CodexSkill-pr81-validation\duck-normalization-results.json'
+    - 'C:\Users\donabe\Project\CodexSkill-pr81-validation\duck-normalization-logs'
+    - 'C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-duck-normalization-rebased'
+  summary:
+    - 'Japanese whitelist approval no longer expands through Sudachi normalized_form or reading_form.'
+    - 'Explicit terms and aliases continue to use NFKC width equivalence.'
+    - 'No Duck or CodexSkill whitelist entries were expanded.'
+
+review:
+  mode: not_applicable
+  reviewed_head: 28823db2a0f3f0354c43ae892f25307b1679159c
+  reviewer: not_applicable
+  verdict: not_applicable
+  required_coverage:
+    - criterion: Duck additional finding 5704475283
+      disposition: pending_review
+      evidence: 'implementation and focused evidence are complete; same normal reviewer must verify the new technical delta'
+  independent_closure:
+    initial_independent_reviewed_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+    closure_reviewed_heads: []
+    reviewer_continuity: 'reuse the existing independent reviewer lifecycle after normal review convergence'
+    closure_scope:
+      - finding_or_ci_delta: PR81-comment-5704475283
+      - finding_or_ci_delta: exact-head CI delta after the new implementation
+    completeness_matrix:
+      - finding_id: PR81-comment-5704475283
+        required_action: 'Japanese approval must require the written surface form to match an approved term or explicit alias after width normalization; normalized/readings alone must not approve.'
+        production_path: 'skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py: check_japanese_tokens -> surface_normalized -> whitelist.terms'
+        actual_composition_fixture: 'term キャプチャー: canonical allow / キャプチャ reject; explicit alias キャプチャ allow; reading-only 青リンゴ against アオリンゴ reject; normalized-only ユーザ against ユーザー reject; ギア/ｷﾞｱ width-equivalent exact forms allow; concatenations reject.'
+        focused_evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\duck-normalization-results.json; 10/10 expected exits at daeddaa5a5d5a626d1ad891a831f6476a9c530a4 plus per-case stdout/stderr logs.'
+    reserved_report_paths:
+      - reports/markdown-complete-scan-independent-final-review-20260916.md
+    report_attestation:
+      allowed: false
+      reviewed_implementation_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+      allowed_paths:
+        - reports/markdown-complete-scan-independent-final-review-20260916.md
+      required_first_parent: null
+      maximum_commits_after_reviewed_head: 1
+      forbidden_path_classes:
+        - executable
+        - skill
+        - design
+        - workflow
+        - configuration
+        - tracking
+        - handoff
+        - product
+      no_later_commits_required: true
+      validation_status: invalidated_by_new_technical_change
+      validation_evidence:
+        - 'new technical commit daeddaa5a5d5a626d1ad891a831f6476a9c530a4 postdates the prior independent review lifecycle evidence'
+  summary:
+    - 'implementation complete; reviewer verdict intentionally not produced by implementation worker'
+
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/markdown-japanese-surface-whitelist-followup-20260917.md
+  reviewed_head: 28823db2a0f3f0354c43ae892f25307b1679159c
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - 'Duck-derived normalized/reading whitelist leakage implementation and validation evidence'
+findings: []
+held:
+  - item: H-DOC footnote design wording difference
+    reason: pre-existing held item unrelated to this Duck finding
+    owner: review lifecycle
+    remaining_risk: design wording differs from current footnote-body inspection behavior
+    verdict_impact: does not change implementation result
+  - item: Windows cspell.cmd spawn behavior
+    reason: pre-existing wrapper issue outside this Python checker change
+    owner: review lifecycle
+    remaining_risk: Windows wrapper direct spawn remains held
+    verdict_impact: cspell meaning was checked separately on Ubuntu RDC
+unexplored: []
+unknown:
+  - field_or_fact: final publication HEAD exact-head CI
+    reason: report/handoff management commit has not yet been published
+not_applicable:
+  - field_or_area: TDD
+    reason: CodexSkill repository maintenance is explicitly non-TDD
+remaining_risks:
+  - same normal reviewer must verify PR #81 comment 5704475283 after publication
+  - new technical commit invalidates direct reuse of prior independent-final closure evidence without a delta review
+  - cspell intentionally does not distinguish キャプチャー from キャプチャ in this fixture; whitelist checker owns the approval distinction
+
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: fix_verification
+  summary: verify the Duck-derived Japanese surface-approval fix and direct regressions on the published current HEAD, then update independent closure for the new technical delta
+  instructions:
+    - verify comment 5704475283 against the production path and 10-case focused evidence
+    - preserve term/explicit-alias semantics and fullwidth/halfwidth equivalence
+    - confirm normalized_form and reading_form alone no longer grant approval
+    - use only CI runs whose head SHA matches the PR current HEAD
+    - after normal convergence, reuse the existing independent reviewer lifecycle for the new technical and CI delta
+  required_attachments_or_references:
+    - reports/markdown-japanese-surface-whitelist-followup-20260917.md
+    - reports/markdown-independent-findings-fix-verification-20260917.md
+    - PR #81 comment 5704475283
+  requested_authorized_actions:
+    - read_repository
+    - write_report
+    - write_handoff
+    - commit
+    - push
+    - comment_pr
+
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/markdown-japanese-surface-whitelist-followup-20260917.yaml
+  packet_url: null
+  transport_note: 'push with PR branch; receiving reviewer must re-resolve current HEAD, CI and permissions'
+
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      pr: 81
+      branch: fix/markdown-lint-complete-scan
+      authoritative_additional_requirement: 'PR comment 5704475283 from Duck evidence'
+      testing_policy: non-TDD
+      technical_head: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+  - source_skill: implementation-worker
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      mode: review follow-up
+      outcome: completed
+      changed_product_code: true
+      changed_files:
+        - skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      focused_validation: '10/10 Duck normalized/reading cases passed'
+      regression_validation: 'R81-01..05 13/13; R81-06 8/8; IR81-01/02 15/15'
+      repository_validation: 'repository/bundle/zip-integrity/zip-contents passed'
+      implementation_commit: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+      next_required_action: normal fix verification for comment 5704475283, then independent delta closure
+  - source_skill: report-writer
+    output_contract_version: unknown
+    content_type: text/markdown
+    payload:
+      report_type: implementation_report
+      persistence_mode: repository_file
+      path: reports/markdown-japanese-surface-whitelist-followup-20260917.md
+      technical_head: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+      next_action: normal fix verification
+extensions: []
