@@ -1,0 +1,490 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: review follow-up
+  generated_at: '2026-09-16T22:11:42.6139562+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #81'
+task_id: null
+branch: fix/markdown-lint-complete-scan
+base_ref: main
+target:
+  current_head: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+  reviewed_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+  commit_range: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346...3a004c2a762a67d35cbdcbc14092a1a138c0820d
+execution_environment:
+  kind: connected_computer
+  tool: Remote Desktop Commander
+  machine_id: 4eae589f-096b-4362-9bec-0f392d77d44f
+  connection: available
+  os: Windows
+  shell: cmd.exe / PowerShell
+  working_directory: 'C:\Users\donabe\Project\CodexSkill-pr81-fix-20260916'
+  repository: ssaattww/CodexSkill
+  branch: fix/markdown-lint-complete-scan
+  head_sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+  source_state: clean
+  source_fingerprint: null
+  ownership: current_task
+  writable_paths:
+    - skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    - reports/markdown-independent-findings-followup-20260916.md
+    - reports/handoffs/markdown-independent-findings-followup-20260916.yaml
+  dependencies:
+    - name: SudachiPy
+      status: available
+      evidence: '0.6.11 in C:\Users\donabe\Project\CodexSkill-pr81-validation\venv'
+    - name: SudachiDict-core
+      status: available
+      evidence: '20260428 in task scratch venv'
+    - name: PyYAML
+      status: available
+      evidence: '6.0.3 in task scratch venv'
+  evidence:
+    - '各terminal command直前にRDC list_sessionsを確認し、Blocked:falseがない状態で実行した。'
+    - 'PR #81専用worktreeを使用し、他taskのworktreeは変更していない。'
+verification:
+  capability: local_execution_available
+  capability_evidence:
+    - 'FA780の専用worktreeとtask scratchで実SudachiPyとrepository validatorを実行可能。'
+  technical_head: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+  administrative_parent: null
+  commit:
+    state: committed
+    review_target_sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+  push:
+    state: push_pending
+    head_sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+  ci_wait:
+    state: ci_wait_pending
+    required_for: merge_gate
+  final_publication:
+    sequence: final_push_then_authorized_pr_update_then_exact_head_pull_request_ci_wait
+    pr_action: update
+authoritative_requirements:
+  - source: user_instruction
+    reference: current chat
+    summary: 'PR #81の最新指摘へ対応する。RDC command前に競合確認を行う。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: 'Skill優先。CodexSkill自身の保守は非TDD。'
+  - source: independent_final_review
+    reference: 'pullrequestreview-5221411529'
+    summary: 'IR81-01 / IR81-02 のmedium required 2件を修正する。'
+development_policy:
+  method: non-TDD
+  testing_order: focused validation, regression validation, repository full validation
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - 'ir81_independent_after.py: IR81-01/02 focused 15 cases'
+    - 'run_python_only.py: R81-01..05 regression 13 cases'
+    - 'r81_06_after.py: R81-06 regression 8 cases'
+    - 'python scripts/run_validation.py --output-dir <task scratch>'
+  required_failure_diagnostics:
+    - stdout, stderr, exit code and source identity retained in task scratch
+blocked: []
+authorized_actions:
+  - read_repository
+  - edit_code
+  - write_report
+  - write_handoff
+  - commit
+  - push
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      reason: IR81-01 / IR81-02 fix
+    - path_or_operation: reports/markdown-independent-findings-followup-20260916.md
+      reason: detailed implementation report
+    - path_or_operation: reports/handoffs/markdown-independent-findings-followup-20260916.yaml
+      reason: review handoff
+  forbidden:
+    - path_or_operation: reserved independent-final report
+      reason: keep metadata-only until passing independent closure
+    - path_or_operation: merge
+      reason: user performs merge
+scope:
+  - IR81-01 halfwidth Katakana whitelist masking boundary
+  - IR81-02 explicit --files unresolved target handling
+non_goals:
+  - H-DOC held item
+  - Windows cspell.cmd spawn held item
+  - whitelist/configuration changes
+  - merge
+files:
+  changed:
+    - path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      purpose: whitelist boundary and explicit target validation
+    - path: reports/markdown-independent-findings-followup-20260916.md
+      purpose: detailed implementation report
+    - path: reports/handoffs/markdown-independent-findings-followup-20260916.yaml
+      purpose: lossless continuation packet
+  inspected:
+    - path: skills/markdown-word-checker/SKILL.md
+      purpose: unresolved focused targets are unsupported, not pass
+    - path: reports/markdown-halfwidth-katakana-fix-verification-20260916.md
+      purpose: prior normal fix verification evidence
+    - path: .github/workflows/pr-commit-artifacts.yml
+      purpose: failure/success diagnostic artifact workflow
+  intentionally_untouched:
+    - path_or_area: design/review-enforcer-markdown-whitelist-rebuild-design.md
+      reason: H-DOC is held and separate from required findings
+    - path_or_area: reserved independent-final review report
+      reason: deferred-attestation lifecycle requires metadata-only state
+commands:
+  - command: 'python ir81_independent_after.py'
+    purpose: IR81-01 / IR81-02 focused validation
+    exit_code: 0
+    result: passed
+    head_sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+    evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\ir81-independent-results.json and ir81-independent-logs'
+    execution_environment: null
+    source_fingerprint: null
+  - command: 'python run_python_only.py'
+    purpose: R81-01 through R81-05 regression validation
+    exit_code: 0
+    result: passed
+    head_sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+    evidence: '13 cases passed'
+    execution_environment: null
+    source_fingerprint: null
+  - command: 'python r81_06_after.py'
+    purpose: R81-06 regression validation including long boundary
+    exit_code: 0
+    result: passed
+    head_sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+    evidence: '8 cases passed'
+    execution_environment: null
+    source_fingerprint: null
+  - command: 'python scripts/run_validation.py --output-dir C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-ir81-independent-impl'
+    purpose: repository full local validation on implementation commit
+    exit_code: 0
+    result: passed
+    head_sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+    evidence: 'repository, bundle, zip-integrity, zip-contents all passed'
+    execution_environment: null
+    source_fingerprint: null
+tests:
+  - name: IR81 focused probes
+    phase: verification
+    result: passed
+    head_sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+    evidence: '15 cases passed'
+  - name: prior finding regression probes
+    phase: regression
+    result: passed
+    head_sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+    evidence: 'R81-01..05 13 cases and R81-06 8 cases passed'
+ci:
+  required: true
+  workflow: null
+  run_id: null
+  head_sha: unknown
+  conclusion: unknown
+  artifacts: []
+implementation:
+  outcome: completed
+  final_head: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+  commits:
+    - sha: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+      purpose: fix independent review required findings
+  addressed_findings:
+    - id: IR81-01
+      reviewed_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+      disposition: addressed
+      evidence: 'halfwidth whitelist exact values remain allowed; halfwidth/fullwidth prefix/suffix cases reject'
+    - id: IR81-02
+      reviewed_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+      disposition: addressed
+      evidence: 'missing, ignored, valid+missing, unsupported suffix and outside-repo explicit targets exit 2 with diagnostics'
+  failure_diagnostics:
+    - type: standard_output
+      location: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\ir81-independent-logs'
+      summary: focused probe stdout logs
+    - type: standard_error
+      location: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\ir81-independent-logs'
+      summary: focused probe stderr logs
+    - type: test_result
+      location: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-ir81-independent-impl'
+      summary: repository full validation results and stdout/stderr logs
+  blocked_items: []
+  summary:
+    - IR81-01 and IR81-02 implemented with focused sibling coverage
+    - no independent review verdict issued by implementation worker
+review:
+  mode: independent_final_review
+  reviewed_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+  reviewer:
+    identity: 'pullrequestreview-5221411529'
+    role: independent_final_reviewer
+    continuity:
+      previous_reviewer_identity: null
+      changed: false
+      reason: null
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: false
+      inherited_conversation: false
+      evidence:
+        - independent review PR submission 5221411529
+  verdict: fail
+  required_coverage:
+    - criterion: independent required findings
+      disposition: checked_finding
+      evidence: IR81-01 and IR81-02
+  independent_closure:
+    initial_independent_reviewed_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+    closure_reviewed_heads: []
+    reviewer_continuity: 'must reuse independent reviewer lifecycle from review 5221411529'
+    closure_scope:
+      - finding_or_ci_delta: IR81-01
+      - finding_or_ci_delta: IR81-02
+      - finding_or_ci_delta: exact-head CI delta
+    completeness_matrix: []
+  validation_assessment: []
+  reserved_report_paths:
+    - reports/markdown-complete-scan-independent-final-review-20260916.md
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+    allowed_paths:
+      - reports/markdown-complete-scan-independent-final-review-20260916.md
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: 1
+    forbidden_path_classes:
+      - executable
+      - skill
+      - design
+      - workflow
+      - configuration
+      - tracking
+      - handoff
+      - product
+    no_later_commits_required: true
+    validation_status: pending
+    validation_evidence: []
+  summary:
+    - independent review remains fail until normal fix verification and bounded independent closure
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/markdown-independent-findings-followup-20260916.md
+  reviewed_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - detailed implementation evidence for IR81-01 and IR81-02
+findings:
+  - id: IR81-01
+    severity: medium
+    origin: coverage_miss
+    location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    description: halfwidth Katakana whitelist value can be partially masked inside a longer unregistered word
+    impact: unregistered halfwidth Katakana prefix/suffix compounds can pass the Python vocabulary gate
+    evidence: 'independent review reproduced ｷﾞｱｽ exit 0 when ｷﾞｱ was allowed'
+    required_action: align whitelist masking boundary with width-normalized Katakana contract and verify prefix/suffix siblings
+  - id: IR81-02
+    severity: medium
+    origin: coverage_miss
+    location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    description: unresolved explicit --files targets are silently dropped
+    impact: focused lint can report success without inspecting every requested path
+    evidence: 'independent review reproduced missing, ignored and valid+missing explicit targets as exit 0'
+    required_action: fail explicit mode when any requested path is missing, external, unsupported or ignored
+held:
+  - item: H-DOC footnote design wording difference
+    reason: existing held item unrelated to required findings
+    owner: review lifecycle
+    remaining_risk: design wording differs from current footnote-body inspection behavior
+    verdict_impact: does not block IR81-01/02 implementation
+  - item: Windows cspell.cmd spawn behavior
+    reason: existing held item outside Python checker findings
+    owner: review lifecycle
+    remaining_risk: Windows wrapper direct spawn remains unverified
+    verdict_impact: does not block IR81-01/02 implementation
+unexplored: []
+unknown:
+  - field_or_fact: final publication HEAD exact-head CI
+    reason: push has not occurred yet
+  - field_or_fact: independent reservation identity
+    reason: review comment exposes reserved path but not reservation identity
+not_applicable:
+  - field_or_area: TDD
+    reason: CodexSkill repository maintenance is non-TDD
+remaining_risks:
+  - normal reviewer must verify IR81-01/02 before independent closure
+  - same independent reviewer lifecycle must perform bounded closure after normal convergence
+  - reserved independent-final report must remain metadata-only until passing independent closure
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: fix_verification
+  summary: verify IR81-01 and IR81-02 on the published current HEAD, then return to same independent reviewer for bounded closure
+  instructions:
+    - verify each required action against production path and focused evidence
+    - use only CI runs whose head SHA matches PR current HEAD
+    - after normal convergence reuse the existing independent lifecycle for IR81-01/02 and CI delta only
+  required_attachments_or_references:
+    - reports/markdown-independent-findings-followup-20260916.md
+    - reports/markdown-halfwidth-katakana-fix-verification-20260916.md
+    - PR review 5221411529
+  requested_authorized_actions:
+    - read_repository
+    - write_report
+    - write_handoff
+    - commit
+    - push
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/markdown-independent-findings-followup-20260916.yaml
+  packet_url: null
+  transport_note: 'push with PR branch; receiving chat must re-resolve current HEAD and permissions'
+source_payloads:
+  - source_skill: implementation-worker
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      mode: review follow-up
+      accepted_scope:
+        - IR81-01
+        - IR81-02
+      changed_files:
+        - skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      validation:
+        focused: '15 cases passed on 3a004c2a762a67d35cbdcbc14092a1a138c0820d'
+        prior_regression: 'R81-01..05 13 cases and R81-06 8 cases passed'
+        repository_full: 'repository/bundle/zip-integrity/zip-contents passed'
+      final_technical_head: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+      push_state: push_pending
+      ci_state: ci_wait_pending
+      next_required_action: normal fix verification, then same independent reviewer bounded closure
+  - source_skill: report-writer
+    output_contract_version: unknown
+    content_type: text/markdown
+    payload:
+      report_type: implementation_report
+      complete_body: |
+        # Markdown全文検査 独立最終レビュー指摘対応レポート
+
+        作成日: 2026-09-16
+
+        ## 対象
+
+        - Repository: `ssaattww/CodexSkill`
+        - PR: `#81 fix: make Markdown lint scan complete documents`
+        - Branch: `fix/markdown-lint-complete-scan`
+        - 独立レビュー対象HEAD: `c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346`
+        - 実装commit: `3a004c2a762a67d35cbdcbc14092a1a138c0820d`
+        - Independent review: `pullrequestreview-5221411529`
+        - Development policy: CodexSkill保守のため非TDD
+        - Verification capability: `local_execution_available`
+
+        ## 目的と範囲
+
+        独立最終レビューで検出された required finding `IR81-01` と `IR81-02` の2件だけを修正した。
+        既存の `R81-01` から `R81-06` の解消済み契約を維持し、設計、許可一覧、workflow、独立最終レビュー予約先は変更していない。
+        ## 指摘対応
+
+        | Finding | 対応 |
+        |---|---|
+        | IR81-01 / medium / coverage_miss | 非ASCII許可語の境界文字へ半角片仮名 `U+FF65..U+FF9F` を追加し、半角許可語の一部だけをprefix/suffix付き語からマスクしないようにした。 |
+        | IR81-02 / medium / coverage_miss | `--files` の各指定pathを選択前に検証し、不存在、repo外、対象外suffix、非file、ignore対象を明示エラー `exit 2` にした。 |
+
+        ## focused validation
+
+        実装commit `3a004c2a762a67d35cbdcbc14092a1a138c0820d` のclean worktreeで、実SudachiPyを使って15ケースを確認した。
+
+        ### IR81-01
+
+        - 半角許可語 `ｷﾞｱ` 自体: allow
+        - 半角許可語を全角 `ギア` で使用: allow
+        - 全角許可語 `ギア` を半角 `ｷﾞｱ` で使用: allow
+        - 半角suffix `ｷﾞｱｽ`: reject
+        - 半角prefix `ﾃｽﾄｷﾞｱ`: reject
+        - 全角suffix `ｷﾞｱス`: reject
+
+        ### IR81-02
+
+        - 実在する違反 `.md`: exit 1
+        - 明示 `.txt` の違反: exit 1
+        - `missing.md`: exit 2 + 明示診断
+        - ignore directory配下: exit 2 + 明示診断
+        - ignored prefix配下: exit 2 + 明示診断
+        - 正常file + missing混在: exit 2
+        - 対象外suffix: exit 2
+        - repo外path: exit 2
+
+        証拠: `C:\Users\donabe\Project\CodexSkill-pr81-validation\ir81-independent-results.json` と `ir81-independent-logs`。
+
+        ## regression validation
+
+        同じ実装commitで既存回帰も再実行した。
+
+        - R81-01〜R81-05向けPython probe: 13ケース success
+        - R81-06向け全角/半角・48,000 byte境界 probe: 8ケース success
+        - Python構文確認: success
+        - `git diff --check`: success
+
+        R81-06 probeは、未登録全角/半角をrejectし、許可済み全角/半角の相互表記をallowし、長文境界でも未登録reject / 許可済みallowを維持した。
+
+        ## repository validation
+
+        実装commit `3a004c2a762a67d35cbdcbc14092a1a138c0820d` で `scripts/run_validation.py` を実行した。
+
+        | Step | Result |
+        |---|---|
+        | repository | pass / exit 0 |
+        | bundle | pass / exit 0 |
+        | zip-integrity | pass / exit 0 |
+        | zip-contents | pass / exit 0 |
+
+        診断出力: `C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-ir81-independent-impl`
+
+        ## intentionally untouched
+
+        - `reports/markdown-complete-scan-independent-final-review-20260916.md`: 独立最終レビュー予約先。metadata-only状態を維持し、作成していない。
+        - `design/review-enforcer-markdown-whitelist-rebuild-design.md`: H-DOC heldは今回のrequired 2件とは別のため変更していない。
+        - Windowsの既存 `cspell.cmd` spawn挙動: 今回のPython checker指摘とは別のheldとして変更していない。
+        - Markdown許可一覧、lint target設定、workflow: 変更していない。
+
+        ## publication / CI
+
+        本レポート作成時点では実装commitはローカルで、push前である。
+        report/handoffを含む最終publication treeにrepository-defined full local gateを再実行してからpushする。
+        push後はPR current HEADとhead SHAが一致するworkflow runだけをCI証拠として使用し、別SHAのrunは代用しない。
+
+        ## remaining risks / held
+
+        - H-DOC: 脚注本文を検査する現仕様と既存設計の脚注定義行除外記載の差は継続held。
+        - Windowsの既存 `cspell.cmd` spawn挙動は継続held。
+        - 独立最終レビューはfailのままであり、この実装担当はclosure verdictを出さない。
+
+        ## next action
+
+        1. 同じ通常レビュアーで `IR81-01` / `IR81-02` のfix verificationを行う。
+        2. 通常fix verification収束後、独立最終レビューの同一レビュアー・同一ライフサイクルで `IR81-01` / `IR81-02` とCI deltaだけをclosure確認する。
+        3. 独立レビューがpassした場合だけ、予約済み独立最終レポートを既存reservation identityでattestationとして永続化する。
+        4. mergeは利用者が行うため実施しない。
+      evidence_sources:
+        - PR review 5221411529
+        - C:\Users\donabe\Project\CodexSkill-pr81-validation\ir81-independent-results.json
+        - C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-ir81-independent-impl\results.json
+      target_identity:
+        branch: fix/markdown-lint-complete-scan
+        base_ref: main
+        current_head: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+        reviewed_implementation_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+      verification:
+        capability: local_execution_available
+        technical_head: 3a004c2a762a67d35cbdcbc14092a1a138c0820d
+        administrative_parent: null
+        commit_state: committed
+        push_state: push_pending
+        ci_wait_state: ci_wait_pending
