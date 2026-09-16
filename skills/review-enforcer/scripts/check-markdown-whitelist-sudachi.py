@@ -487,14 +487,13 @@ def check_japanese_tokens(
             if not should_check_japanese(token, morpheme):
                 continue
 
-            normalized = normalize_term(sudachi_value(morpheme, "normalized_form") or token)
-            reading = normalize_term(sudachi_value(morpheme, "reading_form"))
+            diagnostic_normalized = normalize_term(sudachi_value(morpheme, "normalized_form") or token)
             surface_normalized = normalize_term(token)
-            if {normalized, reading, surface_normalized} & whitelist.terms:
+            if surface_normalized in whitelist.terms:
                 continue
 
             line = line_number_at(text, index)
-            record_violation(source, line, token, normalized, "katakana", violations, unknown_words)
+            record_violation(source, line, token, diagnostic_normalized, "katakana", violations, unknown_words)
 
 
 def iter_sudachi_chunks(text: str) -> Iterable[tuple[int, str]]:
