@@ -35,6 +35,7 @@ HTML_COMMENT_RE = re.compile(r"<!--[\s\S]*?-->")
 REFERENCE_LINK_RE = re.compile(r"^\[[^\]\n]+\]:\s+\S+.*$", re.MULTILINE)
 INLINE_LINK_RE = re.compile(r"!?\[[^\]\n]+\]\([^)]+\)")
 KATAKANA_RE = re.compile(r"[\u30A0-\u30FF]")
+HALFWIDTH_KATAKANA_RUN_RE = re.compile(r"[\uFF61-\uFF9F]+")
 SUDACHI_MAX_INPUT_BYTES = 48_000
 
 
@@ -42,6 +43,7 @@ SUDACHI_MAX_INPUT_BYTES = 48_000
 class Whitelist:
     entries: list[dict]
     terms: set[str]
+    japanese_terms: set[str]
     value_pattern: re.Pattern[str] | None
 
 
@@ -163,6 +165,7 @@ def read_whitelist(root: Path, yaml_module, stdin_path: str | None, stdin_text: 
         raise ValueError(f"{path_label}: entries must be a list.")
 
     terms: set[str] = set()
+    japanese_terms: set[str] = set()
     values: list[str] = []
     for index, entry in enumerate(entries, start=1):
         if not isinstance(entry, dict):
@@ -178,8 +181,14 @@ def read_whitelist(root: Path, yaml_module, stdin_path: str | None, stdin_text: 
         for value in [term, *aliases]:
             values.append(value)
             terms.add(normalize_term(value))
+            japanese_terms.add(normalize_japanese_whitelist_term(value))
 
-    return Whitelist(entries=entries, terms=terms, value_pattern=build_whitelist_value_pattern(values))
+    return Whitelist(
+        entries=entries,
+        terms=terms,
+        japanese_terms=japanese_terms,
+        value_pattern=build_whitelist_value_pattern(values),
+    )
 
 
 def normalize_aliases(aliases) -> list[str]:
@@ -484,12 +493,17 @@ def check_japanese_tokens(
             cursor = local_index + len(token)
             index = chunk_offset + local_index
 
-            if not should_check_japanese(token, morpheme):
-                continue
-
             diagnostic_normalized = normalize_term(sudachi_value(morpheme, "normalized_form") or token)
-            surface_normalized = normalize_term(token)
-            if surface_normalized in whitelist.terms:
+            legacy_surface_normalized = normalize_term(token)
+            surface_normalized = normalize_japanese_whitelist_term(token)
+            compatibility_permission_mismatch = (
+                legacy_surface_normalized in whitelist.terms
+                and surface_normalized not in whitelist.japanese_terms
+                and contains_katakana(token)
+            )
+            if not compatibility_permission_mismatch and not should_check_japanese(token, morpheme):
+                continue
+            if surface_normalized in whitelist.japanese_terms:
                 continue
 
             line = line_number_at(text, index)
@@ -615,6 +629,14 @@ def sudachi_value(morpheme, name: str) -> str:
         return ""
     result = value()
     return "" if result == "*" else str(result)
+
+
+def normalize_japanese_whitelist_term(value: str) -> str:
+    width_normalized = HALFWIDTH_KATAKANA_RUN_RE.sub(
+        lambda match: unicodedata.normalize("NFKC", match.group(0)),
+        value,
+    )
+    return width_normalized.casefold()
 
 
 def normalize_term(value: str) -> str:
