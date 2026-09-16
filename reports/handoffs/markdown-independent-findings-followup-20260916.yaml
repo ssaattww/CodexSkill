@@ -244,7 +244,17 @@ review:
       - finding_or_ci_delta: IR81-01
       - finding_or_ci_delta: IR81-02
       - finding_or_ci_delta: exact-head CI delta
-    completeness_matrix: []
+    completeness_matrix:
+      - finding_id: IR81-01
+        required_action: '許可語マスクの境界を幅違いで同一契約にし、半角許可語のprefix/suffix連結を拒否しつつ全角/半角の許可語相互表記を許可する。'
+        production_path: 'skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py: build_whitelist_value_pattern -> mask_whitelist_values -> check_japanese_tokens'
+        actual_composition_fixture: 'halfwidth term ｷﾞｱ を許可し、exact ｷﾞｱ / fullwidth ギア はallow、suffix ｷﾞｱｽ・prefix ﾃｽﾄｷﾞｱ・mixed suffix ｷﾞｱス はreject。fullwidth term ギア から halfwidth ｷﾞｱ もallow。'
+        focused_evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\ir81-independent-results.json: halfwidth-term-exact-halfwidth, halfwidth-term-exact-fullwidth, fullwidth-term-exact-halfwidth, fullwidth-term-exact-fullwidth, halfwidth-term-suffix-halfwidth, halfwidth-term-prefix-halfwidth, halfwidth-term-suffix-fullwidth. Logs: ir81-independent-logs/*.stdout.log and *.stderr.log. All matched expected exits at implementation head 3a004c2a762a67d35cbdcbc14092a1a138c0820d.'
+      - finding_id: IR81-02
+        required_action: 'explicit modeで要求された各pathの解決結果を検証し、不存在・repo外・対象外suffix・ignore対象等を無言で成功扱いにしない。missing / ignored / valid+missing / 明示.txt を回帰確認する。'
+        production_path: 'skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py: select_target_files -> validate_explicit_targets -> resolve_candidate / is_target_file / is_ignored'
+        actual_composition_fixture: 'violation.md と note.txt は未登録語でexit 1。missing.md、ignored/hidden.md、excluded/prefix.md、violation.md + missing.md、unsupported.json、repo外 outside.md は明示診断付きexit 2。'
+        focused_evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\ir81-independent-results.json: explicit-valid-violation-md, explicit-valid-txt, explicit-missing, explicit-ignored-directory, explicit-ignored-prefix, explicit-valid-plus-missing, explicit-unsupported-suffix, explicit-outside-repo. Logs: ir81-independent-logs/*.stdout.log and *.stderr.log. All matched expected exits at implementation head 3a004c2a762a67d35cbdcbc14092a1a138c0820d.'
   validation_assessment: []
   reserved_report_paths:
     - reports/markdown-complete-scan-independent-final-review-20260916.md
