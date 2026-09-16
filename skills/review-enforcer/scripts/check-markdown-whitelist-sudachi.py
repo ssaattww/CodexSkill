@@ -245,6 +245,8 @@ def select_target_files(
     else:
         candidates = list_all_target_files(root, target_config)
 
+    if explicit_files is not None:
+        validate_explicit_targets(root, target_config, explicit_files)
     target_suffixes = EXPLICIT_TARGET_SUFFIXES if explicit_files is not None else TARGET_SUFFIXES
     root_resolved = root.resolve()
     return sorted(
@@ -256,6 +258,45 @@ def select_target_files(
         },
         key=lambda item: normalize_path(item.relative_to(root_resolved)),
     )
+
+
+def validate_explicit_targets(
+    root: Path,
+    target_config: dict[str, list[str]],
+    explicit_files: list[str],
+) -> None:
+    root_resolved = root.resolve()
+    errors: list[str] = []
+    for file_name in explicit_files:
+        candidate = resolve_candidate(root, file_name)
+        if candidate is None:
+            errors.append(f"{file_name}: path is outside the repository.")
+            continue
+        resolved = candidate.resolve()
+        try:
+            relative_path = normalize_path(resolved.relative_to(root_resolved))
+        except ValueError:
+            errors.append(f"{file_name}: path is outside the repository.")
+            continue
+        if not resolved.exists():
+            errors.append(f"{file_name}: file does not exist.")
+            continue
+        if not resolved.is_file():
+            errors.append(f"{file_name}: path is not a file.")
+            continue
+        if not is_target_file(resolved, EXPLICIT_TARGET_SUFFIXES):
+            suffixes = ", ".join(EXPLICIT_TARGET_SUFFIXES)
+            errors.append(f"{file_name}: unsupported suffix; expected one of {suffixes}.")
+            continue
+        if is_ignored(relative_path, target_config):
+            errors.append(f"{file_name}: path is excluded by Markdown target configuration.")
+
+    if errors:
+        print("Explicit Markdown targets could not be inspected:", file=sys.stderr)
+        for error in errors:
+            print(f"- {error}", file=sys.stderr)
+        raise SystemExit(2)
+
 
 
 def resolve_candidate(root: Path, file_name: str) -> Path | None:
@@ -399,7 +440,7 @@ def build_whitelist_value_pattern(values: list[str]) -> re.Pattern[str] | None:
             )
             continue
 
-        boundary = r"A-Za-z0-9_\u30A0-\u30FF\u3400-\u9FFF"
+        boundary = r"A-Za-z0-9_\u30A0-\u30FF\u3400-\u9FFF\uFF65-\uFF9F"
         patterns.append(rf"(?<![{boundary}])(?:{escaped})(?![{boundary}])")
 
     if not patterns:
