@@ -96,6 +96,14 @@ Markdown lint 対象を定義する。生成物、外部取り込み物、build 
 
 そのリポジトリでの lint 実行方法と、指摘が不適切な場合の報告方法を書く。作業者へ細かい用語規則は書かない。
 
+## CodexSkill自身への導入
+
+Issue #79では、CodexSkill自身も対象リポジトリとしてrepo-localの用語検査を持つ。`package.json` と `tools/lint/` を配置し、既存の `skills/review-enforcer/scripts/check-markdown-whitelist.js` を再利用する。全体検査はGit管理下のMarkdownだけを列挙して実行し、依存物や作業用出力を走査対象へ混入させない。
+
+導入初期は対象除外を設定せず、空の許可一覧から未登録語を抽出する。既存文書量が多くても、抽出結果を自動で許可一覧へ大量登録しない。`term`、`aliases`、`description`、`prh`、対象除外の具体的変更は利用者確認後に反映する。許可一覧が未確定の間は未登録語検査を意図的な未完了gateとして記録し、CI成功や文章品質レビューで上書きしない。
+
+repo-localの実行入口は `npm run lint:md` をfull検査、`npm run lint:md:changed` をfocused検査とする。候補確認用にそれぞれ未登録語一覧を出すcommandを用意する。CIでblocking gateへ接続するのは、対象範囲と初期許可一覧を利用者が承認した後とする。
+
 ## shared script の配置
 
 shared script は CodexSkill 側に置く。
