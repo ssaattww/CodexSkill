@@ -1,0 +1,624 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-16T03:59:06.952706+00:00",
+  "review_mode": "fix_verification",
+  "reviewed_implementation_head": "2c486628816b5f0c784ee454e56601ce86d9af00",
+  "fix_commit": "606b7e7d3d7fe000dc97d6541bac7d22c07c0247",
+  "previous_review_head": "422207a52e574281147a721113421281cc5a686f",
+  "base_head": "106ea5dcf12c4805756351fb9381df220b94f044",
+  "focused_results": {
+    "head": "2c486628816b5f0c784ee454e56601ce86d9af00",
+    "all_ok": true,
+    "records": [
+      {
+        "name": "unknown-fullwidth",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'コンピューター' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "unknown-halfwidth",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｺﾝﾋﾟｭｰﾀｰ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "unknown-halfwidth-voiced",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "unknown-halfwidth-semivoiced",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ﾊﾟﾗﾒｰﾀｰ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "unknown-mixed-width",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｺンﾋﾟｭｰﾀｰ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "allow-full-term-full-input",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "allow-full-term-half-input",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "allow-half-term-full-input",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "allow-half-term-half-input",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "allow-full-voiced-half-input",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "allow-half-voiced-full-input",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-15994",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-15994",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-15995",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-15995",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-15996",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-15996",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-15997",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-15997",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-15998",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-15998",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-15999",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-15999",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-16000",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-16000",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-16001",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-16001",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-16002",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-16002",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-16003",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-16003",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-16004",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-16004",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-unknown-16005",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "boundary-allowed-16005",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary-line2-halfwidth",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:2: 'ﾊﾟﾗﾒｰﾀｰ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "r81-01-boundary",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ギア' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "r81-05-normalization-growth",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:2: 'ジッタ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "explicit-txt",
+        "exit_code": 1,
+        "expected": 1,
+        "ok": true,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- note.txt:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "implicit-txt",
+        "exit_code": 0,
+        "expected": 0,
+        "ok": true,
+        "stdout": "",
+        "stderr": ""
+      }
+    ],
+    "chunk_checks": [
+      {
+        "pad": 15994,
+        "chunks": 3,
+        "boundaries": [
+          16001,
+          32001
+        ],
+        "ok": true
+      },
+      {
+        "pad": 15995,
+        "chunks": 3,
+        "boundaries": [
+          16001,
+          32001
+        ],
+        "ok": true
+      },
+      {
+        "pad": 15996,
+        "chunks": 3,
+        "boundaries": [
+          16001,
+          32001
+        ],
+        "ok": true
+      },
+      {
+        "pad": 15997,
+        "chunks": 3,
+        "boundaries": [
+          16001,
+          32001
+        ],
+        "ok": true
+      },
+      {
+        "pad": 15998,
+        "chunks": 3,
+        "boundaries": [
+          15997,
+          31998
+        ],
+        "ok": true
+      },
+      {
+        "pad": 15999,
+        "chunks": 3,
+        "boundaries": [
+          15998,
+          31999
+        ],
+        "ok": true
+      },
+      {
+        "pad": 16000,
+        "chunks": 3,
+        "boundaries": [
+          15999,
+          32000
+        ],
+        "ok": true
+      },
+      {
+        "pad": 16001,
+        "chunks": 3,
+        "boundaries": [
+          16000,
+          32001
+        ],
+        "ok": true
+      },
+      {
+        "pad": 16002,
+        "chunks": 3,
+        "boundaries": [
+          16000,
+          32001
+        ],
+        "ok": true
+      },
+      {
+        "pad": 16003,
+        "chunks": 3,
+        "boundaries": [
+          16000,
+          32001
+        ],
+        "ok": true
+      },
+      {
+        "pad": 16004,
+        "chunks": 3,
+        "boundaries": [
+          16000,
+          32001
+        ],
+        "ok": true
+      },
+      {
+        "pad": 16005,
+        "chunks": 3,
+        "boundaries": [
+          16000,
+          32001
+        ],
+        "ok": true
+      }
+    ]
+  },
+  "repository_validation": {
+    "schema_version": 1,
+    "started_at": "2026-09-16T03:55:01.375654+00:00",
+    "status": "pass",
+    "steps": [
+      {
+        "name": "repository",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpUI0QE1/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-r81-06-fixverify-20260916/scripts/verify_skill_repository.py"
+        ],
+        "started_at": "2026-09-16T03:55:01.389796+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "repository.stdout.log",
+        "stderr": "repository.stderr.log",
+        "duration_seconds": 0.031948,
+        "finished_at": "2026-09-16T03:55:01.421758+00:00"
+      },
+      {
+        "name": "bundle",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpUI0QE1/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-r81-06-fixverify-20260916/scripts/build_chatgpt_worker_skills.py",
+          "--repo-root",
+          "/home/ibis/AI/CodexSkill-pr81-r81-06-fixverify-20260916",
+          "--output",
+          "/tmp/pr81-r81-06-rereview/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T03:55:01.421963+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "bundle.stdout.log",
+        "stderr": "bundle.stderr.log",
+        "duration_seconds": 0.031826,
+        "finished_at": "2026-09-16T03:55:01.453800+00:00"
+      },
+      {
+        "name": "zip-integrity",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpUI0QE1/bin/python",
+          "-c",
+          "import sys, zipfile; archive = zipfile.ZipFile(sys.argv[1]); bad = archive.testzip(); archive.close(); print('Invalid CRC: ' + bad if bad else 'ZIP integrity verified'); sys.exit(1 if bad else 0)",
+          "/tmp/pr81-r81-06-rereview/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T03:55:01.454077+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-integrity.stdout.log",
+        "stderr": "zip-integrity.stderr.log",
+        "duration_seconds": 0.0318,
+        "finished_at": "2026-09-16T03:55:01.485887+00:00"
+      },
+      {
+        "name": "zip-contents",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpUI0QE1/bin/python",
+          "-m",
+          "zipfile",
+          "-l",
+          "/tmp/pr81-r81-06-rereview/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T03:55:01.486115+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-contents.stdout.log",
+        "stderr": "zip-contents.stderr.log",
+        "duration_seconds": 0.031863,
+        "finished_at": "2026-09-16T03:55:01.517992+00:00"
+      }
+    ],
+    "python": "3.13.7",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "ci": {
+      "GITHUB_RUN_ID": null,
+      "GITHUB_RUN_ATTEMPT": null,
+      "GITHUB_EVENT_NAME": null,
+      "TARGET_REF": null
+    },
+    "finished_at": "2026-09-16T03:55:01.518269+00:00"
+  },
+  "source_sha256": {
+    "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py": "305e6fde14a8b101d311eea409d68363daf105e6dd9be7af6753f1dd4d7b1fed"
+  },
+  "source_delta_after_fix": "",
+  "ci": {
+    "validation_run": {
+      "run_id": 35034918139,
+      "head_sha": "2c486628816b5f0c784ee454e56601ce86d9af00",
+      "conclusion": "success",
+      "build_job": 104601738394,
+      "artifact_id": 10422364795
+    },
+    "diagnostic_run": {
+      "run_id": 35034914386,
+      "head_sha": "2c486628816b5f0c784ee454e56601ce86d9af00",
+      "conclusion": "success",
+      "collect_job": 104601727243,
+      "artifact_id": 10422492764
+    }
+  },
+  "finding_completeness_matrix": [
+    {
+      "finding_id": "R81-06",
+      "required_action": "半角片仮名をNFKC/normalized formで検査し、長文分割の片仮名境界も同じ正規化契約に揃える。",
+      "production_path": "contains_katakana / should_check_japanese / preserve_katakana_boundary",
+      "actual_composition_fixture": "未登録/許可済みの全角・半角・濁点/半濁点・混在幅、48,000 byte境界12位置、2行目境界",
+      "focused_evidence": "/tmp/pr81-r81-06-rereview/focused-results.json; 40 CLI cases + 12 chunk checks",
+      "disposition": "resolved"
+    }
+  ],
+  "coverage": [
+    {
+      "criterion": "requirement and design conformance",
+      "disposition": "checked_no_finding",
+      "evidence": "設計上の片仮名語検査契約に半角表記もNFKC後の片仮名として合流することを確認。"
+    },
+    {
+      "criterion": "correctness and edge cases",
+      "disposition": "checked_no_finding",
+      "evidence": "全角/半角、濁点/半濁点、混在幅、許可済み/未登録、境界位置12通りを現HEADで実行。"
+    },
+    {
+      "criterion": "scope discipline",
+      "disposition": "checked_no_finding",
+      "evidence": "R81-06実装差分はcheck-markdown-whitelist-sudachi.pyのみ。後続はreport/handoffのみ。"
+    },
+    {
+      "criterion": "changed files and dependencies",
+      "disposition": "checked_no_finding",
+      "evidence": "SudachiPy 0.6.11 / SudachiDict-core 20260428 / PyYAML 6.0.3を使用。"
+    },
+    {
+      "criterion": "API and compatibility",
+      "disposition": "checked_no_finding",
+      "evidence": "R81-01/R81-03/R81-05経路の回帰を再実行。cspell実装は前回から未変更。"
+    },
+    {
+      "criterion": "tests and validation adequacy",
+      "disposition": "checked_no_finding",
+      "evidence": "独立focused 40 cases、chunk invariants 12 cases、repository validation 4/4 pass。"
+    },
+    {
+      "criterion": "current-HEAD CI evidence",
+      "disposition": "checked_no_finding",
+      "evidence": "2c486628と一致するrun 35034918139 build success、push run 35034914386 diagnostics success。"
+    },
+    {
+      "criterion": "report and documentation accuracy",
+      "disposition": "held",
+      "evidence": "H-DOC: 脚注本文を検査する現仕様と既存設計の脚注定義行除外記載の差は継続。"
+    },
+    {
+      "criterion": "regression and maintainability risks",
+      "disposition": "checked_no_finding",
+      "evidence": "R81-06修正で触る分割・正規化経路のR81-01/R81-05回帰を確認し、新規required findingなし。"
+    }
+  ],
+  "held": [
+    {
+      "item": "H-DOC: 脚注定義本文の設計記載差",
+      "reason": "現仕様は脚注本文を検査するが既存設計は脚注定義行除外と記載。",
+      "owner": "implementation/design owner",
+      "remaining_risk": "仕様説明の不一致。",
+      "verdict_impact": "非blocking held。"
+    },
+    {
+      "item": "Windows run-cspell-markdown.js の既存cspell.cmd spawn挙動",
+      "reason": "R81-06はPython checkerのみの変更でcspell実装は未変更。意味的cspell経路は前回Ubuntuで確認済み。",
+      "owner": "implementation owner",
+      "remaining_risk": "Windows wrapper固有起動は未解消。",
+      "verdict_impact": "今回のR81-06 closureをblockしない。"
+    }
+  ],
+  "verdict": "pass_with_held"
+}

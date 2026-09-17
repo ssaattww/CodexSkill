@@ -1,0 +1,460 @@
+schema_version: 3
+producer:
+  skill: chat-review-worker
+  mode: fix_verification
+  generated_at: '2026-09-16T22:14:47.036019+00:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #81'
+branch: fix/markdown-lint-complete-scan
+base_ref: main
+target:
+  current_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  reviewed_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  commit_range: df7c6c6be53e4f3d6e81b4e3c15aef188454b5dc...c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+execution_environment: &id003
+  device: ibis-ThinkBook-14-G7-IML
+  tool: Remote Desktop Commander
+  worktree: /home/ibis/AI/CodexSkill-pr81-additional-review-20260917
+  python: 3.13.7
+  platform: Linux-6.8.0-136-generic-x86_64-with-glibc2.39
+  dependencies:
+  - SudachiPy 0.6.11
+  - SudachiDict-core 20260428
+  - PyYAML 6.0.3
+verification:
+  capability: local_execution_available
+  technical_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  commit:
+    state: commit_pending
+    review_target_sha: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  push:
+    state: push_pending
+    head_sha: unknown
+  ci_wait:
+    state: not_required
+    required_for: not_required
+authoritative_requirements: &id002
+- source: pr
+  reference: comment 5704475283
+  summary: 実表記term/aliasだけを許可し、Sudachi正規形・読みだけで許可しない。幅差と表記置換を分離する。
+- source: repository_instruction
+  reference: AGENTS.md
+  summary: CodexSkill保守は非TDD。
+development_policy:
+  method: non-TDD
+  testing_order: focused review probe then repository validation
+  governing_source: AGENTS.md
+scope:
+- 'PR #81 comment 5704475283追加対応だけのfix verification'
+non_goals:
+- 'Issue #85引用例外'
+- H-DOC held
+- Windows cspell.cmd held
+- merge
+files:
+  changed:
+  - path: reports/markdown-japanese-surface-whitelist-fix-verification-20260917.md
+    purpose: review report
+  - path: reports/markdown-japanese-surface-whitelist-fix-verification-evidence-20260917.json
+    purpose: review evidence
+  - path: reports/handoffs/markdown-japanese-surface-whitelist-fix-verification-20260917.yaml
+    purpose: handoff
+  inspected:
+  - path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    purpose: additional fix production path
+  - path: reports/markdown-japanese-surface-whitelist-followup-20260917.md
+    purpose: implementation evidence
+commands:
+- command: reviewer focused probe
+  purpose: comment 5704475283 main and sibling cases
+  exit_code: 0
+  result: failed
+  head_sha: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  evidence: reports/markdown-japanese-surface-whitelist-fix-verification-evidence-20260917.json
+- command: python scripts/run_validation.py
+  purpose: repository validation
+  exit_code: 0
+  result: passed
+  head_sha: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  evidence: /tmp/pr81-additional-review-full-validation/results.json
+tests:
+- name: additional Japanese approval probe
+  phase: verification
+  result: failed
+  head_sha: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  evidence: reports/markdown-japanese-surface-whitelist-fix-verification-evidence-20260917.json
+- name: repository full validation
+  phase: verification
+  result: passed
+  head_sha: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  evidence: 4/4 steps pass
+ci: &id005
+  validation_run: 35153871592
+  validation_job: 104988533853
+  validation_artifact: 10470411579
+  push_run: 35153868102
+  push_job: 104988520422
+  push_artifact: 10470640735
+  head_sha: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  conclusion: success
+implementation:
+  outcome: not_applicable
+  final_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  commits: []
+  addressed_findings: []
+  failure_diagnostics: []
+  blocked_items: []
+  summary:
+  - review only; no implementation changes
+review: &id004
+  mode: fix_verification
+  reviewed_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  reviewer:
+    identity: chatgpt-pr81-normal-review-20260916
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: chatgpt-pr81-normal-review-20260916
+      changed: false
+      reason: null
+  verdict: fail
+  findings:
+  - &id001
+    id: R81-07
+    severity: medium
+    origin: coverage_miss
+    location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:491,621
+    description: NFKCによる許可判定が幅差以外のUnicode互換表記まで明示term/aliasと同一視する。
+    impact: 未承認の互換表記がwhitelist検査を通り、表記承認の範囲が暗黙に拡張される。
+    evidence: current HEADで term キロ + ㌔、センチ + ㌢、リットル + ㍑、メートル + ㍍ がすべてexit 0。reverseの term ㌔ + キロ もexit 0。
+    required_action: 日本語の許可判定用正規化を幅差の同一視と一般NFKC互換置換から分離し、ギア/ｷﾞｱを維持しつつ互換文字は明示term/aliasなしでは拒否する。
+  required_coverage:
+  - criterion: PR comment 5704475283 contract
+    disposition: checked_finding
+    evidence: 主要caseは修正済みだがNFKC互換文字が幅差以外も許可するR81-07。
+  - criterion: changed code and regressions
+    disposition: checked_finding
+    evidence: 7行の実装差分、focused probe、full validationを確認。
+  - criterion: current-HEAD CI
+    disposition: checked_no_finding
+    evidence: c67370fと一致するrun 35153871592 / 35153868102 success。
+  validation_assessment:
+  - item: implementation focused validation
+    result: unsupported
+    evidence: 10ケースは通るが互換片仮名fixtureを含まず要件のwidth-only部分を覆っていない。
+  - item: repository validation
+    result: supported
+    evidence: 4/4 pass。
+  - item: exact-head CI
+    result: supported
+    evidence: matching head_sha only。
+findings:
+- *id001
+held:
+- item: H-DOC footnote design mismatch
+  reason: previous held item
+  owner: implementation/design owner
+  remaining_risk: design wording mismatch
+  verdict_impact: does not alter R81-07 fail
+- item: Windows cspell.cmd spawn behavior
+  reason: previous held item
+  owner: implementation owner
+  remaining_risk: Windows wrapper path unverified
+  verdict_impact: does not alter R81-07 fail
+unexplored: []
+unknown: []
+remaining_risks:
+- R81-07 remains unresolved.
+report:
+  report_type: verification_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+  - reports/markdown-japanese-surface-whitelist-fix-verification-20260917.md
+  - reports/markdown-japanese-surface-whitelist-fix-verification-evidence-20260917.json
+  reviewed_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  attestation_head: null
+  pr_comments: []
+  summary:
+  - additional fix verification fails on R81-07
+source_payloads:
+- source_skill: work-context-manager
+  output_contract_version: unknown
+  content_type: application/yaml
+  payload:
+    repository: ssaattww/CodexSkill
+    issue_or_pr: 'PR #81'
+    branch: fix/markdown-lint-complete-scan
+    base_ref: main
+    reviewed_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+    commit_range: df7c6c6be53e4f3d6e81b4e3c15aef188454b5dc...c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+    authoritative_requirements: *id002
+    execution_environment: *id003
+    validation_plan:
+    - reviewer focused probe
+    - repository full validation
+    - exact-head CI
+- source_skill: review-worker
+  output_contract_version: unknown
+  content_type: application/yaml
+  payload: *id004
+- source_skill: report-writer
+  output_contract_version: unknown
+  content_type: text/markdown
+  payload:
+    complete_body: "# Markdown日本語許可判定 追加対応fix verification\n\n作成日: 2026-09-17\n\n## 判定\n\n**fail（要修正）**。PR #81 comment `5704475283`\
+      \ の主要ケースは修正済みだが、同コメントが要求する「全角・半角の統一と、語の表記自体の置き換えを分ける」を満たさない `R81-07 / medium / coverage_miss` を1件確認した。\n\n## 対象\n\n\
+      - Repository: `ssaattww/CodexSkill`\n- PR: `#81 fix: make Markdown lint scan complete documents`\n- review mode: `fix_verification`\n\
+      - reviewer continuity: `chatgpt-pr81-normal-review-20260916`（同じ通常レビュー会話）\n- previous normal-review HEAD: `df7c6c6be53e4f3d6e81b4e3c15aef188454b5dc`\n\
+      - technical fix commit: `daeddaa5a5d5a626d1ad891a831f6476a9c530a4`\n- reviewed HEAD: `c67370f985f5c0c1ee330f10ff5bbd500c72fe2a`\n\
+      - authoritative requirement: PR comment `5704475283`\n\n`daeddaa5...` 以後のcommitはreport/handoffのみで、実装・Skill・設計・workflow・設定に追加変更がないことを確認した。\n\
+      \n## 追加要件の確認\n\n- `term: キャプチャー` + `キャプチャー`: allow\n- 同じ許可一覧 + `キャプチャ`: reject\n- `alias: キャプチャ` を明示した隔離fixture: allow\n\
+      - normalized-formだけ一致する `ユーザー` / `ユーザ`: reject\n- readingだけ一致する `アオリンゴ` / `青リンゴ`: reject\n- `ギア` / `ｷﾞｱ`: NFKCにより相互allow\n\
+      \n上記はcurrent HEADを専用fixtureで直接実行し、期待値と一致した。\n## R81-07 / medium / coverage_miss\n\n場所: `skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:491,621`\n\
+      \n**内容:** 許可判定に使う `surface_normalized` と whitelist term/alias の正規化が `NFKC + casefold` のままであるため、全角・半角の幅差だけでなくUnicode互換文字の置換まで同一表記として扱う。\n\
+      \n**影響:** 明示的に承認していない表記でも、NFKCで承認termへ展開されればwhitelist検査を通過する。これはcomment `5704475283` の「実際に記載された表記とterm/aliasに限定」「幅差と表記置換を分ける」という契約に反する。\n\
+      \n**current HEADでの再現:** \n\n| Approved term | Input | Expected | Actual |\n|---|---|---:|---:|\n| `キロ` | `㌔` | reject\
+      \ / 1 | allow / 0 |\n| `センチ` | `㌢` | reject / 1 | allow / 0 |\n| `リットル` | `㍑` | reject / 1 | allow / 0 |\n| `メートル` |\
+      \ `㍍` | reject / 1 | allow / 0 |\n| `㌔` | `キロ` | reject / 1 | allow / 0 |\n\n比較元 `df7c6c6...` でも `term: キロ` + `㌔` はexit\
+      \ 0であり、新規退行ではない。今回の追加要件に対するfixture不足として `coverage_miss` に分類する。\n\n**必要な対応:** 日本語の「許可判定用」の表記正規化を、幅差の同一視と一般的なNFKC互換置換から分離する。`ギア`\
+      \ / `ｷﾞｱ` の既存契約を維持しつつ、`㌔` / `キロ` のような互換表記は明示term/aliasがない限り拒否する。少なくとも上表の両方向fixtureを追加して確認する。\n\nSudachi `normalized_form`\
+      \ を診断用に残す変更自体には問題を確認していない。\n## Validation\n\n- Reviewer focused probe: 10ケース。commentの主要6系統は期待値一致、互換文字4ケースはR81-07として失敗を再現。\n\
+      - 比較確認: `df7c6c6...` でも `キロ` / `㌔` はallowでありpre-existing behaviorを確認。\n- repository validation: repository / bundle\
+      \ / zip-integrity / zip-contents 全てpass。\n- Python構文 / `git diff --check`: pass。\n- reviewed HEAD `c67370f...` と一致するCIのみを採用。\n\
+      \  - `Validate and release ChatGPT worker skills` run `35153871592`: success、build `104988533853` success、artifact `10470411579`。\n\
+      \  - `PR commit artifacts` push run `35153868102`: success、collect `104988520422` success、artifact `10470640735`。\n\n\
+      Reviewer probeの入力、stdout/stderr、終了値は `reports/markdown-japanese-surface-whitelist-fix-verification-evidence-20260917.json`\
+      \ に保存する。\n\n## Held\n\n- H-DOC: 脚注本文の現仕様と既存設計記載の差。\n- Windowsの既存 `cspell.cmd` spawn挙動。\n- Issue #85の引用原文例外は別scope。\n\
+      \nいずれもR81-07の判定とは別である。\n\n## Next action\n\nR81-07を修正し、width-only approval normalizationと互換文字の両方向fixtureを確認する。その後、同じ通常レビュアーでR81-07とCI\
+      \ deltaのみfix verificationする。通常レビューが再収束した後に、既存の独立最終レビューライフサイクルへ戻す。mergeはしない。\n"
+    paths:
+    - reports/markdown-japanese-surface-whitelist-fix-verification-20260917.md
+    - reports/markdown-japanese-surface-whitelist-fix-verification-evidence-20260917.json
+    reviewed_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+extensions:
+- namespace: review_evidence
+  payload:
+    schema_version: 1
+    generated_at: '2026-09-16T22:14:47.036019+00:00'
+    repository: ssaattww/CodexSkill
+    pr: 81
+    review_mode: fix_verification
+    reviewed_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+    previous_review_head: df7c6c6be53e4f3d6e81b4e3c15aef188454b5dc
+    fix_commit: daeddaa5a5d5a626d1ad891a831f6476a9c530a4
+    requirement_comment:
+      id: 5704475283
+      url: https://github.com/ssaattww/CodexSkill/pull/81#issuecomment-5704475283
+    environment: *id003
+    reviewer_probe:
+    - name: capture-canonical
+      term: キャプチャー
+      aliases: []
+      text: キャプチャー
+      exit: 0
+      stdout: ''
+      stderr: ''
+      expected: 0
+      match: true
+    - name: capture-unapproved
+      term: キャプチャー
+      aliases: []
+      text: キャプチャ
+      exit: 1
+      stdout: ''
+      stderr: 'Markdown whitelist violations:
+
+        - probe.md:1: ''キャプチャ'' (katakana) is not in tools/lint/markdown-whitelist.yaml.
+
+        '
+      expected: 1
+      match: true
+    - name: capture-alias
+      term: キャプチャー
+      aliases:
+      - キャプチャ
+      text: キャプチャ
+      exit: 0
+      stdout: ''
+      stderr: ''
+      expected: 0
+      match: true
+    - name: normalized-only
+      term: ユーザー
+      aliases: []
+      text: ユーザ
+      exit: 1
+      stdout: ''
+      stderr: 'Markdown whitelist violations:
+
+        - probe.md:1: ''ユーザ'' (katakana) is not in tools/lint/markdown-whitelist.yaml.
+
+        '
+      expected: 1
+      match: true
+    - name: reading-only
+      term: アオリンゴ
+      aliases: []
+      text: 青リンゴ
+      exit: 1
+      stdout: ''
+      stderr: 'Markdown whitelist violations:
+
+        - probe.md:1: ''青リンゴ'' (katakana) is not in tools/lint/markdown-whitelist.yaml.
+
+        '
+      expected: 1
+      match: true
+    - name: width-equivalent
+      term: ギア
+      aliases: []
+      text: ｷﾞｱ
+      exit: 0
+      stdout: ''
+      stderr: ''
+      expected: 0
+      match: true
+    - name: compat-kilo
+      term: キロ
+      aliases: []
+      text: ㌔
+      exit: 0
+      stdout: ''
+      stderr: ''
+      expected: 1
+      match: false
+    - name: compat-centi
+      term: センチ
+      aliases: []
+      text: ㌢
+      exit: 0
+      stdout: ''
+      stderr: ''
+      expected: 1
+      match: false
+    - name: compat-liter
+      term: リットル
+      aliases: []
+      text: ㍑
+      exit: 0
+      stdout: ''
+      stderr: ''
+      expected: 1
+      match: false
+    - name: compat-meter
+      term: メートル
+      aliases: []
+      text: ㍍
+      exit: 0
+      stdout: ''
+      stderr: ''
+      expected: 1
+      match: false
+    pre_fix_compatibility_observation:
+      head: df7c6c6be53e4f3d6e81b4e3c15aef188454b5dc
+      term: キロ
+      input: ㌔
+      exit_code: 0
+    current_reverse_compatibility_observation:
+      head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+      term: ㌔
+      input: キロ
+      exit_code: 0
+    repository_validation:
+      schema_version: 1
+      started_at: '2026-09-16T22:12:10.506994+00:00'
+      status: pass
+      steps:
+      - name: repository
+        command:
+        - /home/ibis/.cache/uv/builds-v0/.tmpNUfxhr/bin/python
+        - /home/ibis/AI/CodexSkill-pr81-additional-review-20260917/scripts/verify_skill_repository.py
+        started_at: '2026-09-16T22:12:10.518095+00:00'
+        status: pass
+        exit_code: 0
+        reason: null
+        stdout: repository.stdout.log
+        stderr: repository.stderr.log
+        duration_seconds: 0.031674
+        finished_at: '2026-09-16T22:12:10.549780+00:00'
+      - name: bundle
+        command:
+        - /home/ibis/.cache/uv/builds-v0/.tmpNUfxhr/bin/python
+        - /home/ibis/AI/CodexSkill-pr81-additional-review-20260917/scripts/build_chatgpt_worker_skills.py
+        - --repo-root
+        - /home/ibis/AI/CodexSkill-pr81-additional-review-20260917
+        - --output
+        - /tmp/pr81-additional-review-full-validation/chatgpt-worker-skills.zip
+        started_at: '2026-09-16T22:12:10.549972+00:00'
+        status: pass
+        exit_code: 0
+        reason: null
+        stdout: bundle.stdout.log
+        stderr: bundle.stderr.log
+        duration_seconds: 0.031777
+        finished_at: '2026-09-16T22:12:10.581762+00:00'
+      - name: zip-integrity
+        command:
+        - /home/ibis/.cache/uv/builds-v0/.tmpNUfxhr/bin/python
+        - -c
+        - 'import sys, zipfile; archive = zipfile.ZipFile(sys.argv[1]); bad = archive.testzip(); archive.close(); print(''Invalid
+          CRC: '' + bad if bad else ''ZIP integrity verified''); sys.exit(1 if bad else 0)'
+        - /tmp/pr81-additional-review-full-validation/chatgpt-worker-skills.zip
+        started_at: '2026-09-16T22:12:10.581982+00:00'
+        status: pass
+        exit_code: 0
+        reason: null
+        stdout: zip-integrity.stdout.log
+        stderr: zip-integrity.stderr.log
+        duration_seconds: 0.031763
+        finished_at: '2026-09-16T22:12:10.613757+00:00'
+      - name: zip-contents
+        command:
+        - /home/ibis/.cache/uv/builds-v0/.tmpNUfxhr/bin/python
+        - -m
+        - zipfile
+        - -l
+        - /tmp/pr81-additional-review-full-validation/chatgpt-worker-skills.zip
+        started_at: '2026-09-16T22:12:10.613982+00:00'
+        status: pass
+        exit_code: 0
+        reason: null
+        stdout: zip-contents.stdout.log
+        stderr: zip-contents.stderr.log
+        duration_seconds: 0.031645
+        finished_at: '2026-09-16T22:12:10.645639+00:00'
+      python: 3.13.7
+      platform: Linux-6.8.0-136-generic-x86_64-with-glibc2.39
+      ci:
+        GITHUB_RUN_ID: null
+        GITHUB_RUN_ATTEMPT: null
+        GITHUB_EVENT_NAME: null
+        TARGET_REF: null
+      finished_at: '2026-09-16T22:12:10.645807+00:00'
+    ci: *id005
+    finding: *id001
+next_action:
+  type: implementation
+  target_skill: implementation-worker
+  mode: review follow-up
+  summary: R81-07を修正後、同じ通常レビューでfix verificationする。
+  instructions:
+  - width-only approval normalizationをNFKC互換置換から分離する
+  - 互換文字両方向fixtureを追加する
+  - exact-head CIだけを使用する
+  required_attachments_or_references:
+  - reports/markdown-japanese-surface-whitelist-fix-verification-20260917.md
+  - reports/markdown-japanese-surface-whitelist-fix-verification-evidence-20260917.json
+  requested_authorized_actions:
+  - read_repository
+  - edit_code
+  - write_report
+  - write_handoff
+  - commit
+  - push
+  - update_pr
+  - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/markdown-japanese-surface-whitelist-fix-verification-20260917.yaml
+  packet_url: null
+  transport_note: same PR branch

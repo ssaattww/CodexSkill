@@ -1,0 +1,3209 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-09-16T23:39:20.303663+00:00",
+  "repository": "ssaattww/CodexSkill",
+  "pr": 81,
+  "review_mode": "fix_verification",
+  "reviewed_head": "18012c27e7b6645f18fcbe14a681de5d8390615d",
+  "technical_fix_commit": "bb3ad34bbba6a873c73d2d737ddd4368631eee04",
+  "previous_review_head": "7417ac0da68202ff81f5cdf0c91417f6d8bb290b",
+  "reviewer_probe": {
+    "head": "18012c27e7b6645f18fcbe14a681de5d8390615d",
+    "scratch": "/tmp/pr81-r81-07-review-uxi7qkhp",
+    "compat_pair_count": 139,
+    "records": [
+      {
+        "name": "kilo",
+        "term": "キロ",
+        "aliases": [],
+        "input": "㌔",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌔' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "kilo-rev",
+        "term": "㌔",
+        "aliases": [],
+        "input": "キロ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'キロ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "centi",
+        "term": "センチ",
+        "aliases": [],
+        "input": "㌢",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌢' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "centi-rev",
+        "term": "㌢",
+        "aliases": [],
+        "input": "センチ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'センチ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "liter",
+        "term": "リットル",
+        "aliases": [],
+        "input": "㍑",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍑' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "liter-rev",
+        "term": "㍑",
+        "aliases": [],
+        "input": "リットル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'リットル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "meter",
+        "term": "メートル",
+        "aliases": [],
+        "input": "㍍",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍍' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "meter-rev",
+        "term": "㍍",
+        "aliases": [],
+        "input": "メートル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'メートル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "width-a",
+        "term": "ギア",
+        "aliases": [],
+        "input": "ｷﾞｱ",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "width-b",
+        "term": "ｷﾞｱ",
+        "aliases": [],
+        "input": "ギア",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "capture",
+        "term": "キャプチャー",
+        "aliases": [],
+        "input": "キャプチャ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'キャプチャ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "suffix",
+        "term": "ギア",
+        "aliases": [],
+        "input": "ｷﾞｱｽ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱｽ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "prefix",
+        "term": "ギア",
+        "aliases": [],
+        "input": "ﾃｽﾄｷﾞｱ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ﾃｽﾄｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "mixed",
+        "term": "ギア",
+        "aliases": [],
+        "input": "ｷﾞｱス",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱス' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "alias-kilo",
+        "term": "キロ",
+        "aliases": [
+          "㌔"
+        ],
+        "input": "㌔",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "alias-kilo-rev",
+        "term": "㌔",
+        "aliases": [
+          "キロ"
+        ],
+        "input": "キロ",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "compat-suffix",
+        "term": "㌔",
+        "aliases": [],
+        "input": "㌔ス",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌔ス' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "compat-prefix",
+        "term": "㌔",
+        "aliases": [],
+        "input": "ス㌔",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ス㌔' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "compat-repeat",
+        "term": "㌔",
+        "aliases": [],
+        "input": "㌔㌔",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌔㌔' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "alias-compat-suffix",
+        "term": "キロ",
+        "aliases": [
+          "㌔"
+        ],
+        "input": "㌔ス",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌔ス' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "alias-compat-prefix",
+        "term": "キロ",
+        "aliases": [
+          "㌔"
+        ],
+        "input": "ス㌔",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ス㌔' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "alias-compat-repeat",
+        "term": "キロ",
+        "aliases": [
+          "㌔"
+        ],
+        "input": "㌔㌔",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌔㌔' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-0",
+        "term": "コト",
+        "aliases": [],
+        "input": "ヿ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヿ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-0",
+        "term": "ヿ",
+        "aliases": [],
+        "input": "コト",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'コト' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-1",
+        "term": "ア",
+        "aliases": [],
+        "input": "㋐",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋐' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-1",
+        "term": "㋐",
+        "aliases": [],
+        "input": "ア",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ア' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-2",
+        "term": "イ",
+        "aliases": [],
+        "input": "㋑",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋑' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-2",
+        "term": "㋑",
+        "aliases": [],
+        "input": "イ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'イ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-3",
+        "term": "ウ",
+        "aliases": [],
+        "input": "㋒",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋒' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-3",
+        "term": "㋒",
+        "aliases": [],
+        "input": "ウ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ウ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-4",
+        "term": "エ",
+        "aliases": [],
+        "input": "㋓",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋓' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-4",
+        "term": "㋓",
+        "aliases": [],
+        "input": "エ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'エ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-5",
+        "term": "オ",
+        "aliases": [],
+        "input": "㋔",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋔' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-5",
+        "term": "㋔",
+        "aliases": [],
+        "input": "オ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'オ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-6",
+        "term": "カ",
+        "aliases": [],
+        "input": "㋕",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋕' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-6",
+        "term": "㋕",
+        "aliases": [],
+        "input": "カ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'カ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-7",
+        "term": "キ",
+        "aliases": [],
+        "input": "㋖",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋖' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-7",
+        "term": "㋖",
+        "aliases": [],
+        "input": "キ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'キ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-8",
+        "term": "ク",
+        "aliases": [],
+        "input": "㋗",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋗' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-8",
+        "term": "㋗",
+        "aliases": [],
+        "input": "ク",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ク' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-9",
+        "term": "ケ",
+        "aliases": [],
+        "input": "㋘",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋘' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-9",
+        "term": "㋘",
+        "aliases": [],
+        "input": "ケ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ケ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-10",
+        "term": "コ",
+        "aliases": [],
+        "input": "㋙",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋙' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-10",
+        "term": "㋙",
+        "aliases": [],
+        "input": "コ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'コ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-11",
+        "term": "サ",
+        "aliases": [],
+        "input": "㋚",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋚' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-11",
+        "term": "㋚",
+        "aliases": [],
+        "input": "サ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'サ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-12",
+        "term": "シ",
+        "aliases": [],
+        "input": "㋛",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋛' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-12",
+        "term": "㋛",
+        "aliases": [],
+        "input": "シ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'シ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-13",
+        "term": "ス",
+        "aliases": [],
+        "input": "㋜",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋜' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-13",
+        "term": "㋜",
+        "aliases": [],
+        "input": "ス",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ス' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-14",
+        "term": "セ",
+        "aliases": [],
+        "input": "㋝",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋝' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-14",
+        "term": "㋝",
+        "aliases": [],
+        "input": "セ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'セ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-15",
+        "term": "ソ",
+        "aliases": [],
+        "input": "㋞",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋞' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-15",
+        "term": "㋞",
+        "aliases": [],
+        "input": "ソ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ソ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-16",
+        "term": "タ",
+        "aliases": [],
+        "input": "㋟",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋟' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-16",
+        "term": "㋟",
+        "aliases": [],
+        "input": "タ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'タ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-17",
+        "term": "チ",
+        "aliases": [],
+        "input": "㋠",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋠' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-17",
+        "term": "㋠",
+        "aliases": [],
+        "input": "チ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'チ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-18",
+        "term": "ツ",
+        "aliases": [],
+        "input": "㋡",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋡' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-18",
+        "term": "㋡",
+        "aliases": [],
+        "input": "ツ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ツ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-19",
+        "term": "テ",
+        "aliases": [],
+        "input": "㋢",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋢' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-19",
+        "term": "㋢",
+        "aliases": [],
+        "input": "テ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'テ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-20",
+        "term": "ト",
+        "aliases": [],
+        "input": "㋣",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋣' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-20",
+        "term": "㋣",
+        "aliases": [],
+        "input": "ト",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ト' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-21",
+        "term": "ナ",
+        "aliases": [],
+        "input": "㋤",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋤' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-21",
+        "term": "㋤",
+        "aliases": [],
+        "input": "ナ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ナ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-22",
+        "term": "ニ",
+        "aliases": [],
+        "input": "㋥",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋥' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-22",
+        "term": "㋥",
+        "aliases": [],
+        "input": "ニ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ニ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-23",
+        "term": "ヌ",
+        "aliases": [],
+        "input": "㋦",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋦' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-23",
+        "term": "㋦",
+        "aliases": [],
+        "input": "ヌ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヌ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-24",
+        "term": "ネ",
+        "aliases": [],
+        "input": "㋧",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋧' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-24",
+        "term": "㋧",
+        "aliases": [],
+        "input": "ネ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ネ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-25",
+        "term": "ノ",
+        "aliases": [],
+        "input": "㋨",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋨' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-25",
+        "term": "㋨",
+        "aliases": [],
+        "input": "ノ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ノ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-26",
+        "term": "ハ",
+        "aliases": [],
+        "input": "㋩",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋩' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-26",
+        "term": "㋩",
+        "aliases": [],
+        "input": "ハ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ハ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-27",
+        "term": "ヒ",
+        "aliases": [],
+        "input": "㋪",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋪' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-27",
+        "term": "㋪",
+        "aliases": [],
+        "input": "ヒ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヒ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-28",
+        "term": "フ",
+        "aliases": [],
+        "input": "㋫",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋫' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-28",
+        "term": "㋫",
+        "aliases": [],
+        "input": "フ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'フ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-29",
+        "term": "ヘ",
+        "aliases": [],
+        "input": "㋬",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋬' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-29",
+        "term": "㋬",
+        "aliases": [],
+        "input": "ヘ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヘ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-30",
+        "term": "ホ",
+        "aliases": [],
+        "input": "㋭",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋭' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-30",
+        "term": "㋭",
+        "aliases": [],
+        "input": "ホ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ホ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-31",
+        "term": "マ",
+        "aliases": [],
+        "input": "㋮",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋮' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-31",
+        "term": "㋮",
+        "aliases": [],
+        "input": "マ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'マ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-32",
+        "term": "ミ",
+        "aliases": [],
+        "input": "㋯",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋯' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-32",
+        "term": "㋯",
+        "aliases": [],
+        "input": "ミ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ミ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-33",
+        "term": "ム",
+        "aliases": [],
+        "input": "㋰",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋰' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-33",
+        "term": "㋰",
+        "aliases": [],
+        "input": "ム",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ム' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-34",
+        "term": "メ",
+        "aliases": [],
+        "input": "㋱",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋱' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-34",
+        "term": "㋱",
+        "aliases": [],
+        "input": "メ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'メ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-35",
+        "term": "モ",
+        "aliases": [],
+        "input": "㋲",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋲' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-35",
+        "term": "㋲",
+        "aliases": [],
+        "input": "モ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'モ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-36",
+        "term": "ヤ",
+        "aliases": [],
+        "input": "㋳",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋳' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-36",
+        "term": "㋳",
+        "aliases": [],
+        "input": "ヤ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヤ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-37",
+        "term": "ユ",
+        "aliases": [],
+        "input": "㋴",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋴' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-37",
+        "term": "㋴",
+        "aliases": [],
+        "input": "ユ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ユ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-38",
+        "term": "ヨ",
+        "aliases": [],
+        "input": "㋵",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋵' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-38",
+        "term": "㋵",
+        "aliases": [],
+        "input": "ヨ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヨ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-39",
+        "term": "ラ",
+        "aliases": [],
+        "input": "㋶",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋶' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-39",
+        "term": "㋶",
+        "aliases": [],
+        "input": "ラ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ラ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-40",
+        "term": "リ",
+        "aliases": [],
+        "input": "㋷",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋷' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-40",
+        "term": "㋷",
+        "aliases": [],
+        "input": "リ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'リ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-41",
+        "term": "ル",
+        "aliases": [],
+        "input": "㋸",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋸' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-41",
+        "term": "㋸",
+        "aliases": [],
+        "input": "ル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-42",
+        "term": "レ",
+        "aliases": [],
+        "input": "㋹",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋹' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-42",
+        "term": "㋹",
+        "aliases": [],
+        "input": "レ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'レ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-43",
+        "term": "ロ",
+        "aliases": [],
+        "input": "㋺",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋺' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-43",
+        "term": "㋺",
+        "aliases": [],
+        "input": "ロ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ロ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-44",
+        "term": "ワ",
+        "aliases": [],
+        "input": "㋻",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋻' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-44",
+        "term": "㋻",
+        "aliases": [],
+        "input": "ワ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ワ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-45",
+        "term": "ヰ",
+        "aliases": [],
+        "input": "㋼",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋼' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-45",
+        "term": "㋼",
+        "aliases": [],
+        "input": "ヰ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヰ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-46",
+        "term": "ヱ",
+        "aliases": [],
+        "input": "㋽",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋽' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-46",
+        "term": "㋽",
+        "aliases": [],
+        "input": "ヱ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-47",
+        "term": "ヲ",
+        "aliases": [],
+        "input": "㋾",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㋾' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-47",
+        "term": "㋾",
+        "aliases": [],
+        "input": "ヲ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヲ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-48",
+        "term": "アパート",
+        "aliases": [],
+        "input": "㌀",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌀' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-48",
+        "term": "㌀",
+        "aliases": [],
+        "input": "アパート",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'アパート' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-49",
+        "term": "アルファ",
+        "aliases": [],
+        "input": "㌁",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌁' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-49",
+        "term": "㌁",
+        "aliases": [],
+        "input": "アルファ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'アルファ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-50",
+        "term": "アンペア",
+        "aliases": [],
+        "input": "㌂",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌂' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-50",
+        "term": "㌂",
+        "aliases": [],
+        "input": "アンペア",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'アンペア' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-51",
+        "term": "アール",
+        "aliases": [],
+        "input": "㌃",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌃' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-51",
+        "term": "㌃",
+        "aliases": [],
+        "input": "アール",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'アール' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-52",
+        "term": "イニング",
+        "aliases": [],
+        "input": "㌄",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌄' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-52",
+        "term": "㌄",
+        "aliases": [],
+        "input": "イニング",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'イニング' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-53",
+        "term": "インチ",
+        "aliases": [],
+        "input": "㌅",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌅' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-53",
+        "term": "㌅",
+        "aliases": [],
+        "input": "インチ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'インチ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-54",
+        "term": "ウォン",
+        "aliases": [],
+        "input": "㌆",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌆' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-54",
+        "term": "㌆",
+        "aliases": [],
+        "input": "ウォン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ウォン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-55",
+        "term": "エスクード",
+        "aliases": [],
+        "input": "㌇",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌇' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-55",
+        "term": "㌇",
+        "aliases": [],
+        "input": "エスクード",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'エスクード' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-56",
+        "term": "エーカー",
+        "aliases": [],
+        "input": "㌈",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌈' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-56",
+        "term": "㌈",
+        "aliases": [],
+        "input": "エーカー",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'エーカー' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-57",
+        "term": "オンス",
+        "aliases": [],
+        "input": "㌉",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌉' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-57",
+        "term": "㌉",
+        "aliases": [],
+        "input": "オンス",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'オンス' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-58",
+        "term": "オーム",
+        "aliases": [],
+        "input": "㌊",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌊' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-58",
+        "term": "㌊",
+        "aliases": [],
+        "input": "オーム",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'オーム' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-59",
+        "term": "カイリ",
+        "aliases": [],
+        "input": "㌋",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌋' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-59",
+        "term": "㌋",
+        "aliases": [],
+        "input": "カイリ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'カイリ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-60",
+        "term": "カラット",
+        "aliases": [],
+        "input": "㌌",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌌' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-60",
+        "term": "㌌",
+        "aliases": [],
+        "input": "カラット",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'カラット' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-61",
+        "term": "カロリー",
+        "aliases": [],
+        "input": "㌍",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌍' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-61",
+        "term": "㌍",
+        "aliases": [],
+        "input": "カロリー",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'カロリー' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-62",
+        "term": "ガロン",
+        "aliases": [],
+        "input": "㌎",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌎' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-62",
+        "term": "㌎",
+        "aliases": [],
+        "input": "ガロン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ガロン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-63",
+        "term": "ガンマ",
+        "aliases": [],
+        "input": "㌏",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌏' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-63",
+        "term": "㌏",
+        "aliases": [],
+        "input": "ガンマ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ガンマ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-64",
+        "term": "ギガ",
+        "aliases": [],
+        "input": "㌐",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌐' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-64",
+        "term": "㌐",
+        "aliases": [],
+        "input": "ギガ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ギガ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-65",
+        "term": "ギニー",
+        "aliases": [],
+        "input": "㌑",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌑' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-65",
+        "term": "㌑",
+        "aliases": [],
+        "input": "ギニー",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ギニー' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-66",
+        "term": "キュリー",
+        "aliases": [],
+        "input": "㌒",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌒' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-66",
+        "term": "㌒",
+        "aliases": [],
+        "input": "キュリー",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'キュリー' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-67",
+        "term": "ギルダー",
+        "aliases": [],
+        "input": "㌓",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌓' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-67",
+        "term": "㌓",
+        "aliases": [],
+        "input": "ギルダー",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ギルダー' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-68",
+        "term": "キロ",
+        "aliases": [],
+        "input": "㌔",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌔' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-68",
+        "term": "㌔",
+        "aliases": [],
+        "input": "キロ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'キロ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-69",
+        "term": "キログラム",
+        "aliases": [],
+        "input": "㌕",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌕' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-69",
+        "term": "㌕",
+        "aliases": [],
+        "input": "キログラム",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'キログラム' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-70",
+        "term": "キロメートル",
+        "aliases": [],
+        "input": "㌖",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌖' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-70",
+        "term": "㌖",
+        "aliases": [],
+        "input": "キロメートル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'キロメートル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-71",
+        "term": "キロワット",
+        "aliases": [],
+        "input": "㌗",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌗' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-71",
+        "term": "㌗",
+        "aliases": [],
+        "input": "キロワット",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'キロワット' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-72",
+        "term": "グラム",
+        "aliases": [],
+        "input": "㌘",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌘' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-72",
+        "term": "㌘",
+        "aliases": [],
+        "input": "グラム",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'グラム' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-73",
+        "term": "グラムトン",
+        "aliases": [],
+        "input": "㌙",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌙' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-73",
+        "term": "㌙",
+        "aliases": [],
+        "input": "グラムトン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'グラムトン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-74",
+        "term": "クルゼイロ",
+        "aliases": [],
+        "input": "㌚",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌚' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-74",
+        "term": "㌚",
+        "aliases": [],
+        "input": "クルゼイロ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'クルゼイロ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-75",
+        "term": "クローネ",
+        "aliases": [],
+        "input": "㌛",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌛' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-75",
+        "term": "㌛",
+        "aliases": [],
+        "input": "クローネ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'クローネ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-76",
+        "term": "ケース",
+        "aliases": [],
+        "input": "㌜",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌜' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-76",
+        "term": "㌜",
+        "aliases": [],
+        "input": "ケース",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ケース' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-77",
+        "term": "コルナ",
+        "aliases": [],
+        "input": "㌝",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌝' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-77",
+        "term": "㌝",
+        "aliases": [],
+        "input": "コルナ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'コルナ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-78",
+        "term": "コーポ",
+        "aliases": [],
+        "input": "㌞",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌞' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-78",
+        "term": "㌞",
+        "aliases": [],
+        "input": "コーポ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'コーポ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-79",
+        "term": "サイクル",
+        "aliases": [],
+        "input": "㌟",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌟' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-79",
+        "term": "㌟",
+        "aliases": [],
+        "input": "サイクル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'サイクル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-80",
+        "term": "サンチーム",
+        "aliases": [],
+        "input": "㌠",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌠' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-80",
+        "term": "㌠",
+        "aliases": [],
+        "input": "サンチーム",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'サンチーム' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-81",
+        "term": "シリング",
+        "aliases": [],
+        "input": "㌡",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌡' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-81",
+        "term": "㌡",
+        "aliases": [],
+        "input": "シリング",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'シリング' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-82",
+        "term": "センチ",
+        "aliases": [],
+        "input": "㌢",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌢' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-82",
+        "term": "㌢",
+        "aliases": [],
+        "input": "センチ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'センチ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-83",
+        "term": "セント",
+        "aliases": [],
+        "input": "㌣",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌣' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-83",
+        "term": "㌣",
+        "aliases": [],
+        "input": "セント",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'セント' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-84",
+        "term": "ダース",
+        "aliases": [],
+        "input": "㌤",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌤' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-84",
+        "term": "㌤",
+        "aliases": [],
+        "input": "ダース",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ダース' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-85",
+        "term": "デシ",
+        "aliases": [],
+        "input": "㌥",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌥' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-85",
+        "term": "㌥",
+        "aliases": [],
+        "input": "デシ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'デシ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-86",
+        "term": "ドル",
+        "aliases": [],
+        "input": "㌦",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌦' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-86",
+        "term": "㌦",
+        "aliases": [],
+        "input": "ドル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ドル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-87",
+        "term": "トン",
+        "aliases": [],
+        "input": "㌧",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌧' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-87",
+        "term": "㌧",
+        "aliases": [],
+        "input": "トン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'トン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-88",
+        "term": "ナノ",
+        "aliases": [],
+        "input": "㌨",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌨' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-88",
+        "term": "㌨",
+        "aliases": [],
+        "input": "ナノ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ナノ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-89",
+        "term": "ノット",
+        "aliases": [],
+        "input": "㌩",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌩' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-89",
+        "term": "㌩",
+        "aliases": [],
+        "input": "ノット",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ノット' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-90",
+        "term": "ハイツ",
+        "aliases": [],
+        "input": "㌪",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌪' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-90",
+        "term": "㌪",
+        "aliases": [],
+        "input": "ハイツ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ハイツ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-91",
+        "term": "パーセント",
+        "aliases": [],
+        "input": "㌫",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌫' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-91",
+        "term": "㌫",
+        "aliases": [],
+        "input": "パーセント",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'パーセント' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-92",
+        "term": "パーツ",
+        "aliases": [],
+        "input": "㌬",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌬' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-92",
+        "term": "㌬",
+        "aliases": [],
+        "input": "パーツ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'パーツ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-93",
+        "term": "バーレル",
+        "aliases": [],
+        "input": "㌭",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌭' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-93",
+        "term": "㌭",
+        "aliases": [],
+        "input": "バーレル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'バーレル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-94",
+        "term": "ピアストル",
+        "aliases": [],
+        "input": "㌮",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌮' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-94",
+        "term": "㌮",
+        "aliases": [],
+        "input": "ピアストル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ピアストル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-95",
+        "term": "ピクル",
+        "aliases": [],
+        "input": "㌯",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌯' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-95",
+        "term": "㌯",
+        "aliases": [],
+        "input": "ピクル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ピクル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-96",
+        "term": "ピコ",
+        "aliases": [],
+        "input": "㌰",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌰' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-96",
+        "term": "㌰",
+        "aliases": [],
+        "input": "ピコ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ピコ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-97",
+        "term": "ビル",
+        "aliases": [],
+        "input": "㌱",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌱' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-97",
+        "term": "㌱",
+        "aliases": [],
+        "input": "ビル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ビル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-98",
+        "term": "ファラッド",
+        "aliases": [],
+        "input": "㌲",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌲' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-98",
+        "term": "㌲",
+        "aliases": [],
+        "input": "ファラッド",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ファラッド' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-99",
+        "term": "フィート",
+        "aliases": [],
+        "input": "㌳",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌳' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-99",
+        "term": "㌳",
+        "aliases": [],
+        "input": "フィート",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'フィート' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-100",
+        "term": "ブッシェル",
+        "aliases": [],
+        "input": "㌴",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌴' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-100",
+        "term": "㌴",
+        "aliases": [],
+        "input": "ブッシェル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ブッシェル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-101",
+        "term": "フラン",
+        "aliases": [],
+        "input": "㌵",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌵' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-101",
+        "term": "㌵",
+        "aliases": [],
+        "input": "フラン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'フラン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-102",
+        "term": "ヘクタール",
+        "aliases": [],
+        "input": "㌶",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌶' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-102",
+        "term": "㌶",
+        "aliases": [],
+        "input": "ヘクタール",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヘクタール' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-103",
+        "term": "ペソ",
+        "aliases": [],
+        "input": "㌷",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌷' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-103",
+        "term": "㌷",
+        "aliases": [],
+        "input": "ペソ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ペソ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-104",
+        "term": "ペニヒ",
+        "aliases": [],
+        "input": "㌸",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌸' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-104",
+        "term": "㌸",
+        "aliases": [],
+        "input": "ペニヒ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ペニヒ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-105",
+        "term": "ヘルツ",
+        "aliases": [],
+        "input": "㌹",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌹' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-105",
+        "term": "㌹",
+        "aliases": [],
+        "input": "ヘルツ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヘルツ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-106",
+        "term": "ペンス",
+        "aliases": [],
+        "input": "㌺",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌺' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-106",
+        "term": "㌺",
+        "aliases": [],
+        "input": "ペンス",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ペンス' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-107",
+        "term": "ページ",
+        "aliases": [],
+        "input": "㌻",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌻' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-107",
+        "term": "㌻",
+        "aliases": [],
+        "input": "ページ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ページ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-108",
+        "term": "ベータ",
+        "aliases": [],
+        "input": "㌼",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌼' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-108",
+        "term": "㌼",
+        "aliases": [],
+        "input": "ベータ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ベータ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-109",
+        "term": "ポイント",
+        "aliases": [],
+        "input": "㌽",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌽' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-109",
+        "term": "㌽",
+        "aliases": [],
+        "input": "ポイント",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ポイント' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-110",
+        "term": "ボルト",
+        "aliases": [],
+        "input": "㌾",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌾' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-110",
+        "term": "㌾",
+        "aliases": [],
+        "input": "ボルト",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ボルト' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-111",
+        "term": "ホン",
+        "aliases": [],
+        "input": "㌿",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㌿' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-111",
+        "term": "㌿",
+        "aliases": [],
+        "input": "ホン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ホン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-112",
+        "term": "ポンド",
+        "aliases": [],
+        "input": "㍀",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍀' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-112",
+        "term": "㍀",
+        "aliases": [],
+        "input": "ポンド",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ポンド' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-113",
+        "term": "ホール",
+        "aliases": [],
+        "input": "㍁",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍁' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-113",
+        "term": "㍁",
+        "aliases": [],
+        "input": "ホール",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ホール' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-114",
+        "term": "ホーン",
+        "aliases": [],
+        "input": "㍂",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍂' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-114",
+        "term": "㍂",
+        "aliases": [],
+        "input": "ホーン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ホーン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-115",
+        "term": "マイクロ",
+        "aliases": [],
+        "input": "㍃",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍃' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-115",
+        "term": "㍃",
+        "aliases": [],
+        "input": "マイクロ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'マイクロ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-116",
+        "term": "マイル",
+        "aliases": [],
+        "input": "㍄",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍄' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-116",
+        "term": "㍄",
+        "aliases": [],
+        "input": "マイル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'マイル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-117",
+        "term": "マッハ",
+        "aliases": [],
+        "input": "㍅",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍅' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-117",
+        "term": "㍅",
+        "aliases": [],
+        "input": "マッハ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'マッハ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-118",
+        "term": "マルク",
+        "aliases": [],
+        "input": "㍆",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍆' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-118",
+        "term": "㍆",
+        "aliases": [],
+        "input": "マルク",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'マルク' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-119",
+        "term": "マンション",
+        "aliases": [],
+        "input": "㍇",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍇' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-119",
+        "term": "㍇",
+        "aliases": [],
+        "input": "マンション",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'マンション' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-120",
+        "term": "ミクロン",
+        "aliases": [],
+        "input": "㍈",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍈' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-120",
+        "term": "㍈",
+        "aliases": [],
+        "input": "ミクロン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ミクロン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-121",
+        "term": "ミリ",
+        "aliases": [],
+        "input": "㍉",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍉' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-121",
+        "term": "㍉",
+        "aliases": [],
+        "input": "ミリ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ミリ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-122",
+        "term": "ミリバール",
+        "aliases": [],
+        "input": "㍊",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍊' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-122",
+        "term": "㍊",
+        "aliases": [],
+        "input": "ミリバール",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ミリバール' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-123",
+        "term": "メガ",
+        "aliases": [],
+        "input": "㍋",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍋' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-123",
+        "term": "㍋",
+        "aliases": [],
+        "input": "メガ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'メガ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-124",
+        "term": "メガトン",
+        "aliases": [],
+        "input": "㍌",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍌' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-124",
+        "term": "㍌",
+        "aliases": [],
+        "input": "メガトン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'メガトン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-125",
+        "term": "メートル",
+        "aliases": [],
+        "input": "㍍",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍍' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-125",
+        "term": "㍍",
+        "aliases": [],
+        "input": "メートル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'メートル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-126",
+        "term": "ヤード",
+        "aliases": [],
+        "input": "㍎",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍎' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-126",
+        "term": "㍎",
+        "aliases": [],
+        "input": "ヤード",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヤード' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-127",
+        "term": "ヤール",
+        "aliases": [],
+        "input": "㍏",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍏' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-127",
+        "term": "㍏",
+        "aliases": [],
+        "input": "ヤール",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ヤール' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-128",
+        "term": "ユアン",
+        "aliases": [],
+        "input": "㍐",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍐' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-128",
+        "term": "㍐",
+        "aliases": [],
+        "input": "ユアン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ユアン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-129",
+        "term": "リットル",
+        "aliases": [],
+        "input": "㍑",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍑' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-129",
+        "term": "㍑",
+        "aliases": [],
+        "input": "リットル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'リットル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-130",
+        "term": "リラ",
+        "aliases": [],
+        "input": "㍒",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍒' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-130",
+        "term": "㍒",
+        "aliases": [],
+        "input": "リラ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'リラ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-131",
+        "term": "ルピー",
+        "aliases": [],
+        "input": "㍓",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍓' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-131",
+        "term": "㍓",
+        "aliases": [],
+        "input": "ルピー",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ルピー' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-132",
+        "term": "ルーブル",
+        "aliases": [],
+        "input": "㍔",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍔' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-132",
+        "term": "㍔",
+        "aliases": [],
+        "input": "ルーブル",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ルーブル' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-133",
+        "term": "レム",
+        "aliases": [],
+        "input": "㍕",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍕' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-133",
+        "term": "㍕",
+        "aliases": [],
+        "input": "レム",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'レム' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-134",
+        "term": "レントゲン",
+        "aliases": [],
+        "input": "㍖",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍖' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-134",
+        "term": "㍖",
+        "aliases": [],
+        "input": "レントゲン",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'レントゲン' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-135",
+        "term": "ワット",
+        "aliases": [],
+        "input": "㍗",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '㍗' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-135",
+        "term": "㍗",
+        "aliases": [],
+        "input": "ワット",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ワット' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-136",
+        "term": "ココ",
+        "aliases": [],
+        "input": "🈁",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '🈁' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-136",
+        "term": "🈁",
+        "aliases": [],
+        "input": "ココ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ココ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-137",
+        "term": "サ",
+        "aliases": [],
+        "input": "🈂",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '🈂' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-137",
+        "term": "🈂",
+        "aliases": [],
+        "input": "サ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'サ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-fwd-138",
+        "term": "デ",
+        "aliases": [],
+        "input": "🈓",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: '🈓' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "exhaust-rev-138",
+        "term": "🈓",
+        "aliases": [],
+        "input": "デ",
+        "exit": 1,
+        "expected": 1,
+        "match": true,
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'デ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "width-fwd-0",
+        "term": "ガ",
+        "aliases": [],
+        "input": "ｶﾞ",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "width-rev-0",
+        "term": "ｶﾞ",
+        "aliases": [],
+        "input": "ガ",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "width-fwd-1",
+        "term": "パ",
+        "aliases": [],
+        "input": "ﾊﾟ",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "width-rev-1",
+        "term": "ﾊﾟ",
+        "aliases": [],
+        "input": "パ",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "width-fwd-2",
+        "term": "ヴ",
+        "aliases": [],
+        "input": "ｳﾞ",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "width-rev-2",
+        "term": "ｳﾞ",
+        "aliases": [],
+        "input": "ヴ",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "width-fwd-3",
+        "term": "コンピューター",
+        "aliases": [],
+        "input": "ｺﾝﾋﾟｭｰﾀｰ",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      },
+      {
+        "name": "width-rev-3",
+        "term": "ｺﾝﾋﾟｭｰﾀｰ",
+        "aliases": [],
+        "input": "コンピューター",
+        "exit": 0,
+        "expected": 0,
+        "match": true,
+        "stderr": ""
+      }
+    ]
+  },
+  "repository_validation": {
+    "schema_version": 1,
+    "started_at": "2026-09-16T23:36:01.239345+00:00",
+    "status": "pass",
+    "steps": [
+      {
+        "name": "repository",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpCBNLcu/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-r81-07-fixverify-20260917/scripts/verify_skill_repository.py"
+        ],
+        "started_at": "2026-09-16T23:36:01.249473+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "repository.stdout.log",
+        "stderr": "repository.stderr.log",
+        "duration_seconds": 0.031641,
+        "finished_at": "2026-09-16T23:36:01.281130+00:00"
+      },
+      {
+        "name": "bundle",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpCBNLcu/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-r81-07-fixverify-20260917/scripts/build_chatgpt_worker_skills.py",
+          "--repo-root",
+          "/home/ibis/AI/CodexSkill-pr81-r81-07-fixverify-20260917",
+          "--output",
+          "/tmp/pr81-r81-07-fixverify-full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T23:36:01.281280+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "bundle.stdout.log",
+        "stderr": "bundle.stderr.log",
+        "duration_seconds": 0.031555,
+        "finished_at": "2026-09-16T23:36:01.312847+00:00"
+      },
+      {
+        "name": "zip-integrity",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpCBNLcu/bin/python",
+          "-c",
+          "import sys, zipfile; archive = zipfile.ZipFile(sys.argv[1]); bad = archive.testzip(); archive.close(); print('Invalid CRC: ' + bad if bad else 'ZIP integrity verified'); sys.exit(1 if bad else 0)",
+          "/tmp/pr81-r81-07-fixverify-full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T23:36:01.313038+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-integrity.stdout.log",
+        "stderr": "zip-integrity.stderr.log",
+        "duration_seconds": 0.031632,
+        "finished_at": "2026-09-16T23:36:01.344680+00:00"
+      },
+      {
+        "name": "zip-contents",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpCBNLcu/bin/python",
+          "-m",
+          "zipfile",
+          "-l",
+          "/tmp/pr81-r81-07-fixverify-full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T23:36:01.344926+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-contents.stdout.log",
+        "stderr": "zip-contents.stderr.log",
+        "duration_seconds": 0.031853,
+        "finished_at": "2026-09-16T23:36:01.376790+00:00"
+      }
+    ],
+    "python": "3.13.7",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "ci": {
+      "GITHUB_RUN_ID": null,
+      "GITHUB_RUN_ATTEMPT": null,
+      "GITHUB_EVENT_NAME": null,
+      "TARGET_REF": null
+    },
+    "finished_at": "2026-09-16T23:36:01.377017+00:00"
+  },
+  "source_delta_after_technical_fix": "",
+  "ci": {
+    "validation_run": {
+      "run_id": 35161577140,
+      "head_sha": "18012c27e7b6645f18fcbe14a681de5d8390615d",
+      "conclusion": "success",
+      "build_job_id": 105013298137,
+      "artifact_id": 10473253361
+    },
+    "diagnostic_push_run": {
+      "run_id": 35161573664,
+      "head_sha": "18012c27e7b6645f18fcbe14a681de5d8390615d",
+      "conclusion": "success",
+      "collect_job_id": 105013286105,
+      "artifact_id": 10472543056
+    }
+  }
+}

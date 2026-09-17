@@ -1,0 +1,581 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-16T21:15:18.717647+00:00",
+  "reviewed_head": "28823db2a0f3f0354c43ae892f25307b1679159c",
+  "technical_fix_commit": "3a004c2a762a67d35cbdcbc14092a1a138c0820d",
+  "probe_results": {
+    "head": "28823db2a0f3f0354c43ae892f25307b1679159c",
+    "records": [
+      {
+        "name": "hw-exact",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "fw-from-hw-term",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "hw-suffix",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱｽ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "hw-prefix",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ﾃｽﾄｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "hw-mixed-suffix",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱス' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "hw-fw-prefix",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'テストｷﾞｱ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "hw-prolonged",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｷﾞｱｰ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "fw-exact",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "hw-from-fw-term",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "explicit-md",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- violation.md:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "explicit-txt",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- note.txt:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "missing",
+        "exit_code": 2,
+        "stdout": "",
+        "stderr": "Explicit Markdown targets could not be inspected:\n- missing.md: file does not exist.\n"
+      },
+      {
+        "name": "ignored-dir",
+        "exit_code": 2,
+        "stdout": "",
+        "stderr": "Explicit Markdown targets could not be inspected:\n- ignored/hidden.md: path is excluded by Markdown target configuration.\n"
+      },
+      {
+        "name": "ignored-prefix",
+        "exit_code": 2,
+        "stdout": "",
+        "stderr": "Explicit Markdown targets could not be inspected:\n- excluded/prefix.md: path is excluded by Markdown target configuration.\n"
+      },
+      {
+        "name": "valid-plus-missing",
+        "exit_code": 2,
+        "stdout": "",
+        "stderr": "Explicit Markdown targets could not be inspected:\n- missing.md: file does not exist.\n"
+      },
+      {
+        "name": "unsupported",
+        "exit_code": 2,
+        "stdout": "",
+        "stderr": "Explicit Markdown targets could not be inspected:\n- unsupported.json: unsupported suffix; expected one of .md, .txt.\n"
+      },
+      {
+        "name": "directory",
+        "exit_code": 2,
+        "stdout": "",
+        "stderr": "Explicit Markdown targets could not be inspected:\n- folder.md: path is not a file.\n"
+      },
+      {
+        "name": "outside",
+        "exit_code": 2,
+        "stdout": "",
+        "stderr": "Explicit Markdown targets could not be inspected:\n- /tmp/pr81-ir-fixverify-20260917/outside.md: path is outside the repository.\n"
+      },
+      {
+        "name": "symlink-outside",
+        "exit_code": 2,
+        "stdout": "",
+        "stderr": "Explicit Markdown targets could not be inspected:\n- outside-link.md: path is outside the repository.\n"
+      },
+      {
+        "name": "english-approved",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "english-kanji-right",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "english-kanji-left",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "english-suffix",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHostx' (english) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "english-dot",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHost.Tracker.DebugHost' (english) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "english-hyphen",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHost-Tracker.DebugHost' (english) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "english-underscore",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHost_Tracker.DebugHost' (english) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "english-period",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "boundary",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ギア' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "normalization-growth",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:2: 'ジッタ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "halfwidth-unregistered",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ｺﾝﾋﾟｭｰﾀｰ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "hw-dot-ascii1",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "hw-dot-asciiword",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'foo' (english) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "ascii1-hyphen-hw",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "asciiword-hyphen-hw",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ABC' (english) is not in tools/lint/markdown-whitelist.yaml.\n"
+      },
+      {
+        "name": "hw-underscore-ascii1",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "hw-hyphen-digit",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "probe_program": "import json, os, subprocess, sys, tempfile\nfrom pathlib import Path\n\nROOT = Path('/home/ibis/AI/CodexSkill-pr81-ir-fixverify-20260917')\nSCRIPT = ROOT / 'skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py'\nOUT = Path('/tmp/pr81-ir-fixverify-20260917')\nFIX = OUT / 'fixture'\n(FIX / 'tools/lint').mkdir(parents=True, exist_ok=True)\n(OUT / 'logs').mkdir(parents=True, exist_ok=True)\n(FIX / 'tools/lint/markdown-targets.json').write_text(json.dumps({\n    'ignoreDirectories': ['ignored'],\n    'ignoredPrefixes': ['excluded/'],\n}, ensure_ascii=False), encoding='utf-8')\n\nrecords = []\ndef write_whitelist(term):\n    (FIX / 'tools/lint/markdown-whitelist.yaml').write_text(\n        'entries:\\n  - term: ' + term + '\\n    description: せつめい\\n', encoding='utf-8')\n\ndef run(name, args, text=None):\n    cmd = [sys.executable, str(SCRIPT), *args]\n    p = subprocess.run(cmd, cwd=FIX, input=text, text=True, capture_output=True, timeout=60)\n    (OUT / 'logs' / f'{name}.stdout.log').write_text(p.stdout, encoding='utf-8')\n    (OUT / 'logs' / f'{name}.stderr.log').write_text(p.stderr, encoding='utf-8')\n    records.append({'name':name,'exit_code':p.returncode,'stdout':p.stdout,'stderr':p.stderr})\n    return p\ndef expect(name, p, code, contains=(), excludes=()):\n    combined = p.stdout + p.stderr\n    assert p.returncode == code, (name, p.returncode, combined)\n    for token in contains:\n        assert token in combined, (name, token, combined)\n    for token in excludes:\n        assert token not in combined, (name, token, combined)\n\nwrite_whitelist('ｷﾞｱ')\nfor name, text, code in [\n    ('hw-exact', 'ｷﾞｱ', 0),\n    ('fw-from-hw-term', 'ギア', 0),\n    ('hw-suffix', 'ｷﾞｱｽ', 1),\n    ('hw-prefix', 'ﾃｽﾄｷﾞｱ', 1),\n    ('hw-mixed-suffix', 'ｷﾞｱス', 1),\n    ('hw-fw-prefix', 'テストｷﾞｱ', 1),\n    ('hw-prolonged', 'ｷﾞｱｰ', 1),\n]:\n    p = run(name, ['--stdin','probe.md'], text)\n    expect(name, p, code)\n\nwrite_whitelist('ギア')\nfor name, text, code in [('fw-exact','ギア',0),('hw-from-fw-term','ｷﾞｱ',0)]:\n    p = run(name, ['--stdin','probe.md'], text)\n    expect(name, p, code)\n# IR81-02 explicit target behavior.\nwrite_whitelist('API')\n(FIX / 'violation.md').write_text('qzxvunknownword', encoding='utf-8')\n(FIX / 'note.txt').write_text('qzxvunknownword', encoding='utf-8')\n(FIX / 'ignored').mkdir(exist_ok=True)\n(FIX / 'ignored/hidden.md').write_text('qzxvunknownword', encoding='utf-8')\n(FIX / 'excluded').mkdir(exist_ok=True)\n(FIX / 'excluded/prefix.md').write_text('qzxvunknownword', encoding='utf-8')\n(FIX / 'unsupported.json').write_text('{}', encoding='utf-8')\n(FIX / 'folder.md').mkdir(exist_ok=True)\noutside = OUT / 'outside.md'\noutside.write_text('qzxvunknownword', encoding='utf-8')\n\nexplicit = [\n    ('explicit-md', ['--files','violation.md'], 1, ('qzxvunknownword',)),\n    ('explicit-txt', ['--files','note.txt'], 1, ('qzxvunknownword',)),\n    ('missing', ['--files','missing.md'], 2, ('file does not exist',)),\n    ('ignored-dir', ['--files','ignored/hidden.md'], 2, ('excluded by Markdown target configuration',)),\n    ('ignored-prefix', ['--files','excluded/prefix.md'], 2, ('excluded by Markdown target configuration',)),\n    ('valid-plus-missing', ['--files','violation.md','missing.md'], 2, ('file does not exist',)),\n    ('unsupported', ['--files','unsupported.json'], 2, ('unsupported suffix',)),\n    ('directory', ['--files','folder.md'], 2, ('path is not a file',)),\n    ('outside', ['--files',str(outside)], 2, ('outside the repository',)),\n]\nfor name, args, code, contains in explicit:\n    p = run(name, args)\n    expect(name, p, code, contains)\n# Additional explicit-path siblings.\ntry:\n    (FIX / 'outside-link.md').symlink_to(outside)\nexcept FileExistsError:\n    pass\np = run('symlink-outside', ['--files','outside-link.md'])\nexpect('symlink-outside', p, 2, ('outside the repository',))\n\n# Regression probes for earlier findings affected by the same Python checker.\nwrite_whitelist('Tracker.DebugHost')\nfor name, text, code in [\n    ('english-approved','Tracker.DebugHost',0),\n    ('english-kanji-right','Tracker.DebugHost構成',0),\n    ('english-kanji-left','構成Tracker.DebugHost',0),\n    ('english-suffix','Tracker.DebugHostx',1),\n    ('english-dot','Tracker.DebugHost.Tracker.DebugHost',1),\n    ('english-hyphen','Tracker.DebugHost-Tracker.DebugHost',1),\n    ('english-underscore','Tracker.DebugHost_Tracker.DebugHost',1),\n    ('english-period','Tracker.DebugHost.',0),\n]:\n    p = run(name, ['--stdin','probe.md'], text)\n    expect(name, p, code)\n\nwrite_whitelist('API')\nfor name, text, code, contains in [\n    ('boundary','あ'*15999+'ギア'+'あ'*10,1,('ギア',)),\n    ('normalization-growth','㍿'*6000+'\\nジッタ',1,('probe.md:2','ジッタ')),\n    ('halfwidth-unregistered','ｺﾝﾋﾟｭｰﾀｰ',1,('ｺﾝﾋﾟｭｰﾀｰ',)),\n]:\n    p = run(name, ['--stdin','probe.md'], text)\n    expect(name, p, code, contains, ('Input is too long',))\n# Sibling observations around connector boundaries for non-ASCII whitelist values.\nwrite_whitelist('ｷﾞｱ')\nfor name, text in [\n    ('hw-dot-ascii1','ｷﾞｱ.x'),\n    ('hw-dot-asciiword','ｷﾞｱ.foo'),\n    ('ascii1-hyphen-hw','A-ｷﾞｱ'),\n    ('asciiword-hyphen-hw','ABC-ｷﾞｱ'),\n    ('hw-underscore-ascii1','ｷﾞｱ_x'),\n    ('hw-hyphen-digit','ｷﾞｱ-1'),\n]:\n    run(name, ['--stdin','probe.md'], text)\n\nsummary = {\n    'head': subprocess.check_output(['git','-C',str(ROOT),'rev-parse','HEAD'], text=True).strip(),\n    'records': records,\n}\n(OUT / 'results.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2)+'\\n', encoding='utf-8')\nprint(json.dumps({\n    'head': summary['head'],\n    'record_count': len(records),\n    'connector_observations': [(r['name'],r['exit_code']) for r in records if r['name'].startswith(('hw-dot','ascii','hw-underscore','hw-hyphen'))],\n}, ensure_ascii=False))\n",
+  "full_validation": {
+    "schema_version": 1,
+    "started_at": "2026-09-16T21:11:52.146795+00:00",
+    "status": "pass",
+    "steps": [
+      {
+        "name": "repository",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmp7XtIhl/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-ir-fixverify-20260917/scripts/verify_skill_repository.py"
+        ],
+        "started_at": "2026-09-16T21:11:52.162887+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "repository.stdout.log",
+        "stderr": "repository.stderr.log",
+        "duration_seconds": 0.031858,
+        "finished_at": "2026-09-16T21:11:52.194761+00:00"
+      },
+      {
+        "name": "bundle",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmp7XtIhl/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-ir-fixverify-20260917/scripts/build_chatgpt_worker_skills.py",
+          "--repo-root",
+          "/home/ibis/AI/CodexSkill-pr81-ir-fixverify-20260917",
+          "--output",
+          "/tmp/pr81-ir-fixverify-20260917/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T21:11:52.194989+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "bundle.stdout.log",
+        "stderr": "bundle.stderr.log",
+        "duration_seconds": 0.031902,
+        "finished_at": "2026-09-16T21:11:52.226903+00:00"
+      },
+      {
+        "name": "zip-integrity",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmp7XtIhl/bin/python",
+          "-c",
+          "import sys, zipfile; archive = zipfile.ZipFile(sys.argv[1]); bad = archive.testzip(); archive.close(); print('Invalid CRC: ' + bad if bad else 'ZIP integrity verified'); sys.exit(1 if bad else 0)",
+          "/tmp/pr81-ir-fixverify-20260917/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T21:11:52.227193+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-integrity.stdout.log",
+        "stderr": "zip-integrity.stderr.log",
+        "duration_seconds": 0.032014,
+        "finished_at": "2026-09-16T21:11:52.259217+00:00"
+      },
+      {
+        "name": "zip-contents",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmp7XtIhl/bin/python",
+          "-m",
+          "zipfile",
+          "-l",
+          "/tmp/pr81-ir-fixverify-20260917/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T21:11:52.259453+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-contents.stdout.log",
+        "stderr": "zip-contents.stderr.log",
+        "duration_seconds": 0.031633,
+        "finished_at": "2026-09-16T21:11:52.291100+00:00"
+      }
+    ],
+    "python": "3.13.7",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "ci": {
+      "GITHUB_RUN_ID": null,
+      "GITHUB_RUN_ATTEMPT": null,
+      "GITHUB_EVENT_NAME": null,
+      "TARGET_REF": null
+    },
+    "finished_at": "2026-09-16T21:11:52.291315+00:00"
+  },
+  "full_validation_source": {
+    "head": "28823db2a0f3f0354c43ae892f25307b1679159c",
+    "head_error": null,
+    "files_sha256": {
+      ".github/workflows/pr-commit-artifacts.yml": "d28735aea490ad339341ebb37b1719635e4ba850a28dc90e3eb10213fac74c81",
+      ".github/workflows/release-chatgpt-worker-skills.yml": "6807c9f7d3dcf1663ee46089ee71f6aec51338c6c730a9c4606b1d22b169e971",
+      ".gitignore": "28e2714b7b75cc2f855fb923e1e629ed67a1be78a06b1463047e07b31f0e2479",
+      "AGENTS.md": "49d98b078def47852bd9209ee61547d15a75fe861b65f9c297c72b5e346afc5f",
+      "design/adaptive-agent-assignment-design.md": "d8df1b5e80af66edd73c8d61aa84415d207838a0e18bfbb06e0ebb57a7fc0056",
+      "design/astra-escalation-design.md": "c6b125559da24296e2e0bc05a5a3d20a1511df043bdeb0cf78f843c4010d2eed",
+      "design/chat-worker-skill-design.md": "725b801daa006787a11589790734ea0b3170a690165f41dea5c6657d873a6f2a",
+      "design/chatgpt-project-instruction-example.md": "4b843e66d66ded3bd8419ba90da32e76690063103fcc8491f759b9fa849998f9",
+      "design/markdown-word-check-skill-design.md": "983e0a623dfde02a99aeb68c1ec1589713fc78e758771ee2db56a3357d5ad698",
+      "design/review-enforcer-markdown-whitelist-rebuild-design.md": "59fd33a8804109a9a53215a6b66c20523dd0380970f5017a4ca1428f1db806f4",
+      "design/skill-hierarchy-design.md": "70240f542a1d254dd1e387367fe9bcd72a0ae89379efb252e43981327eb6ecda",
+      "reports/chikkarpy-vocabulary-groups-review-20260517135422.md": "094e7eb4f536ee05d542a1718d18d23b07fe522b7cb0308e93600598bf32fcb6",
+      "reports/feedback-points-analysis-2026-04-18.md": "19dbec8b2fa8ebbd7a203bce523e18bfa5c979a42c9decde012949a6da0345b9",
+      "reports/feedback-points-skill-change-summary-2026-04-18.md": "06591fb67078ceb615fd9969e408341951775fa0d564c13f3f93827c3db7309c",
+      "reports/feedback-points-skill-coverage-review-2026-04-18.md": "48252ed713e7ac901f85f85805bc00a47ee21fff162b7927b67b135780e931ea",
+      "reports/feedback-points-skillization-analysis-2026-04-18.md": "dda30bd1b9986e468bfa73a3e058dcb8329e8ba10ff4f53749ec095f04815ac9",
+      "reports/fp-format-and-pr-linking-review-20260421095722.md": "2fc17539ddd8d6a06f682c943f0171932e42752d019e413a7465cb79e99f3dda",
+      "reports/fp-format-and-review-trigger-hardening-20260421094402.md": "40dacbd43d795f2b94fca38ea03548b7c8ebd7534b5b5e2c8ae224e471b18095",
+      "reports/fp-format-and-review-trigger-hardening-review-20260421095308.md": "2bb2c87b45d82b54d3a97302c6ccb7a50db4d91fc10b423b522000402df6a74e",
+      "reports/handoffs/issue-53-pr54-normal-handoff-20260730060300.md": "f842f059d453282b63bf3ba9198a33000db6ecf469b47f652a4a0ace30313721",
+      "reports/handoffs/issue-67-pr68-fix-verification-r2-20260906.yaml": "459cd827a309848943b2859bd6366fab258a54b9a622823db0a02868ee40ec98",
+      "reports/handoffs/issue-67-pr68-fix-verification-r3-20260906.yaml": "f56c41d7db7074d8b965260765d415c6c45d84a12d1757fb1fec01d4e22269f4",
+      "reports/handoffs/issue-67-pr68-fix-verification-r4-20260906.yaml": "f3ca9f9dbd8eae31d9a6eabbcb3845798a13400aa3d7158444a670e3f49df06a",
+      "reports/handoffs/issue-67-pr68-fix-verification-r5-20260906.yaml": "b3fcbeb9f7fcf0781ee7d89ee6443027fddbce0add995c0e17f767bc2bccf4cc",
+      "reports/handoffs/issue-67-pr68-implementation-20260906.yaml": "77e042c984032aa73e72bc527437f5f535615d4e0e22df25f5e3f22724ea98fe",
+      "reports/handoffs/issue-67-pr68-independent-findings-followup-20260908.yaml": "3e018317da6aa56d663674e2499f3110dd54634cdb11dcf53d6d8b96fdf48056",
+      "reports/handoffs/issue-67-pr68-independent-rereview-followup-20260909.yaml": "6f5fe9298afe98989d9b87e2ef9777af053546ec3c0223926b96fc31e5e3ea7a",
+      "reports/handoffs/issue-67-pr68-normal-review-20260906.yaml": "b1e0f21346f8b89dfc02f847764c1e2a8f1162356938b063a9f8161a515c006d",
+      "reports/handoffs/issue-67-pr68-r2-findings-followup-20260906.yaml": "467d09a4b437581c24276c4998ddd38dfbfa7f48c872c650c12848753d19f382",
+      "reports/handoffs/issue-67-pr68-r3-finding-followup-20260906.yaml": "63fba742dc49c5dfae99029d01ca34334d5c27806c74e8ddc1cb7a0053344709",
+      "reports/handoffs/issue-67-pr68-r4-finding-followup-20260906.yaml": "ad2ef56ca727b05f7039a6697faf0b38da424bb7c705995178e1156b4e9f5b27",
+      "reports/handoffs/issue-67-pr68-review-followup-20260906.yaml": "832895606b73878f02178bda01128378017787c4b42e77c4f4169579c33ce274",
+      "reports/handoffs/markdown-complete-scan-fix-verification-20260916.yaml": "a8806aa76c180b763bf1608fcb5fbf138316d1d00f04164855f4c19a42e3ffc3",
+      "reports/handoffs/markdown-complete-scan-review-20260916.yaml": "ea7de7224dcfac910c1d8d9fc52d56fb31c4827614f96998abce47283719336d",
+      "reports/handoffs/markdown-complete-scan-review-addendum-20260916.yaml": "08d8a19e2c1f6e775fabdb4cb0d35a6f97e3c2bfa539d749f11f14e1c034590c",
+      "reports/handoffs/markdown-complete-scan-review-followup-20260916.yaml": "58039a9fc794dcd58e1c35d527e94cf4e5d6008022e47abf70ba76ef716b6f22",
+      "reports/handoffs/markdown-halfwidth-katakana-fix-verification-20260916.yaml": "5ab27b2b1aeb71857ce48e3c03fc026ad44f392b007fff0292cf4912e1ba5580",
+      "reports/handoffs/markdown-halfwidth-katakana-followup-20260916.yaml": "e42f6479a99b4e4e2411cffb31f850118d2dedde408a521e0d3ade537c8ce04d",
+      "reports/handoffs/markdown-independent-findings-followup-20260916.yaml": "fd8dbdbeda99b12efb1cc8650649b79c4c568a0eca60a9a3b74603b2850c985e",
+      "reports/issue-13-adaptive-agent-assignment-handoff-20260826.yaml": "c6da07446f49490f2227b5b59f3c59793127a0d5f76c6277fbcbe308b7c00fdb",
+      "reports/issue-13-adaptive-agent-assignment-implementation-20260826.md": "28126133d08686f1e95370b0015587a101a59ffc178e58b0f0f3cf931651f737",
+      "reports/issue-13-pr65-normal-review-20260827.md": "f14c4d5fd48a99d590041f12632e6c8c8bc7b05f5c6e44cc8758191f3211f71d",
+      "reports/issue-13-pr65-r2-findings-followup-20260829.md": "bd03e09b7ec3cc268c7e1f81ed29aff97f85840390eca5463f2e3a96df9d712e",
+      "reports/issue-13-pr65-r3-findings-followup-20260829.md": "2bdadf366672ff456475662be5d9e7b371df9692cdf174b1ed0e667f6f43a704",
+      "reports/issue-13-pr65-r3-rereview-20260829.md": "332be922501335975e6f355af204ee0c7d874f60f92c16a8426f9d06232d196e",
+      "reports/issue-13-pr65-r4-findings-followup-20260829.md": "182b56697b20d088d22f990ff88435e74d5990ceab9206d29b8cd066a0d46a1f",
+      "reports/issue-13-pr65-r4-rereview-20260829.md": "70e7ed3d46ab3326ac79d18f425ad5528b575d564d18e30e95b45ef473e1dc67",
+      "reports/issue-13-pr65-r5-findings-followup-20260830.md": "23f48911f2c2a04d7fb83774f6c8a69d82ac37412d307bd2c11f63f6ae78a8d2",
+      "reports/issue-13-pr65-r5-rereview-20260829.md": "ba73b91ebee4a047c5e9db243568e7d1ccaaa473996ac91a52aed0ad431b041d",
+      "reports/issue-13-pr65-r6-rereview-20260830.md": "f1d9374db461f9c67df4ce7783435bb3107418486be456310284de1a699ca090",
+      "reports/issue-13-pr65-rereview-20260829.md": "af436682317acee5c5ef3dadc76f399bb4daeabf1b8d8ce4a4cc169b85511f8a",
+      "reports/issue-13-pr65-review-findings-followup-20260829.md": "15ecadb029966ca42f670c2d3bed226b5f83aeb008d57e7280861bfcf8a008fe",
+      "reports/issue-13-sol-expensive-profile-approval-followup-20260827.md": "0c328f50202fc6d53b9b74a16388d03f5811b6e18bd0af866b9936163107e41b",
+      "reports/issue-15-subagent-report-template-and-context-final-review-20260501174752.md": "9afc3fe7c6c15f33e4f3cdc95ade055246fdc34886b833e2a8fcd5b0065bd71a",
+      "reports/issue-15-subagent-report-template-and-context-rereview-20260501174449.md": "c044218514d565dce4aa3972481e5521e9e69dd40ca00fdaa3c57657bbdfc9b9",
+      "reports/issue-15-subagent-report-template-and-context-review-20260501173943.md": "ec8b64b0bdb4d4956d8ef67103efcb203cf08ce726a78938f2382930d42d1b65",
+      "reports/issue-51-chat-worker-skills-implementation-20260726123510.md": "8bfba6a2001bc2c559f38af185ac7868f5e8cc6fd6e82883c26ff6e43658a1e2",
+      "reports/issue-51-chat-worker-skills-review-20260726124000.md": "e292ade795eb88b934c747cde54761e3397e60374e34367e4e13089f023c3dde",
+      "reports/issue-53-complete-source-payload-followup-20260730070000.md": "20e6678c78991d855258c19f7405cf6a57271e65246ff62ea347bdbbeb2e45c9",
+      "reports/issue-53-core-skill-wrapper-review-followup-20260729174338.md": "c0193b449753c4d3cd84d0fdd1374ec355f616bd972e399c8ffe422476664ee5",
+      "reports/issue-53-finding-severity-erratum-20260729193100.md": "5df3a2ef4962557ce3a2beacc4c7064b504adea7e1c720fee9c9227dcf188b7f",
+      "reports/issue-53-fix-verification-20260729182457.md": "405615acedf581f5f8edfaca64b24719a8f56cedadae1609f1c4dfe85c49717d",
+      "reports/issue-53-fix-verification-followup-20260729182800.md": "23f735774d5b867f2bc2903fd144664c2459d0e4270c68d6d2c01ba9006c0338",
+      "reports/issue-53-fix-verification-r2-20260729185000.md": "beea99d2b467d9b452dbb03293b45458ddcd3cf509790786dd644a204c2542c6",
+      "reports/issue-53-independent-final-review-20260729083728.md": "fa7a4950209e9d9d9cf130e9c56404b33a711c91ec7ba4cccadca4b026996173",
+      "reports/issue-53-independent-final-review-r2-20260729185400.md": "143dfe43affb3b227432f739d9f2b8858ee7ff89fc43555fcd751a4fe3475113",
+      "reports/issue-53-independent-final-review-r2-fix-verification-20260729212800.md": "9a8a792150bf9f8028786504ce5eb5a29433033657da9131c8d5718751f7e930",
+      "reports/issue-53-independent-final-review-r2-fix-verification-r2-20260730062100.md": "5564992d94eaa37ff8e24246c0cfc8786a24f830d9538c05c41af092346b71ba",
+      "reports/issue-53-independent-final-review-r2-fix-verification-r3-20260730072800.md": "485cb7feea01cbc286319030aebd288c2d012f4818caaa4d299fdd2e8738aec0",
+      "reports/issue-53-independent-final-review-r2-followup-20260729193100.md": "4b02a07d5663a31056533698339349bd5a787638b23c2f50bf671d5dab53965e",
+      "reports/issue-53-independent-final-review-r3-20260730092400.md": "aab8e1d7b12d8d4ba678f785ae5f889ec9388178b392a282814b115ee37c9656",
+      "reports/issue-53-normal-handoff-followup-20260730060300.md": "2a440ec8d803e20a04a6a7c4cf14fdb270269e5199b0855a40472cbd00f2fcad",
+      "reports/issue-53-normal-review-pass-prefreeze-followup-20260730091000.md": "c30b287ebe4c375063a73396f91f61fc6ba6b03191794320983e5f5bbf5f2720",
+      "reports/issue-53-shared-workflow-contracts-20260726154744.md": "e3d5799777a5eb196b692c864c959d2d8717b7aba657d529b8f481cd87eae88b",
+      "reports/issue-62-design-update-20260821183448.md": "a20a79749b4cca01f4b9caf1bdda03a0126cfc836ddcd8411cd9224d1b1460ca",
+      "reports/issue-62-independent-final-review-20260821191806.md": "105a1e7c65bbaf7beaf32d4dc46a729fb55e385cb2773d4199aa2433610db021",
+      "reports/issue-62-independent-finding-closure-20260821194028.md": "5f3bfe37c19ab243b827297113c18c987a9f5dd143c33207661d3a48ca805668",
+      "reports/issue-62-independent-review-followup-20260821193046.md": "1d81bbffedc972880f54fe525cb9754894887bb78c920771c1eadafe3bb428da",
+      "reports/issue-62-normal-fix-verification-after-independent-20260821193452.md": "1ed27f773003b0bdb0439d5d66e897345e88b83964d454a1655fc6ec25386b9e",
+      "reports/issue-62-normal-review-20260821185421.md": "04932e6264c8358d3c14e4f4f037fcf8fc36c5c9eba505af28988628972ec4bb",
+      "reports/issue-62-normal-review-finding-closure-20260821190920.md": "8529027963b2d7ddcd689dd02b411608e135679db857bb51627df19b805c768f",
+      "reports/issue-62-normal-review-finding-closure-r2-20260821191456.md": "8c0b7d942e703354b78b72e52b33dda9cbea25c58b8dcdd84e6db75cb30712a4",
+      "reports/issue-62-normal-review-followup-20260821190259.md": "57b897e35dc7a237d1467d0874055c3a1e7702f4fbd9f4dba5d160b53c32bfb1",
+      "reports/issue-62-normal-review-followup-r2-20260821191250.md": "2295499245fb063e394594247524e4b23daac56af984a10c8d982df1b3a9f223",
+      "reports/issue-62-skill-implementation-20260821184240.md": "d5a0834b98102f95bce9e7b8b5da5b39512ad224441c8fbc849953511783a6df",
+      "reports/issue-67-astra-implementation-20260906.md": "29f9ff886a1f05f82eef0f7f2f4c30d9eeb17c8758765f47e5d1883a0baf166b",
+      "reports/issue-67-pr68-commit-artifacts-verification-20260909.md": "2240280474de2ea9bc9424d7a6e0458a27828dc8f7455f3ff08599daa7a49cf2",
+      "reports/issue-67-pr68-fix-verification-r2-20260906.md": "305d36b9f8b25fb7554986942a0a318d3ebb04fd7b4a576e32d3e0affa172669",
+      "reports/issue-67-pr68-fix-verification-r3-20260906.md": "9bba9a46bbba7167e75f3119e6c88b5c67ef57599f23bcbcfa988990001ac232",
+      "reports/issue-67-pr68-fix-verification-r4-20260906.md": "8667e68cb0b8b17fd5c9f096e614642e3d61930bd06911152f6b3db049832a9c",
+      "reports/issue-67-pr68-fix-verification-r5-20260906.md": "343f99a0d2b367009d9b9cdec9f4584d6aed05aa0a6c51015b26ea1d159408fc",
+      "reports/issue-67-pr68-independent-findings-followup-20260908.md": "e81e4f2667b31074ac7dda862a99b17145b64f8c3189deb46740d371f9be73fd",
+      "reports/issue-67-pr68-independent-rereview-followup-20260909.md": "47ff42cf99bcc3b866f3969b7b77e67629efb8b3c791a2438e38eb5edbc55cae",
+      "reports/issue-67-pr68-independent-review-20260908.md": "2d44ecc48b68a3c0b6e69c84c187dcf5d5e17248142111af9387e792b14fad9c",
+      "reports/issue-67-pr68-issue75-retry-20260909.md": "ac65e63c4e8f5be9d9c53f0a878839089f7eac61ebf7fa1340b249846d65518d",
+      "reports/issue-67-pr68-normal-review-20260906.md": "4ad522503dd98c3d5c07b5f746fc4a679318ceae9702f3721f609161c2ca3498",
+      "reports/issue-67-pr68-r2-findings-followup-20260906.md": "adddaa9e00a40e0b89d9651d0469a59bd0c4209ae37503e45d0b797c5a5bb941",
+      "reports/issue-67-pr68-r3-finding-followup-20260906.md": "70dba4a7649e0c84515036f4425415203a1c9d02b82be8af609d7c0c61cff4ad",
+      "reports/issue-67-pr68-r4-finding-followup-20260906.md": "c7a1d7f49f1979e38710fd43de53f2b73c6c71070101fdfde9d77545423ae1fe",
+      "reports/issue-67-pr68-review-followup-20260906.md": "27f5bcf87dd130fe31dbe5e8ad198ece4dfe574058b6bcd6ca26c5152f88c664",
+      "reports/issue3-review-20260421092352.md": "578e7ee9bf7446e4c73e4e70abf1f8a6f02971c948446a0ffedea2d1abebac72",
+      "reports/issue3-skill-presence-guard-20260421092352.md": "a53a315fdf698625b6098fd03e9b2a75434bc0113b15771b4c01ef28afbbb428",
+      "reports/markdown-complete-scan-fix-verification-20260916.md": "4167ca2563fa3a05c1df9ee89a03d1f2249b8d520fe9beb91898940972399b4b",
+      "reports/markdown-complete-scan-fix-verification-evidence-20260916.json": "787e8aa08916d14081d07b630d1b1c64b2e7c0cb11049bc7bc2461dae4c15e95",
+      "reports/markdown-complete-scan-normalization-evidence-20260916.json": "24cd439707c8d08abfcf807f1360a8d9475ee3c5fb55f22c63dbf6bd3c554b36",
+      "reports/markdown-complete-scan-review-20260916.md": "f345dae8f0e9559e34d7697d67f899328f9c271c3ef82330b4e1321fb4ad19e5",
+      "reports/markdown-complete-scan-review-addendum-20260916.md": "f401982466fd14496261702eecd2ea3181127024240c69e045fb4610234b4696",
+      "reports/markdown-complete-scan-review-evidence-20260916.json": "11778c1a47f119bc6a3cc693608fa5711eccab07776f7048298e35638ebcf78f",
+      "reports/markdown-complete-scan-review-followup-20260916.md": "a1cbd863b8d95d960c665698557280d5f342451b3a8454a46c33422fc2429adb",
+      "reports/markdown-halfwidth-katakana-fix-verification-20260916.md": "5cfc80ade4b4bc228580e4a08024578914ebdad0f00e5bb8f2cc191064675cc6",
+      "reports/markdown-halfwidth-katakana-fix-verification-evidence-20260916.json": "12f8e4e1805fdc8daf8cac725369c7afe3006b116e7a7fcce677bcc4e86595d2",
+      "reports/markdown-halfwidth-katakana-followup-20260916.md": "f1914043b7f7f49dcbf632964144d8bcbe9a107ee4c607bf118e717d7387f419",
+      "reports/markdown-independent-findings-followup-20260916.md": "3f2ac6dafdd71ade4b9880aeffe45d925a8ae7e9ae5a1a677dcce46d729caa6a",
+      "reports/pr-55-release-asset-automation-20260730095800.md": "5e50d269ff1c380de2f345118a792572664a138bbebac6d789778b1d3c0000ff",
+      "reports/skills-review-policy-feedback-ledger-review-20260509184523.md": "a98358080b6f0f28bcb42ca26a06ed45cb31e78887c95825dcd4d50d26c5d4fb",
+      "reports/skills-review-policy-feedback-ledger-review-r2-20260509185007.md": "70a8e0a0193d3c9e782e1654dd38cbc939ad37666f02040abf22e1b2f86eabfe",
+      "reports/skills-review-policy-feedback-ledger-review-r3-20260509185626.md": "6b7522fbcb3fad56ef110080e448f499c947b18659cc9dd55d4e666e12e37711",
+      "reports/skills-review-policy-feedback-ledger-review-r4-20260509190057.md": "7ae7baead530c0da0e809e974823c9ac5f7893c5cfe5f0636d1abe2dc133aad9",
+      "reports/skills-review-policy-feedback-ledger-review-r5-20260509190627.md": "65514b9f46c8dd7c5553c99e4478d94a33c02204c001bc25ee760eea4e227118",
+      "reports/skills-review-policy-feedback-ledger-review-r6-20260509191205.md": "4b64e1b17569131de94688a1b4aea2331dbac147add1fac5367e7f1ece732fdf",
+      "reports/skills-review-policy-feedback-ledger-review-r7-20260509191616.md": "6ad52aa102701a4dd4956e2279631e062b745eb830cd8ee790e8fb35f7b0b58a",
+      "reports/task-markdown-word-check-design-fix-20260520230537.md": "e08d746dcf6ff54f88baf8d7798b1cf3c7b105b39bf83231241b868e579d3cf0",
+      "reports/task-markdown-word-check-design-flow-review-20260522163846.md": "b8809afa34fa92a3bb054a58896e328a5573895459431f88047a4ddebebbe408",
+      "reports/task-markdown-word-check-design-flow-review-r2-20260522164807.md": "9a03c526b3acfa95fe77b9bf03675eb83f6e47bc874d6d7af10a2df0d8260487",
+      "reports/task-markdown-word-check-design-review-20260520230107.md": "b0b589b179efd789a8a2bc6a09a082f1d1ebbde378307d86a6651ae840e19b5d",
+      "reports/task-markdown-word-check-design-review-r2-20260520230107.md": "ce976440c57b67e1bb70002d8f8cc4dc94153757498e11dd85ea3d306b7602cf",
+      "reports/task-markdown-word-check-edit-hook-design-audit-20260530091410.md": "59e15d4c65ff93fb6492ff2cd0528194134c096966e21687d4398932e2efc5dd",
+      "reports/task-markdown-word-check-edit-hook-implementation-20260530092019.md": "35e9658bf2e3ea107e38c1740bf8fca155151355c1d8b080db00a3fa2143dedf",
+      "reports/task-markdown-word-check-edit-hook-implementation-fix-20260530093353.md": "e5aafe27fd2850bf7fa89d91ff1ebd9d2bab01296d66b0dac6f18e3d856a3e81",
+      "reports/task-markdown-word-check-edit-hook-implementation-review-20260530092814.md": "9a825f624da54aeec279cc3f8ed39944747c7f12f77ddb8d119048777775d542",
+      "reports/task-markdown-word-check-edit-hook-implementation-review-r2-20260530093934.md": "48806e3468ccfde0b0d6b945bf32b5ae9ebb2e13ebc347ffa8f9c4731c3d3b08",
+      "reports/task-markdown-word-check-flow-fix-20260522164303.md": "9fd92886173a76a99a7ccc3d4f1a2108d055818f44266b530d67d7b9d014bb9f",
+      "reports/task-markdown-word-check-handover-20260520234826.md": "354f6d6f9a833e97d75c017a2d06e321207ba8905211d34e36c8b0e3ea1ba399",
+      "reports/task-markdown-word-check-handover-r2-20260527055108.md": "2fc0857523a9e0857692fd7d7681afcb28e5af8fcec7f61a86a97eb610d6114e",
+      "reports/task-markdown-word-check-implementation-20260522102043.md": "493ba1a8d024b7d34cd09dc1f4b3ad8ed98d80c3b02cc42556f50f4a970fc1c6",
+      "reports/task-markdown-word-check-implementation-fix-20260522103311.md": "9146ffcdcb986d8da2dfaebb5b60714413d7c72884b2f6ab240c2971c941cd7d",
+      "reports/task-markdown-word-check-implementation-review-20260522102902.md": "5749521d92939f2935b0841ea6650914afcad0a1bc58e39d03fa831afa8b7587",
+      "reports/task-markdown-word-check-implementation-review-r2-20260522103812.md": "c2ce0f62ee5d416ca95b3991a3fdb4b9279980c51a336a9fa85b6f32dd3f9cef",
+      "reports/task-markdown-word-check-term-routing-design-audit-20260521204755.md": "8476259b5b662ea85167fcf52a30796901bc49ddbe110facd8bece70aa2d1d29",
+      "reports/task-markdown-word-check-term-routing-design-fix-20260521205114.md": "8467f96eea6b99e2040c903769f6fab2a371ad5491c8c607392d2798eeb75453",
+      "reports/task-markdown-word-check-term-routing-design-review-20260521205510.md": "e3b61ab050c272bdaeee4ea33ffba4d3727ae2b97216d677b98fa34ee07a1b00",
+      "reports/task-markdown-word-check-user-flow-author-audit-20260521211429.md": "209f9fb62e4847d080280247aaccce0ef77d3191e9fe6869dbcd34c7ab07db98",
+      "reports/task-markdown-word-check-user-flow-design-fix-20260521211944.md": "2b655f6b4845d3615cf0928bdec22f147b0b71e5cd88c57f1a21f7aa568faab2",
+      "reports/task-markdown-word-check-user-flow-design-review-20260521212259.md": "2327ca106803bf34346e87ac743f36c32d2d4d25b8dd2444094ee1c04c2fba7c",
+      "reports/task-markdown-word-check-user-flow-review-audit-20260521211429.md": "013ca13586db0db8f45753b31d7a56cf930f205acd8cb20df0c6c2b4dc3012a3",
+      "reports/topic-handover-memo-writer-review-20260509195538.md": "63c532ba3102d013c35635fde29623d0a22e73a603bf1a3d8742b0cb778d301a",
+      "reports/topic-handover-memo-writer-review-r2-20260509195842.md": "be91c4f48d230770d968327d7f12f87a549ff546f2a66ff8afa02c32ca14d91f",
+      "reports/topic-skills-hierarchy-overview-20260418150945.md": "b179207096ee8e49b5e0f3b7720811804c6cf75e4eba04156579ece7588340e4",
+      "reports/topic-spawn-agent-model-overrides-implementation-20260711194140.md": "cdfee00edcd6ce337cdda9ac519f8309d893982f2ce1eb8a80c790636fa07a75",
+      "reports/topic-spawn-agent-model-overrides-review-20260711194140.md": "33e187f65e7b532a8f20573be0040f06d0ed5a82adc9f91c9e3a4f16b57516e9",
+      "reports/topic-spawn-agent-model-overrides-verification-20260711194628.md": "5e57d37ee9521055dd2f4db1d3812390ddc6dc8c19f928c8b634555c3f673919",
+      "scripts/build_chatgpt_worker_skills.py": "fbf5592c31703bd3b805d4f215e8cd9383c93a0256fd60518422b993f484bdb6",
+      "scripts/run_validation.py": "4c12b32b2939152dce56866d3db2957efaf9be698925e1bc60356f64eef7219a",
+      "scripts/verify_skill_repository.py": "bdedf9b0fe05cf28f5bf0a2de34096a8ce5e071a8d8e903ae70b847dbc32669b",
+      "skills/chat-handoff-manager/SKILL.md": "eb58c1208923e032db060111d68e4266323a49a34c6812fa79834ca1c556b332",
+      "skills/chat-implementation-worker/SKILL.md": "7b27d8c618f927d4426f74bd03968f5f7c71053c8f032d3f554fe16293dc3e12",
+      "skills/chat-report-writer/SKILL.md": "f771d3dc2f1077129acc11a6d2bc4b865db32ff33cde1c3ea736bcc9cc976b2e",
+      "skills/chat-review-worker/SKILL.md": "771f64abd8901f0c674385937563d6844d38f466c6af87b8e088bb9d3b9401f1",
+      "skills/codex-delegation-executor/SKILL.md": "6daaf2410437324f6d8466973d605e97f24e7fbd773feb9bbf85d3e2856cd87e",
+      "skills/design/skill-hierarchy-design.md": "70240f542a1d254dd1e387367fe9bcd72a0ae89379efb252e43981327eb6ecda",
+      "skills/design-doc-maintainer/SKILL.md": "3a5358906377abc3f00c02a74d9f623e40f63fb29918dbb2892fd33448f5f2b8",
+      "skills/design-executor/SKILL.md": "40f8f4a54b6c5643cf58b315dee25b3a128031d4ae1a0fa54de9d6cd7191e58d",
+      "skills/development-orchestrator/SKILL.md": "5828d0c4b2b65e93033a5fbd93d08b0e8e382909a150359e2118a8b7219277fc",
+      "skills/development-orchestrator/references/start-intake-policy.md": "cf21f863ef685bd31e363742541cd7ef3468d39c576d2a68ecf70b96a8c828a8",
+      "skills/execution-cost-stabilizer/SKILL.md": "ab5c35101f32137d62b9252dd1703ecf80950cf98ed1d6d354057b12a4428b5e",
+      "skills/feedback-autonomy-boundary-manager/SKILL.md": "c23cb6cce56d00e0a06eaf7714ed88933b2b5b0b7bc6d1170aa8ce25212a90f0",
+      "skills/feedback-coding-standards-enforcer/SKILL.md": "8eaecbac0ac757d7028625e6edd80fd5658fcc3b6a923a51ea35ed3816b2fac2",
+      "skills/feedback-issue-intake-fallback-manager/SKILL.md": "37ee16fa6aa277ec0f369f4ecc05638eb5a2da6ccf39a0f1ef9cacbe5461f11b",
+      "skills/feedback-points-manager/SKILL.md": "a7eabed9611fcab69544b4d63897fbaf49e35b2f36b2b65d3da03bbe1785bb0c",
+      "skills/feedback-points-manager/references/canonical-feedback-taxonomy.md": "6e04f109523c8342d2800167b4dc125501a0757fb1a024e59cfc3416f55191bb",
+      "skills/feedback-points-manager/references/feedback-format-and-cleanup.md": "81165ceeadab04b6f3bb698a25e18bc3809758909e378ac7bb53b518b1626126",
+      "skills/feedback-points-manager/references/skillization-issue-template.md": "5d66298d2a83fb0a28a44a3130c853987196ac4b025c848456dbfc1741b08e64",
+      "skills/feedback-points-manager/references/skillization-operations.md": "1df0a0f634a4a788d0e442d7600f828f16bce06a0e3755ab9adad21c7a292a37",
+      "skills/feedback-points-manager/references/skillization-policy.md": "91370f91aa36a462047266fc57057809a23dfd76b369f5c2142c4b2b44c72a84",
+      "skills/feedback-points-manager/scripts/build_skillization_issue.sh": "f10b78095573327c6026c9b79b0a45dfd5535fef5e33590cd92a08659997113e",
+      "skills/feedback-points-sanitizer/SKILL.md": "03ae0f3ccfae9f493c8233c1c52c2eac71b96964a817cabb49cad710f822f1ae",
+      "skills/git-branch-starter/SKILL.md": "1ac60194bee28a75f594b63959c3cdb094b738c5666a8a1042982bc7dec49a8b",
+      "skills/git-commit-manager/SKILL.md": "053408533defeb3d352fb1903632b70cb88bc96f8107579f08b6cc6112a91b0c",
+      "skills/git-pr-submitter/SKILL.md": "d82c2092c1ee90326aa8db77a218e0e601d0a37813f38a12f783819b1e2a2e85",
+      "skills/git-review-followup-manager/SKILL.md": "4c0909e5914a9f006c1e6fb3bf8fe61463bc7fd973a7636ab2539e1fed30ca2b",
+      "skills/git-workflow-manager/SKILL.md": "f8a9a1c77d9951c1305eb28c809475e5e8849a66829a036f1488b31394e303c1",
+      "skills/handover-memo-writer/SKILL.md": "46edb2ae57bf3214c7210cec2b8f17c77b64d00d8bf1aa682e7a1c27b4604518",
+      "skills/handover-memo-writer/agents/openai.yaml": "79ed8ce26f7f253cb214169d05c3aa5b4269f04846153fb543955c483eda4383",
+      "skills/implementation-executor/SKILL.md": "9d4a1a779f405c0a92c70223ea711b1ecb777502b2945eae74fa175889e361c2",
+      "skills/implementation-worker/SKILL.md": "4dfaf78126904851d01f56615a23feaa8794e2b5d45e454f653191250a8e4cae",
+      "skills/markdown-word-checker/SKILL.md": "496ccc3c3e09df42e11cc935edc2b3e69796b592c362f9d0742b30a77bac9df9",
+      "skills/markdown-word-checker/agents/openai.yaml": "e2b6513b7e34d8225570c23282fc0c61e4e540767e706e525ba0a3d5295f6ae8",
+      "skills/markdown-word-checker/hooks/hooks.sample.json": "7363b9e3d92f2d9672fd13c52e424b9a1ce8fc048576c99780d0fe7c7725ccc9",
+      "skills/markdown-word-checker/hooks/post_tool_use_markdown_lint.py": "36bef9f420e796021a040264c7969d4a76c036821ce8a5b589dec0e5347c783f",
+      "skills/progress-sync-manager/SKILL.md": "3caaf04841c6f47956d5cd185deae9fd551cd178276f9a6e373693f58aa292ed",
+      "skills/report-output-manager/SKILL.md": "5e2c3c53aaed8d4d34fbf42a4217ccc6f620b019141ae99e663f6b649eec1c78",
+      "skills/report-output-manager/references/report-filename-policy.md": "e591c6a8936ce8adbf9cb996d9b10e6052d89e96a006054666de93f6432dd8b0",
+      "skills/report-output-manager/references/sub-agent-report-template.md": "f0bd35e7a0d0b6f443d1bee992eb1a32537852b44b87a505bdc4cf50b5b5d66c",
+      "skills/report-output-manager/scripts/build_report_path.sh": "121a77fbc1d55f51c3561151e9b71b7558beb1752ea49a90d9452e0d3c498db0",
+      "skills/report-writer/SKILL.md": "730c2efbb2f95ad27f5222bb94ac89aa96f0ace5555f76fad2f472fe64232f94",
+      "skills/restart-handover-manager/SKILL.md": "7fd27a5c376a446da62720e0e7cfffa18ed3f6f75f1f62e8f81649abc0ce3fa0",
+      "skills/review-enforcer/SKILL.md": "bbee252508a43a5683b9d4f22e58df0d6be0b482f912d94d48ae81e4682680db",
+      "skills/review-enforcer/references/session-review-shape-policy.md": "bb061d32dff0666bfc6ae49aa4b8d5658651c1221b9f726d7f17f5fae1132644",
+      "skills/review-enforcer/references/source-documentation-policy.md": "98404d9d4776d5d7430251f46e4dbcb26161d6ab707260fb02d1772c574c1791",
+      "skills/review-enforcer/references/source-layout-policy.md": "35893919afb9b7ccfeb3c124632f988404dbf3cbfe4300dc363f6ce1c6641958",
+      "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py": "40cdd12758e2d21c598c13bf5341c36c2aaa5531b6f1812f5ac06f520b68ab29",
+      "skills/review-enforcer/scripts/check-markdown-whitelist.js": "8aa37976ab109c46696d5c60d01161c449bd7728bc9444f2e39739426ff0657b",
+      "skills/review-enforcer/scripts/extract-markdown-vocabulary-sudachi.py": "edb5bc418d6f57929a6370aef5111601f59f8d3eb2562ce3d3e789e3e36f29b8",
+      "skills/review-enforcer/scripts/list-markdown-targets.js": "80b31249b369dfeda2c23e1b4a6e51ee0b1936bd382256ffe482192496125429",
+      "skills/review-enforcer/scripts/run-cspell-markdown.js": "4512c528fa10376572837fc37d4137465d7a1e0fb04d6129e0b472053531b6c2",
+      "skills/review-enforcer/scripts/textlint-rules/no-fullwidth-space.js": "9cea9cae8a69b3164b0e928e35f382bf1124e37e02fdf8cdd2fe795cc06cfc92",
+      "skills/review-enforcer/scripts/textlint-rules/no-unresolved-placeholder-marker.js": "eff1cd4a205355fb28767dd34a04b3135e61e0bf3d63a3159642f55a787c3757",
+      "skills/review-worker/SKILL.md": "77ef833e772008d8d42b9d430e24305e32eb3159b7e904f96a2e8a1ac67c233d",
+      "skills/skill-authoring-wrapper/SKILL.md": "c81c978148f33f900bfbcb360398662077abb88684c187e79367d6850faaf491",
+      "skills/skill-authoring-wrapper/agents/openai.yaml": "789c72edd05d76498c999b6e88fe045491a98ddabb0abf600b36e93a2d638ed1",
+      "skills/skill-authoring-wrapper/references/responsibility-placement-policy.md": "7dc8357c769220a4158a01270ab11e4219f9ed850dbe61bd8cf87c83a1daa87d",
+      "skills/sub-agent-task-manager/SKILL.md": "50f2ef12e2e64eb032b59a3ec711e3aee1e8e6e1c61822f0e751f885bcb460e4",
+      "skills/sub-agent-task-manager/references/agent-profile-selection.md": "7adbcfe84dc6a9d6b13f7a97e7d317763fb80a98f72cc13efec36501990f7b8d",
+      "skills/sub-agent-task-manager/references/astra-escalation.md": "7e20fbea81943a67344c666be4218eebed685d5940a5e7489eb95e68d389d3cb",
+      "skills/sub-agent-task-manager/references/spawn-agent-model-overrides.md": "5421e3763c418c11f0927d82395cebcdf81e34b7070edf9bedbf1a1d0ab9dd23",
+      "skills/task-breakdown-planner/SKILL.md": "045cd5586c291c2d10425085da7053c0a5480728ce9581d6355c89c71e14c017",
+      "skills/task-consistency-manager/SKILL.md": "65d50af4251ded8be07d20f9d01cc27fe4f68550c03f58d58334eaf8795da85f",
+      "skills/tdd-executor/SKILL.md": "107656852624a9a61c32374f6b5ac6e25d6ba4e830afbb6609e4f7c088beb097",
+      "skills/work-context-manager/SKILL.md": "6a14f5292a5f15c49687e1b8890d5537b9068bb823fae25928d33baed32e647b",
+      "tasks/phases-status.md": "baca3c4657fe0149b24b9da3b063436b4c2d286dee61f6a9fd2a808d51db2dc7",
+      "tasks/tasks-status.md": "d33e40509bca244790c011283b72a4cf562a35eb94ef426e69652535507d9140"
+    }
+  },
+  "ci": {
+    "required": false,
+    "workflow": "Validate and release ChatGPT worker skills",
+    "run_id": 35149827428,
+    "head_sha": "28823db2a0f3f0354c43ae892f25307b1679159c",
+    "conclusion": "success",
+    "artifacts": [
+      {
+        "id": 10467949243,
+        "name": "chatgpt-worker-skills-35149827428",
+        "purpose": "exact-head skill bundle evidence"
+      }
+    ],
+    "diagnostic_push_run": {
+      "run_id": 35149821111,
+      "job_id": 104975010248,
+      "head_sha": "28823db2a0f3f0354c43ae892f25307b1679159c",
+      "conclusion": "success",
+      "artifact_id": 10467834573
+    }
+  },
+  "matrix": [
+    {
+      "finding_id": "IR81-01",
+      "required_action": "許可語マスク境界を幅違いで同一契約にし、半角許可語のprefix/suffix連結を拒否しつつ全角/半角の相互表記を許可する。",
+      "production_path": "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py: build_whitelist_value_pattern -> mask_whitelist_values -> check_japanese_tokens",
+      "actual_composition_fixture": "半角term ｷﾞｱ: exact半角/全角はallow、ｷﾞｱｽ・ﾃｽﾄｷﾞｱ・ｷﾞｱス・テストｷﾞｱ・ｷﾞｱｰはreject。全角term ギアから半角ｷﾞｱもallow。",
+      "focused_evidence": "reports/markdown-independent-findings-fix-verification-evidence-20260917.json: probe records hw-exact, fw-from-hw-term, hw-suffix, hw-prefix, hw-mixed-suffix, hw-fw-prefix, hw-prolonged, fw-exact, hw-from-fw-term",
+      "disposition": "resolved"
+    },
+    {
+      "finding_id": "IR81-02",
+      "required_action": "explicit modeで各pathを検証し、不存在・repo外・対象外suffix・ignore対象・非file等を無言で成功扱いにしない。",
+      "production_path": "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py: select_target_files -> validate_explicit_targets -> resolve_candidate / is_target_file / is_ignored",
+      "actual_composition_fixture": "valid .md/.txtは違反exit 1。missing、ignored directory/prefix、valid+missing、unsupported suffix、directory、repo外、repo外symlinkは診断付きexit 2。",
+      "focused_evidence": "reports/markdown-independent-findings-fix-verification-evidence-20260917.json: probe records explicit-md, explicit-txt, missing, ignored-dir, ignored-prefix, valid-plus-missing, unsupported, directory, outside, symlink-outside",
+      "disposition": "resolved"
+    }
+  ],
+  "source_after_fix": "A\treports/handoffs/markdown-independent-findings-followup-20260916.yaml\nA\treports/markdown-independent-findings-followup-20260916.md",
+  "reserved_report_metadata_only": true
+}

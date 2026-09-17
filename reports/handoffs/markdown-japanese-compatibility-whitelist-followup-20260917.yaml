@@ -1,0 +1,342 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: review follow-up
+  generated_at: '2026-09-17T08:12:51+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #81'
+task_id: null
+branch: fix/markdown-lint-complete-scan
+base_ref: main
+target:
+  current_head: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+  reviewed_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  commit_range: 7417ac0da68202ff81f5cdf0c91417f6d8bb290b...bb3ad34bbba6a873c73d2d737ddd4368631eee04
+execution_environment:
+  kind: connected_computer
+  tool: Remote Desktop Commander
+  machine_id: 4eae589f-096b-4362-9bec-0f392d77d44f
+  connection: available
+  os: Windows
+  shell: cmd.exe
+  working_directory: 'C:\Users\donabe\Project\CodexSkill-pr81-fix-20260916'
+  repository: ssaattww/CodexSkill
+  branch: fix/markdown-lint-complete-scan
+  head_sha: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+  source_state: clean
+  source_fingerprint: null
+  ownership: current_task
+  writable_paths:
+    - skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    - reports/markdown-japanese-compatibility-whitelist-followup-20260917.md
+    - reports/markdown-japanese-compatibility-whitelist-followup-evidence-20260917.json
+    - reports/handoffs/markdown-japanese-compatibility-whitelist-followup-20260917.yaml
+  dependencies:
+    - name: SudachiPy
+      status: available
+      evidence: '0.6.11 in task scratch venv'
+    - name: SudachiDict-core
+      status: available
+      evidence: '20260428 in task scratch venv'
+    - name: PyYAML
+      status: available
+      evidence: '6.0.3 in task scratch venv'
+  evidence:
+    - '各terminal command直前にRDC list_sessionsを確認し、Blocked:false時は開始しなかった。'
+    - 'PR #81専用worktreeを使用した。'
+verification:
+  capability: local_execution_available
+  capability_evidence:
+    - '実SudachiPy checkerとrepository-defined full validationをFA780で実行可能。'
+  technical_head: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+  administrative_parent: null
+  commit:
+    state: committed
+    review_target_sha: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+  push:
+    state: push_pending
+    head_sha: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+  ci_wait:
+    state: ci_wait_pending
+    required_for: final_publication
+  final_publication:
+    sequence: final_push_then_pr_update_then_exact_head_ci_wait
+    pr_action: update
+scope:
+  - 'R81-07: Japanese whitelist compatibility-character leakage'
+  - 'preserve halfwidth/fullwidth Katakana equivalence'
+  - 'preserve previous PR #81 fixes and regression evidence'
+non_goals:
+  - Issue #85 attributed quotation lint exception
+  - Duck whitelist or alias expansion
+  - H-DOC footnote design mismatch
+  - Windows cspell.cmd spawn behavior
+  - merge
+authoritative_requirements:
+  - source: pr_review
+    reference: 'R81-07 review PRR_kwDOSFr3-88AAAABN6r7lg'
+    summary: '幅差だけを同一視し、一般NFKC互換表記は明示term/aliasなしで拒否する。互換文字は両方向fixtureで確認する。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: 'CodexSkill保守は非TDD。既存validationを使う。'
+development_policy:
+  method: validation-only
+  testing_order: focused then regression then repository full local gate
+write_boundary:
+  allowed:
+    - path_or_operation: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      reason: direct R81-07 cause
+    - path_or_operation: reports/markdown-japanese-compatibility-whitelist-followup-20260917.md
+      reason: detailed report
+    - path_or_operation: reports/markdown-japanese-compatibility-whitelist-followup-evidence-20260917.json
+      reason: focused evidence
+    - path_or_operation: reports/handoffs/markdown-japanese-compatibility-whitelist-followup-20260917.yaml
+      reason: handoff
+  forbidden:
+    - path_or_operation: tools/lint/markdown-whitelist.yaml
+      reason: do not expand approved vocabulary to hide the defect
+    - path_or_operation: reports/markdown-complete-scan-independent-final-review-20260916.md
+      reason: independent reviewer owns reserved report
+    - path_or_operation: merge
+      reason: user performs merge
+files:
+  changed:
+    - path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      purpose: separate width-only Japanese permission normalization from general NFKC
+    - path: reports/markdown-japanese-compatibility-whitelist-followup-20260917.md
+      purpose: detailed implementation report
+    - path: reports/markdown-japanese-compatibility-whitelist-followup-evidence-20260917.json
+      purpose: R81-07 focused evidence
+    - path: reports/handoffs/markdown-japanese-compatibility-whitelist-followup-20260917.yaml
+      purpose: transportable handoff
+validation:
+  commands:
+    - 'venv\\Scripts\\python.exe r81_07_validation.py'
+    - 'venv\\Scripts\\python.exe duck_normalization_validation.py'
+    - 'venv\\Scripts\\python.exe r81_06_after.py'
+    - 'venv\\Scripts\\python.exe run_python_only.py'
+    - 'venv\\Scripts\\python.exe ir81_independent_after.py'
+    - 'python -m py_compile skills\\review-enforcer\\scripts\\check-markdown-whitelist-sudachi.py'
+    - 'git diff --check'
+    - 'python scripts\\run_validation.py --output-dir <diagnostics>'
+  required_failure_diagnostics:
+    - stdout
+    - stderr
+    - exit status
+    - focused result JSON
+    - repository validation logs
+commands:
+  - command: 'venv\\Scripts\\python.exe r81_07_validation.py'
+    purpose: R81-07 direct and sibling compatibility fixtures
+    exit_code: 0
+    result: passed
+    head_sha: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+    evidence: reports/markdown-japanese-compatibility-whitelist-followup-evidence-20260917.json
+  - command: 'venv\\Scripts\\python.exe duck_normalization_validation.py'
+    purpose: Duck normalized/reading-form regression
+    exit_code: 0
+    result: passed
+    evidence: '10/10 cases'
+  - command: 'venv\\Scripts\\python.exe r81_06_after.py'
+    purpose: halfwidth/fullwidth and chunk-boundary regression
+    exit_code: 0
+    result: passed
+    evidence: '8/8 cases'
+  - command: 'venv\\Scripts\\python.exe run_python_only.py'
+    purpose: R81-01 through R81-05 regression
+    exit_code: 0
+    result: passed
+    evidence: '13/13 cases'
+  - command: 'venv\\Scripts\\python.exe ir81_independent_after.py'
+    purpose: IR81-01 and IR81-02 regression
+    exit_code: 0
+    result: passed
+    evidence: '15/15 cases'
+  - command: 'scripts\\run_validation.py --output-dir full-validation-r81-07-technical'
+    purpose: repository full local equivalence gate
+    exit_code: 0
+    result: passed
+    evidence: 'repository/bundle/zip-integrity/zip-contents all pass'
+tests:
+  - name: R81-07 compatibility fixtures
+    phase: focused
+    result: passed
+    head_sha: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+    evidence: '17/17 cases, including four compatibility pairs in both directions and explicit alias controls'
+  - name: prior PR #81 regressions
+    phase: regression
+    result: passed
+    head_sha: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+    evidence: '10 + 8 + 13 + 15 cases passed'
+  - name: repository full validation
+    phase: full_local_equivalence_gate
+    result: passed
+    head_sha: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+    evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-r81-07-technical'
+findings:
+  - id: R81-07
+    severity: medium
+    origin: coverage_miss
+    location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    description: 'NFKC permission normalization treats compatibility spellings such as ㌔ and キロ as an implicitly approved equivalent.'
+    impact: 'An unapproved Japanese compatibility spelling can pass without an explicit term or alias.'
+    evidence: 'Review evidence showed ㌔/キロ, ㌢/センチ, ㍑/リットル, ㍍/メートル passing before the fix.'
+    required_action: 'Separate width equivalence from general NFKC compatibility replacement and verify both directions.'
+review:
+  mode: fix_verification
+  reviewed_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  reviewer:
+    identity: chatgpt-pr81-normal-review-20260916
+    role: normal_reviewer
+    continuity:
+      previous_reviewer_identity: chatgpt-pr81-normal-review-20260916
+      changed: false
+      reason: null
+    independence:
+      implemented_change: false
+      implemented_review_fix: false
+      served_as_normal_reviewer: true
+      inherited_conversation: true
+      evidence:
+        - 'PR review PRR_kwDOSFr3-88AAAABN6r7lg'
+  verdict: fail
+  required_coverage:
+    - criterion: R81-07 compatibility normalization
+      disposition: checked_finding
+      evidence: 'review report at HEAD 7417ac0da68202ff81f5cdf0c91417f6d8bb290b'
+  independent_closure:
+    initial_independent_reviewed_head: c2a21ecdf7e9e3d6bd74414eed087ea2af6aa346
+    closure_reviewed_heads: []
+    reviewer_continuity: 'reuse the existing independent final reviewer lifecycle after normal R81-07 fix verification'
+    closure_scope:
+      - finding_or_ci_delta: R81-07
+      - finding_or_ci_delta: exact-head CI delta
+    completeness_matrix:
+      - finding_id: R81-07
+        required_action: 'Use width-only Japanese permission normalization; reject general Unicode compatibility equivalents unless explicitly listed as term or alias.'
+        production_path: 'read_whitelist -> japanese_terms / normalize_japanese_whitelist_term -> check_japanese_tokens compatibility_permission_mismatch -> surface permission check'
+        actual_composition_fixture: '㌔/キロ, ㌢/センチ, ㍑/リットル, ㍍/メートル in both directions; explicit alias controls; ギア/ｷﾞｱ width equivalence; capture and prefix/suffix regressions.'
+        focused_evidence: 'reports/markdown-japanese-compatibility-whitelist-followup-evidence-20260917.json: 17/17 expected exits on technical HEAD bb3ad34bbba6a873c73d2d737ddd4368631eee04'
+  validation_assessment:
+    - item: R81-07 focused validation
+      result: supported
+      evidence: '17/17 cases on technical HEAD'
+    - item: repository full local gate
+      result: supported
+      evidence: 'repository/bundle/zip-integrity/zip-contents all pass'
+  reserved_report_paths:
+    - reports/markdown-complete-scan-independent-final-review-20260916.md
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: null
+    allowed_paths:
+      - reports/markdown-complete-scan-independent-final-review-20260916.md
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: 1
+    forbidden_path_classes:
+      - executable
+      - skill
+      - design
+      - workflow
+      - configuration
+      - tracking
+      - handoff
+      - product
+    no_later_commits_required: true
+    validation_status: pending
+    validation_evidence: []
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/markdown-japanese-compatibility-whitelist-followup-20260917.md
+    - reports/markdown-japanese-compatibility-whitelist-followup-evidence-20260917.json
+  reviewed_head: c67370f985f5c0c1ee330f10ff5bbd500c72fe2a
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - 'R81-07 technical fix and focused/regression evidence recorded.'
+held:
+  - item: H-DOC footnote design wording difference
+    reason: unrelated existing held item
+    owner: review lifecycle
+    remaining_risk: design wording differs from current footnote behavior
+    verdict_impact: does not block R81-07 implementation
+  - item: Windows cspell.cmd spawn behavior
+    reason: unrelated existing held item
+    owner: review lifecycle
+    remaining_risk: Windows wrapper direct spawn remains held
+    verdict_impact: does not block R81-07 implementation
+unexplored: []
+unknown:
+  - field_or_fact: final publication exact-head CI
+    reason: final management commit has not been pushed yet
+not_applicable:
+  - field_or_area: TDD
+    reason: CodexSkill repository maintenance is non-TDD
+remaining_risks:
+  - same normal reviewer must fix-verify R81-07 on the published current HEAD
+  - new technical commit requires independent final technical/CI delta closure after normal convergence
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: fix_verification
+  summary: 'Same normal reviewer verifies R81-07 and direct regressions on the published current HEAD.'
+  instructions:
+    - verify both directions of each compatibility pair without explicit aliases
+    - verify explicit alias controls remain allowed
+    - verify ギア/ｷﾞｱ width equivalence and prior capture/prefix/suffix regressions
+    - use only CI runs whose head SHA matches PR current HEAD
+    - after normal convergence return to the existing independent reviewer lifecycle for R81-07 and CI delta only
+  required_attachments_or_references:
+    - reports/markdown-japanese-compatibility-whitelist-followup-20260917.md
+    - reports/markdown-japanese-compatibility-whitelist-followup-evidence-20260917.json
+    - reports/markdown-japanese-surface-whitelist-fix-verification-20260917.md
+  requested_authorized_actions:
+    - read_repository
+    - write_report
+    - write_handoff
+    - commit
+    - push
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/markdown-japanese-compatibility-whitelist-followup-20260917.yaml
+  packet_url: null
+  transport_note: 'Receiving chat must re-resolve current HEAD, execution environment, and permissions.'
+source_payloads:
+  - source_skill: work-context-manager
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      repository: ssaattww/CodexSkill
+      issue_or_pr: 'PR #81'
+      branch: fix/markdown-lint-complete-scan
+      current_head: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+      verification_capability: local_execution_available
+      execution_environment: connected_computer
+      development_policy: non-TDD validation-only
+      scope: R81-07 only
+  - source_skill: implementation-worker
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      mode: review follow-up
+      finding: R81-07
+      outcome: implemented
+      technical_head: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+      focused_validation: '17/17 passed'
+      regression_validation: '10/10 + 8/8 + 13/13 + 15/15 passed'
+      repository_full_gate: passed
+      push_state: push_pending
+      ci_state: ci_wait_pending
+  - source_skill: report-writer
+    output_contract_version: unknown
+    content_type: text/markdown
+    payload:
+      report_type: implementation_report
+      path: reports/markdown-japanese-compatibility-whitelist-followup-20260917.md
+      technical_head: bb3ad34bbba6a873c73d2d737ddd4368631eee04
+      next_action: normal R81-07 fix verification
+extensions: []

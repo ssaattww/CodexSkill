@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-16T22:14:47.036019+00:00",
+  "repository": "ssaattww/CodexSkill",
+  "pr": 81,
+  "review_mode": "fix_verification",
+  "reviewed_head": "c67370f985f5c0c1ee330f10ff5bbd500c72fe2a",
+  "previous_review_head": "df7c6c6be53e4f3d6e81b4e3c15aef188454b5dc",
+  "fix_commit": "daeddaa5a5d5a626d1ad891a831f6476a9c530a4",
+  "requirement_comment": {
+    "id": 5704475283,
+    "url": "https://github.com/ssaattww/CodexSkill/pull/81#issuecomment-5704475283"
+  },
+  "environment": {
+    "device": "ibis-ThinkBook-14-G7-IML",
+    "tool": "Remote Desktop Commander",
+    "worktree": "/home/ibis/AI/CodexSkill-pr81-additional-review-20260917",
+    "python": "3.13.7",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "dependencies": [
+      "SudachiPy 0.6.11",
+      "SudachiDict-core 20260428",
+      "PyYAML 6.0.3"
+    ]
+  },
+  "reviewer_probe": [
+    {
+      "name": "capture-canonical",
+      "term": "キャプチャー",
+      "aliases": [],
+      "text": "キャプチャー",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected": 0,
+      "match": true
+    },
+    {
+      "name": "capture-unapproved",
+      "term": "キャプチャー",
+      "aliases": [],
+      "text": "キャプチャ",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Markdown whitelist violations:\n- probe.md:1: 'キャプチャ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+      "expected": 1,
+      "match": true
+    },
+    {
+      "name": "capture-alias",
+      "term": "キャプチャー",
+      "aliases": [
+        "キャプチャ"
+      ],
+      "text": "キャプチャ",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected": 0,
+      "match": true
+    },
+    {
+      "name": "normalized-only",
+      "term": "ユーザー",
+      "aliases": [],
+      "text": "ユーザ",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ユーザ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+      "expected": 1,
+      "match": true
+    },
+    {
+      "name": "reading-only",
+      "term": "アオリンゴ",
+      "aliases": [],
+      "text": "青リンゴ",
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Markdown whitelist violations:\n- probe.md:1: '青リンゴ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+      "expected": 1,
+      "match": true
+    },
+    {
+      "name": "width-equivalent",
+      "term": "ギア",
+      "aliases": [],
+      "text": "ｷﾞｱ",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected": 0,
+      "match": true
+    },
+    {
+      "name": "compat-kilo",
+      "term": "キロ",
+      "aliases": [],
+      "text": "㌔",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected": 1,
+      "match": false
+    },
+    {
+      "name": "compat-centi",
+      "term": "センチ",
+      "aliases": [],
+      "text": "㌢",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected": 1,
+      "match": false
+    },
+    {
+      "name": "compat-liter",
+      "term": "リットル",
+      "aliases": [],
+      "text": "㍑",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected": 1,
+      "match": false
+    },
+    {
+      "name": "compat-meter",
+      "term": "メートル",
+      "aliases": [],
+      "text": "㍍",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected": 1,
+      "match": false
+    }
+  ],
+  "pre_fix_compatibility_observation": {
+    "head": "df7c6c6be53e4f3d6e81b4e3c15aef188454b5dc",
+    "term": "キロ",
+    "input": "㌔",
+    "exit_code": 0
+  },
+  "current_reverse_compatibility_observation": {
+    "head": "c67370f985f5c0c1ee330f10ff5bbd500c72fe2a",
+    "term": "㌔",
+    "input": "キロ",
+    "exit_code": 0
+  },
+  "repository_validation": {
+    "schema_version": 1,
+    "started_at": "2026-09-16T22:12:10.506994+00:00",
+    "status": "pass",
+    "steps": [
+      {
+        "name": "repository",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpNUfxhr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-additional-review-20260917/scripts/verify_skill_repository.py"
+        ],
+        "started_at": "2026-09-16T22:12:10.518095+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "repository.stdout.log",
+        "stderr": "repository.stderr.log",
+        "duration_seconds": 0.031674,
+        "finished_at": "2026-09-16T22:12:10.549780+00:00"
+      },
+      {
+        "name": "bundle",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpNUfxhr/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-additional-review-20260917/scripts/build_chatgpt_worker_skills.py",
+          "--repo-root",
+          "/home/ibis/AI/CodexSkill-pr81-additional-review-20260917",
+          "--output",
+          "/tmp/pr81-additional-review-full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T22:12:10.549972+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "bundle.stdout.log",
+        "stderr": "bundle.stderr.log",
+        "duration_seconds": 0.031777,
+        "finished_at": "2026-09-16T22:12:10.581762+00:00"
+      },
+      {
+        "name": "zip-integrity",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpNUfxhr/bin/python",
+          "-c",
+          "import sys, zipfile; archive = zipfile.ZipFile(sys.argv[1]); bad = archive.testzip(); archive.close(); print('Invalid CRC: ' + bad if bad else 'ZIP integrity verified'); sys.exit(1 if bad else 0)",
+          "/tmp/pr81-additional-review-full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T22:12:10.581982+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-integrity.stdout.log",
+        "stderr": "zip-integrity.stderr.log",
+        "duration_seconds": 0.031763,
+        "finished_at": "2026-09-16T22:12:10.613757+00:00"
+      },
+      {
+        "name": "zip-contents",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpNUfxhr/bin/python",
+          "-m",
+          "zipfile",
+          "-l",
+          "/tmp/pr81-additional-review-full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-16T22:12:10.613982+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-contents.stdout.log",
+        "stderr": "zip-contents.stderr.log",
+        "duration_seconds": 0.031645,
+        "finished_at": "2026-09-16T22:12:10.645639+00:00"
+      }
+    ],
+    "python": "3.13.7",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "ci": {
+      "GITHUB_RUN_ID": null,
+      "GITHUB_RUN_ATTEMPT": null,
+      "GITHUB_EVENT_NAME": null,
+      "TARGET_REF": null
+    },
+    "finished_at": "2026-09-16T22:12:10.645807+00:00"
+  },
+  "ci": {
+    "validation_run": 35153871592,
+    "validation_job": 104988533853,
+    "validation_artifact": 10470411579,
+    "push_run": 35153868102,
+    "push_job": 104988520422,
+    "push_artifact": 10470640735,
+    "head_sha": "c67370f985f5c0c1ee330f10ff5bbd500c72fe2a",
+    "conclusion": "success"
+  },
+  "finding": {
+    "id": "R81-07",
+    "severity": "medium",
+    "origin": "coverage_miss",
+    "location": "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:491,621",
+    "description": "NFKCによる許可判定が幅差以外のUnicode互換表記まで明示term/aliasと同一視する。",
+    "impact": "未承認の互換表記がwhitelist検査を通り、表記承認の範囲が暗黙に拡張される。",
+    "evidence": "current HEADで term キロ + ㌔、センチ + ㌢、リットル + ㍑、メートル + ㍍ がすべてexit 0。reverseの term ㌔ + キロ もexit 0。",
+    "required_action": "日本語の許可判定用正規化を幅差の同一視と一般NFKC互換置換から分離し、ギア/ｷﾞｱを維持しつつ互換文字は明示term/aliasなしでは拒否する。"
+  }
+}

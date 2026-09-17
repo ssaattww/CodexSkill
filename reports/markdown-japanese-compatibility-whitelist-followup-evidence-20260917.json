@@ -1,0 +1,186 @@
+{
+  "status": "pass",
+  "head": "bb3ad34bbba6a873c73d2d737ddd4368631eee04",
+  "dependencies": {
+    "SudachiPy": "0.6.11",
+    "SudachiDict-core": "20260428",
+    "PyYAML": "6.0.3"
+  },
+  "checker": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-fix-20260916\\skills\\review-enforcer\\scripts\\check-markdown-whitelist-sudachi.py",
+  "records": [
+    {
+      "name": "compat-kilo",
+      "term": "キロ",
+      "aliases": [],
+      "input": "㌔",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-kilo.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-kilo.stderr.log"
+    },
+    {
+      "name": "compat-kilo-reverse",
+      "term": "㌔",
+      "aliases": [],
+      "input": "キロ",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-kilo-reverse.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-kilo-reverse.stderr.log"
+    },
+    {
+      "name": "compat-centi",
+      "term": "センチ",
+      "aliases": [],
+      "input": "㌢",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-centi.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-centi.stderr.log"
+    },
+    {
+      "name": "compat-centi-reverse",
+      "term": "㌢",
+      "aliases": [],
+      "input": "センチ",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-centi-reverse.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-centi-reverse.stderr.log"
+    },
+    {
+      "name": "compat-liter",
+      "term": "リットル",
+      "aliases": [],
+      "input": "㍑",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-liter.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-liter.stderr.log"
+    },
+    {
+      "name": "compat-liter-reverse",
+      "term": "㍑",
+      "aliases": [],
+      "input": "リットル",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-liter-reverse.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-liter-reverse.stderr.log"
+    },
+    {
+      "name": "compat-meter",
+      "term": "メートル",
+      "aliases": [],
+      "input": "㍍",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-meter.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-meter.stderr.log"
+    },
+    {
+      "name": "compat-meter-reverse",
+      "term": "㍍",
+      "aliases": [],
+      "input": "メートル",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-meter-reverse.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\compat-meter-reverse.stderr.log"
+    },
+    {
+      "name": "explicit-compat-alias",
+      "term": "キロ",
+      "aliases": [
+        "㌔"
+      ],
+      "input": "㌔",
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\explicit-compat-alias.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\explicit-compat-alias.stderr.log"
+    },
+    {
+      "name": "explicit-compat-alias-reverse",
+      "term": "㌔",
+      "aliases": [
+        "キロ"
+      ],
+      "input": "キロ",
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\explicit-compat-alias-reverse.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\explicit-compat-alias-reverse.stderr.log"
+    },
+    {
+      "name": "width-full-to-half",
+      "term": "ギア",
+      "aliases": [],
+      "input": "ｷﾞｱ",
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\width-full-to-half.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\width-full-to-half.stderr.log"
+    },
+    {
+      "name": "width-half-to-full",
+      "term": "ｷﾞｱ",
+      "aliases": [],
+      "input": "ギア",
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\width-half-to-full.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\width-half-to-full.stderr.log"
+    },
+    {
+      "name": "capture-canonical",
+      "term": "キャプチャー",
+      "aliases": [],
+      "input": "キャプチャー",
+      "expected_exit": 0,
+      "exit_code": 0,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\capture-canonical.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\capture-canonical.stderr.log"
+    },
+    {
+      "name": "capture-unapproved",
+      "term": "キャプチャー",
+      "aliases": [],
+      "input": "キャプチャ",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\capture-unapproved.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\capture-unapproved.stderr.log"
+    },
+    {
+      "name": "halfwidth-suffix",
+      "term": "ギア",
+      "aliases": [],
+      "input": "ｷﾞｱｽ",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\halfwidth-suffix.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\halfwidth-suffix.stderr.log"
+    },
+    {
+      "name": "halfwidth-prefix",
+      "term": "ギア",
+      "aliases": [],
+      "input": "ﾃｽﾄｷﾞｱ",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\halfwidth-prefix.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\halfwidth-prefix.stderr.log"
+    },
+    {
+      "name": "mixed-suffix",
+      "term": "ギア",
+      "aliases": [],
+      "input": "ｷﾞｱス",
+      "expected_exit": 1,
+      "exit_code": 1,
+      "stdout_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\mixed-suffix.stdout.log",
+      "stderr_log": "C:\\Users\\donabe\\Project\\CodexSkill-pr81-validation\\r81-07-logs\\mixed-suffix.stderr.log"
+    }
+  ]
+}

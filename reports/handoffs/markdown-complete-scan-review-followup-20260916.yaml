@@ -1,0 +1,503 @@
+schema_version: 3
+producer:
+  skill: chat-implementation-worker
+  mode: review follow-up
+  generated_at: '2026-09-16T06:50:07.9443517+09:00'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'PR #81'
+task_id: null
+branch: fix/markdown-lint-complete-scan
+base_ref: main
+target:
+  current_head: 59dff18e4164d88de85fc44006e144bc5d26472c
+  reviewed_head: null
+  commit_range: 6a6f33df2498b7cac50c51e8110a3f9c8483cac9...59dff18e4164d88de85fc44006e144bc5d26472c
+execution_environment:
+  kind: connected_computer
+  tool: Remote Desktop Commander
+  machine_id: 4eae589f-096b-4362-9bec-0f392d77d44f
+  connection: available
+  os: Windows
+  shell: cmd.exe / PowerShell
+  working_directory: 'C:\Users\donabe\Project\CodexSkill-pr81-fix-20260916'
+  repository: ssaattww/CodexSkill
+  branch: fix/markdown-lint-complete-scan
+  head_sha: 59dff18e4164d88de85fc44006e144bc5d26472c
+  source_state: clean
+  source_fingerprint: null
+  ownership: current_task
+  writable_paths:
+    - skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    - skills/review-enforcer/scripts/run-cspell-markdown.js
+    - reports/markdown-complete-scan-review-followup-20260916.md
+    - reports/handoffs/markdown-complete-scan-review-followup-20260916.yaml
+  dependencies:
+    - name: SudachiPy
+      status: available
+      evidence: '0.6.11 in task scratch venv'
+    - name: SudachiDict-core
+      status: available
+      evidence: '20260428 in task scratch venv'
+    - name: PyYAML
+      status: available
+      evidence: '6.0.3 in task scratch venv'
+    - name: cspell
+      status: available
+      evidence: '9.8.0 in Ubuntu task scratch'
+  evidence:
+    - '専用worktreeをPR current HEAD 6a6f33dから作成した。'
+    - '各terminal command前にRDC list_sessionsを確認し、Blocked:falseがない時だけ実行した。'
+    - '他タスクのmain worktreeと既存PR81 review worktreeは変更していない。'
+verification:
+  capability: local_execution_available
+  capability_evidence:
+    - 'FA780でPython実CLI、構文確認、repository full validationを実行可能。'
+    - 'Ubuntu接続端末で実cspell 9.8.0を実行可能。'
+  technical_head: 59dff18e4164d88de85fc44006e144bc5d26472c
+  administrative_parent: null
+  commit:
+    state: committed
+    review_target_sha: 59dff18e4164d88de85fc44006e144bc5d26472c
+  push:
+    state: push_pending
+    head_sha: 59dff18e4164d88de85fc44006e144bc5d26472c
+  ci_wait:
+    state: ci_wait_pending
+    required_for: merge_gate
+  final_publication:
+    sequence: final_push_then_authorized_pr_create_or_update_then_exact_head_pull_request_ci_wait
+    pr_action: update
+authoritative_requirements:
+  - source: user_instruction
+    reference: 'current chat request'
+    summary: 'PR #81の指摘対応を行い、RDCで他コマンド実行中か確認してからterminal commandを実行する。'
+  - source: repository_instruction
+    reference: AGENTS.md
+    summary: 'Skill優先。CodexSkill自身の保守は非TDDで、既存validationを使用する。'
+  - source: report
+    reference: reports/markdown-complete-scan-review-20260916.md
+    summary: 'R81-01からR81-04の必要対応を保持する。'
+  - source: report
+    reference: reports/markdown-complete-scan-review-addendum-20260916.md
+    summary: 'R81-05の必要対応を保持する。'
+development_policy:
+  method: non-TDD
+  testing_order: 'focused validation, implementation commit, repository full validation'
+  governing_source: AGENTS.md
+validation_plan:
+  commands:
+    - 'Python実CLIでR81-01/R81-02/R81-03/R81-04/R81-05を確認'
+    - 'Ubuntuの実cspell 9.8.0でR81-02/R81-04を確認'
+    - 'python scripts/run_validation.py --output-dir <task-scratch>'
+    - 'git diff --check; Python構文確認; node --check'
+  required_failure_diagnostics:
+    - '標準出力、標準エラー、終了コードをtask scratchに保存する。'
+blocked: []
+authorized_actions:
+  - read_repository
+  - edit_code
+  - write_report
+  - write_handoff
+  - commit
+  - push
+  - update_pr
+  - comment_pr
+write_boundary:
+  allowed:
+    - path_or_operation: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      reason: 'R81-01/R81-03/R81-04/R81-05の修正'
+    - path_or_operation: skills/review-enforcer/scripts/run-cspell-markdown.js
+      reason: 'R81-02/R81-04の修正'
+    - path_or_operation: reports/markdown-complete-scan-review-followup-20260916.md
+      reason: '詳細実装報告'
+    - path_or_operation: reports/handoffs/markdown-complete-scan-review-followup-20260916.yaml
+      reason: '次工程へのhandoff'
+  forbidden:
+    - path_or_operation: merge
+      reason: '利用者が実施する。'
+    - path_or_operation: '他タスクのworktreeと今回の5指摘に無関係な実装'
+      reason: 'scope外。'
+scope:
+  - 'PR #81のR81-01からR81-05を修正する。'
+non_goals:
+  - '先行レビューのH-DOC保留事項を解消すること。'
+  - 'Windowsの既存cspell.cmd spawn挙動を修正すること。'
+  - '許可一覧の語彙を変更すること。'
+  - 'mergeすること。'
+files:
+  changed:
+    - path: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+      purpose: '分割、正規化長、明示.txt、許可語境界の修正'
+    - path: skills/review-enforcer/scripts/run-cspell-markdown.js
+      purpose: 'cspell許可語境界の修正'
+    - path: reports/markdown-complete-scan-review-followup-20260916.md
+      purpose: '詳細報告'
+    - path: reports/handoffs/markdown-complete-scan-review-followup-20260916.yaml
+      purpose: 'handoff'
+  inspected:
+    - path: AGENTS.md
+      purpose: 'repository development policy'
+    - path: reports/markdown-complete-scan-review-20260916.md
+      purpose: 'R81-01からR81-04の原指摘'
+    - path: reports/markdown-complete-scan-review-addendum-20260916.md
+      purpose: 'R81-05の原指摘'
+  intentionally_untouched:
+    - path_or_area: '既存レビュー報告・証拠'
+      reason: '履歴証拠を保持する。'
+    - path_or_area: 'design/review-enforcer-markdown-whitelist-rebuild-design.md'
+      reason: 'H-DOCは今回の5指摘に含まれない。'
+commands:
+  - command: 'python-only focused probe (13 cases)'
+    purpose: 'R81-01/R81-02/R81-03/R81-04/R81-05のPython実CLI確認'
+    exit_code: 0
+    result: passed
+    head_sha: 59dff18e4164d88de85fc44006e144bc5d26472c
+    evidence: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\python-probe-results.json and logs'
+    execution_environment: null
+    source_fingerprint: null
+  - command: 'python3 /tmp/pr81-validation/run-node-probes.py'
+    purpose: 'R81-02/R81-04の実cspell確認'
+    exit_code: 0
+    result: passed
+    head_sha: 59dff18e4164d88de85fc44006e144bc5d26472c
+    evidence: '/tmp/pr81-validation/node-probe-results.json and logs'
+    execution_environment: null
+    source_fingerprint: null
+  - command: 'python scripts/run_validation.py --output-dir C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-impl'
+    purpose: 'repository-defined full local validation'
+    exit_code: 0
+    result: passed
+    head_sha: 59dff18e4164d88de85fc44006e144bc5d26472c
+    evidence: 'full-validation-impl/results.json; repository, bundle, zip-integrity, zip-contents all pass'
+    execution_environment: null
+    source_fingerprint: null
+tests:
+  - name: focused-regression-probes
+    phase: verification
+    result: passed
+    head_sha: 59dff18e4164d88de85fc44006e144bc5d26472c
+    evidence: 'Python 13 cases and cspell 8 cases passed.'
+  - name: repository-full-validation
+    phase: verification
+    result: passed
+    head_sha: 59dff18e4164d88de85fc44006e144bc5d26472c
+    evidence: 'repository/bundle/zip-integrity/zip-contents all pass.'
+ci:
+  required: true
+  workflow: null
+  run_id: null
+  head_sha: unknown
+  conclusion: unknown
+  artifacts: []
+implementation:
+  outcome: completed
+  final_head: 59dff18e4164d88de85fc44006e144bc5d26472c
+  commits:
+    - sha: 59dff18e4164d88de85fc44006e144bc5d26472c
+      purpose: 'R81-01からR81-05の実装修正'
+  addressed_findings:
+    - id: R81-01
+      reviewed_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+      disposition: addressed
+      evidence: '境界入力でギアを検出し、長い片仮名語の行番号も保持。'
+    - id: R81-02
+      reviewed_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+      disposition: addressed
+      evidence: 'Python/cspellとも漢字隣接を許可し、ASCII suffixは拒否。'
+    - id: R81-03
+      reviewed_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+      disposition: addressed
+      evidence: '`--files note.txt`で未登録語を検出し、通常探索はMarkdownのみ。'
+    - id: R81-04
+      reviewed_head: 279b8da9ffe954f78fd8461555be429f1bdcc100
+      disposition: addressed
+      evidence: 'dot/hyphen/underscore連結をPython/cspellとも拒否。単独語と文末ピリオドは許可。'
+    - id: R81-05
+      reviewed_head: 2340ae227091d0e596e0b68d6596489eb6e4adc0
+      disposition: addressed
+      evidence: 'NFKC膨張入力でSudachi長さ例外を出さず、2行目のジッタを検出。'
+  failure_diagnostics:
+    - type: standard_output
+      location: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\logs'
+      summary: 'Python focused probe stdout logs'
+    - type: standard_error
+      location: 'C:\Users\donabe\Project\CodexSkill-pr81-validation\logs'
+      summary: 'Python focused probe stderr logs'
+    - type: standard_output
+      location: '/tmp/pr81-validation/logs'
+      summary: 'Ubuntu cspell stdout logs'
+    - type: standard_error
+      location: '/tmp/pr81-validation/logs'
+      summary: 'Ubuntu cspell stderr logs'
+  blocked_items: []
+  summary:
+    - 'R81-01からR81-05の5件を実装上addressedとした。'
+    - 'fix verificationの判定は通常レビュアーに委ねる。'
+review:
+  mode: not_applicable
+  reviewed_head: unknown
+  reviewer:
+    identity: unknown
+    role: not_applicable
+    continuity:
+      previous_reviewer_identity: null
+      changed: false
+      reason: null
+    independence:
+      implemented_change: unknown
+      implemented_review_fix: unknown
+      served_as_normal_reviewer: unknown
+      inherited_conversation: unknown
+      evidence: []
+  verdict: not_applicable
+  required_coverage: []
+  independent_closure:
+    initial_independent_reviewed_head: null
+    closure_reviewed_heads: []
+    reviewer_continuity: null
+    closure_scope: []
+    completeness_matrix: []
+  validation_assessment: []
+  reserved_report_paths: []
+  report_attestation:
+    allowed: false
+    reviewed_implementation_head: null
+    allowed_paths: []
+    required_first_parent: null
+    maximum_commits_after_reviewed_head: null
+    forbidden_path_classes: []
+    no_later_commits_required: not_applicable
+    validation_status: not_applicable
+    validation_evidence: []
+  summary:
+    - '実装担当のためレビュー判定は行わない。'
+report:
+  report_type: implementation_report
+  outcome: created
+  persistence_mode: repository_file
+  paths:
+    - reports/markdown-complete-scan-review-followup-20260916.md
+  reviewed_head: null
+  attestation_head: null
+  pr_comments: []
+  summary:
+    - '5件の修正内容、focused validation、repository validation、remaining riskを記録。'
+findings:
+  - id: R81-01
+    severity: medium
+    origin: introduced_by_change
+    location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    description: '分割境界をまたぐ未登録の片仮名語が見逃される。'
+    impact: '文書中の位置だけで許可一覧違反の検出結果が変わる。'
+    evidence: '原レビューでは48,033 bytes境界入力がexit 0。修正後はギアを検出する。'
+    required_action: '語境界と元位置を保持して全文検査する。'
+  - id: R81-02
+    severity: medium
+    origin: introduced_by_change
+    location: skills/review-enforcer/scripts/run-cspell-markdown.js
+    description: '登録済み英語複合語に漢字が隣接するとcspellが誤検出する。'
+    impact: '許可識別子を日本語文中で使用できず、Pythonとcspellの判定が食い違う。'
+    evidence: '原レビューでは漢字前後のTracker.DebugHostがcspell exit 1。修正後は双方exit 0。'
+    required_action: '漢字隣接を許可しつつASCII継続子は拒否する。'
+  - id: R81-03
+    severity: medium
+    origin: introduced_by_change
+    location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    description: '`--files`で明示した.txtが無警告で検査対象から捨てられる。'
+    impact: '検査していないのに成功を返す。'
+    evidence: '修正後はnote.txtのqzxvunknownwordをexit 1で検出し、通常探索では.txtを除外。'
+    required_action: '明示.txtを検査しhelpを実契約に同期する。'
+  - id: R81-04
+    severity: medium
+    origin: pre_existing
+    location: 'skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py; skills/review-enforcer/scripts/run-cspell-markdown.js'
+    description: 'dot/hyphenで続く未登録全体語を部分マスクして通す。'
+    impact: '登録語を連結した未登録識別子まで許可される。'
+    evidence: '修正後はdot/hyphen/underscore連結をPython/cspellともexit 1。文末ピリオドはexit 0。'
+    required_action: '識別子継続子と文末句読点を区別する。'
+  - id: R81-05
+    severity: medium
+    origin: pre_existing
+    location: skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+    description: '入力の正規化膨張によりSudachi上限を超え、末尾を検査しない。'
+    impact: '全文検査せず例外終了する。'
+    evidence: '修正後は㍿×6000入力でInput is too longを出さず2行目のジッタを検出。'
+    required_action: '正規化後の入力上限を保証し、語境界と元位置を保持する。'
+held:
+  - item: 'H-DOC: 脚注定義本文の既存設計記載差'
+    reason: '先行通常レビューの保留事項で今回の5指摘修正には含まれない。'
+    owner: normal reviewer / implementation owner
+    remaining_risk: '設計記載と現実装の説明差が残る。'
+    verdict_impact: '先行レビューでは5件のfail根拠とは別のheld。'
+unexplored: []
+unknown:
+  - field_or_fact: 'final exact-head CI run'
+    reason: 'push前のため未成立。'
+not_applicable:
+  - field_or_area: TDD
+    reason: 'CodexSkill repository maintenanceはAGENTS.mdにより非TDD。'
+  - field_or_area: independent final review verdict
+    reason: 'implementation follow-upでは実施しない。'
+remaining_risks:
+  - 'Windowsで既存run-cspell-markdown.jsがcspell.cmdをspawnSyncできない挙動はscope外で残る。'
+  - 'H-DOC保留事項は未解消。'
+  - 'final publication HEADのexact-head CIはpush後に確認する。'
+source_payloads:
+  - source_skill: implementation-worker
+    output_contract_version: unknown
+    content_type: application/yaml
+    payload:
+      mode: review follow-up
+      accepted_scope: 'R81-01からR81-05の修正'
+      non_goals:
+        - 'H-DOC保留事項の修正'
+        - 'Windows cspell.cmd spawn挙動の修正'
+        - merge
+      changed_files:
+        - skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py
+        - skills/review-enforcer/scripts/run-cspell-markdown.js
+      validation:
+        focused_python: '13 cases passed'
+        focused_cspell: '8 cases passed on Ubuntu'
+        repository_full_validation: '4/4 steps passed'
+      review_target_commit: 59dff18e4164d88de85fc44006e144bc5d26472c
+      push_state: push_pending
+      ci_evidence: absent_before_push
+      blocked_items: []
+      remaining_risks:
+        - 'Windows cspell wrapper existing spawn behavior'
+        - 'H-DOC held item'
+      next_required_action: 'persist report/handoff, final local gate, push, exact-head CI, same normal reviewer fix verification'
+  - source_skill: report-writer
+    output_contract_version: unknown
+    content_type: text/markdown
+    payload:
+      report_type: implementation_report
+      complete_body: |
+        # Markdown全文検査 PR #81 指摘対応レポート
+
+        作成日: 2026-09-16
+
+        ## 対象
+
+        - Repository: `ssaattww/CodexSkill`
+        - PR: `#81 fix: make Markdown lint scan complete documents`
+        - Branch: `fix/markdown-lint-complete-scan`
+        - 指摘対応開始時HEAD: `6a6f33df2498b7cac50c51e8110a3f9c8483cac9`
+        - 実装コミット: `59dff18e4164d88de85fc44006e144bc5d26472c`
+        - Development policy: CodexSkill保守のため非TDD
+        - Verification capability: `local_execution_available`
+
+        ## 目的と範囲
+
+        通常レビューで残った `R81-01` から `R81-05` の5件だけを修正した。
+        設計、許可一覧、CI workflow、既存レビュー記録の内容は変更していない。
+        マージは実施しない。
+
+        ## 変更ファイル
+        - `skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py`
+          - 明示指定 `.txt` の検査契約を復元
+          - 許可語の識別子境界を修正
+          - Sudachi入力長をNFKC正規化後のUTF-8バイト数で制限
+          - 長文分割時に片仮名語の途中を可能な限り切らない
+        - `skills/review-enforcer/scripts/run-cspell-markdown.js`
+          - 英語識別子と日本語本文の境界を分離
+          - `.`, `-`, `_` で連結された未登録語の部分マスクを防止
+
+        ## 指摘対応
+
+        | Finding | 対応 | 検証 |
+        |---|---|---|
+        | R81-01 | Sudachi分割位置が片仮名語の内部に入る場合、語の手前まで分割位置を戻す。 | 48,033 bytesの境界入力で `ギア` を1行目として検出。2行目に長い片仮名語を置いた入力でも2行目の違反として検出。 |
+        | R81-02 | ASCII識別子の境界から漢字を除外し、日本語本文との隣接を許可。 | Python/cspellで `Tracker.DebugHost構成` と `構成Tracker.DebugHost` が成功。`Tracker.DebugHostx` は失敗。 |
+        | R81-03 | 通常探索は `.md` のまま、`--files` 明示指定だけ `.md/.txt` を許可。`--changed` helpも `.md` に同期。 | `--files note.txt` が未登録語を検出しexit 1。通常探索では `.txt` を対象にせずexit 0。 |
+        | R81-04 | ASCII許可語の前後で `._-` と識別子文字が連続する場合はマスクしない。 | Python/cspellで dot、hyphen、underscore連結をexit 1。単独語と文末ピリオドはexit 0。 |
+        | R81-05 | 分割判定を生テキストのバイト数ではなく、NFKC正規化後のUTF-8バイト数で実施。 | `㍿`×6000 + 改行 + `ジッタ` で `Input is too long` を出さず、2行目の `ジッタ` を検出。 |
+
+        ## focused validation
+
+        Windows/FA780の専用scratchで SudachiPy の実CLIを検証した。
+        依存は `SudachiPy 0.6.11`、`SudachiDict-core 20260428`、`PyYAML 6.0.3`。
+        13ケースすべて期待した終了コードと診断になった。
+        証拠は `C:\Users\donabe\Project\CodexSkill-pr81-validation\python-probe-results.json` と同ディレクトリの `logs` に保持した。
+
+        Ubuntu/ibis-ThinkBook-14-G7-IML の `/tmp/pr81-validation` では `cspell 9.8.0` を使用した。
+        8ケースすべて期待した終了コードになった。
+        証拠は `/tmp/pr81-validation/node-probe-results.json` と `/tmp/pr81-validation/logs` に保持した。
+
+        Windowsでは既存のNodeラッパーが `spawnSync` から `cspell.cmd` を直接起動できず、無出力exit 1になるため、cspell実行確認は元レビューと同じUbuntu経路で実施した。このWindows固有の既存挙動は今回の5指摘の修正対象には含めていない。
+
+        ## repository validation
+
+        実装コミット `59dff18e4164d88de85fc44006e144bc5d26472c` で `scripts/run_validation.py` を実行した。
+
+        | Step | Result |
+        |---|---|
+        | repository | pass / exit 0 |
+        | bundle | pass / exit 0 |
+        | zip-integrity | pass / exit 0 |
+        | zip-contents | pass / exit 0 |
+
+        診断出力は `C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-impl` に保持した。
+        `git diff --check`、Python構文確認、Node構文確認も成功した。
+
+        ## intentionally untouched
+
+        - 既存レビュー2レポートと証拠JSON/YAML: 履歴証拠のため変更しない。
+        - `design/review-enforcer-markdown-whitelist-rebuild-design.md`: 通常レビューのH-DOC保留事項であり、今回の5指摘対応には含めない。
+        - Markdown許可一覧: 語彙の追加・削除は行わない。
+        - workflow: CodexSkill保守の既存方針を変更しない。
+
+        ## publication / CI
+
+        本レポート生成時点では実装コミットはローカルにあり、push前である。
+        最終publication treeに対するローカルゲートを再確認してからpushする。
+        CIはpush後、PRのcurrent HEAD SHAとrunのhead SHAが一致するrunだけを確認する。別SHAのrunは代用しない。
+
+        ## remaining risks / unknowns
+
+        - Windowsでの `run-cspell-markdown.js` 実CLI起動は、既存の `.cmd` spawn挙動により成功確認できていない。Ubuntu実cspellでは今回変更した境界契約を確認済み。
+        - 先行レビューのH-DOC保留事項は未解消のまま。
+        - push後のexact-head CI結果は本レポート作成時点では未成立。
+
+        ## next action
+
+        同じ通常レビュアーによる `R81-01` から `R81-05` のfix verificationが次のレビュー工程となる。
+        独立最終レビューの判定はこの実装作業では行わない。
+        mergeは利用者が行うため実施しない。
+      evidence_sources:
+        - reports/markdown-complete-scan-review-20260916.md
+        - reports/markdown-complete-scan-review-addendum-20260916.md
+        - 'C:\Users\donabe\Project\CodexSkill-pr81-validation\python-probe-results.json'
+        - /tmp/pr81-validation/node-probe-results.json
+        - 'C:\Users\donabe\Project\CodexSkill-pr81-validation\full-validation-impl\results.json'
+      target_identity:
+        branch: fix/markdown-lint-complete-scan
+        base_ref: main
+        current_head: 59dff18e4164d88de85fc44006e144bc5d26472c
+        reviewed_implementation_head: null
+next_action:
+  type: review
+  target_skill: chat-review-worker
+  mode: fix_verification
+  summary: '同じ通常レビュアーでR81-01からR81-05をfix verificationする。'
+  instructions:
+    - 'final publication HEADを対象に5 findingを個別確認する。'
+    - 'PR current HEADとCI run head SHAが一致する証拠だけを使用する。'
+    - 'Windows cspell.cmd spawn既存挙動とH-DOC保留を今回の5 findingと混同しない。'
+  required_attachments_or_references:
+    - reports/markdown-complete-scan-review-followup-20260916.md
+    - reports/markdown-complete-scan-review-20260916.md
+    - reports/markdown-complete-scan-review-addendum-20260916.md
+  requested_authorized_actions:
+    - read_repository
+    - write_report
+    - write_handoff
+    - commit
+    - push
+    - comment_pr
+transport:
+  method: repository_file
+  packet_path: reports/handoffs/markdown-complete-scan-review-followup-20260916.yaml
+  packet_url: null
+  transport_note: 'PR branchへpush後、次の通常レビューchatがrepository fileとして参照する。'

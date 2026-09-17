@@ -1,0 +1,410 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-15T22:50:25.139800+00:00",
+  "reviewed_head": "f7b4ac1213c20a6d1bb74e4ce445485755733d13",
+  "fix_commit": "59dff18e4164d88de85fc44006e144bc5d26472c",
+  "previous_review_head": "6a6f33df2498b7cac50c51e8110a3f9c8483cac9",
+  "python_probe": {
+    "head": "f7b4ac1213c20a6d1bb74e4ce445485755733d13",
+    "records": [
+      {
+        "name": "boundary",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'ギア' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "bytes": 48033
+      },
+      {
+        "name": "boundary-line2",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:2: 'ギアボックス' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "bytes": 48052
+      },
+      {
+        "name": "normalization",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:2: 'ジッタ' (katakana) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "bytes": 18010
+      },
+      {
+        "name": "approved",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "bytes": 17
+      },
+      {
+        "name": "kanji-right",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "bytes": 23
+      },
+      {
+        "name": "kanji-left",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "bytes": 23
+      },
+      {
+        "name": "suffix",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHostx' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "bytes": 18
+      },
+      {
+        "name": "prefix",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'x.Tracker.DebugHost' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "bytes": 19
+      },
+      {
+        "name": "dot",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHost.Tracker.DebugHost' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "bytes": 35
+      },
+      {
+        "name": "hyphen",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHost-Tracker.DebugHost' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "bytes": 35
+      },
+      {
+        "name": "underscore",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- probe.md:1: 'Tracker.DebugHost_Tracker.DebugHost' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "bytes": 35
+      },
+      {
+        "name": "terminal-period",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "bytes": 18
+      },
+      {
+        "name": "halfwidth-katakana",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "bytes": 24,
+        "expectation_error": "AssertionError(('halfwidth-katakana', 0, ''))"
+      },
+      {
+        "name": "explicit-txt",
+        "exit_code": 1,
+        "stdout": "",
+        "stderr": "Markdown whitelist violations:\n- note.txt:1: 'qzxvunknownword' (english) is not in tools/lint/markdown-whitelist.yaml.\n",
+        "bytes": null
+      },
+      {
+        "name": "implicit-txt",
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "",
+        "bytes": null
+      }
+    ],
+    "chunk_results": [
+      {
+        "name": "nfkc-growth",
+        "chunks": 5,
+        "input_bytes": 36010
+      },
+      {
+        "name": "boundary",
+        "chunks": 3,
+        "input_bytes": 99003
+      },
+      {
+        "name": "many-lines",
+        "chunks": 5,
+        "input_bytes": 192009
+      },
+      {
+        "name": "halfwidth-long",
+        "chunks": 3,
+        "input_bytes": 144000
+      }
+    ]
+  },
+  "node_probe": {
+    "source_sha256": "4512c528fa10376572837fc37d4137465d7a1e0fb04d6129e0b472053531b6c2",
+    "records": [
+      {
+        "name": "approved",
+        "text": "Tracker.DebugHost",
+        "exit_code": 0,
+        "expected": 0,
+        "stdout": "",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "kanji-right",
+        "text": "Tracker.DebugHost構成",
+        "exit_code": 0,
+        "expected": 0,
+        "stdout": "",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "kanji-left",
+        "text": "構成Tracker.DebugHost",
+        "exit_code": 0,
+        "expected": 0,
+        "stdout": "",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "suffix",
+        "text": "Tracker.DebugHostx",
+        "exit_code": 1,
+        "expected": 1,
+        "stdout": "note.md:1:1 - Unknown word (Tracker)\nnote.md:1:9 - Unknown word (Debug)\nnote.md:1:14 - Unknown word (Hostx)\n",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "prefix",
+        "text": "x.Tracker.DebugHost",
+        "exit_code": 1,
+        "expected": 1,
+        "stdout": "note.md:1:3 - Unknown word (Tracker)\nnote.md:1:11 - Unknown word (Debug)\nnote.md:1:16 - Unknown word (Host)\n",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "dot",
+        "text": "Tracker.DebugHost.Tracker.DebugHost",
+        "exit_code": 1,
+        "expected": 1,
+        "stdout": "note.md:1:1 - Unknown word (Tracker)\nnote.md:1:9 - Unknown word (Debug)\nnote.md:1:14 - Unknown word (Host)\nnote.md:1:19 - Unknown word (Tracker)\nnote.md:1:27 - Unknown word (Debug)\nnote.md:1:32 - Unknown word (Host)\n",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "hyphen",
+        "text": "Tracker.DebugHost-Tracker.DebugHost",
+        "exit_code": 1,
+        "expected": 1,
+        "stdout": "note.md:1:1 - Unknown word (Tracker)\nnote.md:1:9 - Unknown word (Debug)\nnote.md:1:14 - Unknown word (Host)\nnote.md:1:19 - Unknown word (Tracker)\nnote.md:1:27 - Unknown word (Debug)\nnote.md:1:32 - Unknown word (Host)\n",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "underscore",
+        "text": "Tracker.DebugHost_Tracker.DebugHost",
+        "exit_code": 1,
+        "expected": 1,
+        "stdout": "note.md:1:1 - Unknown word (Tracker)\nnote.md:1:9 - Unknown word (Debug)\nnote.md:1:14 - Unknown word (Host)\nnote.md:1:19 - Unknown word (Tracker)\nnote.md:1:27 - Unknown word (Debug)\nnote.md:1:32 - Unknown word (Host)\n",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "terminal-period",
+        "text": "Tracker.DebugHost.",
+        "exit_code": 0,
+        "expected": 0,
+        "stdout": "",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "double-dot-short",
+        "text": "Tracker.DebugHost..x",
+        "exit_code": 0,
+        "expected": 0,
+        "stdout": "",
+        "stderr": "",
+        "match": true
+      },
+      {
+        "name": "double-dot-word",
+        "text": "Tracker.DebugHost..unknownword",
+        "exit_code": 1,
+        "expected": 1,
+        "stdout": "note.md:1:20 - Unknown word (unknownword)\n",
+        "stderr": "",
+        "match": true
+      }
+    ]
+  },
+  "repository_validation": {
+    "schema_version": 1,
+    "started_at": "2026-09-15T22:44:44.645690+00:00",
+    "status": "pass",
+    "steps": [
+      {
+        "name": "repository",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXfcvYC/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-fixverify-20260916-r1/scripts/verify_skill_repository.py"
+        ],
+        "started_at": "2026-09-15T22:44:44.657951+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "repository.stdout.log",
+        "stderr": "repository.stderr.log",
+        "duration_seconds": 0.031914,
+        "finished_at": "2026-09-15T22:44:44.689878+00:00"
+      },
+      {
+        "name": "bundle",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXfcvYC/bin/python",
+          "/home/ibis/AI/CodexSkill-pr81-fixverify-20260916-r1/scripts/build_chatgpt_worker_skills.py",
+          "--repo-root",
+          "/home/ibis/AI/CodexSkill-pr81-fixverify-20260916-r1",
+          "--output",
+          "/tmp/pr81-fixverify-r1/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-15T22:44:44.690118+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "bundle.stdout.log",
+        "stderr": "bundle.stderr.log",
+        "duration_seconds": 0.063873,
+        "finished_at": "2026-09-15T22:44:44.754005+00:00"
+      },
+      {
+        "name": "zip-integrity",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXfcvYC/bin/python",
+          "-c",
+          "import sys, zipfile; archive = zipfile.ZipFile(sys.argv[1]); bad = archive.testzip(); archive.close(); print('Invalid CRC: ' + bad if bad else 'ZIP integrity verified'); sys.exit(1 if bad else 0)",
+          "/tmp/pr81-fixverify-r1/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-15T22:44:44.754484+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-integrity.stdout.log",
+        "stderr": "zip-integrity.stderr.log",
+        "duration_seconds": 0.031984,
+        "finished_at": "2026-09-15T22:44:44.786482+00:00"
+      },
+      {
+        "name": "zip-contents",
+        "command": [
+          "/home/ibis/.cache/uv/builds-v0/.tmpXfcvYC/bin/python",
+          "-m",
+          "zipfile",
+          "-l",
+          "/tmp/pr81-fixverify-r1/full-validation/chatgpt-worker-skills.zip"
+        ],
+        "started_at": "2026-09-15T22:44:44.786699+00:00",
+        "status": "pass",
+        "exit_code": 0,
+        "reason": null,
+        "stdout": "zip-contents.stdout.log",
+        "stderr": "zip-contents.stderr.log",
+        "duration_seconds": 0.031747,
+        "finished_at": "2026-09-15T22:44:44.818454+00:00"
+      }
+    ],
+    "python": "3.13.7",
+    "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.39",
+    "ci": {
+      "GITHUB_RUN_ID": null,
+      "GITHUB_RUN_ATTEMPT": null,
+      "GITHUB_EVENT_NAME": null,
+      "TARGET_REF": null
+    },
+    "finished_at": "2026-09-15T22:44:44.818736+00:00"
+  },
+  "completeness_matrix": [
+    {
+      "finding_id": "R81-01",
+      "required_action": "語境界と元位置を保持して全文検査する。",
+      "production_path": "split_oversized_sudachi_segment / preserve_katakana_boundary",
+      "actual_composition_fixture": "48,033 bytes境界の「ギア」と2行目「ギアボックス」",
+      "focused_evidence": "/tmp/pr81-fixverify-r1/python-results.json: boundary, boundary-line2",
+      "disposition": "resolved"
+    },
+    {
+      "finding_id": "R81-02",
+      "required_action": "漢字隣接を許可しつつASCII継続子は拒否する。",
+      "production_path": "build_whitelist_value_pattern / whitelistValuePattern",
+      "actual_composition_fixture": "Tracker.DebugHostの漢字前後、ASCII prefix/suffix",
+      "focused_evidence": "python-results.json + node-current/results.json",
+      "disposition": "resolved"
+    },
+    {
+      "finding_id": "R81-03",
+      "required_action": "明示.txtを検査しhelpを実契約に同期する。",
+      "production_path": "EXPLICIT_TARGET_SUFFIXES / select_target_files / parse_args",
+      "actual_composition_fixture": "note.txt explicitとimplicit",
+      "focused_evidence": "python-results.json: explicit-txt, implicit-txt",
+      "disposition": "resolved"
+    },
+    {
+      "finding_id": "R81-04",
+      "required_action": "識別子継続子と文末句読点を区別する。",
+      "production_path": "Python/Node whitelist boundary patterns",
+      "actual_composition_fixture": "dot/hyphen/underscore連結、prefix/suffix、terminal period",
+      "focused_evidence": "python-results.json + node-current/results.json",
+      "disposition": "resolved"
+    },
+    {
+      "finding_id": "R81-05",
+      "required_action": "正規化後の入力上限を保証し、語境界と元位置を保持する。",
+      "production_path": "sudachi_input_bytes / iter_sudachi_chunks / split_oversized_sudachi_segment",
+      "actual_composition_fixture": "㍿×6000 + 改行 + ジッタ",
+      "focused_evidence": "python-results.json: normalization + chunk_results",
+      "disposition": "resolved"
+    }
+  ],
+  "new_finding": {
+    "id": "R81-06",
+    "severity": "medium",
+    "origin": "pre_existing",
+    "location": "skills/review-enforcer/scripts/check-markdown-whitelist-sudachi.py:558",
+    "description": "NFKCで片仮名になる半角カタカナが許可一覧検査を無条件にすり抜ける。",
+    "impact": "未承認の半角カタカナ語を文書に書いてもMarkdown用語検査が成功し、cspellも日本語語彙を拒否しないためlint経路全体で見逃す。",
+    "evidence": "current HEADで全角「コンピューター」はexit 1で未登録違反になる一方、半角「ｺﾝﾋﾟｭｰﾀｰ」はexit 0・診断なし。SudachiPyは半角surfaceをnormalized_form「コンピューター」の名詞として返す。base 106ea5でもexit 0のためpre-existing。",
+    "required_action": "片仮名判定をraw surfaceだけで早期終了せずNFKC/normalized formを考慮し、半角片仮名も未登録なら拒否する。長文分割の片仮名境界判定も同じ正規化契約に揃え、全角/半角と分割境界の組合せを確認する。"
+  },
+  "exact_head_ci": {
+    "run_id": 35028597741,
+    "head_sha": "f7b4ac1213c20a6d1bb74e4ce445485755733d13",
+    "conclusion": "success",
+    "job_id": 104581509839,
+    "artifact_id": 10420910703,
+    "artifact_digest": "sha256:3767efb5f4d959297596fd8958effd80b6d584f8f563e2e58e063515880131d9"
+  },
+  "additional_observations": {
+    "fullwidth_katakana": {
+      "text": "コンピューター",
+      "exit_code": 1,
+      "diagnostic": "not in whitelist"
+    },
+    "halfwidth_katakana": {
+      "text": "ｺﾝﾋﾟｭｰﾀｰ",
+      "exit_code": 0,
+      "diagnostic": ""
+    },
+    "base_halfwidth_exit_code": 0,
+    "sudachi_normalized_form": "コンピューター",
+    "sudachi_part_of_speech": "名詞",
+    "cspell_fullwidth_exit_code": 0,
+    "cspell_halfwidth_exit_code": 0
+  },
+  "scratch_diagnostics": [
+    "/tmp/pr81-fixverify-r1",
+    "/tmp/pr81-fixverify-r1-node-current"
+  ]
+}
