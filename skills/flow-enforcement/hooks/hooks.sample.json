@@ -1,0 +1,41 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/project CODEX_FLOW_STATE_ROOT=/path/to/project/.codex/state CODEX_SKILL_ROOT=/home/ibis/AI/CodexSkill CODEX_REPO_WORKFLOW_ROOT=/path/to/project/.codex/workflows CODEX_SKILL_STEP_ROOT=/home/ibis/AI/CodexSkill/skills python3 /home/ibis/AI/CodexSkill/skills/flow-enforcement/hooks/user_prompt_flow_state.py",
+            "timeout": 20,
+            "statusMessage": "Updating flow state"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/project CODEX_FLOW_STATE_ROOT=/path/to/project/.codex/state CODEX_SKILL_ROOT=/home/ibis/AI/CodexSkill CODEX_REPO_WORKFLOW_ROOT=/path/to/project/.codex/workflows CODEX_SKILL_STEP_ROOT=/home/ibis/AI/CodexSkill/skills python3 /home/ibis/AI/CodexSkill/skills/flow-enforcement/hooks/post_tool_flow.py",
+            "timeout": 20,
+            "statusMessage": "Updating flow progress"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CODEX_STARTED_PROJECT_ROOT=/path/to/project CODEX_FLOW_STATE_ROOT=/path/to/project/.codex/state CODEX_SKILL_ROOT=/home/ibis/AI/CodexSkill CODEX_REPO_WORKFLOW_ROOT=/path/to/project/.codex/workflows CODEX_SKILL_STEP_ROOT=/home/ibis/AI/CodexSkill/skills python3 /home/ibis/AI/CodexSkill/skills/flow-enforcement/hooks/stop_guard.py",
+            "timeout": 20,
+            "statusMessage": "Checking flow completion"
+          }
+        ]
+      }
+    ]
+  }
+}
