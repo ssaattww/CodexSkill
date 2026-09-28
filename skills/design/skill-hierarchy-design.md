@@ -536,7 +536,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
 | `review-enforcer` | reviewer identity、通常review cycle、pre-freeze reservation、独立最終review、report-attestation gateを管理するCodex wrapper | 親が実行、reviewはsub-agent |
-| `markdown-word-checker` | Markdown lintと表記ルールを検証する | 親が実行 |
+| `markdown-word-checker` | Markdown lintと表記ルールを検証し、未導入リポジトリへ安全なrepo-local bootstrapを提供する | 親が実行 |
 | `feedback-coding-standards-enforcer` | coding standardを検証する | 親が実行 |
 | `feedback-issue-intake-fallback-manager` | Issue取得失敗時に要件を確保する | 親が実行 |
 
