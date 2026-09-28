@@ -88,7 +88,7 @@ jobs:
           output.mkdir(parents=True, exist_ok=True)
           keys = ("TARGET_REF", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "CHECKOUT_OUTCOME", "VALIDATION_OUTCOME")
           (output / "job-status.json").write_text(
-              json.dumps({key: os.environ.get(key) for key in keys}, indent=2) + "\\n",
+              json.dumps({key: os.environ.get(key) for key in keys}, indent=2) + "\n",
               encoding="utf-8",
           )
           PY
