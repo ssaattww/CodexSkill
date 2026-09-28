@@ -155,5 +155,5 @@
   - Windows fixtureでbootstrapとaudit/enforceの実機検証を行い、CIより先にローカルGreenを確認する
   - dry-run無変更、8ファイル導入、再導入衝突exit 3、audit/enforce/changed/files/承認済み複合語controlを実測済み
   - repository validatorがtemplate内pycache混入を検出し、除去後の標準4検証は全件pass
-  - 通常レビュー・独立レビュー・final exact-head CIは未実施
+  - 技術HEAD 5f3e7ebのpull_request CIはhead SHA一致でsuccess。詳細report永続化後HEADのCIはPRで追跡し、通常レビュー・独立レビューは未実施
   - mergeは利用者が行う

@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-008: Issue #87のMarkdown用語検査bootstrapを追加する
-  - Status: bootstrap実装・Windows fixture・repository full local validation済み。詳細report保存と通常レビュー待ち
+  - Status: bootstrap実装・Windows fixture・詳細report保存まで完了。PR #88の通常レビュー待ち
   - Phase: Phase 12
   - PR: #88（draft）
   - Estimate: M
@@ -33,10 +33,10 @@
     - repo-local venvへPyYAML 6.0.3 / SudachiPy 0.6.11 / SudachiDict-core 20260428を導入して実行した
     - 空whitelistのfull auditはstate needs_user_review / wrapper exit 0、full enforceはstate needs_user_review / exit 1
     - changed scopeは未コミットchanged.mdだけを検出し、files scopeはa.mdだけを検査した
-    - fixture限定の承認済み複合語robot controllerでfiles enforceがpass / exit 0になった
+    - fixture限定の承認済み複合語controlでfiles enforceがpass / exit 0になった。再開時にも別の複合語で同結果を再確認した
     - Windows既定CP932でのdecode失敗を検出し、runnerのsubprocess decodeをUTF-8固定へ修正した
     - template内pycache混入をrepository validatorが実際に拒否し、除去後のrepository / bundle / zip-integrity / zip-contentsは全件pass
-    - TDDはCodexSkill方針によりnot applicable。通常レビュー・独立レビュー・final exact-head CIは未実施
+    - TDDはCodexSkill方針によりnot applicable。技術HEAD 5f3e7ebのpull_request run 36486562265はhead SHA一致でsuccess。詳細report永続化後HEADのCIはPRで追跡し、通常レビュー・独立レビューは未実施
 
 - T-007: Issue #73のGit commit／pushをRDC経由へ変更する
   - Status: `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正とfull local validation、詳細report／handoff作成まで完了。永続化push後、same normal reviewerのfix verification待ち
