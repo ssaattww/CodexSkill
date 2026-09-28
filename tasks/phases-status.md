@@ -139,3 +139,21 @@
   - repository validation、配布ZIP生成、設計同期、exact-head CIを確認し、mergeは利用者が行う
   - initial normal reviewはreviewed HEAD `85c47515cbe086824746534ffb6cf6398894a63a`に対してverdict `fail`、required finding 4件
   - `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正を実施し、same normal reviewerのfix verificationへ渡す
+
+## Phase 12: 他リポジトリ向けMarkdown用語検査bootstrap
+
+- Status: In Progress
+- Task: T-008 / Issue #87
+- Design: `design/markdown-word-check-bootstrap-design.md`
+- Notes:
+  - CodexSkill自身への#79 / PR #80は保留し、他リポジトリへの横展開を優先する
+  - PR #81で更新されたSudachi checkerを再実装せず、導入時にrepo-localへコピーする
+  - root package.jsonに依存せず、tools/lint配下へ自己完結した実行環境を配置する
+  - 初回は空whitelistのauditとし、候補を自動登録しない
+  - exact whitelist、aliases、prh、対象除外は利用者レビュー後に反映する
+  - optional CIは成功・利用者レビュー待ち・失敗の診断artifactを保存する
+  - Windows fixtureでbootstrapとaudit/enforceの実機検証を行い、CIより先にローカルGreenを確認する
+  - dry-run無変更、8ファイル導入、再導入衝突exit 3、audit/enforce/changed/files/承認済み複合語controlを実測済み
+  - repository validatorがtemplate内pycache混入を検出し、除去後の標準4検証は全件pass
+  - 通常レビュー・独立レビュー・final exact-head CIは未実施
+  - mergeは利用者が行う

@@ -6,6 +6,38 @@
 
 ## In Progress
 
+- T-008: Issue #87のMarkdown用語検査bootstrapを追加する
+  - Status: bootstrap実装・Windows fixture・repository full local validation済み。詳細report保存と通常レビュー待ち
+  - Phase: Phase 12
+  - PR: #88（draft）
+  - Estimate: M
+  - Depends on: 既存のmarkdown-word-checker、PR #81で更新されたSudachi checker
+  - Scope: Markdown用語検査が未導入の他リポジトリへ、安全な自己完結tools/lintを導入するbootstrap
+  - Exit Criteria:
+    - target Git worktree rootを明示してdry-runと導入を実行できる
+    - 既存出力pathが1件でも存在する場合は書き込み前に停止し、無断上書きしない
+    - 導入先はroot package.jsonへ依存せず、tools/lint/.venvで依存を閉じる
+    - full、changed、files scopeとaudit、enforceを区別できる
+    - 空whitelistのauditはneeds_user_reviewを保持し、enforceは未登録語で非0終了する
+    - whitelist、aliases、prh、文書除外を利用者承認なしに自動反映しない
+    - optional CI templateは成功・利用者レビュー待ち・失敗の診断artifactを保存する
+    - Windows fixtureでdry-run、導入、衝突、audit、enforce、changed、files、承認済み複合語controlを確認する
+    - repository validator、設計同期、詳細report、PR簡易report、exact-head CIを完了し、mergeしない
+  - Output:
+    - `design/markdown-word-check-bootstrap-design.md`
+    - `skills/markdown-word-checker/scripts/bootstrap_markdown_word_check.py`
+    - `skills/markdown-word-checker/templates/repo/`
+    - `reports/issue-87-markdown-bootstrap-implementation-20260929.md`
+  - Verification:
+    - Windows fixtureでdry-runは無変更、初回導入は8ファイル、再導入はexit 3で全衝突を列挙して停止した
+    - repo-local venvへPyYAML 6.0.3 / SudachiPy 0.6.11 / SudachiDict-core 20260428を導入して実行した
+    - 空whitelistのfull auditはstate needs_user_review / wrapper exit 0、full enforceはstate needs_user_review / exit 1
+    - changed scopeは未コミットchanged.mdだけを検出し、files scopeはa.mdだけを検査した
+    - fixture限定の承認済み複合語robot controllerでfiles enforceがpass / exit 0になった
+    - Windows既定CP932でのdecode失敗を検出し、runnerのsubprocess decodeをUTF-8固定へ修正した
+    - template内pycache混入をrepository validatorが実際に拒否し、除去後のrepository / bundle / zip-integrity / zip-contentsは全件pass
+    - TDDはCodexSkill方針によりnot applicable。通常レビュー・独立レビュー・final exact-head CIは未実施
+
 - T-007: Issue #73のGit commit／pushをRDC経由へ変更する
   - Status: `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正とfull local validation、詳細report／handoff作成まで完了。永続化push後、same normal reviewerのfix verification待ち
   - Phase: Phase 11
