@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import os
 from pathlib import Path
+import stat
 import sys
 
 
@@ -21,7 +22,6 @@ def main() -> int:
     codexskill_root = Path(__file__).resolve().parents[1]
     source = (codexskill_root / "skills").resolve()
     consumer = args.consumer_repo.resolve()
-    link = consumer / ".agents" / "skills"
 
     if not source.is_dir():
         print(f"CodexSkill skills directory does not exist: {source}", file=sys.stderr)
@@ -29,6 +29,51 @@ def main() -> int:
     if not consumer.is_dir():
         print(f"Consumer repository does not exist: {consumer}", file=sys.stderr)
         return 2
+
+    try:
+        consumer.relative_to(codexskill_root)
+    except ValueError:
+        pass
+    else:
+        print(
+            f"Consumer repository must be outside the CodexSkill checkout: {consumer}",
+            file=sys.stderr,
+        )
+        return 2
+
+    agents = consumer / ".agents"
+    if agents.exists() or agents.is_symlink():
+        try:
+            agents_status = agents.lstat()
+        except OSError as error:
+            print(f"Failed to inspect consumer .agents directory {agents}: {error}", file=sys.stderr)
+            return 2
+
+        reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+        is_reparse_point = bool(getattr(agents_status, "st_file_attributes", 0) & reparse_flag)
+        if agents.is_symlink() or is_reparse_point or not agents.is_dir():
+            print(
+                f"Consumer .agents must be a real directory inside the consumer repository: {agents}",
+                file=sys.stderr,
+            )
+            return 2
+    else:
+        try:
+            agents.mkdir()
+        except OSError as error:
+            print(f"Failed to create consumer .agents directory {agents}: {error}", file=sys.stderr)
+            return 2
+
+    try:
+        agents.resolve(strict=True).relative_to(consumer)
+    except (OSError, ValueError) as error:
+        print(
+            f"Consumer .agents directory escapes the consumer repository {agents}: {error}",
+            file=sys.stderr,
+        )
+        return 2
+
+    link = agents / "skills"
 
     if link.is_symlink():
         try:
