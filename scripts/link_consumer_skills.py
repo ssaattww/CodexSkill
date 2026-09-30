@@ -52,7 +52,15 @@ def main() -> int:
         )
         return 2
 
-    link.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        link.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        print(
+            f"Failed to prepare consumer skill link directory {link.parent}: {error}",
+            file=sys.stderr,
+        )
+        return 2
+
     try:
         link.symlink_to(source, target_is_directory=True)
     except OSError as error:
