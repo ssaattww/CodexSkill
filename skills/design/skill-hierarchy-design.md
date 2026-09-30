@@ -42,6 +42,8 @@ runtime wrapper
 
 consumer repository からこの checkout の Skill を開発時に参照する場合、consumer 側の `.agents/skills` を CodexSkill checkout の `skills/` へ向けるディレクトリ symlink とする。OS 固有の `ln -s` や `mklink` を手順へ直接埋め込まず、`python scripts/link_consumer_skills.py <consumer-repo>` を共通入口として使う。
 
+consumer repository には CodexSkill checkout 自身またはその配下を指定できない。既存の `.agents` は consumer repository 内にある実ディレクトリだけを許可し、symlink、junction、その他の reparse point、非ディレクトリは拒否する。
+
 同じ target を指す既存 symlink への再実行は成功として扱う。既存の実ディレクトリ、実ファイル、または別 target を指す symlink は自動置換しない。`.agents` の準備または symlink 作成に失敗した場合は、原因を標準エラーへ出力して非0で終了する。Windows で symlink 作成権限が拒否された場合は、管理者権限または Developer Mode が必要であることを明示し、copy や junction へ自動 fallback しない。
 
 この consumer 側 symlink は CodexSkill repository の外側に作成する参照であり、CodexSkill repository 内の symlink を拒否する repository validation 契約を緩和しない。
