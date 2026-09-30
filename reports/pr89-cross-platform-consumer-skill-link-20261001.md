@@ -64,3 +64,23 @@ consumer repository から CodexSkill の `skills/` を参照する手順が `ln
 - `python scripts/run_validation.py --output-dir C:\\Users\\donabe\\RemoteDesktopWorkspace\\CodexSkill-validation-pr89-followup-20261001-0652`: repository / bundle / zip-integrity / zip-contents がすべて pass。
 - CodexSkill には repo-local `tools/lint/` と `package.json` の Markdown lint wiring が無いため、`markdown-word-checker` の focused lint は `unsupported`。追加設計文の inline code は path、command、identifier に限定されていることを確認した。
 
+## 独立レビュー PR89-IR-001 対応
+
+独立レビューで、consumer/destination boundary が helper 実装で強制されていない点が指摘された。
+
+- `scripts/link_consumer_skills.py` は CodexSkill checkout 自身またはその配下を consumer repository として拒否する。commit: `5d98a6d`。
+- 既存 `.agents` は consumer repository 内の実ディレクトリだけを許可し、symlink、Windows reparse point、非ディレクトリを拒否する。
+- `.agents` を新規作成した場合も、その実体が consumer repository 内に解決されることを確認してから `skills` symlink を作成する。
+- Skill hierarchy 正本と同期コピーへ同じ境界契約を追記した。commit: `cbad114`。
+
+### PR89-IR-001 focused verification
+
+- CodexSkill checkout 自身を consumer に指定: exit 2、拒否。
+- CodexSkill checkout 配下の `reports/` を consumer に指定: exit 2、拒否。
+- consumer 外ディレクトリへ向く `.agents` symlink: exit 2、外部側へ `skills` を作成しない。
+- `.agents` が未作成の通常 consumer: exit 0、実ディレクトリ `.agents` と `skills` symlink を作成。
+- `.agents` が既存実ディレクトリの通常 consumer: exit 0、`skills` symlink を作成。
+- `design/skill-hierarchy-design.md` と `skills/design/skill-hierarchy-design.md` の byte 比較: 一致。
+- `python scripts/verify_skill_repository.py`: pass。
+- `python scripts/run_validation.py --output-dir C:\\Users\\donabe\\RemoteDesktopWorkspace\\CodexSkill-validation-pr89-ir001-20261001-0818`: repository / bundle / zip-integrity / zip-contents がすべて pass。
+
