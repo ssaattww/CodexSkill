@@ -353,12 +353,12 @@ def run_focused_lint(codexskill_root: Path, repo_root: Path, markdown_files: lis
         )
 
     cspell_config = repo_root / "cspell.config.jsonc"
-    cspell_bin = repo_root / "node_modules" / ".bin" / ("cspell.cmd" if os.name == "nt" else "cspell")
-    if cspell_config.exists() and not cspell_bin.exists():
+    cspell_cli = repo_root / "node_modules" / "cspell" / "bin.mjs"
+    if cspell_config.exists() and not cspell_cli.exists():
         return lint_result(
             state="unsupported",
             message="markdown-word-checker hook could not run configured cspell lint.",
-            reason=f"cspell.config.jsonc exists, but {cspell_bin.relative_to(repo_root).as_posix()} is missing.",
+            reason=f"cspell.config.jsonc exists, but {cspell_cli.relative_to(repo_root).as_posix()} is missing.",
             commands=commands,
             risk="This is not a pass. Install repository lint dependencies or run the configured Markdown gate another way.",
         )
