@@ -14,6 +14,7 @@ consumer repository から CodexSkill の `skills/` を参照する手順が `ln
 - 既存の実ディレクトリ、壊れた symlink、別 target の symlink は自動置換せず失敗する。
 - Windows で symlink 作成権限が無い場合は、管理者権限または Developer Mode が必要であることを明示する。
 - `AGENTS.md` に、consumer repository の Skill link は OS 固有の `ln -s` / `mklink` を直接手順化せず helper を使う方針を追加した。
+- `skills/review-enforcer/scripts/run-cspell-markdown.js` は Windows の `.cmd` 直接起動をやめ、`node` から CSpell の JavaScript CLI を直接起動するよう修正した。
 
 ## Windows 検証
 
@@ -23,10 +24,11 @@ consumer repository から CodexSkill の `skills/` を参照する手順が `ln
 - `Path.is_symlink()`: `True`。
 - symlink target: `C:\Users\donabe\RemoteDesktopWorkspace\CodexSkill\skills`。
 - 同一 consumer repository への再実行: `Skill symlink already configured` として成功。
+- Duck PR #30 からこの checkout の `skills/` を symlink 参照し、CSpell を含む全 Markdown lint 18文書が終了値0。
 
 ## Repository validation
 
-`python scripts/run_validation.py --output-dir C:\Users\donabe\RemoteDesktopWorkspace\CodexSkill-validation-pr-001`
+`python scripts/run_validation.py --output-dir C:\Users\donabe\RemoteDesktopWorkspace\CodexSkill-validation-pr-002`
 
 結果:
 
@@ -35,11 +37,12 @@ consumer repository から CodexSkill の `skills/` を参照する手順が `ln
 - zip-integrity: pass
 - zip-contents: pass
 
-診断 artifact は `C:\Users\donabe\RemoteDesktopWorkspace\CodexSkill-validation-pr-001` に保存した。
+診断 artifact は `C:\Users\donabe\RemoteDesktopWorkspace\CodexSkill-validation-pr-002` に保存した。
 
 ## Pull request
 
 - PR: #89
 - branch: `fix/cross-platform-skill-symlink`
-- implementation commit: `e6deafa`
+- symlink helper commit: `e6deafa`
+- Windows CSpell launch commit: `583a959`
 
