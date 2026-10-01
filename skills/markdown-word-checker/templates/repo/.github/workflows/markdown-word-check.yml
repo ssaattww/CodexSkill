@@ -1,0 +1,59 @@
+name: Markdown terminology audit
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "tools/lint/**"
+      - ".github/workflows/markdown-word-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MARKDOWN_WORD_CHECK_MODE: audit
+
+jobs:
+  markdown-terminology:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current target
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Prepare diagnostics
+        run: mkdir -p tools/lint/artifacts/ci
+
+      - name: Install terminology dependencies
+        id: dependencies
+        shell: bash
+        run: |
+          set +e
+          python -m venv tools/lint/.venv >tools/lint/artifacts/ci/venv.stdout.log 2>tools/lint/artifacts/ci/venv.stderr.log
+          status=$?
+          if [[ $status -eq 0 ]]; then
+            tools/lint/.venv/bin/python -m pip install -r tools/lint/requirements.txt >tools/lint/artifacts/ci/install.stdout.log 2>tools/lint/artifacts/ci/install.stderr.log
+            status=$?
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      - name: Run Markdown terminology check
+        if: ${{ steps.dependencies.outcome == 'success' }}
+        shell: bash
+        run: |
+          tools/lint/.venv/bin/python tools/lint/scripts/run_markdown_word_check.py             --mode "${MARKDOWN_WORD_CHECK_MODE}"             --scope full             --output-dir tools/lint/artifacts/ci/check
+
+      - name: Upload terminology diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: markdown-word-check-${{ github.run_id }}-${{ github.run_attempt }}
+          path: tools/lint/artifacts/ci/
+          retention-days: 14
+          if-no-files-found: error

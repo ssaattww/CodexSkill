@@ -31,6 +31,17 @@ REQUIRED_RELEASE_SKILLS = {
     "review-worker",
     "work-context-manager",
 }
+MARKDOWN_BOOTSTRAP_ASSETS = (
+    Path("design/markdown-word-check-bootstrap-design.md"),
+    Path("skills/markdown-word-checker/scripts/bootstrap_markdown_word_check.py"),
+    Path("skills/markdown-word-checker/templates/repo/tools/lint/.gitignore"),
+    Path("skills/markdown-word-checker/templates/repo/tools/lint/README.md"),
+    Path("skills/markdown-word-checker/templates/repo/tools/lint/requirements.txt"),
+    Path("skills/markdown-word-checker/templates/repo/tools/lint/markdown-targets.json"),
+    Path("skills/markdown-word-checker/templates/repo/tools/lint/markdown-whitelist.yaml"),
+    Path("skills/markdown-word-checker/templates/repo/tools/lint/scripts/run_markdown_word_check.py"),
+    Path("skills/markdown-word-checker/templates/repo/.github/workflows/markdown-word-check.yml"),
+)
 WRAPPER_DEPENDENCIES = {
     "chat-implementation-worker": {
         "work-context-manager",
@@ -264,6 +275,25 @@ def validate_removed_architecture(repo_root: Path) -> list[str]:
     return errors
 
 
+def validate_markdown_bootstrap_assets(repo_root: Path) -> list[str]:
+    errors: list[str] = []
+    for relative in MARKDOWN_BOOTSTRAP_ASSETS:
+        path = repo_root / relative
+        if not path.is_file():
+            errors.append(f"{relative.as_posix()}: required Markdown bootstrap asset is missing")
+
+    template_root = repo_root / "skills/markdown-word-checker/templates/repo"
+    if template_root.is_dir():
+        generated = [
+            path.relative_to(repo_root).as_posix()
+            for path in template_root.rglob("*")
+            if path.is_file() and ("__pycache__" in path.parts or path.suffix in {".pyc", ".pyo"})
+        ]
+        for relative in generated:
+            errors.append(f"{relative}: generated Python artifact must not be packaged as a template")
+    return errors
+
+
 def validate_design_sync(repo_root: Path) -> list[str]:
     canonical = repo_root / "design/skill-hierarchy-design.md"
     mirrored = repo_root / "skills/design/skill-hierarchy-design.md"
@@ -283,6 +313,7 @@ def main() -> int:
     errors.extend(validate_skill_inventory(repo_root))
     errors.extend(validate_markdown_links(repo_root))
     errors.extend(validate_removed_architecture(repo_root))
+    errors.extend(validate_markdown_bootstrap_assets(repo_root))
     errors.extend(validate_design_sync(repo_root))
 
     if errors:
