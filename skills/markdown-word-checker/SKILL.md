@@ -1,6 +1,6 @@
 ---
 name: markdown-word-checker
-description: Check Markdown wording and terminology with the target repository's lint configuration after Markdown files, Markdown lint settings, reports, task tracking, design documents, or review-facing text are created or edited.
+description: Check Markdown wording and terminology with the target repository's lint configuration after Markdown files, Markdown lint settings, reports, task tracking, design documents, or review-facing text are created or edited. Also use for requested introduction, version updates, or rollout of yomiyasu in consumer repositories.
 ---
 
 # Markdown Word Checker
@@ -12,6 +12,10 @@ Check Markdown wording with the target repository's own lint configuration.
 Keep Markdown terminology checks in one reusable skill so Markdown-writing and review skills do not carry detailed vocabulary rules.
 
 This skill reads repo-specific configuration under the target repository's `tools/lint/` directory when it exists. It does not define global project terminology in CodexSkill.
+
+## Optional prose-tool adoption
+
+When asked to introduce, update, or roll out `yomiyasu` in a consumer repository, read the [adoption guide](references/yomiyasu-adoption-guide.md) and use the [pilot record template](assets/prose-pilot-record.yaml). The template is a manual record, not runtime configuration. Keep ordinary lint execution, repository settings, and gate ownership under the existing flow below.
 
 ## Execution owner
 
