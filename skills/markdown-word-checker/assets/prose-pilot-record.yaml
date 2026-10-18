@@ -1,0 +1,205 @@
+﻿# 人が記入する記録様式。自動で読み込まれる設定や検証済みの結果ではない。
+# 必要な list の要素を複製し、null / 空欄を実測値または未確認理由で埋める。
+# 文章は複数行のまま保存する。行番号は補助情報であり、ID の代わりにしない。
+record_version: 1
+record_kind: prose_pilot
+task_id: null
+generated_at: null # ISO-8601 with timezone
+caller_report: null
+
+consumer:
+  repository: null
+  root: null
+  branch: null
+  base_head: null # full SHA
+  source_state: null # clean | dirty
+  worktree_owner: null
+  os: null
+  shell: null
+  runtime_versions: []
+  encoding_policy: null
+  bom_policy: null
+  newline_policy: null
+  instructions: []
+
+adoption:
+  purpose: null
+  reader: null
+  style: null
+  target_files: []
+  excluded_content: []
+  maximum_paragraphs: null # 利用先で決める。共通の必須件数はない。
+  selection_frozen_at: null
+  acceptance_criteria: []
+  verification_owner: null
+  acceptance_owner: null
+  decision_point: null
+  evidence_location: null # 永続的に参照できる repo path / artifact も残す。
+  proposed_tool: # 未取得・未採用の提案。確認済みの toolchain と区別する。
+    tag: null
+    commit: null
+    reason: null
+
+toolchain:
+  codexskill_commit: null
+  consumer_skill_link_target: null
+  upstream: https://github.com/nanaism/yomiyasu
+  tag: null
+  commit: null # 取得後に照合した完全な SHA。未取得の提案は adoption 側へ。
+  owned_checkout: null
+  inspected_files: []
+  instruction_references: []
+  licenses_and_attributions: []
+  dependencies: []
+  read_targets: []
+  write_targets: []
+  subprocesses: []
+  network_use: null
+  external_model_use_by_tool: null
+  rewriting_agent_environment: null
+  invocation: null
+  stop_procedure: null
+  deletion_performed: false
+
+lint_contract:
+  configuration_files: []
+  focused:
+    required: null
+    argv: []
+    cwd: null
+    targets: []
+  full:
+    required: null
+    argv: []
+    cwd: null
+    target_resolution: null
+  yomiyasu_strict_required: null
+  baseline_failure_disposition: null
+
+files:
+  - path: null
+    original_source: null # commit:path または実際の原本ファイル。dirty なら原本保存。
+    original_sha256: null # raw bytes
+    original_encoding_bom_newline: null
+    final_sha256: null # raw bytes。最終照合時に記入。
+    final_encoding_bom_newline: null
+    final_source_identity: null # 最終 HEAD、または dirty と検証 manifest への参照。
+
+paragraphs:
+  - id: null
+    file: null
+    heading_context: null
+    original_lines_hint: null
+    selection_reason: null
+    original_text: null # block scalar (|) で全文を記入できる。
+    invariants: [] # 主体、条件、否定、強さ、時制、値、単位、順序、識別子等。
+    candidates:
+      - candidate_id: null
+        text: null # 不採用の試案も全文を残す。
+        stance: null # 勧め | 決まり | 説明 | 未確定
+        diff_run_id: null
+        lint_run_ids: []
+        semantic_review: # 原文とこの試案の比較。
+          state: not_run # preserved | changed | uncertain | not_run
+          reviewer: null
+          evidence: null
+        decision: pending # accepted | rejected | pending
+        reason: null
+    final_decision: pending # changed | retained | held | pending
+    selected_candidate_id: null # retained なら null
+    final_blocks:
+      - text: null
+        location_context: null # 見出し・前後の文等。分割時は全ブロックを記録。
+    final_file_match:
+      state: not_run # matched | ambiguous | mismatch | not_run
+      method: null
+      evidence: null
+    semantic_review: # 原文と最終文の比較。実ファイル照合・内容受入とは別。
+      state: not_run # preserved | changed | uncertain | not_run
+      reviewer: null
+      evidence: null # 単語数の一致や静的検査の成功だけにしない。
+    decision_reason: null
+
+runs:
+  - id: null # この記録内で使う参照 ID。
+    execution_id: null # 実行時の ID。未着なら補作しない。
+    evidence_origin: null # executed_here | supplied_full_log | supplied_summary
+    missing_evidence: []
+    phase: null # baseline | candidate | final
+    kind: null # focused_lint | full_lint | yomiyasu_lint | diff | preservation | other
+    argv: []
+    cwd: null
+    targets: []
+    started_at: null
+    finished_at: null
+    execution_environment: null
+    head_sha: null
+    source_state: null
+    source_manifest: null # 文書、設定、辞書、実行 script 等の path / SHA-256。
+    dependency_versions: [] # 実際に使った辞書データや runtime の版を含む。
+    result: not_run # passed | failed | blocked | not_run
+    exit_code: null
+    stdout: null
+    stderr: null
+    diagnostics: null # 起動失敗・timeout を含む。再試行で上書きしない。
+    findings: null
+    score: null
+    artifact: null
+    artifact_sha256: null
+
+configuration_review:
+  needed: null
+  exact_changes: [] # path、変更前後の entry、理由、出現元。
+  approval_reference: null # 既に正確な差分を確認済みなら、その根拠。
+  applied: false
+  rerun_ids: []
+  caller_report_updated: false
+
+final_checks:
+  focused:
+    run_ids: []
+    state: not_run # pass | failed gate | needs user review | unsupported | skip | not_run
+    reason: null
+    remaining_risk: null
+  full:
+    run_ids: []
+    state: not_run
+    reason: null
+    remaining_risk: null
+  protected_content:
+    state: not_run
+    evidence: null
+  final_diff_scope:
+    state: not_run
+    files: [] # 今回作成・編集した Markdown。full 対象外も focused の結果・理由を残す。
+    evidence: null
+  aggregate_gate_state: not_run
+  caller_disposition: null
+
+publication:
+  pr: null
+  final_head: null
+  push_state: not_run
+  ci_required: null
+  ci_runs:
+    - url: null
+      event: null
+      head_sha: null
+      checked_out_head: null
+      required_jobs_executed: null
+      conclusion: not_run
+      artifacts: []
+
+outcome:
+  selected_count: null
+  changed_count: null
+  retained_count: null
+  held_count: null
+  technical_validation: not_run
+  content_acceptance: pending
+  acceptance_evidence: null
+  continued_use: pending # adopt | hold | stop | pending
+  decision_owner: null
+  decision_reason: null
+  remaining_risks: []
+  next_action: null

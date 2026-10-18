@@ -2,9 +2,22 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-15
+- Updated: 2026-10-08
 
 ## In Progress
+
+- T-008: yomiyasu の導入・運用手順を他リポジトリ向けに整理する
+  - Status: 手順書・記録様式・掲載コマンド・利用演習・限定契約確認まで完了。報告と引継ぎの永続化は `commit_pending`、最終公開検証は `ci_wait_pending`
+  - Phase: Phase 12
+  - PR: #91
+  - Scope: 既存 `markdown-word-checker` の入口、共通手順、利用先の記録様式
+  - Technical HEAD: `a9aa807fb70228d83b383b72ee9a3587d2f8eee6`
+  - Administrative parent: `a9aa807fb70228d83b383b72ee9a3587d2f8eee6`
+  - Verification: 固定版の取得と接続・lint・diff、YAML、Skill構文、構造・リンク検査、利用演習2件を確認。`YAD-CR-001` / `YAD-CR-002` は同じ担当が closed を確認
+  - Markdown lint: focused/full は利用先形式の設定不在により `unsupported`。この文書変更では制約を報告し、既存の構造・配布検証を必須とする
+  - Report: [task-t-008-yomiyasu-adoption-20261008093305.md](../reports/task-t-008-yomiyasu-adoption-20261008093305.md)
+  - Handoff: [task-t-008-yomiyasu-adoption-20261008093305.yaml](../reports/handoffs/task-t-008-yomiyasu-adoption-20261008093305.yaml)
+  - Next: 全記録を含む最終候補で既存full gateを実行し、最終pushとPR更新後にHEAD一致CIを確認する。完了時のSHAと結果はPR #91へ記録し、その後は通常reviewへ渡す
 
 - T-007: Issue #73のGit commit／pushをRDC経由へ変更する
   - Status: `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正とfull local validation、詳細report／handoff作成まで完了。永続化push後、same normal reviewerのfix verification待ち

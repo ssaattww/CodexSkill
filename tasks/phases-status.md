@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-15
+- Updated: 2026-10-08
 
 ## Phase 1: 契約・設計
 
@@ -139,3 +139,15 @@
   - repository validation、配布ZIP生成、設計同期、exact-head CIを確認し、mergeは利用者が行う
   - initial normal reviewはreviewed HEAD `85c47515cbe086824746534ffb6cf6398894a63a`に対してverdict `fail`、required finding 4件
   - `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正を実施し、same normal reviewerのfix verificationへ渡す
+
+## Phase 12: yomiyasu のリポジトリ展開手順
+
+- Status: Implementation complete; report persistence and final publication verification pending
+- Task: T-008 / PR #91
+- Notes:
+  - 共通手順と利用先の対象・用語・採用版・受入判断を分ける
+  - 原文・試案・最終文、focused/full、技術検証・内容受入を分けて記録する
+  - 掲載コマンド、SkillとYAML構文、利用演習2件を確認し、限定契約確認2件は closed
+  - 技術HEADは `a9aa807fb70228d83b383b72ee9a3587d2f8eee6`。報告・引継ぎ・進捗のcommitは作成時点で `commit_pending`
+  - 最終候補のfull gateとHEAD一致CIはこの記録の永続化後に確認し、最終状態をPR #91へ記録する
+  - [実施報告](../reports/task-t-008-yomiyasu-adoption-20261008093305.md) と [引継ぎ](../reports/handoffs/task-t-008-yomiyasu-adoption-20261008093305.yaml) を通常reviewの入口にする
