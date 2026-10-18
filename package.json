@@ -1,0 +1,13 @@
+{
+  "name": "codex-skill-repository-tools",
+  "private": true,
+  "scripts": {
+    "lint:md": "node tools/lint/run-markdown-word-check.js",
+    "lint:md:unknown": "node tools/lint/run-markdown-word-check.js --list-unknown",
+    "lint:md:changed": "node skills/review-enforcer/scripts/check-markdown-whitelist.js --changed",
+    "lint:md:changed:unknown": "node skills/review-enforcer/scripts/check-markdown-whitelist.js --changed --list-unknown"
+  },
+  "devDependencies": {
+    "yaml": "2.9.1"
+  }
+}

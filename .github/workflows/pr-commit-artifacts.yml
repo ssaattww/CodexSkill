@@ -66,6 +66,7 @@ jobs:
         run: |
           mkdir -p "$ARTIFACT_DIR"
           touch "$ARTIFACT_DIR/archive.stdout.log" "$ARTIFACT_DIR/archive.stderr.log"
+          touch "$ARTIFACT_DIR/markdown-dependencies.stdout.log" "$ARTIFACT_DIR/markdown-dependencies.stderr.log"
           touch "$ARTIFACT_DIR/validation-runner.stdout.log" "$ARTIFACT_DIR/validation-runner.stderr.log"
 
       - name: Checkout the exact PR HEAD without write credentials
@@ -100,8 +101,24 @@ jobs:
           cat "$ARTIFACT_DIR/archive.stderr.log" >&2
           exit "$status"
 
-      - name: Validate and retain stdout, stderr and test results
+      - name: Install Markdown terminology dependencies
         if: ${{ !cancelled() && steps.archive.outcome == 'success' }}
+        id: markdown_dependencies
+        shell: bash
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/pr-commit-artifacts
+        run: |
+          set +e
+          npm ci --ignore-scripts \
+            > "$ARTIFACT_DIR/markdown-dependencies.stdout.log" \
+            2> "$ARTIFACT_DIR/markdown-dependencies.stderr.log"
+          status=$?
+          cat "$ARTIFACT_DIR/markdown-dependencies.stdout.log"
+          cat "$ARTIFACT_DIR/markdown-dependencies.stderr.log" >&2
+          exit "$status"
+
+      - name: Validate and retain stdout, stderr and test results
+        if: ${{ !cancelled() && steps.archive.outcome == 'success' && steps.markdown_dependencies.outcome == 'success' }}
         id: validation
         shell: bash
         env:
@@ -126,6 +143,7 @@ jobs:
           PR_NUMBERS: ${{ steps.target.outputs.pr_numbers }}
           CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
           ARCHIVE_OUTCOME: ${{ steps.archive.outcome }}
+          MARKDOWN_DEPENDENCIES_OUTCOME: ${{ steps.markdown_dependencies.outcome }}
           VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
         run: |
           python3 - <<'PY'
@@ -137,7 +155,8 @@ jobs:
           output.mkdir(parents=True, exist_ok=True)
           keys = ('TARGET_REF', 'SOURCE_REPOSITORY', 'PR_NUMBERS', 'GITHUB_SHA',
                   'GITHUB_EVENT_NAME', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',
-                  'CHECKOUT_OUTCOME', 'ARCHIVE_OUTCOME', 'VALIDATION_OUTCOME')
+                  'CHECKOUT_OUTCOME', 'ARCHIVE_OUTCOME', 'MARKDOWN_DEPENDENCIES_OUTCOME',
+                  'VALIDATION_OUTCOME')
           record = {key: os.environ.get(key) for key in keys}
           checked = output / 'checked-out-head.txt'
           record['checked_out_head'] = checked.read_text().strip() if checked.exists() else None
