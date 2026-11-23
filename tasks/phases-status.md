@@ -141,7 +141,7 @@
   - `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正を実施し、same normal reviewerのfix verificationへ渡す
 ## Phase 12: Codex Cloud共有ツールインストーラー
 
-- Status: In Progress (implementation and focused verification complete; independent review pending)
+- Status: Blocked after implementation/verification; independent review dispatch needs an inspectable role/default-role profile effect
 - Task: T-008 / Issue #93
 - Design: `design/cloud-tools-installer-design.md`
 - PR: #94 (Draft)
@@ -152,4 +152,5 @@
   - implementation HEAD `34c34e5eaa37614f774348fc592d0e08305b48a1`でsynthetic install、bad-hash no-placement、SDK reuse、unknown/platform/out-of-root拒否、tracking非変更、repository validatorを確認した
   - 詳細report: `reports/issue-93-implementation-20261123033558.md`
   - Markdown lintはCodexSkill rootに`tools/lint/markdown-targets.json`がないため`unsupported`。ShellCheckと実SDK取得は未実施
-  - 独立Sol 6.2 High review、report/tracking commitと再検証が残っている
+  - `sub-agent-task-manager`の必須pre-dispatch gateはrole/default-role profile効果を不明のままdispatchすることを禁止する。`/workspace/.codex`と`/workspace/.agents`に構成がなく、利用可能なspawn interfaceにもrole指定項目がないため、Sol 6.2 High reviewerは未dispatch
+  - profile影響を安全に確認できるruntime設定／証拠が得られたら、独立reviewとそのreport/tracking syncを続行する

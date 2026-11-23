@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-008: Issue #93のCodex Cloud共有ツールインストーラー
-  - Status: 実装と焦点検証を完了。独立 Sol 6.2 High review待ち
+  - Status: 実装と焦点検証を完了。独立reviewはrole/default-role設定を確認できず、task-managerの事前dispatch gateで停止
   - Phase: Phase 12
   - Issue: #93
   - PR: #94 (Draft)
@@ -21,7 +21,7 @@
     - 途中失敗は既存状態を保存し、自分が作った一時物だけを削除する
     - Node.js、yomiyasu、依存更新、任意コマンド実行、Start skill導入を含めない
     - 構文、不正hashで未配置、SDK再利用、非対応設定拒否、追跡データ非変更を隔離環境で確認する
-    - 日本語/LF/文字化けと設定済み文書検査の状態を記録し、独立 Sol 6.2 High reviewを完了する。mergeとPR commentはしない
+    - 日本語/LF/文字化けと設定済み文書検査の状態を記録する。独立 Sol 6.2 High reviewはprofile影響を判定可能になった後に行う。mergeとPR commentはしない
   - Output:
     - `design/cloud-tools-installer-design.md`
     - `scripts/install-cloud-tools.sh`
@@ -31,6 +31,7 @@
     - 新規導入の実SDK取得は行わず、synthetic archive/shimで未配置と検証順序を確認
     - implementation HEAD `34c34e5eaa37614f774348fc592d0e08305b48a1`でshell syntax、synthetic install、bad-hash no-placement、SDK reuse without download/extraction、unknown/platform/out-of-root拒否、staging cleanup、fixtureのtracked data非変更がpass
     - repository validatorと`git show --check` pass。Markdown lintは`tools/lint/markdown-targets.json`不在によりunsupported、ShellCheckは未導入。実SDK取得とCI待機は未実施
+    - 独立review agentは未dispatch。role/default-role configがこのruntimeで確認できず、`sub-agent-task-manager`のprofile-safety gateで停止
 
 - T-007: Issue #73のGit commit／pushをRDC経由へ変更する
   - Status: `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正とfull local validation、詳細report／handoff作成まで完了。永続化push後、same normal reviewerのfix verification待ち
