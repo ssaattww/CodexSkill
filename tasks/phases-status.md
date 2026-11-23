@@ -139,3 +139,11 @@
   - repository validation、配布ZIP生成、設計同期、exact-head CIを確認し、mergeは利用者が行う
   - initial normal reviewはreviewed HEAD `85c47515cbe086824746534ffb6cf6398894a63a`に対してverdict `fail`、required finding 4件
   - `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正を実施し、same normal reviewerのfix verificationへ渡す
+## Phase 12: Codex Cloud共有ツールインストーラー
+
+- Status: In Progress
+- Notes:
+  - CodexSkill内の共通入口をCodex Cloud Install scriptから直接呼び出す設計を確定した
+  - consumer root/configを明示し、consumer固有の版・SHA-512・platform・build target・検査設定・lockfileをconsumer側に保持する
+  - 固定 .NET SDKの公式archive検証と既存SDK再利用に範囲を限定する。Node、yomiyasu、文書依存の再実装は含めない
+  - focus verification、設計/コードの独立Sol 6.2 High review、report/tracking syncを行う
