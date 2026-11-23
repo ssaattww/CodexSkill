@@ -71,3 +71,5 @@ The follow-up targets only the three findings in review comment `7091012207`, ag
 - `PR94-IFR-003`: the Cloud Install example now uses `set -euo pipefail`; a bad digest caused the caller to exit nonzero before its subsequent PATH setup marker.
 
 The matching SDK reuse case was rerun and preserved the existing executable hash without download or extraction. `bash -n`, the repository Skill validator, `git diff --check`, and UTF-8/LF checks passed. These tests used only a disposable synthetic archive and temporary shims; no published SDK or Cloud settings were touched. PR body/comments and merge were not changed.
+
+The independent re-review's remaining path-encoding finding was addressed by writing the canonical cache path as `os.fsencode` bytes on Python's binary stdout, while retaining the normalized-path control-character check. A single isolated synthetic install with a valid normalized Japanese cache path and `PYTHONIOENCODING=ascii:backslashreplace` confirmed that the reported `DOTNET_ROOT` and actual installed SDK path were the same filesystem path.

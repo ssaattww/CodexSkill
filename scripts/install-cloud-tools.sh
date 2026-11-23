@@ -58,6 +58,7 @@ fi
 
 config_values="$(python3 - "$repo_root" "$config_path" "$CODEX_CLOUD_TOOLS_HOME" <<'PY'
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -111,9 +112,14 @@ if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", v
 if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-fA-F]{128}", digest):
     raise SystemExit("install-cloud-tools: dotnet SDK SHA-512 must contain 128 hexadecimal characters")
 
-print(version)
-print(digest.lower())
-print(cache_root)
+sys.stdout.buffer.write(
+    version.encode("ascii")
+    + b"\n"
+    + digest.lower().encode("ascii")
+    + b"\n"
+    + os.fsencode(cache_root)
+    + b"\n"
+)
 PY
 )" || exit $?
 mapfile -t config_lines <<<"$config_values"
