@@ -77,6 +77,8 @@ except ValueError:
     pass
 else:
     raise SystemExit("install-cloud-tools: cache directory must remain outside the repository root")
+if any(ord(character) < 32 or ord(character) == 127 for character in str(cache_root)):
+    raise SystemExit("install-cloud-tools: normalized cache path contains a control character")
 
 def unique_object(pairs):
     result = {}
@@ -111,19 +113,14 @@ if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-fA-F]{128}", digest):
 
 print(version)
 print(digest.lower())
+print(cache_root)
 PY
 )" || exit $?
 mapfile -t config_lines <<<"$config_values"
-[[ "${#config_lines[@]}" == 2 ]] || fail 'config parser returned invalid data'
+[[ "${#config_lines[@]}" == 3 ]] || fail 'config parser returned invalid data'
 sdk_version="${config_lines[0]}"
 sdk_sha512="${config_lines[1]}"
-
-cache_root="$(python3 - "$CODEX_CLOUD_TOOLS_HOME" <<'PY'
-from pathlib import Path
-import sys
-print(Path(sys.argv[1]).resolve(strict=False))
-PY
-)"
+cache_root="${config_lines[2]}"
 mkdir -p -- "$cache_root" || fail 'could not create cache directory'
 sdk_root="$cache_root/dotnet"
 
@@ -186,8 +183,11 @@ verify_sdk_version "$staged_sdk_root" \
 if [[ -e "$sdk_root" || -L "$sdk_root" ]]; then
   fail 'SDK root appeared during installation; preserved it without changes'
 fi
-if ! mv -- "$staged_sdk_root" "$sdk_root"; then
+if ! mv --no-target-directory --no-clobber "$staged_sdk_root" "$sdk_root"; then
   fail 'verified SDK could not be moved into the cache; existing state was preserved'
+fi
+if [[ -e "$staged_sdk_root" || -L "$staged_sdk_root" ]]; then
+  fail 'SDK root already exists; concurrent installation was not overwritten'
 fi
 
 printf 'install-cloud-tools: installed .NET SDK %s\n' "$sdk_version"

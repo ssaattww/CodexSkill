@@ -45,6 +45,7 @@ All focused installation checks ran after code commit `34c34e5eaa37614f774348fc5
 ## Environment handoff example
 
 ```bash
+set -euo pipefail
 export CODEX_CLOUD_TOOLS_HOME=/workspace/.duck-env
 /workspace/CodexSkill/scripts/install-cloud-tools.sh \
   --repo-root /workspace/Duck \
@@ -60,3 +61,13 @@ The Duck config path above is a future consumer-owned path example; this task di
 - The real .NET archive was not downloaded in order to avoid touching the published/shared environment. The pinned consumer config and official checksum must be supplied by Duck when it adopts the entry point.
 - Markdown lint is unsupported until CodexSkill's own lint wiring exists; this report records that state explicitly.
 - Independent Sol 6.2 High review was not dispatched. The repository's `sub-agent-task-manager` requires a pre-dispatch role/default-role plan and says to stop when the profile effect cannot be inspected. `/workspace/.codex` and `/workspace/.agents` contained no role configuration, and the available `collaboration.spawn_agent` interface has no `agent_type` field. No reviewer ran, and no requested/applied profile is claimed. PR #94 remains Draft. The user/parent owns review comments and merge.
+
+## PR #94 review follow-up
+
+The follow-up targets only the three findings in review comment `7091012207`, against reviewed HEAD `c360d200ce877804f9e968fd39d33b0900fc73fb`:
+
+- `PR94-IFR-001`: publish the verified SDK with a same-filesystem no-target-directory/no-clobber move and require the staged source to disappear. A synchronized two-process synthetic install produced exactly one success and one failure; the installed SDK remained intact and no nested SDK or staging directory remained.
+- `PR94-IFR-002`: validate and emit the canonical external cache path once, reject control characters after normalization, and use that emitted path for all file operations. A normalized path containing a newline was rejected before installation.
+- `PR94-IFR-003`: the Cloud Install example now uses `set -euo pipefail`; a bad digest caused the caller to exit nonzero before its subsequent PATH setup marker.
+
+The matching SDK reuse case was rerun and preserved the existing executable hash without download or extraction. `bash -n`, the repository Skill validator, `git diff --check`, and UTF-8/LF checks passed. These tests used only a disposable synthetic archive and temporary shims; no published SDK or Cloud settings were touched. PR body/comments and merge were not changed.
