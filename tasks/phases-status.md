@@ -139,3 +139,18 @@
   - repository validation、配布ZIP生成、設計同期、exact-head CIを確認し、mergeは利用者が行う
   - initial normal reviewはreviewed HEAD `85c47515cbe086824746534ffb6cf6398894a63a`に対してverdict `fail`、required finding 4件
   - `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正を実施し、same normal reviewerのfix verificationへ渡す
+## Phase 12: Codex Cloud共有ツールインストーラー
+
+- Status: Blocked after implementation/verification; independent review dispatch needs an inspectable role/default-role profile effect
+- Task: T-008 / Issue #93
+- Design: `design/cloud-tools-installer-design.md`
+- PR: #94 (Draft)
+- Notes:
+  - CodexSkill内の共通入口をCodex Cloud Install scriptから直接呼び出す設計を確定した
+  - consumer root/configを明示し、consumer固有の版・SHA-512・platform・build target・検査設定・lockfileをconsumer側に保持する
+  - 固定 .NET SDKの公式archive検証と既存SDK再利用に範囲を限定する。Node、yomiyasu、文書依存の再実装は含めない
+  - implementation HEAD `34c34e5eaa37614f774348fc592d0e08305b48a1`でsynthetic install、bad-hash no-placement、SDK reuse、unknown/platform/out-of-root拒否、tracking非変更、repository validatorを確認した
+  - 詳細report: `reports/issue-93-implementation-20261123033558.md`
+  - Markdown lintはCodexSkill rootに`tools/lint/markdown-targets.json`がないため`unsupported`。ShellCheckと実SDK取得は未実施
+  - `sub-agent-task-manager`の必須pre-dispatch gateはrole/default-role profile効果を不明のままdispatchすることを禁止する。`/workspace/.codex`と`/workspace/.agents`に構成がなく、利用可能なspawn interfaceにもrole指定項目がないため、Sol 6.2 High reviewerは未dispatch
+  - profile影響を安全に確認できるruntime設定／証拠が得られたら、独立reviewとそのreport/tracking syncを続行する
