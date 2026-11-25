@@ -70,7 +70,7 @@ PY
 "$drawio" "${flags[@]}" -x -f png -o "$work/edited-from-svg.png" "$work/edited.dio.svg"
 ```
 
-Check the changed label in `reopened.drawio` and the SVG's embedded `content` model, then open `edited-from-svg.png` and read the visible label, Japanese glyphs, connectors, and clipping. The PNG must be generated from the newly exported `.dio.svg`. If extraction, readback, rendering, or image inspection fails, report that check as unverified; do not substitute a structural parse or an older PNG.
+Check the changed label in `reopened.drawio` and the SVG's embedded `content` model, then open `edited-from-svg.png` and read the visible label, Japanese glyphs, connectors, and clipping. The PNG must be generated from the newly exported `.dio.svg`. If extraction, readback, rendering, or image inspection fails, report that check as unverified; do not substitute a structural parse or an older PNG. After recording results, remove the temporary package, profile, model, and SVG; copy out only a requested PNG deliverable, never into the repository.
 
 ## Examples
 
