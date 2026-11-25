@@ -53,7 +53,7 @@ Decide whether to:
 
 Prefer updating existing design documents over creating new ones unless the topic is truly separate.
 
-When a design document is needed, use the copyable [design document template](references/design-document-template.md) as the starting point. Keep a shared-library design focused on its responsibility boundary, integration points, and inputs/outputs; put product-specific startup paths and operating instructions in a separate document when they need design coverage. Treat README as a short entry point and do not prescribe README placement in the design document. Do not migrate unrelated existing design documents as part of this work.
+For a new design document or a substantial revision, use the copyable [design document template](references/design-document-template.md) as the starting point. For a minor addition, preserve the existing document structure and update only the necessary sections. Keep a shared-library design focused on its responsibility boundary, integration points, and inputs/outputs; put product-specific startup paths and operating instructions in a separate document when they need design coverage. Treat README as a short entry point and do not prescribe README placement in the design document. Do not migrate unrelated existing design documents as part of this work.
 
 ## Strong rule
 
