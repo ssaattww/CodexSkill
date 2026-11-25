@@ -99,7 +99,12 @@ cell.set("value", value.replace("DiagramDocument", "DiagramDocument (編集確�
 tree.write(path, encoding="utf-8", xml_declaration=True)
 PY
 "$drawio" "${drawio_flags[@]}" -x -f svg -e -o "$work/edited.dio.svg" "$work/edited.drawio"
-"$drawio" "${drawio_flags[@]}" -x -f xml -o "$work/reopened.drawio" "$work/edited.dio.svg"
+reload_status=0
+if "$drawio" "${drawio_flags[@]}" -x -f xml -o "$work/reopened.drawio" "$work/edited.dio.svg"; then
+  [[ -s "$work/reopened.drawio" ]] || reload_status=1
+else
+  reload_status=$?
+fi
 model_status=0
 if "$drawio" "${drawio_flags[@]}" -x -f png -o "$work/model-redraw.png" "$work/edited.dio.svg"; then
   [[ -s "$work/model-redraw.png" ]] || model_status=1
@@ -112,6 +117,7 @@ if inkscape "$work/edited.dio.svg" --export-filename="$work/static-svg.png"; the
 else
   static_status=$?
 fi
+printf 'XML reload exit=%s\n' "$reload_status"
 printf 'model redraw exit=%s\n' "$model_status"
 printf 'static SVG exit=%s\n' "$static_status"
 model_png_out="${MODEL_PNG_OUT:-}"
@@ -134,13 +140,13 @@ if [[ -n "$static_png_out" ]]; then
   fi
 fi
 overall_status=0
-if [[ "$model_status" -ne 0 || "$static_status" -ne 0 || "$save_status" -ne 0 ]]; then
+if [[ "$reload_status" -ne 0 || "$model_status" -ne 0 || "$static_status" -ne 0 || "$save_status" -ne 0 ]]; then
   overall_status=1
 fi
 printf 'overall exit=%s\n' "$overall_status"
 ```
 
-Check the changed label in `reopened.drawio` and the SVG's embedded `content` model. Inspect both temporary PNGs separately while the Bash session is still open. Set `MODEL_PNG_OUT` or `STATIC_SVG_PNG_OUT` only when the user explicitly requests that image, to a non-existing destination outside the repository; no images are copied by default or overwrite existing files. Record both renderer statuses and any requested-copy status before finishing, then run `exit "$overall_status"`. A failure in either renderer or requested copy makes the final status nonzero, but does not skip the other renderer or requested-image handling. The EXIT trap then removes the temporary package, profile, model, SVG and PNG on both success and ordinary failure, and reports whether the directory was removed. If cleanup itself fails, report it instead of claiming a clean run. Abrupt process termination can bypass a shell EXIT trap.
+Check the changed label in `reopened.drawio` and the SVG's embedded `content` model when XML reload succeeds. Inspect both temporary PNGs separately while the Bash session is still open. Set `MODEL_PNG_OUT` or `STATIC_SVG_PNG_OUT` only when the user explicitly requests that image, to a non-existing destination outside the repository; no images are copied by default or overwrite existing files. Record XML reload, both renderer, and requested-copy statuses before finishing. A failed XML reload marks the readback check unverified but does not skip either renderer or a successful requested-image copy. Then run `exit "$overall_status"`; any readback, renderer or copy failure makes the final status nonzero. The EXIT trap removes the temporary package, profile, model, SVG and PNG on both success and ordinary failure, and reports whether the directory was removed. If cleanup itself fails, report it instead of claiming a clean run. Abrupt process termination can bypass a shell EXIT trap.
 
 After inspection and any explicitly requested image copy, finish the Bash session with:
 
