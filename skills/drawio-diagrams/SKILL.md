@@ -27,8 +27,8 @@ Use repository files and available local tools. Do not assume a particular opera
 4. Keep labels short. Make arrow direction and relationship meaning clear. Include boundaries only when they explain ownership or an external dependency. Preserve repository vocabulary and document rules.
 5. Validate the model and its two display paths separately:
    - **Embedded model:** inspect the SVG `content` and embedded draw.io `mxfile`. If a `<diagram>` payload is compressed, decode it and check the expanded `mxGraphModel` labels and connectors; if it cannot be expanded, mark those details unverified. The [official draw.io Skill](https://github.com/jgraph/drawio-mcp/blob/main/plugins/codex/drawio/skills/drawio/SKILL.md) notes CLI `-e` for embedding diagram XML in an export. Embedded XML alone does not prove an edit round-trip.
-   - **Model redraw:** use draw.io to export a PNG from the `.dio.svg`, which asks draw.io to read its embedded model and redraw it. Check Japanese text, connectors, clipping and page bounds; record it separately from the static SVG result.
-   - **Static SVG drawing:** render the same `.dio.svg` directly with an SVG renderer such as Inkscape, without routing it through draw.io. Check the same display properties and record the result separately. This confirms the standalone SVG artwork, not the embedded model.
+   - **Model redraw:** use draw.io to export a PNG from the `.dio.svg`, which asks draw.io to read its embedded model and redraw it. Attempt this independently from the static render so one failure does not skip the other. Record its command status and whether output was produced.
+   - **Static SVG drawing:** render the same `.dio.svg` directly with an SVG renderer such as Inkscape, without routing it through draw.io. Attempt it even if model redraw failed. Check Japanese text, connectors, clipping and page bounds; record it separately. This confirms the standalone SVG artwork, not the embedded model.
    - **Edit round-trip:** when draw.io is available and permitted, copy the existing file to a temporary path, change one visible label, save and reopen the copy, then confirm that the changed label appears in both the model and drawing and that connectors remain. Do not alter the original just to test editing.
 6. Report each check independently. If the editor or renderer is unavailable, mark that check unverified and give the reason. A parse or embedded-model check alone does not prove editability or correct rendering.
 
@@ -36,7 +36,19 @@ Use repository files and available local tools. Do not assume a particular opera
 
 Prefer an already installed, authorized `drawio` CLI. The default route uses no download and leaves Electron's sandbox enabled. Before opening or rendering a diagram, inspect it for external image references (`<image href="https://…">`, CSS `url(https://…)`, or linked assets). Importing or rendering such content can make network requests; use trusted local-only inputs or an appropriately network-restricted environment, and record any external references that cannot be resolved safely. Do not treat permission to download the application as permission for a diagram to fetch remote content.
 
-Run the commands in a Bash session with `set -euo pipefail`. Install an EXIT trap before creating a fresh temporary directory so that ordinary success and command failures both remove it while preserving the original exit status:
+The input path is relative to the current repository root. Set it explicitly before running the workflow; do not assume the current directory is the CodexSkill checkout:
+
+```bash
+# From the CodexSkill repository root:
+DIAGRAM_INPUT=skills/drawio-diagrams/examples/class-relations.dio.svg
+
+# Or from a consumer repository root after its .agents/skills link is configured:
+# DIAGRAM_INPUT=.agents/skills/drawio-diagrams/examples/class-relations.dio.svg
+```
+
+CodexSkill's `scripts/link_consumer_skills.py <consumer-repo>` creates that consumer link; use the consumer's existing `.agents/skills` setup and do not replace paths manually.
+
+Run the commands in the same Bash session with `set -euo pipefail`. Install an EXIT trap before creating a fresh temporary directory so that ordinary success and command failures both remove it while preserving the original exit status:
 
 ```bash
 set -euo pipefail
@@ -51,13 +63,18 @@ cleanup() {
     printf 'temporary directory remains: %s\n' "$work" >&2
     status=1
   fi
+  if [[ -n "$work" && ! -e "$work" ]]; then
+    printf 'temporary cleanup: removed\n'
+  fi
   exit "$status"
 }
 trap cleanup EXIT
 work="$(mktemp -d)"
 mkdir -p "$work/config" "$work/cache"
 export XDG_CONFIG_HOME="$work/config" XDG_CACHE_HOME="$work/cache"
-cp skills/drawio-diagrams/examples/class-relations.dio.svg "$work/source.dio.svg"
+diagram="${DIAGRAM_INPUT:?Set DIAGRAM_INPUT to a path relative to the current repository root}"
+[[ -f "$diagram" ]] || { printf 'diagram input not found: %s\n' "$diagram" >&2; exit 2; }
+cp -- "$diagram" "$work/source.dio.svg"
 drawio=drawio
 drawio_flags=()
 # On a headless host, an installed CLI may need only this flag; keep its sandbox enabled.
@@ -83,11 +100,53 @@ tree.write(path, encoding="utf-8", xml_declaration=True)
 PY
 "$drawio" "${drawio_flags[@]}" -x -f svg -e -o "$work/edited.dio.svg" "$work/edited.drawio"
 "$drawio" "${drawio_flags[@]}" -x -f xml -o "$work/reopened.drawio" "$work/edited.dio.svg"
-"$drawio" "${drawio_flags[@]}" -x -f png -o "$work/model-redraw.png" "$work/edited.dio.svg"
-inkscape "$work/edited.dio.svg" --export-filename="$work/static-svg.png"
+model_status=0
+if "$drawio" "${drawio_flags[@]}" -x -f png -o "$work/model-redraw.png" "$work/edited.dio.svg"; then
+  [[ -s "$work/model-redraw.png" ]] || model_status=1
+else
+  model_status=$?
+fi
+static_status=0
+if inkscape "$work/edited.dio.svg" --export-filename="$work/static-svg.png"; then
+  [[ -s "$work/static-svg.png" ]] || static_status=1
+else
+  static_status=$?
+fi
+printf 'model redraw exit=%s\n' "$model_status"
+printf 'static SVG exit=%s\n' "$static_status"
+model_png_out="${MODEL_PNG_OUT:-}"
+static_png_out="${STATIC_SVG_PNG_OUT:-}"
+save_status=0
+if [[ -n "$model_png_out" ]]; then
+  if [[ "$model_status" -eq 0 && -s "$work/model-redraw.png" && ! -e "$model_png_out" ]]; then
+    cp -- "$work/model-redraw.png" "$model_png_out" || save_status=1
+  else
+    printf 'requested model PNG not saved\n' >&2
+    save_status=1
+  fi
+fi
+if [[ -n "$static_png_out" ]]; then
+  if [[ "$static_status" -eq 0 && -s "$work/static-svg.png" && ! -e "$static_png_out" ]]; then
+    cp -- "$work/static-svg.png" "$static_png_out" || save_status=1
+  else
+    printf 'requested static SVG PNG not saved\n' >&2
+    save_status=1
+  fi
+fi
+overall_status=0
+if [[ "$model_status" -ne 0 || "$static_status" -ne 0 || "$save_status" -ne 0 ]]; then
+  overall_status=1
+fi
+printf 'overall exit=%s\n' "$overall_status"
 ```
 
-Check the changed label in `reopened.drawio` and the SVG's embedded `content` model. Then inspect `model-redraw.png` and `static-svg.png` as two separate results; both must come from the same newly exported `.dio.svg`. If the caller needs to inspect or retain an image after this shell exits, copy only the requested PNG(s) to an explicit output path outside the repository before exiting. Record both render checks before cleanup. If model parsing, either render, or image inspection fails, mark only the affected check unverified and keep the failure status. The EXIT trap removes the temporary package, profile, model, SVG and PNG on success and on ordinary command failure, then confirms the temporary directory is absent. If cleanup itself fails, report it instead of claiming a clean run. Abrupt process termination can bypass a shell EXIT trap.
+Check the changed label in `reopened.drawio` and the SVG's embedded `content` model. Inspect both temporary PNGs separately while the Bash session is still open. Set `MODEL_PNG_OUT` or `STATIC_SVG_PNG_OUT` only when the user explicitly requests that image, to a non-existing destination outside the repository; no images are copied by default or overwrite existing files. Record both renderer statuses and any requested-copy status before finishing, then run `exit "$overall_status"`. A failure in either renderer or requested copy makes the final status nonzero, but does not skip the other renderer or requested-image handling. The EXIT trap then removes the temporary package, profile, model, SVG and PNG on both success and ordinary failure, and reports whether the directory was removed. If cleanup itself fails, report it instead of claiming a clean run. Abrupt process termination can bypass a shell EXIT trap.
+
+After inspection and any explicitly requested image copy, finish the Bash session with:
+
+```bash
+exit "$overall_status"
+```
 
 ### Optional fallback: approved official release in an isolated environment
 
