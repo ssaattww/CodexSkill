@@ -93,15 +93,54 @@ drawio_flags=()
 # drawio_flags=(--ozone-platform=headless)
 ```
 
-If the installed CLI is missing, stop and report the CLI route as unverified unless the optional fallback below is explicitly allowed. Select one CLI route before continuing. For the default installed CLI, leave `drawio=drawio` and `drawio_flags=()` as shown. The one-label edit below uses Python's standard library on the temporary mxfile; it is not a GUI edit. The import/export sequence verifies a headless model round-trip, not graphical-editor interaction.
+For the default installed CLI, leave `drawio=drawio` and `drawio_flags=()` as shown. If the CLI is missing and the optional fallback is not allowed, continue to the shared workflow: it completes and records the independent static render and any requested static PNG save before the failed CLI import is recorded; finish with a nonzero result and mark model editing unverified. If the fallback is allowed, select it before running the shared workflow. The one-label edit below uses Python's standard library on the temporary mxfile; it is not a GUI edit. The import/export sequence verifies a headless model round-trip, not graphical-editor interaction.
 
 ```bash
+save_status=0
+static_save_status=0
+save_new_png() {
+  python3 - "$1" "$2" <<'PY'
+import os
+import shutil
+import sys
+source, destination = sys.argv[1:]
+flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+fd = os.open(destination, flags, 0o600)
+created = os.fstat(fd)
+try:
+    with os.fdopen(fd, "wb") as output, open(source, "rb") as input_file:
+        shutil.copyfileobj(input_file, output)
+except BaseException:
+    try:
+        current = os.stat(destination, follow_symlinks=False)
+        if (current.st_dev, current.st_ino) == (created.st_dev, created.st_ino):
+            os.unlink(destination)
+    except FileNotFoundError:
+        pass
+    raise
+PY
+}
+
 static_status=0
 if inkscape "$work/source.dio.svg" --export-filename="$work/static-original.png"; then
   [[ -s "$work/static-original.png" ]] || static_status=1
 else
   static_status=$?
 fi
+printf 'original SVG static render exit=%s\n' "$static_status"
+static_png_out="${STATIC_SVG_PNG_OUT:-}"
+if [[ -n "$static_png_out" ]]; then
+  if [[ "$static_status" -eq 0 && -s "$work/static-original.png" ]] && save_new_png "$work/static-original.png" "$static_png_out"; then
+    printf 'requested static SVG PNG saved: %s\n' "$static_png_out"
+  else
+    printf 'requested static SVG PNG not saved (destination must be a new path)\n' >&2
+    static_save_status=1
+    save_status=1
+  fi
+else
+  printf 'requested static SVG PNG: not selected\n'
+fi
+printf 'static PNG save exit=%s\n' "$static_save_status"
 
 import_status=0
 if "$drawio" "${drawio_flags[@]}" -x -f xml -o "$work/model.drawio" "$work/source.dio.svg" && [[ -s "$work/model.drawio" ]]; then
@@ -111,7 +150,7 @@ else
 fi
 edit_status=0
 if [[ "$import_status" -eq 0 ]] && cp -- "$work/model.drawio" "$work/edited.drawio"; then
-  python3 - "$work/edited.drawio" "${EDIT_CELL_ID:?Set EDIT_CELL_ID for the selected example}" "${EDIT_OLD_LABEL:?Set EDIT_OLD_LABEL for the selected example}" "${EDIT_NEW_LABEL:?Set EDIT_NEW_LABEL for the selected example}" <<'PY'
+  if python3 - "$work/edited.drawio" "${EDIT_CELL_ID:?Set EDIT_CELL_ID for the selected example}" "${EDIT_OLD_LABEL:?Set EDIT_OLD_LABEL for the selected example}" "${EDIT_NEW_LABEL:?Set EDIT_NEW_LABEL for the selected example}" <<'PY'
 from pathlib import Path
 import sys
 import xml.etree.ElementTree as ET
@@ -123,7 +162,11 @@ assert sys.argv[3] in value
 cell.set("value", value.replace(sys.argv[3], sys.argv[4], 1))
 tree.write(path, encoding="utf-8", xml_declaration=True)
 PY
-  edit_status=$?
+  then
+    edit_status=0
+  else
+    edit_status=$?
+  fi
 else
   edit_status=1
 fi
@@ -150,50 +193,17 @@ else
   reload_status=1
   model_status=1
 fi
-printf 'original SVG static render exit=%s\n' "$static_status"
 printf 'draw.io import exit=%s\n' "$import_status"
 printf 'temporary model edit exit=%s\n' "$edit_status"
 printf 'editable SVG export exit=%s\n' "$export_status"
 printf 'XML reload exit=%s\n' "$reload_status"
 printf 'model redraw exit=%s\n' "$model_status"
 model_png_out="${MODEL_PNG_OUT:-}"
-static_png_out="${STATIC_SVG_PNG_OUT:-}"
-save_status=0
-save_new_png() {
-  python3 - "$1" "$2" <<'PY'
-import os
-import shutil
-import sys
-source, destination = sys.argv[1:]
-flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
-fd = os.open(destination, flags, 0o600)
-created = os.fstat(fd)
-try:
-    with os.fdopen(fd, "wb") as output, open(source, "rb") as input_file:
-        shutil.copyfileobj(input_file, output)
-except BaseException:
-    try:
-        current = os.stat(destination, follow_symlinks=False)
-        if (current.st_dev, current.st_ino) == (created.st_dev, created.st_ino):
-            os.unlink(destination)
-    except FileNotFoundError:
-        pass
-    raise
-PY
-}
 if [[ -n "$model_png_out" ]]; then
   if [[ "$model_status" -eq 0 && -s "$work/model-redraw.png" ]] && save_new_png "$work/model-redraw.png" "$model_png_out"; then
     :
   else
     printf 'requested model PNG not saved (destination must be a new path)\n' >&2
-    save_status=1
-  fi
-fi
-if [[ -n "$static_png_out" ]]; then
-  if [[ "$static_status" -eq 0 && -s "$work/static-original.png" ]] && save_new_png "$work/static-original.png" "$static_png_out"; then
-    :
-  else
-    printf 'requested static SVG PNG not saved (destination must be a new path)\n' >&2
     save_status=1
   fi
 fi
@@ -204,7 +214,7 @@ fi
 printf 'overall exit=%s\n' "$overall_status"
 ```
 
-Check the selected label in `reopened.drawio` and the exported SVG's embedded `content` model when XML reload succeeds. Inspect `$work/static-original.png` (raw SVG artwork) and `$work/model-redraw.png` (draw.io's model redraw of the edited SVG) separately while the Bash session is still open. The raw SVG render runs before draw.io import and export, so it is still attempted if either draw.io operation fails; record its input and result separately. Set `MODEL_PNG_OUT` or `STATIC_SVG_PNG_OUT` only when the user explicitly requests that image, to a new destination outside the repository; the save uses exclusive creation and fails without changing an existing file, directory entry or symlink. No images are copied by default. Record import, edit, export, XML reload, both renderers and requested-copy statuses before finishing. A failed import or export does not skip the independent raw SVG render; a failed XML reload does not skip model redraw or a successful requested-image copy. Then run `exit "$overall_status"`; any import, edit, export, readback, renderer or copy failure makes the final status nonzero. The EXIT trap removes the temporary package, profile, model, SVG and PNG on both success and ordinary failure, and reports whether the directory was removed. If cleanup itself fails, report it instead of claiming a clean run. Abrupt process termination can bypass a shell EXIT trap.
+The original SVG render and selected static PNG save finish and report their statuses before any draw.io command. Inspect `$work/static-original.png` (raw SVG artwork) and, if generated, `$work/model-redraw.png` (draw.io's model redraw of the edited SVG) separately while the Bash session is still open. The static render does not depend on the draw.io CLI or temporary model edit. Set `MODEL_PNG_OUT` or `STATIC_SVG_PNG_OUT` only when the user explicitly requests that image, to a new destination outside the repository; the save uses exclusive creation and fails without changing an existing file, directory entry or symlink. No images are copied by default. Record static render/save, import, edit, export, XML reload, model redraw and requested-copy statuses before finishing. A missing CLI or failed temporary edit leaves model checks unverified but does not skip the already completed static render/save; finish with a nonzero result. A failed export leaves downstream model checks unverified, while an XML reload failure still allows the separate draw.io PNG redraw to run. Then run `exit "$overall_status"`; any import, edit, export, readback, renderer or copy failure makes the final status nonzero. The EXIT trap removes the temporary package, profile, model, SVG and PNG on both success and ordinary failure, and reports whether the directory was removed. If cleanup itself fails, report it instead of claiming a clean run. Abrupt process termination can bypass a shell EXIT trap.
 
 After inspection and any explicitly requested image copy, finish the Bash session with:
 
