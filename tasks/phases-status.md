@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-15
+- Updated: 2026-11-26
 
 ## Phase 1: 契約・設計
 
@@ -154,3 +154,15 @@
   - Markdown lintはCodexSkill rootに`tools/lint/markdown-targets.json`がないため`unsupported`。ShellCheckと実SDK取得は未実施
   - `sub-agent-task-manager`の必須pre-dispatch gateはrole/default-role profile効果を不明のままdispatchすることを禁止する。`/workspace/.codex`と`/workspace/.agents`に構成がなく、利用可能なspawn interfaceにもrole指定項目がないため、Sol 6.2 High reviewerは未dispatch
   - profile影響を安全に確認できるruntime設定／証拠が得られたら、独立reviewとそのreport/tracking syncを続行する
+
+## Phase 13: 共通ツールインストーラーのYomiyasu対応
+
+- Status: In Progress（通常報告・追跡の保存と後続通常レビュー）
+- Task: T-009 / Refs #93、PR #91
+- Design: `design/cloud-tools-installer-design.md`
+- PR: #100 (Draft)
+- Notes:
+  - 旧 Phase 12 の .NET 専用範囲を拡大して書き換えず、新たな任意有効化の工程として分離する
+  - 技術 HEAD `522403500da83fba191fb5fd7c8a1885d15ffa60` の公式固定版導入、照合、再利用を検証し、通常レビュー `pass_with_held`、必須指摘0件を親が原文確認（応答 01a21718-1626-7105-a7c0-727a09d78b79、GPT-6.2 Sol High 指定）。公開 HEAD の pull_request CI 2件と push CI 1件は成功
+  - 通常統合報告: `reports/task-t-009-pr100-normal-consolidated-20261126091619.md`（親による原文確認を反映）
+  - 残り: 非製品3ファイルの保存コミットと通常 push（親承認済み）、同一 candidate HEAD の全体検証・自動 CI 記録、後続通常レビュー。その後に review-enforcer が予約・凍結と独立最終レビューを扱う。独立最終報告予約・作成、マージ、手動 CI、Duck 依存 pin は未実施

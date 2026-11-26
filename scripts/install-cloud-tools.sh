@@ -5,7 +5,7 @@ usage() {
   cat <<'USAGE'
 Usage: install-cloud-tools.sh --repo-root PATH --config PATH
 
-Install the fixed .NET SDK described by a consumer-owned JSON config.
+Install the fixed .NET SDK and optionally the shared fixed Yomiyasu version.
 Set CODEX_CLOUD_TOOLS_HOME to an absolute directory outside the repository.
 USAGE
 }
@@ -95,8 +95,11 @@ try:
 except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
     raise SystemExit("install-cloud-tools: config must be valid UTF-8 JSON without duplicate keys")
 
-if not isinstance(config, dict) or set(config) != {"schema_version", "platform", "dotnet_sdk"}:
+required_keys = {"schema_version", "platform", "dotnet_sdk"}
+if not isinstance(config, dict) or not required_keys <= set(config) <= required_keys | {"yomiyasu"}:
     raise SystemExit("install-cloud-tools: config contains missing or unsupported fields")
+if type(config.get("yomiyasu", False)) is not bool:
+    raise SystemExit("install-cloud-tools: yomiyasu must be a boolean")
 if type(config["schema_version"]) is not int or config["schema_version"] != 1:
     raise SystemExit("install-cloud-tools: unsupported config schema version")
 if config["platform"] != "linux-x64":
@@ -119,14 +122,17 @@ sys.stdout.buffer.write(
     + b"\n"
     + os.fsencode(cache_root)
     + b"\n"
+    + (b"true" if config.get("yomiyasu", False) else b"false")
+    + b"\n"
 )
 PY
 )" || exit $?
 mapfile -t config_lines <<<"$config_values"
-[[ "${#config_lines[@]}" == 3 ]] || fail 'config parser returned invalid data'
+[[ "${#config_lines[@]}" == 4 ]] || fail 'config parser returned invalid data'
 sdk_version="${config_lines[0]}"
 sdk_sha512="${config_lines[1]}"
 cache_root="${config_lines[2]}"
+yomiyasu_enabled="${config_lines[3]}"
 mkdir -p -- "$cache_root" || fail 'could not create cache directory'
 sdk_root="$cache_root/dotnet"
 
@@ -161,40 +167,44 @@ if [[ -e "$sdk_root" || -L "$sdk_root" ]]; then
     || fail 'existing SDK did not report the configured version; preserved it without changes'
   printf 'install-cloud-tools: reused .NET SDK %s\n' "$sdk_version"
   printf 'DOTNET_ROOT=%s\n' "$sdk_root"
-  exit 0
+else
+  stage_dir="$(mktemp -d -- "$cache_root/.cloud-tools.XXXXXX")" \
+    || fail 'could not create SDK staging directory'
+  archive_path="$stage_dir/dotnet-sdk.tar.gz"
+  staged_sdk_root="$stage_dir/dotnet"
+  archive_url="https://builds.dotnet.microsoft.com/dotnet/Sdk/$sdk_version/dotnet-sdk-$sdk_version-linux-x64.tar.gz"
+
+  if ! curl --fail --silent --show-error --location --retry 2 "$archive_url" -o "$archive_path"; then
+    fail 'official .NET SDK download failed'
+  fi
+  if ! printf '%s  %s\n' "$sdk_sha512" "$archive_path" | sha512sum --check --status -; then
+    fail 'official .NET SDK archive SHA-512 did not match; nothing was installed'
+  fi
+
+  mkdir -- "$staged_sdk_root"
+  if ! tar -xzf "$archive_path" -C "$staged_sdk_root"; then
+    fail 'verified .NET SDK archive could not be extracted; nothing was installed'
+  fi
+  [[ -x "$staged_sdk_root/dotnet" && -d "$staged_sdk_root/sdk/$sdk_version" ]] \
+    || fail 'verified archive did not contain the configured SDK; nothing was installed'
+  verify_sdk_version "$staged_sdk_root" \
+    || fail 'staged SDK did not report the configured version; nothing was installed'
+
+  if [[ -e "$sdk_root" || -L "$sdk_root" ]]; then
+    fail 'SDK root appeared during installation; preserved it without changes'
+  fi
+  if ! mv --no-target-directory --no-clobber "$staged_sdk_root" "$sdk_root"; then
+    fail 'verified SDK could not be moved into the cache; existing state was preserved'
+  fi
+  if [[ -e "$staged_sdk_root" || -L "$staged_sdk_root" ]]; then
+    fail 'SDK root already exists; concurrent installation was not overwritten'
+  fi
+
+  printf 'install-cloud-tools: installed .NET SDK %s\n' "$sdk_version"
+  printf 'DOTNET_ROOT=%s\n' "$sdk_root"
 fi
 
-stage_dir="$(mktemp -d -- "$cache_root/.cloud-tools.XXXXXX")" \
-  || fail 'could not create SDK staging directory'
-archive_path="$stage_dir/dotnet-sdk.tar.gz"
-staged_sdk_root="$stage_dir/dotnet"
-archive_url="https://builds.dotnet.microsoft.com/dotnet/Sdk/$sdk_version/dotnet-sdk-$sdk_version-linux-x64.tar.gz"
-
-if ! curl --fail --silent --show-error --location --retry 2 "$archive_url" -o "$archive_path"; then
-  fail 'official .NET SDK download failed'
+if [[ "$yomiyasu_enabled" == true ]]; then
+  script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+  bash "$script_dir/cloud-yomiyasu.sh" install --cache-root "$cache_root"
 fi
-if ! printf '%s  %s\n' "$sdk_sha512" "$archive_path" | sha512sum --check --status -; then
-  fail 'official .NET SDK archive SHA-512 did not match; nothing was installed'
-fi
-
-mkdir -- "$staged_sdk_root"
-if ! tar -xzf "$archive_path" -C "$staged_sdk_root"; then
-  fail 'verified .NET SDK archive could not be extracted; nothing was installed'
-fi
-[[ -x "$staged_sdk_root/dotnet" && -d "$staged_sdk_root/sdk/$sdk_version" ]] \
-  || fail 'verified archive did not contain the configured SDK; nothing was installed'
-verify_sdk_version "$staged_sdk_root" \
-  || fail 'staged SDK did not report the configured version; nothing was installed'
-
-if [[ -e "$sdk_root" || -L "$sdk_root" ]]; then
-  fail 'SDK root appeared during installation; preserved it without changes'
-fi
-if ! mv --no-target-directory --no-clobber "$staged_sdk_root" "$sdk_root"; then
-  fail 'verified SDK could not be moved into the cache; existing state was preserved'
-fi
-if [[ -e "$staged_sdk_root" || -L "$staged_sdk_root" ]]; then
-  fail 'SDK root already exists; concurrent installation was not overwritten'
-fi
-
-printf 'install-cloud-tools: installed .NET SDK %s\n' "$sdk_version"
-printf 'DOTNET_ROOT=%s\n' "$sdk_root"
