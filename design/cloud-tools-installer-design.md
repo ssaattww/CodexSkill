@@ -2,15 +2,15 @@
 
 ## Goal and boundary
 
-Codex Cloud's Install script should call one pinned CodexSkill installer directly, passing the selected consumer repository root and a consumer-owned configuration file. The shared installer owns only common SDK installation mechanics. Product repositories own tool versions, archive checksums, platform selection, build targets, inspection settings, and dependency lockfiles.
+Codex Cloud's Install script should call one pinned CodexSkill installer directly, passing the selected consumer repository root and a consumer-owned configuration file. The shared installer owns common SDK installation mechanics and the pinned Yomiyasu distribution. Product repositories own SDK versions, archive checksums, platform selection, build targets, Yomiyasu enablement and document selection, inspection settings, and dependency lockfiles.
 
-The first implementation supports the existing Duck Linux x64 .NET SDK pin. It does not install Node.js, yomiyasu, or document-tool dependencies. Duck's existing npm and Python lockfiles and repository commands remain their owner's concern; this installer must not duplicate or reinterpret them. The Codex Cloud Start skill is not installed by this path.
+The installer supports the existing Duck Linux x64 .NET SDK pin and optional Yomiyasu. It does not install Node.js or other document-tool dependencies. Duck's existing npm and Python lockfiles and repository commands remain their owner's concern; this installer must not duplicate or reinterpret them. The Codex Cloud Start skill is not installed by this path.
 
 ## Entry point and inputs
 
 Use `scripts/install-cloud-tools.sh` with only `--repo-root` and `--config`. A relative config path is resolved beneath the supplied repository root. An absolute config path is accepted only when its canonical path remains beneath that root. Require `CODEX_CLOUD_TOOLS_HOME` as the external cache root so SDK files do not enter the repository.
 
-The initial JSON schema is intentionally narrow:
+Schema version 1 accepts the original .NET-only configuration unchanged. A consumer can opt in by adding the optional boolean field `"yomiyasu": true`; omission or `false` leaves the .NET-only behavior unchanged.
 
 ```json
 {
@@ -19,11 +19,12 @@ The initial JSON schema is intentionally narrow:
   "dotnet_sdk": {
     "version": "10.0.401",
     "sha512": "<128 hexadecimal characters>"
-  }
+  },
+  "yomiyasu": true
 }
 ```
 
-Reject unknown keys, unsupported schema/platform values, malformed exact versions, malformed hashes, non-Linux/non-x64 execution, and config paths outside the repository before changing the cache. Do not read configuration as shell code or accept arbitrary URLs or commands. Derive the archive URL from the exact version using the fixed official `builds.dotnet.microsoft.com` endpoint.
+Reject unknown keys, non-boolean Yomiyasu enablement, unsupported schema/platform values, malformed exact versions, malformed hashes, non-Linux/non-x64 execution, and config paths outside the repository before changing the cache. Do not read configuration as shell code or accept arbitrary URLs or commands. Derive the archive URL from the exact version using the fixed official `builds.dotnet.microsoft.com` endpoint.
 
 ## Install and reuse behavior
 
@@ -33,6 +34,12 @@ For a missing SDK root, create a unique staging directory under the external cac
 
 The caller owns environment propagation and must stop on installer failure. In the Cloud Install script, use `set -euo pipefail`, set `CODEX_CLOUD_TOOLS_HOME`, call the installer, then export `DOTNET_ROOT="$CODEX_CLOUD_TOOLS_HOME/dotnet"` and prepend it to `PATH`. Later shell sessions must source their product-owned environment setup or repeat those exports.
 
+When enabled, run the Bash helper `scripts/cloud-yomiyasu.sh install` after SDK installation or reuse. The helper owns the fixed upstream commit `0df47749139dfd64ad3d55e7d53d3839e5874848` and SHA-256 pins for the two official Python scripts and their MIT and Unicode license notices. Retrieve only those files from the official commit URL. Verify the exact staged files before publishing a versioned directory at `<canonical-cache-root>/yomiyasu/<commit>` with the same no-clobber rule. Reuse an existing version only after checking all four hashes and the expected regular-file and directory layout. If the check fails, preserve the cache and fail; do not download over it.
+
+The consumer's explicit, target-checked command may invoke the helper's `run` action with a single Markdown file and optional `--strict`. The helper verifies the cached distribution again, invokes the verified bytes with isolated standard-library Python, outputs the upstream JSON, and preserves its exit status. A missing or invalid cache is an execution error, never a request to install. There is no network access in this action. Only the consumer decides which documents may be checked; do not add this action to Start, report handling, or bulk lint.
+
 ## Focused verification
 
 Use disposable fixture repositories and cache directories. Verify shell syntax; reject unknown config fields, invalid platform, out-of-root config, and invalid canonical cache paths; prove a bad digest leaves no SDK root; prove a valid preinstalled exact-version SDK is reused without invoking download or extraction; run two synchronized installers against one absent SDK root and confirm exactly one succeeds while the winner's cache remains unchanged; confirm failure propagation in the caller example; and confirm `git status` and tracked-file hashes in the fixture are unchanged. Use synthetic archives and command shims only; do not replace or mutate a published SDK installation. Separately inspect the edited Markdown for LF, valid Japanese text, and the repository's configured document checks.
+
+For optional Yomiyasu, additionally verify SDK-only compatibility, installation with an existing SDK, official pinned file hashes, verified reuse with a blocked download command, rejection of incomplete or altered caches without overwriting, and JSON execution using a synthetic Markdown file. Check the consumer's explicit target rejection using synthetic data, not actual reports.
