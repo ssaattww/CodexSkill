@@ -101,7 +101,7 @@ Hook limitations:
 - Some shell, unified exec, and MCP edit paths may not be intercepted.
 - Hook success is not a task-completion gate by itself.
 - Hook output is immediate model feedback; durable evidence belongs in the caller report or review report.
-- The helper uses the target repository's lint configuration. Do not add `package.json`, `tools/lint/`, whitelist, or `prh` data to CodexSkill just to make this helper run locally.
+- The helper uses the target repository's lint configuration. Do not add `package.json`, `tools/lint/`, whitelist, or `prh` data merely to make the helper run. When CodexSkill itself is explicitly adopted as a lint target by a user task, repo-local configuration is valid, but exact whitelist, `prh`, and target-exclusion changes still require user review.
 
 ## Outputs
 
