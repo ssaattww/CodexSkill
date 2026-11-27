@@ -63,8 +63,8 @@ fs.writeFileSync(
   "utf8"
 );
 
-const cspellBin = path.join(root, "node_modules", ".bin", process.platform === "win32" ? "cspell.cmd" : "cspell");
-const result = spawnSync(cspellBin, ["--no-default-configuration", "--config", configPath, ...process.argv.slice(2)], {
+const cspellCli = path.join(root, "node_modules", "cspell", "bin.mjs");
+const result = spawnSync(process.execPath, [cspellCli, "--no-default-configuration", "--config", configPath, ...process.argv.slice(2)], {
   cwd: root,
   stdio: "inherit"
 });

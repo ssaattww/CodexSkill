@@ -2,41 +2,71 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-15
+- Updated: 2026-11-28
 
 ## In Progress
 
-- T-008: Issue #87のMarkdown用語検査bootstrapを追加する
-  - Status: bootstrap実装・Windows fixture・詳細report保存まで完了。PR #88の通常レビュー待ち
-  - Phase: Phase 12
-  - PR: #88（draft）
+- T-010: 他のリポジトリへ Markdown 用語検査を導入する
+  - Status: 隔離 Linux と通常修正確認を完了。統合版の Windows と自動 CI の検証を残す
+  - Phase: Phase 14
+  - Issue: #87
+  - PR: #88 (Draft)
   - Estimate: M
-  - Depends on: 既存のmarkdown-word-checker、PR #81で更新されたSudachi checker
-  - Scope: Markdown用語検査が未導入の他リポジトリへ、安全な自己完結tools/lintを導入するbootstrap
+  - Depends on: 既存の用語検査、対象側の Git、検証時の既存ランタイム
+  - Scope: 導入コマンド、固定資産、ローカル実行と任意 CI。CodexSkill 自身への常設は除外
+  - Exit Criteria: 書き込み前に対象を確認し、既存設定を変えない。両 OS の隔離検証、検査結果と失敗の区別、最終レビュー、対象版の CI が確認できる
+  - Output: `design/markdown-word-check-bootstrap-design.md`、`reports/issue-87-pr88-bootstrap-20261128.md`
+
+- T-009: Codex Cloud共有ツールインストーラーのYomiyasu対応
+  - Status: 技術 HEAD の通常レビュー `pass_with_held`（必須指摘0件）、Draft PR #100 公開・自動 CI 成功。親の原文確認を取り込んだ非製品3ファイルの保存を進める（記録作成時 `commit_pending`）。後続通常レビュー待ち
+  - Phase: Phase 13
+  - Issue: 新規なし（Refs #93、PR #91）
+  - PR: #100 (Draft)
+  - Estimate: S（残りは凍結前の記録確定）
+  - Depends on: 旧 .NET 専用共通導入（#93 / PR #94）、公式固定版と照合値
+  - Scope: 共通インストーラー Bash 2ファイルと既存導入設計、通常報告・追跡
   - Exit Criteria:
-    - target Git worktree rootを明示してdry-runと導入を実行できる
-    - 既存出力pathが1件でも存在する場合は書き込み前に停止し、無断上書きしない
-    - 導入先はroot package.jsonへ依存せず、tools/lint/.venvで依存を閉じる
-    - full、changed、files scopeとaudit、enforceを区別できる
-    - 空whitelistのauditはneeds_user_reviewを保持し、enforceは未登録語で非0終了する
-    - whitelist、aliases、prh、文書除外を利用者承認なしに自動反映しない
-    - optional CI templateは成功・利用者レビュー待ち・失敗の診断artifactを保存する
-    - Windows fixtureでdry-run、導入、衝突、audit、enforce、changed、files、承認済み複合語controlを確認する
-    - repository validator、設計同期、詳細report、PR簡易report、exact-head CIを完了し、mergeしない
+    - .NET 専用設定を維持し、任意有効化で公式固定版を取得・照合して配置し、安全に再利用できる
+    - 改ざん・欠損キャッシュを有効扱いせず、実行時は検証済みのローカルファイルのみを使用する
+    - 新規 Python 実装なし。Duck の設定・入口、Start skill、レポートへの Yomiyasu 適用、公開環境設定は対象外
+    - 通常報告・追跡・通常レビュー証拠を確定し、全非最終変更のコミット後、候補 HEAD の既存検証を行う
+    - 独立最終レビューの予約・凍結は review-enforcer に引き渡す。マージはしない
   - Output:
-    - `design/markdown-word-check-bootstrap-design.md`
-    - `skills/markdown-word-checker/scripts/bootstrap_markdown_word_check.py`
-    - `skills/markdown-word-checker/templates/repo/`
-    - `reports/issue-87-markdown-bootstrap-implementation-20260929.md`
+    - `design/cloud-tools-installer-design.md`
+    - `scripts/install-cloud-tools.sh`、`scripts/cloud-yomiyasu.sh`
+    - `reports/task-t-009-pr100-normal-consolidated-20261126091619.md`（通常統合報告）
   - Verification:
-    - Windows fixtureでdry-runは無変更、初回導入は8ファイル、再導入はexit 3で全衝突を列挙して停止した
-    - repo-local venvへPyYAML 6.0.3 / SudachiPy 0.6.11 / SudachiDict-core 20260428を導入して実行した
-    - 空whitelistのfull auditはstate needs_user_review / wrapper exit 0、full enforceはstate needs_user_review / exit 1
-    - changed scopeは未コミットchanged.mdだけを検出し、files scopeはa.mdだけを検査した
-    - fixture限定の承認済み複合語controlでfiles enforceがpass / exit 0になった。再開時にも別の複合語で同結果を再確認した
-    - Windows既定CP932でのdecode失敗を検出し、runnerのsubprocess decodeをUTF-8固定へ修正した
-    - template内pycache混入をrepository validatorが実際に拒否し、除去後のrepository / bundle / zip-integrity / zip-contentsは全件pass
-    - TDDはCodexSkill方針によりnot applicable。技術HEAD 5f3e7ebのpull_request run 36486562265はhead SHA一致でsuccess。詳細report永続化後HEADのCIはPRで追跡し、通常レビュー・独立レビューは未実施
+    - 技術 HEAD `522403500da83fba191fb5fd7c8a1885d15ffa60`（基点 a18080938d7525f8b3e9f80fe237991a8c4e0562、レビュー済みパッチ SHA-256 a263a4ff33e2d79183f9f39e5f678dc780a21aac1fec9737833001745d2b6b17）
+    - 隔離クラウドの30件（Duckとの組み合わせ含む）、Bash構文、既存リポジトリ検証4項目成功。通常レビュー `pass_with_held`、必須指摘0件（親原文確認、2026-11-26、GPT-6.2 Sol High 指定、応答 01a21718-1626-7105-a7c0-727a09d78b79）。17,123 バイトのパッチと製品3ファイルの blob 一致。任意指摘のみ
+    - 公開技術 HEAD の pull_request CI 45789845620 / 45789845667 成功、push CI 45789758166 成功。報告・追跡の保存コミットと通常 push は親承認済み。新しい候補 HEAD の全体検証と自動 CI は保存後に外部で記録。独立最終 CI は未実施
+    - CodexSkill の Markdown 用語検査は配線不在で unsupported。TDD は非適用。Skill追加・更新、FP追加は不要。独立最終レビューは未予約・未実施
+
+- T-008: Issue #93のCodex Cloud共有ツールインストーラー
+  - Status: 実装と焦点検証を完了。独立reviewはrole/default-role設定を確認できず、task-managerの事前dispatch gateで停止
+  - Phase: Phase 12
+  - Issue: #93
+  - PR: #94 (Draft)
+  - Estimate: S
+  - Depends on: 固定公開版 `/workspace/CodexSkill` とconsumer repository-owned config
+  - Scope: `scripts/install-cloud-tools.sh`、共有SDK導入設計、焦点検証
+  - Exit Criteria:
+    - `--repo-root` と `--config` だけの入口でLinux x64の固定公式.NET SDKを導入できる
+    - consumer configの未知値、非対応platform、root外configを副作用前に拒否する
+    - SHA-512成功前に展開せず、SDK版を確認して安全に再利用する
+    - 途中失敗は既存状態を保存し、自分が作った一時物だけを削除する
+    - Node.js、yomiyasu、依存更新、任意コマンド実行、Start skill導入を含めない
+    - 構文、不正hashで未配置、SDK再利用、非対応設定拒否、追跡データ非変更を隔離環境で確認する
+    - 日本語/LF/文字化けと設定済み文書検査の状態を記録する。独立 Sol 6.2 High reviewはprofile影響を判定可能になった後に行う。mergeとPR commentはしない
+  - Output:
+    - `design/cloud-tools-installer-design.md`
+    - `scripts/install-cloud-tools.sh`
+    - `reports/issue-93-implementation-20261123033558.md`
+  - Verification:
+    - CodexSkill保守方針によりTDDは適用しない
+    - 新規導入の実SDK取得は行わず、synthetic archive/shimで未配置と検証順序を確認
+    - implementation HEAD `34c34e5eaa37614f774348fc592d0e08305b48a1`でshell syntax、synthetic install、bad-hash no-placement、SDK reuse without download/extraction、unknown/platform/out-of-root拒否、staging cleanup、fixtureのtracked data非変更がpass
+    - repository validatorと`git show --check` pass。Markdown lintは`tools/lint/markdown-targets.json`不在によりunsupported、ShellCheckは未導入。実SDK取得とCI待機は未実施
+    - 独立review agentは未dispatch。role/default-role configがこのruntimeで確認できず、`sub-agent-task-manager`のprofile-safety gateで停止
 
 - T-007: Issue #73のGit commit／pushをRDC経由へ変更する
   - Status: `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正とfull local validation、詳細report／handoff作成まで完了。永続化push後、same normal reviewerのfix verification待ち

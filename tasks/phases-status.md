@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-09-15
+- Updated: 2026-11-26
 
 ## Phase 1: 契約・設計
 
@@ -139,21 +139,41 @@
   - repository validation、配布ZIP生成、設計同期、exact-head CIを確認し、mergeは利用者が行う
   - initial normal reviewはreviewed HEAD `85c47515cbe086824746534ffb6cf6398894a63a`に対してverdict `fail`、required finding 4件
   - `PR78-NR-001`〜`PR78-NR-004`のfollow-up修正を実施し、same normal reviewerのfix verificationへ渡す
+## Phase 12: Codex Cloud共有ツールインストーラー
 
-## Phase 12: 他リポジトリ向けMarkdown用語検査bootstrap
-
-- Status: In Progress
-- Task: T-008 / Issue #87
-- Design: `design/markdown-word-check-bootstrap-design.md`
+- Status: Blocked after implementation/verification; independent review dispatch needs an inspectable role/default-role profile effect
+- Task: T-008 / Issue #93
+- Design: `design/cloud-tools-installer-design.md`
+- PR: #94 (Draft)
 - Notes:
-  - CodexSkill自身への#79 / PR #80は保留し、他リポジトリへの横展開を優先する
-  - PR #81で更新されたSudachi checkerを再実装せず、導入時にrepo-localへコピーする
-  - root package.jsonに依存せず、tools/lint配下へ自己完結した実行環境を配置する
-  - 初回は空whitelistのauditとし、候補を自動登録しない
-  - exact whitelist、aliases、prh、対象除外は利用者レビュー後に反映する
-  - optional CIは成功・利用者レビュー待ち・失敗の診断artifactを保存する
-  - Windows fixtureでbootstrapとaudit/enforceの実機検証を行い、CIより先にローカルGreenを確認する
-  - dry-run無変更、8ファイル導入、再導入衝突exit 3、audit/enforce/changed/files/承認済み複合語controlを実測済み
-  - repository validatorがtemplate内pycache混入を検出し、除去後の標準4検証は全件pass
-  - 技術HEAD 5f3e7ebのpull_request CIはhead SHA一致でsuccess。詳細report永続化後HEADのCIはPRで追跡し、通常レビュー・独立レビューは未実施
-  - mergeは利用者が行う
+  - CodexSkill内の共通入口をCodex Cloud Install scriptから直接呼び出す設計を確定した
+  - consumer root/configを明示し、consumer固有の版・SHA-512・platform・build target・検査設定・lockfileをconsumer側に保持する
+  - 固定 .NET SDKの公式archive検証と既存SDK再利用に範囲を限定する。Node、yomiyasu、文書依存の再実装は含めない
+  - implementation HEAD `34c34e5eaa37614f774348fc592d0e08305b48a1`でsynthetic install、bad-hash no-placement、SDK reuse、unknown/platform/out-of-root拒否、tracking非変更、repository validatorを確認した
+  - 詳細report: `reports/issue-93-implementation-20261123033558.md`
+  - Markdown lintはCodexSkill rootに`tools/lint/markdown-targets.json`がないため`unsupported`。ShellCheckと実SDK取得は未実施
+  - `sub-agent-task-manager`の必須pre-dispatch gateはrole/default-role profile効果を不明のままdispatchすることを禁止する。`/workspace/.codex`と`/workspace/.agents`に構成がなく、利用可能なspawn interfaceにもrole指定項目がないため、Sol 6.2 High reviewerは未dispatch
+  - profile影響を安全に確認できるruntime設定／証拠が得られたら、独立reviewとそのreport/tracking syncを続行する
+
+## Phase 13: 共通ツールインストーラーのYomiyasu対応
+
+- Status: In Progress（通常報告・追跡の保存と後続通常レビュー）
+- Task: T-009 / Refs #93、PR #91
+- Design: `design/cloud-tools-installer-design.md`
+- PR: #100 (Draft)
+- Notes:
+  - 旧 Phase 12 の .NET 専用範囲を拡大して書き換えず、新たな任意有効化の工程として分離する
+  - 技術 HEAD `522403500da83fba191fb5fd7c8a1885d15ffa60` の公式固定版導入、照合、再利用を検証し、通常レビュー `pass_with_held`、必須指摘0件を親が原文確認（応答 01a21718-1626-7105-a7c0-727a09d78b79、GPT-6.2 Sol High 指定）。公開 HEAD の pull_request CI 2件と push CI 1件は成功
+  - 通常統合報告: `reports/task-t-009-pr100-normal-consolidated-20261126091619.md`（親による原文確認を反映）
+  - 残り: 非製品3ファイルの保存コミットと通常 push（親承認済み）、同一 candidate HEAD の全体検証・自動 CI 記録、後続通常レビュー。その後に review-enforcer が予約・凍結と独立最終レビューを扱う。独立最終報告予約・作成、マージ、手動 CI、Duck 依存 pin は未実施
+
+## Phase 14: Markdown 用語検査の導入
+
+- Status: In Progress（Windows と統合版の自動 CI を確認する）
+- Task: T-010 / Issue #87
+- Design: `design/markdown-word-check-bootstrap-design.md`
+- PR: #88 (Draft)
+- Notes:
+  - 既定は計画だけ。別のリポジトリに書くには、対象・期待するコミット・導入の明示が必要。
+  - 隔離 Linux で固定7件／8件、既存先の拒否、自分が作った物だけの後始末、検査・診断エラーを確認。
+  - 既存の用語検査は再利用する。CodexSkill 自身への導入、既存の利用先への移行、公開は含まない。

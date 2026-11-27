@@ -33,7 +33,8 @@ REQUIRED_RELEASE_SKILLS = {
 }
 MARKDOWN_BOOTSTRAP_ASSETS = (
     Path("design/markdown-word-check-bootstrap-design.md"),
-    Path("skills/markdown-word-checker/scripts/bootstrap_markdown_word_check.py"),
+    Path("skills/markdown-word-checker/scripts/plan_markdown_word_check_bootstrap.mjs"),
+    Path("skills/markdown-word-checker/scripts/bootstrap_markdown_word_check.mjs"),
     Path("skills/markdown-word-checker/templates/repo/tools/lint/.gitignore"),
     Path("skills/markdown-word-checker/templates/repo/tools/lint/README.md"),
     Path("skills/markdown-word-checker/templates/repo/tools/lint/requirements.txt"),

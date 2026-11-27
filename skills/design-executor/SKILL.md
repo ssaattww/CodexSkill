@@ -35,8 +35,8 @@ Before running this skill, make sure the parent has already decided:
 
 ## Required flow
 
-1. read the target design files
-2. edit only the files needed for the decided design scope
+1. read the target design files; for a new design document or substantial revision, start from the copyable [design document template](../design-doc-maintainer/references/design-document-template.md); for a minor addition, preserve the existing document structure and update only the necessary sections
+2. edit only the files needed for the decided design scope; do not bulk-migrate unrelated design documents
 3. keep terminology and structure aligned with nearby design docs
 4. update `Design/BreakingChanges.md` when the change is breaking and already approved as such
 5. After creating or editing Markdown, call `markdown-word-checker` with the explicit list of Markdown files changed by this skill.

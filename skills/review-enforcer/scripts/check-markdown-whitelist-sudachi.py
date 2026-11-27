@@ -329,7 +329,8 @@ def list_changed_files(root: Path) -> set[str]:
     for args in git_commands:
         result = subprocess.run(["git", *args], cwd=root, text=True, stdout=subprocess.PIPE, check=False)
         if result.returncode != 0:
-            continue
+            print("Could not enumerate Markdown changes using Git.", file=sys.stderr)
+            raise SystemExit(2)
         for line in result.stdout.splitlines():
             file_name = line.strip()
             if file_name:

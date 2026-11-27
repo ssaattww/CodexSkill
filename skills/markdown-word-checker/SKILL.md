@@ -56,18 +56,11 @@ Before running this skill, gather:
 
 ### Repository bootstrap
 
-When the target repository has not adopted Markdown terminology checks and the user explicitly asks to introduce them, use `scripts/bootstrap_markdown_word_check.py` from this Skill instead of hand-building repository-local tooling.
+The current entry is `scripts/plan_markdown_word_check_bootstrap.mjs`. It requires Node.js 18 or newer in the development environment and prints a read-only plan for the fixed seven-file manifest, plus the CI file only when explicitly requested. It verifies the target Git worktree root, optional expected HEAD, source assets, and existing destinations. The plan never edits the target, never invokes the legacy Python writer, and is not authorization to install.
 
-1. Resolve the exact target Git worktree root and run the bootstrap with `--dry-run` first.
-2. By default install only repo-local `tools/lint/` assets. Add the optional GitHub Actions template only when CI integration is in scope.
-3. The bootstrap must stop before any write when one or more destination paths already exist. Do not bypass the collision by deleting, renaming, or overwriting target files unless the user separately authorizes a migration plan.
-4. Initial configuration uses an empty whitelist and excludes only tooling/generated directories. Do not automatically exclude semantic document trees such as `reports/`, `docs/`, `design/`, or `skills/`.
-5. Run the installed wrapper in `audit` mode first. `needs_user_review` is a successful audit execution but is not terminology compliance.
-6. Present exact whitelist, alias, `prh`, and target-exclusion candidates for user review. Do not auto-apply extracted vocabulary.
-7. Switch a task or CI gate to `enforce` only after the target set and initial approved configuration are established.
-8. Keep the installed checker self-contained in the target repository. The bootstrap copies the current canonical Sudachi checker from CodexSkill; the target repository must not require CodexSkill to be present at runtime.
-9. Validate bootstrap behavior in a disposable Git fixture before publishing changes to this Skill: dry-run, initial install, collision refusal, `audit`, `enforce`, `changed`, and explicit `files` scope.
-10. Preserve audit/enforce stdout, stderr, result metadata, and current-HEAD identity. A CI template must upload diagnostics on success, user-review state, and failure.
+Use the planner only to inspect a new consumer repository. If `tools/lint/` or any destination already exists, stop and report the collision; do not migrate, delete, rename, or overwrite it. Extra files outside the fixed manifest are ignored. Missing required source files and source type mismatches are refusals.
+
+An installer candidate is available for isolated verification at `scripts/bootstrap_markdown_word_check.mjs`. It is read-only unless both `--install` and a matching full `--expected-head` are supplied. It refuses existing destinations, verifies the installed manifest, and stores each installation attempt's diagnostics under `tools/lint/artifacts/bootstrap/`. Use a disposable Git worktree until Windows behavior and the review are confirmed. A plan or installation result does not prove audit/enforce behavior or CI artifact upload. Keep exact whitelist, alias, `prh`, and target-exclusion changes behind the existing user review process.
 
 The detailed contract is [Markdown word-check bootstrap design](../../design/markdown-word-check-bootstrap-design.md).
 
