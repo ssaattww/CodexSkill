@@ -37,6 +37,9 @@ from the user's applicable explicit instruction, including a standing choice
 of cloud for new work chats and its stated exceptions. Otherwise follow Project
 Instruction. If neither selects a route, use the connected PC through Remote
 Desktop Commander.
+A cloud choice selects the normal-chat execution route, not a connected PC.
+Use `work-context-manager` to determine the actual verification capability;
+choosing a route does not grant permissions or select remote-CI-only verification.
 
 For normal chat, use only the current chat's authorized filesystem and
 executor, if actually available. For the connected-PC route, discover the

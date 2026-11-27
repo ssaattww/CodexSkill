@@ -33,7 +33,10 @@ All three must be installed. Do not replace them with repository-external shared
 Resolve the route from the user's applicable explicit instruction, including a
 standing choice of cloud for new work chats and its stated exceptions. Otherwise
 follow Project Instruction. If neither selects a route, use the connected PC
-through Remote Desktop Commander. For the PC route,
+through Remote Desktop Commander.
+A cloud choice selects the normal-chat execution route, not a connected PC.
+Use `work-context-manager` to determine the actual verification capability;
+choosing a route does not grant permissions or select remote-CI-only verification. For the PC route,
 discover Remote Desktop Commander tools, confirm the specified device with a
 read-only call, and pin evidence reads to it. Resolve the path, source
 identity, and ownership through `work-context-manager.execution_environment`
