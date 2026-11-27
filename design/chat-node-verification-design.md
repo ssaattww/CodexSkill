@@ -42,7 +42,7 @@ connectorを使い、既存の許可範囲で次を読む。
 
 必要な資料をconnectorからローカル実行環境へ移す際は、その環境で既に許可された転送手段だけを使う。認証が必要なprivate repositoryやartifactを、未認証の `git clone`、直接REST呼出し、別資格情報で代替しない。必要なconnector権限や資料が得られなければ、その資料に依存する調査は未確認またはblockedとして記録する。
 
-repository sourceとCI診断・添付資料は別々の一時領域に置く。ZIPは展開前にファイル名と展開先を確認し、想定外のパスを展開しない。展開後、記録された対象SHA、archive metadata、manifest、または提供されたhashを照合する。診断artifactにsourceが含まれていても、正式ソースへ混ぜず、診断用資料として分離する。
+リポジトリのソース、取得した CI 診断・添付資料、新たに生成する検証出力は、それぞれ別の一時領域に置く。コネクタが返すファイル参照と、実体化・展開後にコマンドが開くローカルパスは別に記録する。ZIPは展開前にファイル名と展開先を確認し、想定外のパスを展開しない。展開後、記録された対象SHA、archive metadata、manifest、または提供されたhashを照合する。診断artifactにsourceが含まれていても、正式ソースへ混ぜず、診断用資料として分離する。
 
 取得元SHAはrepositoryのbaselineを示す。作業中の候補がdirty、未コミット、または未pushなら、baseline SHAだけで候補内容を表さず、対象file一覧とcontent fingerprint等で候補を識別する。file不足、照合情報不足、SHAまたはfingerprint不一致は未確認として扱い、その内容の検査結果を正式対象へ結び付けない。
 
@@ -80,7 +80,7 @@ CIではrun ID、event、head SHA、job／stepの結果を確認する。対象�
 
 - [ ] 統合 `chatgpt-worker-skills.zip` に含まれる実装・レビュー両 `SKILL.md` だけで各担当が手順を読め、ZIP外の相対参照を必要としない。
 - [ ] 取得元基準SHA、検証候補のfingerprint、PR現在SHAを分けて記録し、未コミット候補も一意に照合できる。
-- [ ] connectorから取得したsourceとCI診断資料を許可された方法で別々に実体化し、照合後に調査する。資料不足または不一致は未確認になる。
+- [ ] コネクタのファイル参照と展開後のローカルパスを区別する。ソース、取得済みの診断・添付資料、新しい検証出力は三つの別領域に置き、許可された方法で実体化・照合する。資料不足または不一致は未確認になる。
 - [ ] runtime・lockfile・既存依存を確認し、未導入・不一致・権限不足・network不可を未実施またはblockedとして報告する。
 - [ ] 対象test、build/lint、必要な広い検査の実施状況と、command、exit status、stdout/stderr、source identity、環境が記録される。
 - [ ] CI結果はPR現在SHA・run head SHA・対象工程を照合し、skip等を成功にしない。
@@ -94,7 +94,7 @@ CIではrun ID、event、head SHA、job／stepの結果を確認する。対象�
 | --- | --- | --- | --- |
 | ZIP単体で手順が読める | 1 | 既存builderで生成した統合ZIPを展開し、実装・レビュー両 `SKILL.md` の手順を読む | どちらも外部file参照なしで必要な判断と記録項目を説明する |
 | SHAと候補識別の分離 | 2 | baseline、未コミット候補fingerprint、PR SHAが異なる例を確認する | 三者が別項目で記録され、対象の混同が起きない |
-| ソース・artifact照合 | 3 | source archive、診断artifact、manifestを用意し、一致・不足・不一致の各状態を確認する | 一致した内容だけを対象とし、不足・不一致を未確認として残す |
+| ソース・artifact照合 | 3 | ソース・取得済み診断・新規検証出力の三領域と、取得参照・展開先の区別を確認し、対象一致・不足・不一致の例を照合する | 一致した内容だけを対象とし、不足・不一致を未確認として残す |
 | 依存・実行不能時の扱い | 4 | runtimeなし、lockfile不適合、依存取得不可、必要権限なしの例を確認する | 影響検査が未実施またはblockedで記録される |
 | 検査順と診断記録 | 5 | focused test、build/lint、要求された広い試験の例を確認する | 実行したコマンドと終了値・出力・対象・環境が結び付く |
 | CI工程の判定 | 6 | 一致SHAで全対象工程成功、一部skip、別SHA、artifact不足のrunを確認する | 全対象工程成功だけがCI成功となり、他は未確認または未成功になる |
