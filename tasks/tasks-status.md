@@ -406,6 +406,16 @@
     - 本pre-freeze follow-upとtracking更新後HEADのmatching workflow／artifactを確認する
     - fresh independent final reviewは未実施
 
+- Todo `ff10b3a9-1c81-44f4-b879-4f14288b3b9c`: PR #99 調査中の図出力手順
+  - Status: 通常レビュー補完 `pass_with_held`、必須指摘0件。通常報告・追跡・引継ぎのローカル反映中。独立最終レビューの正式手続きは未成立。
+  - Phase: 個別保守 PR #99（凍結前準備）
+  - PR: #99 (Draft)、Related #24（別要件、未解決）
+  - Scope: `skills/sub-agent-task-manager/SKILL.md` の調査指示1行と通常保存証跡のみ。
+  - Technical HEAD: `e1ed257d72078e588f828236fbe80e392db4cd4a`、公開 HEAD / administrative parent: `9a647e0fdf694e687246b6a680fe06fb3a871c68`。
+  - Output: `reports/task-ff10b3a9-1c81-44f4-b879-4f14288b3b9c-normal-review-20261126230122.md`、`reports/task-ff10b3a9-1c81-44f4-b879-4f14288b3b9c-normal-handover-20261127044046.md`。
+  - Exit Criteria: 非最終変更をコミットし必要な通常確認・固定候補の完全なローカル検証を終え、`review-enforcer` に凍結前証拠を渡す。正式な予約・独立最終レビュー・attestation と最終版 CI を成立させる。マージは別途判断。
+  - Verification: 公開 HEAD の CI `45911507655` 成功、`45911507703` の検証工程は skip。実運用での指示適用は held。ローカル補完は `commit_pending`。
+
 ## Backlog
 
 なし

@@ -154,3 +154,13 @@
   - Markdown lintはCodexSkill rootに`tools/lint/markdown-targets.json`がないため`unsupported`。ShellCheckと実SDK取得は未実施
   - `sub-agent-task-manager`の必須pre-dispatch gateはrole/default-role profile効果を不明のままdispatchすることを禁止する。`/workspace/.codex`と`/workspace/.agents`に構成がなく、利用可能なspawn interfaceにもrole指定項目がないため、Sol 6.2 High reviewerは未dispatch
   - profile影響を安全に確認できるruntime設定／証拠が得られたら、独立reviewとそのreport/tracking syncを続行する
+
+## 個別保守 PR #99: 調査中の図出力手順
+
+- Status: 凍結前準備中。通常レビュー補完は `pass_with_held`、必須指摘0件。
+- Task: Todo `ff10b3a9-1c81-44f4-b879-4f14288b3b9c`
+- PR: #99 (Draft)、Related #24
+- Notes:
+  - 元の通常レビュー記録を保持し、今回の補完原本を通常報告に追記。親の判断は既存 Skill の1行で要望を満たし、追加改修を同 PR に入れない。
+  - 公開 HEAD `9a647e0fdf694e687246b6a680fe06fb3a871c68`、通常保存の補完は `commit_pending`。正式な独立最終レビュー・予約・attestation は未成立。
+  - 通常引継ぎ: `reports/task-ff10b3a9-1c81-44f4-b879-4f14288b3b9c-normal-handover-20261127044046.md`。次は非最終変更の確定、通常確認、固定候補の検証と `review-enforcer` への引渡し。
