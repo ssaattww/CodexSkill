@@ -27,7 +27,7 @@
     "branch": "task/issue-64-chat-node-verification",
     "head_sha": "unknown",
     "source_state": "snapshot",
-    "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a",
+    "source_fingerprint": "08c59a59cf7982593bec85bde9b406a45ba66fae2329f2228c8680500ca5e25e",
     "ownership": "current_task",
     "writable_paths": [],
     "dependencies": [],
@@ -164,7 +164,7 @@
         "branch": "task/issue-64-chat-node-verification",
         "head_sha": "unknown",
         "source_state": "snapshot",
-        "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a",
+        "source_fingerprint": "08c59a59cf7982593bec85bde9b406a45ba66fae2329f2228c8680500ca5e25e",
         "ownership": "current_task",
         "writable_paths": [],
         "dependencies": [],
@@ -173,7 +173,7 @@
           "runtime があるかではなく、既存 runner を実行し4/4合格したことで実行能力を確認。"
         ]
       },
-      "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a"
+      "source_fingerprint": "08c59a59cf7982593bec85bde9b406a45ba66fae2329f2228c8680500ca5e25e"
     },
     {
       "command": "unzip -p <統合ZIP> <各スキル本文> | cmp <候補のスキル本文> -",
@@ -194,7 +194,7 @@
         "branch": "task/issue-64-chat-node-verification",
         "head_sha": "unknown",
         "source_state": "snapshot",
-        "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a",
+        "source_fingerprint": "08c59a59cf7982593bec85bde9b406a45ba66fae2329f2228c8680500ca5e25e",
         "ownership": "current_task",
         "writable_paths": [],
         "dependencies": [],
@@ -203,7 +203,7 @@
           "runtime があるかではなく、既存 runner を実行し4/4合格したことで実行能力を確認。"
         ]
       },
-      "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a"
+      "source_fingerprint": "08c59a59cf7982593bec85bde9b406a45ba66fae2329f2228c8680500ca5e25e"
     }
   ],
   "tests": [
@@ -439,7 +439,8 @@
       "validation_evidence": []
     },
     "summary": [
-      "現在の必須指摘は0件。正式独立レビューは未実施。"
+      "現在の必須指摘は0件。正式独立レビューは未実施。",
+      "findings は初回の履歴。必須指摘の現在残数は0。"
     ]
   },
   "report": {
@@ -456,7 +457,38 @@
       "通常レビューと指摘解消の記録。"
     ]
   },
-  "findings": [],
+  "findings": [
+    {
+      "id": "I64-01",
+      "severity": "high",
+      "origin": "introduced_by_change",
+      "location": "両追加節：実装99行・レビュー91行",
+      "description": "ZIP展開前の入力・出力先確認が不足",
+      "impact": "許可外へ展開される可能性",
+      "evidence": "通常初回レビューの原文（対象 d23fb97ebd919921f5250cad9d518239dd471201）。同じ担当の最終修正確認で解消済み。",
+      "required_action": "展開前に項目名・展開先を確認し許可外を拒否する。"
+    },
+    {
+      "id": "I64-02",
+      "severity": "medium",
+      "origin": "introduced_by_change",
+      "location": "両追加節：実装97–103行・レビュー89–95行",
+      "description": "版・依存・コマンドの適合と記録が不足",
+      "impact": "証跡を再構成できず不適合な依存を使う可能性",
+      "evidence": "通常初回レビューの原文（対象 d23fb97ebd919921f5250cad9d518239dd471201）。同じ担当の最終修正確認で解消済み。",
+      "required_action": "実測版とコマンドが条件を満たすか確認し、lockfile、依存、未実施理由、出力保存先を記録する。"
+    },
+    {
+      "id": "I64-03",
+      "severity": "medium",
+      "origin": "introduced_by_change",
+      "location": "両追加節：実装105行・レビュー89、97行",
+      "description": "CI event/HEADと診断、PRなしの状態が不足",
+      "impact": "正しい自動CI・未実施を判断できない",
+      "evidence": "通常初回レビューの原文（対象 d23fb97ebd919921f5250cad9d518239dd471201）。同じ担当の最終修正確認で解消済み。",
+      "required_action": "PRがある場合だけ現在SHAを取得し、run event・HEAD、失敗出力を確認。同版なしやskipを成功にしない。"
+    }
+  ],
   "held": [],
   "unexplored": [],
   "unknown": [
@@ -515,7 +547,7 @@
           "branch": "task/issue-64-chat-node-verification",
           "head_sha": "unknown",
           "source_state": "snapshot",
-          "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a",
+          "source_fingerprint": "08c59a59cf7982593bec85bde9b406a45ba66fae2329f2228c8680500ca5e25e",
           "ownership": "current_task",
           "writable_paths": [],
           "dependencies": [],
@@ -536,7 +568,12 @@
             "technical_blob": "e1cb9eb143f4fbe4ead6e6d395b294f026f36808"
           }
         ],
-        "raw_output": "runner head=null / git rev-parse failed; 267 raw fingerprints; repository/bundle/zip-integrity/zip-contents pass (exit=0); both ZIP entries cmp pass."
+        "raw_output": "runner head=null / git rev-parse failed; 267 raw fingerprints; repository/bundle/zip-integrity/zip-contents pass (exit=0); both ZIP entries cmp pass.",
+        "separate_fingerprints": {
+          "source_manifest_sha256": "08c59a59cf7982593bec85bde9b406a45ba66fae2329f2228c8680500ca5e25e",
+          "generated_combined_zip_sha256": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a",
+          "scope": "source.json with 267 content fingerprints versus distinct assembled ZIP bytes"
+        }
       }
     }
   ],
@@ -549,19 +586,40 @@
             "id": "I64-01",
             "severity": "high",
             "origin": "introduced_by_change",
-            "closure": "ZIP の項目名と展開先を事前確認し、許可外へ展開しない。"
+            "location": "両追加節：実装99行・レビュー91行",
+            "description": "ZIP展開前の入力・出力先確認が不足",
+            "impact": "許可外へ展開される可能性",
+            "evidence": "通常初回レビューの原文（対象 d23fb97ebd919921f5250cad9d518239dd471201）。同じ担当の最終修正確認で解消済み。",
+            "required_action": "展開前に項目名・展開先を確認し許可外を拒否する。",
+            "original_reviewed_head": "d23fb97ebd919921f5250cad9d518239dd471201",
+            "closure_reviewed_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+            "disposition": "resolved"
           },
           {
             "id": "I64-02",
             "severity": "medium",
             "origin": "introduced_by_change",
-            "closure": "観測した版、使用コマンドが実際の制約に合うかを確認し、証拠・未実施理由を残す。"
+            "location": "両追加節：実装97–103行・レビュー89–95行",
+            "description": "版・依存・コマンドの適合と記録が不足",
+            "impact": "証跡を再構成できず不適合な依存を使う可能性",
+            "evidence": "通常初回レビューの原文（対象 d23fb97ebd919921f5250cad9d518239dd471201）。同じ担当の最終修正確認で解消済み。",
+            "required_action": "実測版とコマンドが条件を満たすか確認し、lockfile、依存、未実施理由、出力保存先を記録する。",
+            "original_reviewed_head": "d23fb97ebd919921f5250cad9d518239dd471201",
+            "closure_reviewed_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+            "disposition": "resolved"
           },
           {
             "id": "I64-03",
             "severity": "medium",
             "origin": "introduced_by_change",
-            "closure": "CI event/HEAD/run と失敗出力、PRなし/一致runなし/skipを区別。"
+            "location": "両追加節：実装105行・レビュー89、97行",
+            "description": "CI event/HEADと診断、PRなしの状態が不足",
+            "impact": "正しい自動CI・未実施を判断できない",
+            "evidence": "通常初回レビューの原文（対象 d23fb97ebd919921f5250cad9d518239dd471201）。同じ担当の最終修正確認で解消済み。",
+            "required_action": "PRがある場合だけ現在SHAを取得し、run event・HEAD、失敗出力を確認。同版なしやskipを成功にしない。",
+            "original_reviewed_head": "d23fb97ebd919921f5250cad9d518239dd471201",
+            "closure_reviewed_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+            "disposition": "resolved"
           }
         ]
       }
