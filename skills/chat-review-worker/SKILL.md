@@ -50,6 +50,12 @@ specified device with a read-only call, and pin subsequent source reads and
 permitted validation to that device. Do not silently change devices or use
 normal chat as fallback when the requested connection fails.
 
+Before a permitted RDC terminal command, follow the preflight, same-resource
+completion/output collection, and uncertain-start rules in
+`chat-implementation-worker`'s Execution location section. This worker owns
+the review command. Read that procedure before starting; if it is unavailable
+or cannot be read, do not start the command. Handoff carries observations only.
+
 Invoke `work-context-manager` to verify `execution_environment`, the exact
 reviewed source, worktree ownership, and required dependencies. Recheck on
 reconnection or concurrent changes. Keep other tasks' worktrees untouched;

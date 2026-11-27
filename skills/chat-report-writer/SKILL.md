@@ -45,6 +45,13 @@ change product files, or turn a missing result into a new technical judgment.
 A failed requested connection blocks dependent evidence collection; do not
 switch to another machine or normal chat without authorization.
 
+Before every authorized RDC terminal command, including permitted evidence
+collection or Git commit and push, read and follow the preflight, same-resource
+completion/output collection, and uncertain-start rules in
+`chat-implementation-worker`'s Execution location section. If that procedure is
+unavailable or cannot be read, do not start the command. This grants no new
+permission and does not change the restrictions above.
+
 Use the GitHub connector for remote repository evidence, PR updates,
 comments, and exact-head CI. On the connected-PC route, save authorized report
 and handoff files in the pinned worktree and perform any allowed Git commit and

@@ -320,6 +320,25 @@ transport:
 - Preserve exact finding identity, origin, location, impact, evidence, required action, and reviewed HEAD.
 - Preserve required coverage dispositions, held items, unexplored areas, validation assessment, intentionally untouched areas, commands, tests, CI artifacts, implementation commits, report paths, and PR comment references.
 - Use `extensions` for runtime or future fields that are not yet represented in the typed projection.
+- Preserve observed execution state only in a namespaced extension such as
+  `codexskill.execution_operation.v1`: responsible worker, route, resource key
+  or unresolved target, known process identifiers, last observed state,
+  observation time, route-specific output cursor, next collection owner,
+  next collection action, and an approved diagnostic reference when available.
+  Record an exit code only when obtained. Distinguish `running`,
+  `input_waiting`, `start_unknown`, `disconnected`, `unknown`, `succeeded`, and
+  `failed`; `input_waiting` is nonterminal. When waiting for input, record
+  what non-secret input is needed and which authorized person or worker is
+  responsible for providing it, when known. Do not include input values that
+  contain secrets. If either fact is unknown, mark it unknown. Keep RDC
+  device/PID separate from RDMCP `session_id`/`process_id`, and use RDMCP identifiers only with the same
+  authenticated principal and its supported status/output route. Record a
+  `call_id` only when the route supports result lookup. Do not store
+  credentials, connection details, or secrets. An uncertain start remains
+  unresolved and must not be resent; partial output or disconnection is not
+  completion. Preserve older packet payloads losslessly and mark absent facts
+  unknown. Handoff conveys observations only; it grants no access or
+  permissions.
 - Do not replace structured evidence with a prose summary when the structured evidence is available.
 - Unknown facts remain unknown; do not guess.
 - CI evidence must belong to the packet's target HEAD.

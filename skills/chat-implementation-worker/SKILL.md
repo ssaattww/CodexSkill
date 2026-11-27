@@ -45,6 +45,39 @@ for local source reads, edits, dependency checks, validation, and authorized
 Git commit and push operations. Keep commit and push on the pinned PC and
 worktree; do not transfer the source tree into the chat runtime for publication.
 
+Before each RDC terminal command, call `list_sessions` on the pinned device.
+Identify a shared execution resource independently of task or operator by
+route, device, and normalized shared working root or a pre-agreed resource ID.
+Because `list_sessions` reports PIDs but not their working roots, do not infer
+resource membership from the listing. Associate an existing PID with a resource
+only from an available authoritative execution record or a known PID-to-resource
+mapping with a reliable key. If an unrecognized PID may share the concrete
+target and sharing cannot be ruled out, hold new starts for that target only
+and request the information needed to identify it; unrelated resources proceed.
+If the resource cannot be identified, hold only the concrete target that may
+share it and request the information needed to identify it; unrelated
+resources may proceed.
+
+If the same resource is active, do not start another command. Use the same
+device and PID with the supported state check and `read_process_output` to
+collect terminal state and remaining output. A session disappearing from the
+list, partial output, or a connection break does not prove completion. Resume
+collection against the same device and PID after reconnecting. Start only
+after terminal state, available exit code, and final output are collected,
+then recheck `list_sessions` immediately before starting.
+
+If the start response is lost or the PID is unknown, do not resend the
+operation. Query a `call_id` only when that RDC route officially returns it
+and supports result lookup. Keep new starts for that resource on hold until
+the uncertain operation is resolved. If a race between preflight and start
+cannot be excluded, hold new starts for that resource only; do not stop or
+alter existing processes, lock the whole device, poll continuously, or wait
+automatically without limit.
+
+RDMCP is a separate route: use its supported status/output operations with the
+same authenticated principal and the corresponding `session_id` and
+`process_id`. Do not substitute RDC device/PID identifiers for them.
+
 Pass the observations to `work-context-manager` and use its
 `execution_environment` contract before editing. Keep another task's worktree
 unchanged; create a separate worktree from the connector-confirmed target
