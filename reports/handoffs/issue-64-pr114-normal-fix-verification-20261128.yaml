@@ -1,0 +1,601 @@
+{
+  "schema_version": 3,
+  "producer": {
+    "skill": "chat-review-worker",
+    "mode": "fix_verification",
+    "generated_at": "2026-11-27T23:48:30.203Z"
+  },
+  "repository": "ssaattww/CodexSkill",
+  "issue_or_pr": "Issue #64 / Draft PR #114",
+  "task_id": "issue-64",
+  "branch": "task/issue-64-chat-node-verification",
+  "base_ref": "main",
+  "target": {
+    "current_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+    "reviewed_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+    "commit_range": "dfe07e81d6a1c209f99b908acc8109f70b38a773...14bec661e26bb0fecfdf797a92b7ca9c3208b94a"
+  },
+  "execution_environment": {
+    "kind": "runtime_local",
+    "tool": "Codex Work",
+    "machine_id": null,
+    "connection": "available",
+    "os": "Linux",
+    "shell": "bash",
+    "working_directory": null,
+    "repository": "ssaattww/CodexSkill",
+    "branch": "task/issue-64-chat-node-verification",
+    "head_sha": "unknown",
+    "source_state": "snapshot",
+    "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a",
+    "ownership": "current_task",
+    "writable_paths": [],
+    "dependencies": [],
+    "evidence": [
+      "Git 管理外の隔離スナップショット。runner の head は取得不能のため unknown。各対象の実体内容と正式技術版 Git blob の対応を別途確認。",
+      "runtime があるかではなく、既存 runner を実行し4/4合格したことで実行能力を確認。"
+    ]
+  },
+  "verification": {
+    "capability": "local_execution_available",
+    "capability_evidence": [
+      "Git 管理外の隔離スナップショット。runner の head は取得不能のため unknown。各対象の実体内容と正式技術版 Git blob の対応を別途確認。",
+      "runtime があるかではなく、既存 runner を実行し4/4合格したことで実行能力を確認。"
+    ],
+    "technical_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+    "administrative_parent": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+    "commit": {
+      "state": "committed",
+      "review_target_sha": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a"
+    },
+    "push": {
+      "state": "pushed",
+      "head_sha": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a"
+    },
+    "ci_wait": {
+      "state": "not_required",
+      "required_for": "not_required"
+    },
+    "final_publication": {
+      "sequence": "not_applicable",
+      "pr_action": "update"
+    }
+  },
+  "authoritative_requirements": [
+    {
+      "source": "issue",
+      "reference": "https://github.com/ssaattww/CodexSkill/issues/64",
+      "summary": "通常チャットのNode検証の手順を既存の実装・レビュー用スキルに追加する。"
+    },
+    {
+      "source": "repository_instruction",
+      "reference": "AGENTS.md",
+      "summary": "CodexSkill の既存構成検査と配布物を使用 / TDD 非適用。"
+    }
+  ],
+  "development_policy": {
+    "method": "CodexSkill の既存構成検査と配布物を使用 / TDD 非適用。",
+    "testing_order": "既存の検証を使い、管理差分の追加後は新しい版の根拠と区別する。",
+    "governing_source": "AGENTS.md"
+  },
+  "validation_plan": {
+    "commands": [
+      "python3 scripts/run_validation.py --output-dir <新しい一時領域>",
+      "unzip -p <統合ZIP> <各スキル本文> | cmp <候補のスキル本文> -"
+    ],
+    "required_failure_diagnostics": [
+      "対象版、実行番号、失敗ジョブ・ステップ、取得可能なログを保存する。"
+    ]
+  },
+  "blocked": [],
+  "authorized_actions": [
+    "read_repository"
+  ],
+  "write_boundary": {
+    "allowed": [
+      {
+        "path_or_operation": "正本と候補の読み取り",
+        "reason": "通常レビューの範囲"
+      }
+    ],
+    "forbidden": [
+      {
+        "path_or_operation": "次担当への権限引継ぎ、実環境変更、独立報告、マージ",
+        "reason": "この引継ぎの対象外"
+      }
+    ]
+  },
+  "scope": [
+    "通常チャットのNode検証の手順を既存の実装・レビュー用スキルに追加する。"
+  ],
+  "non_goals": [
+    "依存や権限の変更、CI配線、共通スキル、配布方法、PR112の既定経路",
+    "実プロジェクト検証の成功を主張しない"
+  ],
+  "files": {
+    "changed": [
+      {
+        "path": "skills/chat-implementation-worker/SKILL.md",
+        "purpose": "技術版の対象"
+      },
+      {
+        "path": "skills/chat-review-worker/SKILL.md",
+        "purpose": "技術版の対象"
+      },
+      {
+        "path": "design/chat-node-verification-design.md",
+        "purpose": "技術版の対象"
+      },
+      {
+        "path": "design/chat-node-verification-flow.dio.svg",
+        "purpose": "技術版の対象"
+      }
+    ],
+    "inspected": [
+      {
+        "path": "AGENTS.md",
+        "purpose": "検証方針"
+      }
+    ],
+    "intentionally_untouched": [
+      {
+        "path_or_area": "無関係な既存成果物、検証設定",
+        "reason": "対象外"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "command": "python3 scripts/run_validation.py --output-dir <新しい一時領域>",
+      "purpose": "リポジトリ既定の検証",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "unknown",
+      "evidence": "構成、単一ZIP生成、CRC、ZIP内一覧の4工程が終了値0。技術版 Git blobとの対応は補足 receipt に別記。",
+      "execution_environment": {
+        "kind": "runtime_local",
+        "tool": "Codex Work",
+        "machine_id": null,
+        "connection": "available",
+        "os": "Linux",
+        "shell": "bash",
+        "working_directory": null,
+        "repository": "ssaattww/CodexSkill",
+        "branch": "task/issue-64-chat-node-verification",
+        "head_sha": "unknown",
+        "source_state": "snapshot",
+        "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a",
+        "ownership": "current_task",
+        "writable_paths": [],
+        "dependencies": [],
+        "evidence": [
+          "Git 管理外の隔離スナップショット。runner の head は取得不能のため unknown。各対象の実体内容と正式技術版 Git blob の対応を別途確認。",
+          "runtime があるかではなく、既存 runner を実行し4/4合格したことで実行能力を確認。"
+        ]
+      },
+      "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a"
+    },
+    {
+      "command": "unzip -p <統合ZIP> <各スキル本文> | cmp <候補のスキル本文> -",
+      "purpose": "リポジトリ既定の検証",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "unknown",
+      "evidence": "統合ZIPの両 SKILL.md と候補がバイト一致。技術版 blob は補足 receipt に別記。",
+      "execution_environment": {
+        "kind": "runtime_local",
+        "tool": "Codex Work",
+        "machine_id": null,
+        "connection": "available",
+        "os": "Linux",
+        "shell": "bash",
+        "working_directory": null,
+        "repository": "ssaattww/CodexSkill",
+        "branch": "task/issue-64-chat-node-verification",
+        "head_sha": "unknown",
+        "source_state": "snapshot",
+        "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a",
+        "ownership": "current_task",
+        "writable_paths": [],
+        "dependencies": [],
+        "evidence": [
+          "Git 管理外の隔離スナップショット。runner の head は取得不能のため unknown。各対象の実体内容と正式技術版 Git blob の対応を別途確認。",
+          "runtime があるかではなく、既存 runner を実行し4/4合格したことで実行能力を確認。"
+        ]
+      },
+      "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a"
+    }
+  ],
+  "tests": [
+    {
+      "name": "既存runnerの4工程",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "unknown",
+      "evidence": "構成、単一ZIP生成、CRC、ZIP内一覧の4工程が終了値0。技術版 Git blobとの対応は補足 receipt に別記。"
+    },
+    {
+      "name": "ZIP両本文の一致",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "unknown",
+      "evidence": "統合ZIPの両 SKILL.md と候補がバイト一致。技術版 blob は補足 receipt に別記。"
+    },
+    {
+      "name": "実プロジェクトでのNode依存準備と動作",
+      "phase": "verification",
+      "result": "not_run",
+      "head_sha": "unknown",
+      "evidence": "今回の文書追記の構成・配布確認とは区別。"
+    }
+  ],
+  "ci": {
+    "required": true,
+    "workflow": "Validate and release ChatGPT worker skills",
+    "run_id": 46084393053,
+    "head_sha": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+    "conclusion": "success",
+    "artifacts": [
+      {
+        "id": 15237814184,
+        "name": "chatgpt-worker-skills-46084393053",
+        "purpose": "Run 46084393053 の技術版成果物メタデータ。PR 構成・配布証拠。"
+      },
+      {
+        "id": 15238641476,
+        "name": "pr-114-14bec661e26bb0fecfdf797a92b7ca9c3208b94a-46084386891-1",
+        "purpose": "Run 46084386891 の技術版成果物メタデータ。補足の push 診断。PR CI の代用ではない。"
+      }
+    ]
+  },
+  "implementation": {
+    "outcome": "completed",
+    "final_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+    "commits": [
+      {
+        "sha": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+        "purpose": "通常レビューの対象技術版"
+      }
+    ],
+    "addressed_findings": [
+      {
+        "id": "I64-01",
+        "reviewed_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+        "disposition": "addressed",
+        "evidence": "ZIP の項目名と展開先を事前確認し、許可外へ展開しない。"
+      },
+      {
+        "id": "I64-02",
+        "reviewed_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+        "disposition": "addressed",
+        "evidence": "観測した版、使用コマンドが実際の制約に合うかを確認し、証拠・未実施理由を残す。"
+      },
+      {
+        "id": "I64-03",
+        "reviewed_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+        "disposition": "addressed",
+        "evidence": "CI event/HEAD/run と失敗出力、PRなし/一致runなし/skipを区別。"
+      }
+    ],
+    "failure_diagnostics": [],
+    "blocked_items": [],
+    "summary": [
+      "通常チャットのNode検証の手順を既存の実装・レビュー用スキルに追加する。"
+    ]
+  },
+  "review": {
+    "mode": "fix_verification",
+    "reviewed_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+    "reviewer": {
+      "identity": "Issue #64 同一通常レビュー担当",
+      "role": "normal_reviewer",
+      "continuity": {
+        "previous_reviewer_identity": "Issue #64 同一通常レビュー担当",
+        "changed": false,
+        "reason": null
+      },
+      "independence": {
+        "implemented_change": false,
+        "implemented_review_fix": false,
+        "served_as_normal_reviewer": true,
+        "inherited_conversation": false,
+        "evidence": [
+          "同一通常担当が初回と修正確認を実施。"
+        ]
+      }
+    },
+    "verdict": "pass",
+    "required_coverage": [
+      {
+        "criterion": "requirement and design conformance",
+        "evidence": "Issue #64 と承認済み設計が求める短い検証手順。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "correctness and edge cases",
+        "evidence": "基準・候補・PRを分け、PRなしと不足を未確認にする。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "scope discipline and unrelated changes",
+        "evidence": "設計・図と両担当の検証節のみ。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "changed files and direct dependency impact",
+        "evidence": "統合ZIPの実装・レビュー各本文を単独で読める。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "API, data, configuration, workflow, and compatibility effects",
+        "evidence": "配布構成、CI、共通契約、権限を変えない。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "error handling and failure diagnostics",
+        "evidence": "未実施理由・出力保存先・CI失敗診断を保持。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "security and secret handling where applicable",
+        "evidence": "既存アクセス内、想定外の展開を許可しない。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "tests and validation adequacy",
+        "evidence": "既存runner4工程と両ZIP本文同一。実際のNodeプロジェクトの動作は未検証。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "current-HEAD CI evidence",
+        "evidence": "技術版の2自動PR run 成功、収集はpush別記。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "report, tracking, and documentation accuracy",
+        "evidence": "初回の必須3件、限定修正確認、証拠と保留を区別。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "regression and maintainability risks",
+        "evidence": "既存の経路選択・権限の規則は変えない。",
+        "disposition": "checked_no_finding"
+      }
+    ],
+    "independent_closure": {
+      "initial_independent_reviewed_head": null,
+      "closure_reviewed_heads": [],
+      "reviewer_continuity": null,
+      "closure_scope": [],
+      "completeness_matrix": []
+    },
+    "validation_assessment": [
+      {
+        "item": "requirement and design conformance",
+        "result": "supported",
+        "evidence": "Issue #64 と承認済み設計が求める短い検証手順。"
+      },
+      {
+        "item": "correctness and edge cases",
+        "result": "supported",
+        "evidence": "基準・候補・PRを分け、PRなしと不足を未確認にする。"
+      },
+      {
+        "item": "scope discipline and unrelated changes",
+        "result": "supported",
+        "evidence": "設計・図と両担当の検証節のみ。"
+      },
+      {
+        "item": "changed files and direct dependency impact",
+        "result": "supported",
+        "evidence": "統合ZIPの実装・レビュー各本文を単独で読める。"
+      },
+      {
+        "item": "API, data, configuration, workflow, and compatibility effects",
+        "result": "supported",
+        "evidence": "配布構成、CI、共通契約、権限を変えない。"
+      },
+      {
+        "item": "error handling and failure diagnostics",
+        "result": "supported",
+        "evidence": "未実施理由・出力保存先・CI失敗診断を保持。"
+      },
+      {
+        "item": "security and secret handling where applicable",
+        "result": "supported",
+        "evidence": "既存アクセス内、想定外の展開を許可しない。"
+      },
+      {
+        "item": "tests and validation adequacy",
+        "result": "supported",
+        "evidence": "既存runner4工程と両ZIP本文同一。実際のNodeプロジェクトの動作は未検証。"
+      },
+      {
+        "item": "current-HEAD CI evidence",
+        "result": "supported",
+        "evidence": "技術版の2自動PR run 成功、収集はpush別記。"
+      },
+      {
+        "item": "report, tracking, and documentation accuracy",
+        "result": "supported",
+        "evidence": "初回の必須3件、限定修正確認、証拠と保留を区別。"
+      },
+      {
+        "item": "regression and maintainability risks",
+        "result": "supported",
+        "evidence": "既存の経路選択・権限の規則は変えない。"
+      }
+    ],
+    "reserved_report_paths": [],
+    "report_attestation": {
+      "allowed": "not_applicable",
+      "reviewed_implementation_head": null,
+      "allowed_paths": [],
+      "required_first_parent": null,
+      "maximum_commits_after_reviewed_head": null,
+      "forbidden_path_classes": [],
+      "no_later_commits_required": "not_applicable",
+      "validation_status": "not_applicable",
+      "validation_evidence": []
+    },
+    "summary": [
+      "現在の必須指摘は0件。正式独立レビューは未実施。"
+    ]
+  },
+  "report": {
+    "report_type": "consolidated_report",
+    "outcome": "rendered",
+    "persistence_mode": "repository_file",
+    "paths": [
+      "reports/issue-64-pr114-normal-consolidated-20261128.md"
+    ],
+    "reviewed_head": "14bec661e26bb0fecfdf797a92b7ca9c3208b94a",
+    "attestation_head": null,
+    "pr_comments": [],
+    "summary": [
+      "通常レビューと指摘解消の記録。"
+    ]
+  },
+  "findings": [],
+  "held": [],
+  "unexplored": [],
+  "unknown": [
+    {
+      "field_or_fact": "マシン名と環境固有の作業場所",
+      "reason": "次担当の環境と同一とみなさない。"
+    },
+    {
+      "field_or_fact": "元の作業環境スキルの独立した原文",
+      "reason": "実装候補担当は読み取りのみで提案文を返したため添付なし。親側の実測を補足の観測記録として保全。"
+    }
+  ],
+  "not_applicable": [
+    {
+      "field_or_area": "正式独立レビューと報告確定",
+      "reason": "通常レビューの引継ぎ段階。"
+    }
+  ],
+  "remaining_risks": [
+    "管理差分確認と候補版の検証、正式独立レビューが残る。"
+  ],
+  "source_payloads": [
+    {
+      "source_skill": "review-worker",
+      "output_contract_version": "unknown",
+      "content_type": "text/markdown",
+      "payload": "# PR #114 通常実装レビュー結果\n\n**判定：`fail`（必須指摘3件）**\n\n実装の基本方針、変更範囲、配布物は適切です。ただし、承認済み設計の一部が両 Skill の手順に反映されていません。\n\n## 1. レビュー対象\n\n| 項目 | 確認結果 |\n|---|---|\n| PR | [#114](https://github.com/ssaattww/CodexSkill/pull/114)（Draft） |\n| 設計承認版 | `2c3ae07f9ec5cd040e255d4ca6cff11e28284423` |\n| レビュー対象技術版 | `d23fb97ebd919921f5250cad9d518239dd471201` |\n| レビュー担当 | 前回の設計レビュー担当と同一 |\n| 変更範囲 | 両 Skill に各12行の追記のみ |\n\n対象は以下の2ファイルです。\n\n- [chat-implementation-worker/SKILL.md](https://github.com/ssaattww/CodexSkill/blob/d23fb97ebd919921f5250cad9d518239dd471201/skills/chat-implementation-worker/SKILL.md#L95)\n- [chat-review-worker/SKILL.md](https://github.com/ssaattww/CodexSkill/blob/d23fb97ebd919921f5250cad9d518239dd471201/skills/chat-review-worker/SKILL.md#L87)\n\n追記部分以外は設計承認版と完全一致しています。\n\n## 2. 必須指摘\n\n| ID | 重要度 | 対象箇所 | 指摘と必須対応 |\n|---|---|---|---|\n| I64-01 | High | 実装99行目、レビュー91行目 | 設計45行目が要求する**ZIP 展開前のファイル名・展開先確認**が脱落。許可された転送手段の利用と展開後の照合だけでは、展開先の制約を保証できない。事前確認と想定外パスの展開禁止を両 Skill に明記する。 |\n| I64-02 | Medium | 実装97～103行目、レビュー89～95行目 | 設計51、69～72行目が定める package manager・version 条件の適合確認、Node/npm の版確認結果、lockfile・依存状態、未実施理由、出力保存先の記録が十分に明示されていない。両 Skill で記録項目を補完する。 |\n| I64-03 | Medium | 実装105行目、レビュー89、97行目 | CI の event 確認、run head SHA・診断内容の記録、失敗資料の具体的な調査が不足。レビュー側では PR が存在しない場合の扱いも明示されていない。設計どおり、PR 情報は存在する場合のみ取得し、matching run がない場合は未確認とする。 |\n\nいずれも新しい要求ではなく、[承認済み設計](https://github.com/ssaattww/CodexSkill/blob/2c3ae07f9ec5cd040e255d4ca6cff11e28284423/design/chat-node-verification-design.md)との対応不足です。修正は既存の追記節内で完結できます。\n\n## 3. 設計要件との照合\n\n| 要件 | 結果 |\n|---|---|\n| 基準 SHA・検証候補・PR SHA の三者識別 | 適合。PR 未作成の場合は I64-03 で補完 |\n| 既存アクセス権限と未認証代替の禁止 | 適合 |\n| ソース・取得済み資料・新規出力の三領域分離 | 適合 |\n| コネクタ参照と実体パスの区別 | 適合 |\n| 取得資料の SHA・manifest・hash 照合 | 適合 |\n| 展開前の確認 | 要修正：I64-01 |\n| 依存・キャッシュの適合確認 | 要補完：I64-02 |\n| focused test → build/lint → 必要な広い試験 | 適合 |\n| 実行コマンド・終了値・結果の記録 | 要補完：I64-02 |\n| ローカル検証と正式 CI の分離 | 適合 |\n| CI 工程の skip・cancel・未実施の扱い | 適合 |\n| CI 診断・実行識別の記録 | 要補完：I64-03 |\n| 統合 ZIP 単体での自己完結性 | 適合 |\n| #113 の経路選択や既存権限の維持 | 適合 |\n| CI workflow、builder、core Skill の変更禁止 | 適合 |\n\n## 4. 検証証跡\n\n既存のローカル候補と検証成果物を読み取り専用で照合しました。\n\n- 既存 runner：**4/4 成功**、全工程終了値 `0`。\n- 統合 ZIP：CRC 異常なし、全8ファイルがローカル候補とバイト一致。\n- runner の `source.json` に記録された267ファイル：内容不一致なし。\n- 設計・実装の変更4ファイル：指定技術版の Git blob SHA と一致。\n- その他の候補ファイル：base の Git tree と内容一致。\n\nローカル候補は Git 管理ディレクトリではなく、runner 自身による HEAD 取得は失敗しています。そのため、ファイル manifest と上述の blob 照合により対象技術版との対応を確認しました。\n\n**これらは構成・配布物の検証成功であり、Node.js プロジェクトの動作検証成功ではありません。**\n\n## 5. 保留事項\n\n- 正本 CI の指定技術版との一致および結果：監督側の確認対象とし、こちらでは照合・待機していません。\n- 実際の Node.js プロジェクトでの依存導入、build、lint、テスト：未実施。\n- PR 本文はまだ「設計の枠だけ」と記載されているため、最終的な報告・PR 更新時に実態へ合わせる必要があります。\n\n## 6. 次の判断\n\n必須3件を両 Skill の追加節に反映し、既存 runner と統合 ZIP の一致を再確認したうえで、同じ通常レビュー担当による修正確認へ進めます。\n\nGitHub 書き込み、ソース変更、手動 CI、実機操作、独立最終レビューは行っていません。"
+    },
+    {
+      "source_skill": "review-worker",
+      "output_contract_version": "unknown",
+      "content_type": "text/markdown",
+      "payload": "## PR #114 通常修正確認\n\n**判定：`fail`（必須残数1件／3件中2件解消）**\n\n対象 HEAD：`355830241a1ef0d561e96428d96f6b15604341dc`\n\n| 指摘 | 判定 | 確認内容 |\n|---|---|---|\n| I64-01（High） | 解消 | ZIP 展開前の確認と許可領域外への展開禁止 |\n| I64-02（Medium） | 一部残存 | 版・依存状態・未実施理由・出力保存先の記録は補正済み |\n| I64-03（Medium） | 解消 | CI event・HEAD・失敗診断、PR 未作成・同版 run 不在の扱い |\n\n**I64-02 の残存点：** package manager と version 条件を記録するだけでなく、実際の版・選択コマンドがその条件に適合するか確認する旨を、両 Skill に明記してください。\n\n追加節以外の本文は変更されていないことを確認済みです。runner および ZIP の検証結果は提示済みの証跡として扱い、再実行していません。\n\n技術全体の再レビュー、GitHub 書き込み、手動 CI 起動は行っていません。"
+    },
+    {
+      "source_skill": "review-worker",
+      "output_contract_version": "unknown",
+      "content_type": "text/markdown",
+      "payload": "**判定：`pass`（必須残数0件）**\n\n対象 HEAD：`14bec661e26bb0fecfdf797a92b7ca9c3208b94a`\n\nI64-02 の残存指摘は両 Skill で解消されました。I64-01〜03 は全件解消済みです。通常修正確認は合格とします。"
+    },
+    {
+      "source_skill": "work-context-manager",
+      "output_contract_version": "unknown",
+      "content_type": "application/json",
+      "payload": {
+        "kind": "supplemental_work_context_receipt",
+        "execution_environment": {
+          "kind": "runtime_local",
+          "tool": "Codex Work",
+          "machine_id": null,
+          "connection": "available",
+          "os": "Linux",
+          "shell": "bash",
+          "working_directory": null,
+          "repository": "ssaattww/CodexSkill",
+          "branch": "task/issue-64-chat-node-verification",
+          "head_sha": "unknown",
+          "source_state": "snapshot",
+          "source_fingerprint": "7586fe5674f1d7163412a9a62e33c1d122a849757ee75d0abf1c8cc52133ca1a",
+          "ownership": "current_task",
+          "writable_paths": [],
+          "dependencies": [],
+          "evidence": [
+            "Git 管理外の隔離スナップショット。runner の head は取得不能のため unknown。各対象の実体内容と正式技術版 Git blob の対応を別途確認。",
+            "runtime があるかではなく、既存 runner を実行し4/4合格したことで実行能力を確認。"
+          ]
+        },
+        "wrapper_correspondence": [
+          {
+            "path": "skills/chat-implementation-worker/SKILL.md",
+            "sha256": "ba62c3a64e603f28af0b5c1a2e31dd8b8d6927ee2d016e27fb30d6327a82984e",
+            "technical_blob": "ca2c6ebb4457c8b1840b01fac11f192dc98ebfb2"
+          },
+          {
+            "path": "skills/chat-review-worker/SKILL.md",
+            "sha256": "4a27538c95ff53dbc3c2d0805e132dec52848776a1c92633e7a5375faf7f6390",
+            "technical_blob": "e1cb9eb143f4fbe4ead6e6d395b294f026f36808"
+          }
+        ],
+        "raw_output": "runner head=null / git rev-parse failed; 267 raw fingerprints; repository/bundle/zip-integrity/zip-contents pass (exit=0); both ZIP entries cmp pass."
+      }
+    }
+  ],
+  "extensions": [
+    {
+      "namespace": "normal_review.closed_findings",
+      "payload": {
+        "closed_findings": [
+          {
+            "id": "I64-01",
+            "severity": "high",
+            "origin": "introduced_by_change",
+            "closure": "ZIP の項目名と展開先を事前確認し、許可外へ展開しない。"
+          },
+          {
+            "id": "I64-02",
+            "severity": "medium",
+            "origin": "introduced_by_change",
+            "closure": "観測した版、使用コマンドが実際の制約に合うかを確認し、証拠・未実施理由を残す。"
+          },
+          {
+            "id": "I64-03",
+            "severity": "medium",
+            "origin": "introduced_by_change",
+            "closure": "CI event/HEAD/run と失敗出力、PRなし/一致runなし/skipを区別。"
+          }
+        ]
+      }
+    },
+    {
+      "namespace": "technical_ci.runs",
+      "payload": {
+        "validation": 46084393053,
+        "pr_collection_skipped": 46084393070,
+        "push_collection_actual": 46084386891
+      }
+    }
+  ],
+  "next_action": {
+    "type": "external_owner",
+    "target_skill": "development-orchestrator",
+    "mode": "pre_freeze_readiness",
+    "summary": "管理差分を確認し、正式な独立最終レビューに備える。",
+    "instructions": [
+      "通常の指摘解消と技術版の検証を再利用する。",
+      "管理記録の版に対する検証は技術版と区別する。",
+      "正式な報告経路を予約してから独立レビューに引き継ぐ。"
+    ],
+    "required_attachments_or_references": [
+      "reports/issue-64-pr114-normal-consolidated-20261128.md"
+    ],
+    "requested_authorized_actions": [
+      "read_repository"
+    ]
+  },
+  "transport": {
+    "method": "repository_file",
+    "packet_path": "reports/handoffs/issue-64-pr114-normal-fix-verification-20261128.yaml",
+    "packet_url": null,
+    "transport_note": "通常レビューの原文を保持。実行権限は引き継がない。"
+  }
+}

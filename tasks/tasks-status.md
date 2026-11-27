@@ -468,3 +468,8 @@
     - `git diff --check` 成功
     - Markdown lintはrepo配線不在のため`unsupported`として記録
     - parentと同じ`gpt-5.6-sol / high` reviewerの再レビューで指摘なし
+
+## Issue #64 / Draft PR #114：Node.js 検証手順
+
+- 技術版 `14bec661e26bb0fecfdf797a92b7ca9c3208b94a` の通常修正確認は必須残数0。統合 ZIP の既存工程4/4、両本文一致。記録と確認後は正式独立レビューへ。
+- 通常報告：`reports/issue-64-pr114-normal-consolidated-20261128.md`。
