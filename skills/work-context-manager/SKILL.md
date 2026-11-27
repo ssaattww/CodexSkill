@@ -97,6 +97,20 @@ Keep execution location separate from `verification_capability`. The caller
 selects an authorized tool and requested location; this core Skill resolves
 the evidence, not a vendor-specific connection or permission policy.
 
+- If the caller has already selected RDC for Windows-specific work, use
+  `CodexProjects/<repository>` under the connected user's home for new base
+  checkouts. Keep existing locations in place. Assign a dedicated worktree to
+  each writing worker and identify it by connection, canonical repository,
+  absolute paths, Git registration, assigned worker, and target HEAD.
+- Report a worktree eligible for cleanup only if the caller has permission,
+  no downstream worker needs it, its final saved HEAD matches the intended
+  remote branch, required evidence is saved outside the worktree, and no
+  uncommitted or untracked changes remain. Recheck its identity and use
+  immediately before cleanup. Retain it if a condition is unknown, a command
+  is running or unconfirmed, or concurrent use cannot be excluded. Do not
+  update the remote or force cleanup to meet a condition. This check does not
+  choose RDC, grant permissions, move existing checkouts, or replace
+  same-resource command checks.
 - Record the actual machine, shell, absolute working directory, repository,
   branch, HEAD, source state, ownership, and allowed writes before execution.
 - Compare the observed source with the target resolved from authoritative
