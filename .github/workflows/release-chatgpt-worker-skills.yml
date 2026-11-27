@@ -221,8 +221,15 @@ jobs:
             fi
           } > "${notes_file}"
 
+          versioned_asset="release-dist/chatgpt-worker-skills-${TAG}.zip"
+          cp -- release-dist/chatgpt-worker-skills.zip "${versioned_asset}"
+          original_sha=$(sha256sum release-dist/chatgpt-worker-skills.zip | cut -d ' ' -f 1)
+          versioned_sha=$(sha256sum "${versioned_asset}" | cut -d ' ' -f 1)
+          test "${original_sha}" = "${versioned_sha}"
+
           gh release create "${TAG}" \
             release-dist/chatgpt-worker-skills.zip \
+            "${versioned_asset}" \
             --target "${GITHUB_SHA}" \
             --title "${TAG}" \
             --notes-file "${notes_file}" \
@@ -261,3 +268,19 @@ jobs:
             "${TAG}" \
             release-dist/chatgpt-worker-skills.zip \
             --clobber
+
+      - name: Attach versioned ZIP alias when tag is safe
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "${TAG}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+            echo "::warning::Tag is outside the versioned asset allowlist; keeping the fixed-name asset only."
+            exit 0
+          fi
+
+          versioned_asset="release-dist/chatgpt-worker-skills-${TAG}.zip"
+          cp -- release-dist/chatgpt-worker-skills.zip "${versioned_asset}"
+          original_sha=$(sha256sum release-dist/chatgpt-worker-skills.zip | cut -d ' ' -f 1)
+          versioned_sha=$(sha256sum "${versioned_asset}" | cut -d ' ' -f 1)
+          test "${original_sha}" = "${versioned_sha}"
+          gh release upload "${TAG}" "${versioned_asset}" --clobber
