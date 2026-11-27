@@ -21,7 +21,7 @@
     "machine_id": null,
     "connection": "available",
     "os": "Linux",
-    "shell": null,
+    "shell": "bash",
     "working_directory": null,
     "repository": "ssaattww/CodexSkill",
     "branch": "task/issue-75-current-route-policy",
@@ -32,7 +32,7 @@
     "writable_paths": [],
     "dependencies": [],
     "evidence": [
-      "正本の対象版と対象の Git blob を確認。マシン名・環境固有パス・権限を引き継がない。"
+      "通常チャット側の隔離候補で構成検査を実行できた。対象3ファイルは個々に Git blob と SHA-256 を確認した。保存時点の記録で、以前の実行環境原文を復元したものではない。"
     ]
   },
   "verification": {
@@ -139,13 +139,61 @@
   },
   "commands": [
     {
-      "command": "python3 scripts/verify_skill_repository.py",
-      "purpose": "リポジトリ既定の検証",
-      "exit_code": "unknown",
+      "command": "sha256sum <対象3ファイル>; git hash-object <対象3ファイル>",
+      "purpose": "通常担当が確認した候補と正式版の Git blob 同一性を照合する。",
+      "exit_code": 0,
       "result": "passed",
       "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
-      "evidence": "技術版のGitHub自動確認: https://github.com/ssaattww/CodexSkill/actions/runs/46080811595、https://github.com/ssaattww/CodexSkill/actions/runs/46080811679",
-      "execution_environment": null,
+      "evidence": "skills/chat-implementation-worker/SKILL.md: 53e3709df799eb942b5ddffe9a85d86a8d6121b8f3f51f3c9e9bf56401a3b5d2 / Git blob 4454ecc15ee8b1e090dcaac82783caaba85f3ea0。skills/chat-review-worker/SKILL.md: f08500af90df66eec971a53402315b5bbb6dd9b1cb8658722b63dc059a46cf88 / Git blob 411cf316649e570edafc5a5811a8e6eedbfff7ed。skills/chat-report-writer/SKILL.md: bc9a75c4cdb66fc360729d50e193ea2e0d238a36b549efccd0d939d6a4e424a8 / Git blob 4c3126e0a7032fd64c5380410a5fcac3474cc0f9",
+      "execution_environment": {
+        "kind": "runtime_local",
+        "tool": "Codex Work",
+        "machine_id": null,
+        "connection": "available",
+        "os": "Linux",
+        "shell": "bash",
+        "working_directory": null,
+        "repository": "ssaattww/CodexSkill",
+        "branch": "task/issue-75-current-route-policy",
+        "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+        "source_state": "snapshot",
+        "source_fingerprint": "3e7b86f76ce9ab4da9a3d488db1f50cf484e5306",
+        "ownership": "current_task",
+        "writable_paths": [],
+        "dependencies": [],
+        "evidence": [
+          "通常チャット側の隔離候補で構成検査を実行できた。対象3ファイルは個々に Git blob と SHA-256 を確認した。保存時点の記録で、以前の実行環境原文を復元したものではない。"
+        ]
+      },
+      "source_fingerprint": "3e7b86f76ce9ab4da9a3d488db1f50cf484e5306"
+    },
+    {
+      "command": "python3 scripts/verify_skill_repository.py",
+      "purpose": "隔離候補で構成・参照を検査する。",
+      "exit_code": 0,
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "正常終了。スキル名、依存、相対リンク、撤去済み経路、シンボリックリンク不存在、設計同期が成功。自動CIとは別。",
+      "execution_environment": {
+        "kind": "runtime_local",
+        "tool": "Codex Work",
+        "machine_id": null,
+        "connection": "available",
+        "os": "Linux",
+        "shell": "bash",
+        "working_directory": null,
+        "repository": "ssaattww/CodexSkill",
+        "branch": "task/issue-75-current-route-policy",
+        "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+        "source_state": "snapshot",
+        "source_fingerprint": "3e7b86f76ce9ab4da9a3d488db1f50cf484e5306",
+        "ownership": "current_task",
+        "writable_paths": [],
+        "dependencies": [],
+        "evidence": [
+          "通常チャット側の隔離候補で構成検査を実行できた。対象3ファイルは個々に Git blob と SHA-256 を確認した。保存時点の記録で、以前の実行環境原文を復元したものではない。"
+        ]
+      },
       "source_fingerprint": "3e7b86f76ce9ab4da9a3d488db1f50cf484e5306"
     }
   ],
@@ -234,7 +282,18 @@
     "run_id": 46080811595,
     "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
     "conclusion": "success",
-    "artifacts": []
+    "artifacts": [
+      {
+        "id": 15236553060,
+        "name": "chatgpt-worker-skills-46080811595",
+        "purpose": "技術版の同一 SHA、自動run 46080811595 の成果物メタデータ。内容の展開は未実施。"
+      },
+      {
+        "id": 15236822544,
+        "name": "pr-112-d8021a7880fcb428e30e2db4ec4e7ccf71a96808-46080806476-1",
+        "purpose": "技術版の同一 SHA、自動run 46080806476 の成果物メタデータ。内容の展開は未実施。"
+      }
+    ]
   },
   "implementation": {
     "outcome": "completed",
@@ -339,11 +398,23 @@
       }
     ],
     "independent_closure": {
-      "initial_independent_reviewed_head": null,
+      "initial_independent_reviewed_head": "a3bfadc1632aabd538451bc72c450002d301e02b",
       "closure_reviewed_heads": [],
-      "reviewer_continuity": null,
-      "closure_scope": [],
-      "completeness_matrix": []
+      "reviewer_continuity": "初回の独立担当だけに解消確認を依頼する。",
+      "closure_scope": [
+        {
+          "finding_or_ci_delta": "IFR-112-01 の A/B/C と管理差分のCIのみ"
+        }
+      ],
+      "completeness_matrix": [
+        {
+          "finding_id": "IFR-112-01",
+          "required_action": "A: 実行環境の原文/未取得、B: 候補と正本、C: CI成果物/スキップを区別する。",
+          "production_path": "通常引継ぎ1ファイルのみ。手順を実装する3ファイルは不変。",
+          "actual_composition_fixture": "対象3ファイルの候補SHA256と正本blobの照合、既存検査の隔離再実行、同一技術版runメタデータ。",
+          "focused_evidence": "このパケットの source_payloads、commands、ci.artifacts、および validation.technical_ci_runs。未取得の当時の原文は unknown に明記。"
+        }
+      ]
     },
     "validation_assessment": [
       {
@@ -402,20 +473,36 @@
         "evidence": "役割境界と既存のRDC選択時の手続は維持。適用優先順のみを明確化。"
       }
     ],
-    "reserved_report_paths": [],
+    "reserved_report_paths": [
+      "reports/issue-113-pr112-independent-final-review-20261128.md"
+    ],
     "report_attestation": {
-      "allowed": "not_applicable",
+      "allowed": false,
       "reviewed_implementation_head": null,
-      "allowed_paths": [],
+      "allowed_paths": [
+        "reports/issue-113-pr112-independent-final-review-20261128.md"
+      ],
       "required_first_parent": null,
-      "maximum_commits_after_reviewed_head": null,
-      "forbidden_path_classes": [],
-      "no_later_commits_required": "not_applicable",
-      "validation_status": "not_applicable",
-      "validation_evidence": []
+      "maximum_commits_after_reviewed_head": 1,
+      "forbidden_path_classes": [
+        "executable",
+        "skill",
+        "design",
+        "workflow",
+        "configuration",
+        "tracking",
+        "handoff",
+        "product"
+      ],
+      "no_later_commits_required": true,
+      "validation_status": "pending",
+      "validation_evidence": [
+        "既存予約 codexskill-113-pr112-final-20261128-v1 を保持。独立解消前の最終報告コミットは禁止。"
+      ]
     },
     "summary": [
-      "現在の必須指摘は0件。正式独立レビューは未実施。"
+      "現在の必須指摘は0件。正式独立レビューは未実施。",
+      "通常判定原文は候補に対するもの。正本との対応は別に照合した3ファイルの同一 blob および SHA-256 で確認。"
     ]
   },
   "report": {
@@ -439,6 +526,10 @@
     {
       "field_or_fact": "マシン名と環境固有の作業場所",
       "reason": "次担当の環境と同一とみなさない。"
+    },
+    {
+      "field_or_fact": "元担当時点の work-context-manager の独立した原文、実行環境の詳細",
+      "reason": "作業担当と通常担当の回収結果には専用の原文が添付されていない。復元・推定せず、今回再現した確認の原文を追加する。"
     }
   ],
   "not_applicable": [
@@ -466,6 +557,62 @@
       "output_contract_version": "unknown",
       "content_type": "text/markdown",
       "payload": "## NR-112-01 修正確認結果\n\n**候補内容の判定：`pass` — 必須指摘残数0件**\n\n- **指摘ID：** NR-112-01\n- **重大度：** Major（前回から変更なし）\n- **状態：** 解消\n\n### 修正位置\n\n| ファイル | 前回指摘位置 | 修正箇所 |\n|---|---:|---:|\n| `chat-implementation-worker/SKILL.md` | 35–39行 | 40–42行 |\n| `chat-review-worker/SKILL.md` | 45–48行 | 49–51行 |\n| `chat-report-writer/SKILL.md` | 33–36行 | 37–39行 |\n\n### 閉鎖根拠となる原文\n\n3ファイルすべてに次の記述が追加されていることを確認しました。\n\n> A cloud choice selects the normal-chat execution route, not a connected PC.  \n> Use `work-context-manager` to determine the actual verification capability;  \n> choosing a route does not grant permissions or select remote-CI-only verification.\n\nCloudと通常チャット経路の対応が明確になり、経路選択・検証能力・操作権限も分離されています。前回指摘の必須対応をすべて満たしています。\n\n### 検証証拠\n\n- 候補3ファイルのSHA256は提示値とすべて完全一致。\n- 公開親 `90f8670ad02c8e64454cf3664d6809141d7c8750` のファイル内容との差分は、上記追記と報告スキルの改行位置の変更のみ。\n- 既存構造検査は成功との提供証拠を採用。再実行なし。\n- PR #112の終了対象は `Closes #113` のみであり、親 #75はOpenのままと確認。\n\n**注意：** 判定はSHA256で特定した候補内容に対するものです。公開PRのHEADはまだ前回レビュー時のSHAであり、修正後の正式コミットHEADに対する判定ではありません。\n\nGitHubへの書込み、実機操作、独立レビュー、手動CI起動は行っていません。"
+    },
+    {
+      "source_skill": "work-context-manager",
+      "output_contract_version": "unknown",
+      "content_type": "application/json",
+      "payload": {
+        "kind": "supplemental_work_context_receipt",
+        "observed_at": "2026-11-27T23:24:53.845Z",
+        "execution_environment": {
+          "kind": "runtime_local",
+          "tool": "Codex Work",
+          "machine_id": null,
+          "connection": "available",
+          "os": "Linux",
+          "shell": "bash",
+          "working_directory": null,
+          "repository": "ssaattww/CodexSkill",
+          "branch": "task/issue-75-current-route-policy",
+          "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+          "source_state": "snapshot",
+          "source_fingerprint": "3e7b86f76ce9ab4da9a3d488db1f50cf484e5306",
+          "ownership": "current_task",
+          "writable_paths": [],
+          "dependencies": [],
+          "evidence": [
+            "通常チャット側の隔離候補で構成検査を実行できた。対象3ファイルは個々に Git blob と SHA-256 を確認した。保存時点の記録で、以前の実行環境原文を復元したものではない。"
+          ]
+        },
+        "capability": "local_execution_available",
+        "capability_evidence": "隔離候補の対象ファイルを読み、既存の検査を実行した。",
+        "source_correspondence": [
+          {
+            "path": "skills/chat-implementation-worker/SKILL.md",
+            "sha256": "53e3709df799eb942b5ddffe9a85d86a8d6121b8f3f51f3c9e9bf56401a3b5d2",
+            "local_git_blob": "4454ecc15ee8b1e090dcaac82783caaba85f3ea0",
+            "official_git_blob": "4454ecc15ee8b1e090dcaac82783caaba85f3ea0"
+          },
+          {
+            "path": "skills/chat-review-worker/SKILL.md",
+            "sha256": "f08500af90df66eec971a53402315b5bbb6dd9b1cb8658722b63dc059a46cf88",
+            "local_git_blob": "411cf316649e570edafc5a5811a8e6eedbfff7ed",
+            "official_git_blob": "411cf316649e570edafc5a5811a8e6eedbfff7ed"
+          },
+          {
+            "path": "skills/chat-report-writer/SKILL.md",
+            "sha256": "bc9a75c4cdb66fc360729d50e193ea2e0d238a36b549efccd0d939d6a4e424a8",
+            "local_git_blob": "4c3126e0a7032fd64c5380410a5fcac3474cc0f9",
+            "official_git_blob": "4c3126e0a7032fd64c5380410a5fcac3474cc0f9"
+          }
+        ],
+        "limits": [
+          "通常担当による判定対象は発行当時の候補内容であり、正式 SHA の当時の再レビューではない。",
+          "今回の照合証拠が候補と正本の対応を確定する。",
+          "確認できない元の環境情報は unknown。"
+        ]
+      }
     }
   ],
   "extensions": [
@@ -481,17 +628,36 @@
           }
         ]
       }
+    },
+    {
+      "namespace": "validation.technical_ci_runs",
+      "payload": {
+        "pull_request_validation": {
+          "id": 46080811595,
+          "evidence": "構成・配布成功",
+          "artifact": 15236553060
+        },
+        "pull_request_collection": {
+          "id": 46080811679,
+          "evidence": "成功終了、重複防止により収集スキップ",
+          "artifacts": []
+        },
+        "push_collection": {
+          "id": 46080806476,
+          "evidence": "同一技術版の実際の収集、PRの検証は代用しない",
+          "artifact": 15236822544
+        }
+      }
     }
   ],
   "next_action": {
     "type": "external_owner",
     "target_skill": "development-orchestrator",
-    "mode": "pre_freeze_readiness",
+    "mode": "normal_fix_then_independent_closure",
     "summary": "管理差分を確認し、正式な独立最終レビューに備える。",
     "instructions": [
-      "通常の指摘解消と技術版の検証を再利用する。",
-      "管理記録の版に対する検証は技術版と区別する。",
-      "正式な報告経路を予約してから独立レビューに引き継ぐ。"
+      "この記録の通常修正確認と、最新公開版の一致する自動CIを確認。",
+      "同じ独立担当で IFR-112-01 と CI 差分に限って解消確認。"
     ],
     "required_attachments_or_references": [
       "reports/issue-113-pr112-normal-consolidated-20261128.md"
