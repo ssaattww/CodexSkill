@@ -92,6 +92,18 @@ route from ChatGPT alone.
 Commit, push, and CI wait are separate states. Do not put CI-wait semantics in
 `implementation-worker`.
 
+### Node.js verification in normal chat
+
+When local execution is authorized and actually available, check `node --version` and `npm --version`; do not infer that either is usable from the runtime name. Record three identities separately: the source baseline commit SHA, the actual verification candidate (including a manifest or content fingerprint for dirty or reconstructed files), and, when a PR exists, its current head SHA. Use the GitHub connector within its existing permissions to obtain source and relevant CI artifacts. Do not substitute unauthenticated `git clone`, direct REST calls, or other credentials for an inaccessible private repository.
+
+Keep repository source, retrieved CI diagnostics or attachments, and newly generated validation output in three separate temporary areas. Record connector references separately from the local paths materialized for commands. Transfer and extract files only through existing authorized means; verify their recorded SHA, manifest, or hashes before use. Missing material or any identity mismatch leaves the affected validation unconfirmed; never mix files from different candidates.
+
+Inspect `package.json`, the applicable lockfile, existing `node_modules`, available cache, and declared scripts. Verify existing dependencies against the lockfile. If installation is authorized, use the project's approved lockfile-preserving command, for example `npm ci`, in an isolated working area. If Node.js, npm, required dependencies, network access, or permission is unavailable, record affected checks as not run or blocked. Do not install globally or change authentication.
+
+Follow the project’s declared commands. A typical order is focused tests for the changed area, relevant build and lint scripts, then broader tests when required. Treat these as examples only; do not assume a script exists. Record each command, exit code, outcome, environment, candidate identity, and available stdout/stderr and test results.
+
+Keep local results separate from formal CI. For CI, record the run ID and compare its head SHA with the PR’s current head; inspect the relevant job and step results and diagnostics. A matching SHA alone is insufficient: a required check that was skipped, cancelled, missing, or not run is not a success. Missing or inaccessible diagnostics remain unconfirmed.
+
 ## Modes
 
 - `initial implementation`

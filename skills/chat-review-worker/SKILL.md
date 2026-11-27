@@ -84,6 +84,18 @@ and handoff. Connection success alone does not satisfy a validation gate.
    validation, report, tracking, and a review-target commit, reuse the same
    normal review chat when available. Do not require local-route CI waiting.
 
+### Node.js verification in normal chat
+
+For authorized local checks, first confirm execution capability with `node --version` and `npm --version`; do not infer availability from the runtime name. Identify the source baseline SHA, the actual reviewed candidate with a manifest or content fingerprint for dirty or reconstructed files, and the PR’s current head SHA separately. Use the GitHub connector within its existing permissions for source and CI evidence. Do not replace inaccessible private-repository access with unauthenticated `git clone`, direct REST calls, or other credentials.
+
+Keep repository source, retrieved CI diagnostics or attachments, and new validation output in separate temporary areas. Distinguish connector references from local paths created for commands. Use existing authorized transfer and extraction methods, then verify recorded SHA, manifest, or hashes. Missing material or mismatched identity means the affected evidence is unconfirmed; do not combine files from different candidates or modify the reviewed source.
+
+Inspect `package.json`, the applicable lockfile, existing `node_modules`, available cache, and declared scripts. Use dependencies only when they match the lockfile. If permitted, prepare them in an isolated area with the project's approved lockfile-preserving command (for example, `npm ci`). If runtime, npm, dependencies, network access, or permission is unavailable, record affected checks as not run or blocked.
+
+Follow the project’s commands, typically focused tests for the reviewed change, relevant build and lint scripts, then broader tests if required. Examples are not guarantees that scripts exist. Record commands, exit codes, outcomes, environment, candidate identity, and available stdout/stderr and test results.
+
+Assess local validation and formal CI as separate evidence. Record the CI run ID, compare its head SHA with the PR’s current head, and inspect relevant jobs and steps. A skipped, cancelled, missing, or unrun required step is not a pass, even on a matching SHA. Missing or inaccessible diagnostics remain unconfirmed.
+
 ## Independent final review flow
 
 Before starting the one fresh independent-final-review chat:
