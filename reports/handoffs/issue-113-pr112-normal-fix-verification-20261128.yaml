@@ -1,0 +1,507 @@
+{
+  "schema_version": 3,
+  "producer": {
+    "skill": "chat-review-worker",
+    "mode": "fix_verification",
+    "generated_at": "2026-11-27T23:12:54.731Z"
+  },
+  "repository": "ssaattww/CodexSkill",
+  "issue_or_pr": "Issue #113 / Draft PR #112",
+  "task_id": "issue-113",
+  "branch": "task/issue-75-current-route-policy",
+  "base_ref": "main",
+  "target": {
+    "current_head": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+    "reviewed_head": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+    "commit_range": "dfe07e81d6a1c209f99b908acc8109f70b38a773...d8021a7880fcb428e30e2db4ec4e7ccf71a96808"
+  },
+  "execution_environment": {
+    "kind": "runtime_local",
+    "tool": "Codex Work",
+    "machine_id": null,
+    "connection": "available",
+    "os": "Linux",
+    "shell": null,
+    "working_directory": null,
+    "repository": "ssaattww/CodexSkill",
+    "branch": "task/issue-75-current-route-policy",
+    "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+    "source_state": "snapshot",
+    "source_fingerprint": "3e7b86f76ce9ab4da9a3d488db1f50cf484e5306",
+    "ownership": "current_task",
+    "writable_paths": [],
+    "dependencies": [],
+    "evidence": [
+      "正本の対象版と対象の Git blob を確認。マシン名・環境固有パス・権限を引き継がない。"
+    ]
+  },
+  "verification": {
+    "capability": "local",
+    "capability_evidence": [
+      "技術版のGitHub自動確認: https://github.com/ssaattww/CodexSkill/actions/runs/46080811595、https://github.com/ssaattww/CodexSkill/actions/runs/46080811679"
+    ],
+    "technical_head": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+    "administrative_parent": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+    "commit": {
+      "state": "committed",
+      "review_target_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808"
+    },
+    "push": {
+      "state": "pushed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808"
+    },
+    "ci_wait": {
+      "state": "not_applicable",
+      "required_for": "route_verification"
+    },
+    "final_publication": {
+      "sequence": "not_applicable",
+      "pr_action": "update"
+    }
+  },
+  "authoritative_requirements": [
+    {
+      "source": "issue",
+      "reference": "https://github.com/ssaattww/CodexSkill/issues/113",
+      "summary": "3つの担当スキルの既存経路解決に、適用される本人の継続的なCloud/RDC指示と例外を含める。"
+    },
+    {
+      "source": "repository_instruction",
+      "reference": "AGENTS.md",
+      "summary": "既存のスキル構成と文書検査を使用。TDDはこの手順文書変更に非適用。"
+    }
+  ],
+  "development_policy": {
+    "method": "既存のスキル構成と文書検査を使用。TDDはこの手順文書変更に非適用。",
+    "testing_order": "既存の検証を使い、管理差分の追加後は新しい版の根拠と区別する。",
+    "governing_source": "AGENTS.md"
+  },
+  "validation_plan": {
+    "commands": [
+      "python3 scripts/verify_skill_repository.py"
+    ],
+    "required_failure_diagnostics": [
+      "対象版、実行番号、失敗ジョブ・ステップ、取得可能なログを保存する。"
+    ]
+  },
+  "blocked": [],
+  "authorized_actions": [
+    "read_repository"
+  ],
+  "write_boundary": {
+    "allowed": [
+      {
+        "path_or_operation": "正本と候補の読み取り",
+        "reason": "通常レビューの範囲"
+      }
+    ],
+    "forbidden": [
+      {
+        "path_or_operation": "次担当への権限引継ぎ、実環境変更、独立報告、マージ",
+        "reason": "この引継ぎの対象外"
+      }
+    ]
+  },
+  "scope": [
+    "3つの担当スキルの既存経路解決に、適用される本人の継続的なCloud/RDC指示と例外を含める。"
+  ],
+  "non_goals": [
+    "#75 の旧包括要件・親のクローズ、#111、共有モジュール",
+    "既定経路、端末、作業場所、認証、権限の変更"
+  ],
+  "files": {
+    "changed": [
+      {
+        "path": "skills/chat-implementation-worker/SKILL.md",
+        "purpose": "技術版の対象"
+      },
+      {
+        "path": "skills/chat-review-worker/SKILL.md",
+        "purpose": "技術版の対象"
+      },
+      {
+        "path": "skills/chat-report-worker/SKILL.md",
+        "purpose": "技術版の対象"
+      }
+    ],
+    "inspected": [
+      {
+        "path": "AGENTS.md",
+        "purpose": "検証方針"
+      }
+    ],
+    "intentionally_untouched": [
+      {
+        "path_or_area": "無関係な既存成果物、検証設定",
+        "reason": "対象外"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "command": "python3 scripts/verify_skill_repository.py",
+      "purpose": "リポジトリ既定の検証",
+      "exit_code": "unknown",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "技術版のGitHub自動確認: https://github.com/ssaattww/CodexSkill/actions/runs/46080811595、https://github.com/ssaattww/CodexSkill/actions/runs/46080811679",
+      "execution_environment": null,
+      "source_fingerprint": "3e7b86f76ce9ab4da9a3d488db1f50cf484e5306"
+    }
+  ],
+  "tests": [
+    {
+      "name": "requirement and design conformance",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "本人の適用される個別指示または継続方針→プロジェクト→既定。例外を含む。"
+    },
+    {
+      "name": "correctness and edge cases",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "Cloud は通常チャット経路。Cloud または経路の指定から CI 専用・操作許可を推定しない。"
+    },
+    {
+      "name": "scope discipline and unrelated changes",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "対象は既存の実装・レビュー・報告3 SKILL.md。#75旧経路・#111は対象外。"
+    },
+    {
+      "name": "changed files and direct dependency impact",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "work-context-manager が検証能力を独立して判定。共通モジュール非変更。"
+    },
+    {
+      "name": "API, data, configuration, workflow, and compatibility effects",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "公開API、設定形式、CI配線の変更なし。RDC 既定維持。"
+    },
+    {
+      "name": "error handling and failure diagnostics",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "RDC端末・作業場所は固定。接続失敗時の無断変更なし。"
+    },
+    {
+      "name": "security and secret handling where applicable",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "経路選択と権限は分離。GitHub 報告の許可は変更しない。"
+    },
+    {
+      "name": "tests and validation adequacy",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "既存の構造・参照検査、配布 ZIP 検査。文書のみでTDD・実機は非適用。"
+    },
+    {
+      "name": "current-HEAD CI evidence",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "pull_request 46080811595 と 46080811679 は技術版完全一致で成功。追跡報告の公開後は別に確認する。"
+    },
+    {
+      "name": "report, tracking, and documentation accuracy",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "正式 issue #113、親 #75 開いたまま。通常レビューの失敗と修正確認を原文付きで残す。"
+    },
+    {
+      "name": "regression and maintainability risks",
+      "phase": "verification",
+      "result": "passed",
+      "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+      "evidence": "役割境界と既存のRDC選択時の手続は維持。適用優先順のみを明確化。"
+    }
+  ],
+  "ci": {
+    "required": true,
+    "workflow": "Validate and release ChatGPT worker skills",
+    "run_id": "46080811595",
+    "head_sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+    "conclusion": "success",
+    "artifacts": []
+  },
+  "implementation": {
+    "outcome": "completed",
+    "final_head": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+    "commits": [
+      {
+        "sha": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+        "purpose": "通常レビューの対象技術版"
+      }
+    ],
+    "addressed_findings": [
+      {
+        "id": "NR-112-01",
+        "reviewed_head": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+        "disposition": "addressed",
+        "evidence": "3 SKILL.mdすべてでCloudを通常チャット経路に対応させ、検証能力と権限を別に判定。通常修正確認で必須残数0。"
+      }
+    ],
+    "failure_diagnostics": [],
+    "blocked_items": [],
+    "summary": [
+      "3つの担当スキルの既存経路解決に、適用される本人の継続的なCloud/RDC指示と例外を含める。"
+    ]
+  },
+  "review": {
+    "mode": "fix_verification",
+    "reviewed_head": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+    "reviewer": {
+      "identity": "CodexSkill PR #112 通常レビュー担当（同一担当）",
+      "role": "normal_reviewer",
+      "continuity": {
+        "previous_reviewer_identity": "CodexSkill PR #112 通常レビュー担当（同一担当）",
+        "changed": false,
+        "reason": null
+      },
+      "independence": {
+        "implemented_change": false,
+        "implemented_review_fix": false,
+        "served_as_normal_reviewer": true,
+        "inherited_conversation": false,
+        "evidence": [
+          "同一通常担当が初回と修正確認を実施。"
+        ]
+      }
+    },
+    "verdict": "pass",
+    "required_coverage": [
+      {
+        "criterion": "requirement and design conformance",
+        "evidence": "本人の適用される個別指示または継続方針→プロジェクト→既定。例外を含む。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "correctness and edge cases",
+        "evidence": "Cloud は通常チャット経路。Cloud または経路の指定から CI 専用・操作許可を推定しない。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "scope discipline and unrelated changes",
+        "evidence": "対象は既存の実装・レビュー・報告3 SKILL.md。#75旧経路・#111は対象外。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "changed files and direct dependency impact",
+        "evidence": "work-context-manager が検証能力を独立して判定。共通モジュール非変更。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "API, data, configuration, workflow, and compatibility effects",
+        "evidence": "公開API、設定形式、CI配線の変更なし。RDC 既定維持。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "error handling and failure diagnostics",
+        "evidence": "RDC端末・作業場所は固定。接続失敗時の無断変更なし。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "security and secret handling where applicable",
+        "evidence": "経路選択と権限は分離。GitHub 報告の許可は変更しない。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "tests and validation adequacy",
+        "evidence": "既存の構造・参照検査、配布 ZIP 検査。文書のみでTDD・実機は非適用。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "current-HEAD CI evidence",
+        "evidence": "pull_request 46080811595 と 46080811679 は技術版完全一致で成功。追跡報告の公開後は別に確認する。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "report, tracking, and documentation accuracy",
+        "evidence": "正式 issue #113、親 #75 開いたまま。通常レビューの失敗と修正確認を原文付きで残す。",
+        "disposition": "checked_no_finding"
+      },
+      {
+        "criterion": "regression and maintainability risks",
+        "evidence": "役割境界と既存のRDC選択時の手続は維持。適用優先順のみを明確化。",
+        "disposition": "checked_no_finding"
+      }
+    ],
+    "independent_closure": {
+      "initial_independent_reviewed_head": null,
+      "closure_reviewed_heads": [],
+      "reviewer_continuity": null,
+      "closure_scope": [],
+      "completeness_matrix": []
+    },
+    "validation_assessment": [
+      {
+        "item": "requirement and design conformance",
+        "result": "supported",
+        "evidence": "本人の適用される個別指示または継続方針→プロジェクト→既定。例外を含む。"
+      },
+      {
+        "item": "correctness and edge cases",
+        "result": "supported",
+        "evidence": "Cloud は通常チャット経路。Cloud または経路の指定から CI 専用・操作許可を推定しない。"
+      },
+      {
+        "item": "scope discipline and unrelated changes",
+        "result": "supported",
+        "evidence": "対象は既存の実装・レビュー・報告3 SKILL.md。#75旧経路・#111は対象外。"
+      },
+      {
+        "item": "changed files and direct dependency impact",
+        "result": "supported",
+        "evidence": "work-context-manager が検証能力を独立して判定。共通モジュール非変更。"
+      },
+      {
+        "item": "API, data, configuration, workflow, and compatibility effects",
+        "result": "supported",
+        "evidence": "公開API、設定形式、CI配線の変更なし。RDC 既定維持。"
+      },
+      {
+        "item": "error handling and failure diagnostics",
+        "result": "supported",
+        "evidence": "RDC端末・作業場所は固定。接続失敗時の無断変更なし。"
+      },
+      {
+        "item": "security and secret handling where applicable",
+        "result": "supported",
+        "evidence": "経路選択と権限は分離。GitHub 報告の許可は変更しない。"
+      },
+      {
+        "item": "tests and validation adequacy",
+        "result": "supported",
+        "evidence": "既存の構造・参照検査、配布 ZIP 検査。文書のみでTDD・実機は非適用。"
+      },
+      {
+        "item": "current-HEAD CI evidence",
+        "result": "supported",
+        "evidence": "pull_request 46080811595 と 46080811679 は技術版完全一致で成功。追跡報告の公開後は別に確認する。"
+      },
+      {
+        "item": "report, tracking, and documentation accuracy",
+        "result": "supported",
+        "evidence": "正式 issue #113、親 #75 開いたまま。通常レビューの失敗と修正確認を原文付きで残す。"
+      },
+      {
+        "item": "regression and maintainability risks",
+        "result": "supported",
+        "evidence": "役割境界と既存のRDC選択時の手続は維持。適用優先順のみを明確化。"
+      }
+    ],
+    "reserved_report_paths": [],
+    "report_attestation": {
+      "allowed": "not_applicable",
+      "reviewed_implementation_head": null,
+      "allowed_paths": [],
+      "required_first_parent": null,
+      "maximum_commits_after_reviewed_head": null,
+      "forbidden_path_classes": [],
+      "no_later_commits_required": "not_applicable",
+      "validation_status": "not_applicable",
+      "validation_evidence": []
+    },
+    "summary": [
+      "現在の必須指摘は0件。正式独立レビューは未実施。"
+    ]
+  },
+  "report": {
+    "report_type": "consolidated_report",
+    "outcome": "rendered",
+    "persistence_mode": "repository_file",
+    "paths": [
+      "reports/issue-113-pr112-normal-consolidated-20261128.md"
+    ],
+    "reviewed_head": "d8021a7880fcb428e30e2db4ec4e7ccf71a96808",
+    "attestation_head": null,
+    "pr_comments": [],
+    "summary": [
+      "通常レビューと指摘解消の記録。"
+    ]
+  },
+  "findings": [],
+  "held": [],
+  "unexplored": [],
+  "unknown": [
+    {
+      "field_or_fact": "マシン名と環境固有の作業場所",
+      "reason": "次担当の環境と同一とみなさない。"
+    }
+  ],
+  "not_applicable": [
+    {
+      "field_or_area": "正式独立レビューと報告確定",
+      "reason": "通常レビューの引継ぎ段階。"
+    },
+    {
+      "field_or_area": "実機とTDD",
+      "reason": "手順文書のみ。権限、機器、実行能力の実測は主張しない。"
+    }
+  ],
+  "remaining_risks": [
+    "管理差分確認と候補版の検証、正式独立レビューが残る。"
+  ],
+  "source_payloads": [
+    {
+      "source_skill": "review-worker",
+      "output_contract_version": "unknown",
+      "content_type": "text/markdown",
+      "payload": "# PR #112 通常レビュー結果\n\n**判定：`fail` — 必須修正1件**\n\n対象は指定された [Draft PR #112](https://github.com/ssaattww/CodexSkill/pull/112) の通常レビューです。変更された3件の `SKILL.md` を確認しました。\n\n## 必須指摘\n\n### NR-112-01 — Cloud指定と既存経路の対応が明示されていない\n\n**重要度：Major（必須修正）**\n\n| 該当ファイル | 行 |\n|---|---:|\n| [chat-implementation-worker/SKILL.md](https://github.com/ssaattww/CodexSkill/blob/90f8670ad02c8e64454cf3664d6809141d7c8750/skills/chat-implementation-worker/SKILL.md#L35-L39) | 35–39 |\n| [chat-report-writer/SKILL.md](https://github.com/ssaattww/CodexSkill/blob/90f8670ad02c8e64454cf3664d6809141d7c8750/skills/chat-report-writer/SKILL.md#L33-L36) | 33–36 |\n| [chat-review-worker/SKILL.md](https://github.com/ssaattww/CodexSkill/blob/90f8670ad02c8e64454cf3664d6809141d7c8750/skills/chat-review-worker/SKILL.md#L45-L48) | 45–48 |\n\n**根拠：** 3ファイルとも利用者の継続的な `cloud` 指定を優先するよう変更されていますが、既存の `normal-chat` 経路と `cloud` の対応関係が定義されていません。\n\n**影響：** 利用者がCloudを指定しても、担当チャットがそれを別の実行形態と解釈し、RDC経路やCI専用経路を選択する余地が残ります。実行場所と検証能力の混同にもつながります。\n\n**必須対応：** 3ファイルすべてで、Cloud指定が既存の通常チャット側の実行経路を選択することを明示してください。例えば `cloud (the normal-chat execution route)` という対応付けです。実際の検証能力は従来どおり `work-context-manager` で判定し、Cloud指定自体から操作権限やCI専用経路を導出しないことが必要です。\n\n共通モジュールの変更は不要です。\n\n## レビュー範囲と結果\n\n| 確認項目 | 結果 |\n|---|---|\n| 本人の明示的・継続的指示と例外の優先 | 指摘なし |\n| 本人指定 → Project Instruction → 既存既定の順序 | 指摘なし |\n| Cloudと通常チャットの対応 | **必須指摘あり** |\n| 無指定時のRDC既定 | 変更なし |\n| 選択済みPC・worktreeの固定 | 変更なし |\n| 接続失敗時の無断経路変更禁止 | 変更なし |\n| 操作権限・GitHub報告権限 | 変更なし |\n| 各担当のロール境界 | 変更なし |\n| #75の旧包括要件・クローズ | 対象外。変更なし |\n| #111・共通モジュール | 対象外。変更なし |\n| TDD | 非適用（リポジトリ方針に準拠） |\n\n## 引継ぎ用の検証証拠\n\n```yaml\nrepository: ssaattww/CodexSkill\npr: 112\nissue: 75\nreview_mode: initial_review\nreviewer_role: normal_reviewer\nreviewed_implementation_head: 90f8670ad02c8e64454cf3664d6809141d7c8750\nbase_ref: main\nbase_sha: dfe07e81d6a1c209f99b908acc8109f70b38a773\nbranch: task/issue-75-current-route-policy\ncommits: 1\nchanged_files: 3\nadditions: 13\ndeletions: 10\nverdict: fail\nrequired_findings:\n  - id: NR-112-01\n    severity: major\n    origin: initial_review\nseverity_reclassifications: []\nheld_items: []\ninitial_independent_reviewed_head: null\nreserved_report_paths: []\nreport_attestation_allowed: false\n```\n\nレビュー開始時・終了時ともPRのHEADとbaseは指定SHAに一致しました。\n\n### Exact-HEAD CI\n\n以下の自動実行済みCIは、いずれも対象HEADと完全一致し、`pull_request` イベントで成功しています。\n\n| Run | 結果 |\n|---|---|\n| [46080273648](https://github.com/ssaattww/CodexSkill/actions/runs/46080273648) | Skill構造・参照検査、配布ZIP生成・検証成功 |\n| [46080273658](https://github.com/ssaattww/CodexSkill/actions/runs/46080273658) | 正式HEADのソース・検証結果・診断artifact収集成功 |\n\nArtifact IDはそれぞれ `15237195891` と `15236791697` です。Artifactのメタデータまで確認しましたが、内容のダウンロードや実機再検証は行っていません。CI成功は上記の意味上の指摘を解消する証拠にはなりません。\n\n### 必須カバレッジ\n\n- `checked_finding`：要件整合、経路選択の正確性・境界事例、回帰リスク\n- `checked_no_finding`：変更範囲、直接依存契約、権限・セキュリティ境界、エラー時の経路固定、文書・追跡情報、既存検証・正式HEAD CI\n- `not_applicable`：TDD、新規API・データ形式変更、実機を使用した検証\n- `unexplored`：判定を妨げる未確認項目なし\n\n**次工程：** NR-112-01を同じ3ファイルの経路指示内で修正し、必要な検証後に通常の修正確認へ戻してください。独立最終レビューへ進む判定ではありません。\n\nGitHub書込み、PRコメント投稿、CIの新規起動、実機操作、独立レビュー、別担当の起動は一切行っていません。"
+    },
+    {
+      "source_skill": "review-worker",
+      "output_contract_version": "unknown",
+      "content_type": "text/markdown",
+      "payload": "## NR-112-01 修正確認結果\n\n**候補内容の判定：`pass` — 必須指摘残数0件**\n\n- **指摘ID：** NR-112-01\n- **重大度：** Major（前回から変更なし）\n- **状態：** 解消\n\n### 修正位置\n\n| ファイル | 前回指摘位置 | 修正箇所 |\n|---|---:|---:|\n| `chat-implementation-worker/SKILL.md` | 35–39行 | 40–42行 |\n| `chat-review-worker/SKILL.md` | 45–48行 | 49–51行 |\n| `chat-report-writer/SKILL.md` | 33–36行 | 37–39行 |\n\n### 閉鎖根拠となる原文\n\n3ファイルすべてに次の記述が追加されていることを確認しました。\n\n> A cloud choice selects the normal-chat execution route, not a connected PC.  \n> Use `work-context-manager` to determine the actual verification capability;  \n> choosing a route does not grant permissions or select remote-CI-only verification.\n\nCloudと通常チャット経路の対応が明確になり、経路選択・検証能力・操作権限も分離されています。前回指摘の必須対応をすべて満たしています。\n\n### 検証証拠\n\n- 候補3ファイルのSHA256は提示値とすべて完全一致。\n- 公開親 `90f8670ad02c8e64454cf3664d6809141d7c8750` のファイル内容との差分は、上記追記と報告スキルの改行位置の変更のみ。\n- 既存構造検査は成功との提供証拠を採用。再実行なし。\n- PR #112の終了対象は `Closes #113` のみであり、親 #75はOpenのままと確認。\n\n**注意：** 判定はSHA256で特定した候補内容に対するものです。公開PRのHEADはまだ前回レビュー時のSHAであり、修正後の正式コミットHEADに対する判定ではありません。\n\nGitHubへの書込み、実機操作、独立レビュー、手動CI起動は行っていません。"
+    }
+  ],
+  "extensions": [
+    {
+      "namespace": "normal_review.closed_findings",
+      "payload": [
+        {
+          "id": "NR-112-01",
+          "severity": "major",
+          "origin": "initial_review",
+          "closure": "3 SKILL.mdすべてでCloudを通常チャット経路に対応させ、検証能力と権限を別に判定。通常修正確認で必須残数0。"
+        }
+      ]
+    }
+  ],
+  "next_action": {
+    "type": "external_owner",
+    "target_skill": "development-orchestrator",
+    "mode": "pre_freeze_readiness",
+    "summary": "管理差分を確認し、正式な独立最終レビューに備える。",
+    "instructions": [
+      "通常の指摘解消と技術版の検証を再利用する。",
+      "管理記録の版に対する検証は技術版と区別する。",
+      "正式な報告経路を予約してから独立レビューに引き継ぐ。"
+    ],
+    "required_attachments_or_references": [
+      "reports/issue-113-pr112-normal-consolidated-20261128.md"
+    ],
+    "requested_authorized_actions": [
+      "read_repository"
+    ]
+  },
+  "transport": {
+    "method": "repository_file",
+    "packet_path": "reports/handoffs/issue-113-pr112-normal-fix-verification-20261128.yaml",
+    "packet_url": null,
+    "transport_note": "通常レビューの原文を保持。実行権限は引き継がない。"
+  }
+}
