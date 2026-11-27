@@ -78,6 +78,8 @@ For every required criterion, record one of:
 - `not_applicable`,
 - `unexplored`.
 
+Treat Windows startup under a standard (non-administrator) account as `held`, not as a finding or release gate, unless the current task explicitly requires that account type or the change makes the privilege boundary material. Record why it is deferred and what would make it necessary. This does not defer other required Windows checks.
+
 ## Findings
 
 Each finding must include identity, severity, origin, location, description, impact, evidence, and required action. Do not hide uncertainty or convert missing evidence into success.

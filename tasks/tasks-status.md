@@ -2,9 +2,33 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-11-23
+- Updated: 2026-11-26
 
 ## In Progress
+
+- T-009: Codex Cloud共有ツールインストーラーのYomiyasu対応
+  - Status: 技術 HEAD の通常レビュー `pass_with_held`（必須指摘0件）、Draft PR #100 公開・自動 CI 成功。親の原文確認を取り込んだ非製品3ファイルの保存を進める（記録作成時 `commit_pending`）。後続通常レビュー待ち
+  - Phase: Phase 13
+  - Issue: 新規なし（Refs #93、PR #91）
+  - PR: #100 (Draft)
+  - Estimate: S（残りは凍結前の記録確定）
+  - Depends on: 旧 .NET 専用共通導入（#93 / PR #94）、公式固定版と照合値
+  - Scope: 共通インストーラー Bash 2ファイルと既存導入設計、通常報告・追跡
+  - Exit Criteria:
+    - .NET 専用設定を維持し、任意有効化で公式固定版を取得・照合して配置し、安全に再利用できる
+    - 改ざん・欠損キャッシュを有効扱いせず、実行時は検証済みのローカルファイルのみを使用する
+    - 新規 Python 実装なし。Duck の設定・入口、Start skill、レポートへの Yomiyasu 適用、公開環境設定は対象外
+    - 通常報告・追跡・通常レビュー証拠を確定し、全非最終変更のコミット後、候補 HEAD の既存検証を行う
+    - 独立最終レビューの予約・凍結は review-enforcer に引き渡す。マージはしない
+  - Output:
+    - `design/cloud-tools-installer-design.md`
+    - `scripts/install-cloud-tools.sh`、`scripts/cloud-yomiyasu.sh`
+    - `reports/task-t-009-pr100-normal-consolidated-20261126091619.md`（通常統合報告）
+  - Verification:
+    - 技術 HEAD `522403500da83fba191fb5fd7c8a1885d15ffa60`（基点 a18080938d7525f8b3e9f80fe237991a8c4e0562、レビュー済みパッチ SHA-256 a263a4ff33e2d79183f9f39e5f678dc780a21aac1fec9737833001745d2b6b17）
+    - 隔離クラウドの30件（Duckとの組み合わせ含む）、Bash構文、既存リポジトリ検証4項目成功。通常レビュー `pass_with_held`、必須指摘0件（親原文確認、2026-11-26、GPT-6.2 Sol High 指定、応答 01a21718-1626-7105-a7c0-727a09d78b79）。17,123 バイトのパッチと製品3ファイルの blob 一致。任意指摘のみ
+    - 公開技術 HEAD の pull_request CI 45789845620 / 45789845667 成功、push CI 45789758166 成功。報告・追跡の保存コミットと通常 push は親承認済み。新しい候補 HEAD の全体検証と自動 CI は保存後に外部で記録。独立最終 CI は未実施
+    - CodexSkill の Markdown 用語検査は配線不在で unsupported。TDD は非適用。Skill追加・更新、FP追加は不要。独立最終レビューは未予約・未実施
 
 - T-008: Issue #93のCodex Cloud共有ツールインストーラー
   - Status: 実装と焦点検証を完了。独立reviewはrole/default-role設定を確認できず、task-managerの事前dispatch gateで停止
