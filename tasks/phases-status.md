@@ -166,3 +166,13 @@
   - 技術 HEAD `522403500da83fba191fb5fd7c8a1885d15ffa60` の公式固定版導入、照合、再利用を検証し、通常レビュー `pass_with_held`、必須指摘0件を親が原文確認（応答 01a21718-1626-7105-a7c0-727a09d78b79、GPT-6.2 Sol High 指定）。公開 HEAD の pull_request CI 2件と push CI 1件は成功
   - 通常統合報告: `reports/task-t-009-pr100-normal-consolidated-20261126091619.md`（親による原文確認を反映）
   - 残り: 非製品3ファイルの保存コミットと通常 push（親承認済み）、同一 candidate HEAD の全体検証・自動 CI 記録、後続通常レビュー。その後に review-enforcer が予約・凍結と独立最終レビューを扱う。独立最終報告予約・作成、マージ、手動 CI、Duck 依存 pin は未実施
+
+## 個別保守 PR #99: 調査中の図出力手順
+
+- Status: 凍結前準備中。通常レビュー補完は `pass_with_held`、必須指摘0件。
+- Task: Todo `ff10b3a9-1c81-44f4-b879-4f14288b3b9c`
+- PR: #99 (Draft)、Related #24
+- Notes:
+  - 元の通常レビュー記録を保持し、今回の補完原本を通常報告に追記。親の判断は既存 Skill の1行で要望を満たし、追加改修を同 PR に入れない。
+  - 公開 HEAD `9a647e0fdf694e687246b6a680fe06fb3a871c68`、通常保存の補完は `commit_pending`。正式な独立最終レビュー・予約・attestation は未成立。
+  - 通常引継ぎ: `reports/task-ff10b3a9-1c81-44f4-b879-4f14288b3b9c-normal-handover-20261127044046.md`。次は非最終変更の確定、通常確認、固定候補の検証と `review-enforcer` への引渡し。
