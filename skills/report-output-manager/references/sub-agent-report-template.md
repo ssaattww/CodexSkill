@@ -37,6 +37,7 @@
 - requested profile (parent, pre-dispatch):
 - agent role / default-role plan (parent, pre-dispatch):
 - role config evidence / profile effect (parent, pre-dispatch):
+- complete [dispatch observability evidence](../../sub-agent-task-manager/references/agent-profile-selection.md#dispatch-profile-schema), including checked schema, role inspection, and call acceptance (parent):
 - planned runtime profile after known role constraints (parent, pre-dispatch):
 - applied profile (parent, post-runtime exact evidence only; null when unverified):
 - application status (parent, post-runtime evidence only):
@@ -44,6 +45,8 @@
 - reviewer continuity (parent, if applicable):
 - fork policy (parent):
 - reasons / constraints (parent):
+
+Preserve this extension in both ordinary reports and deferred-attestation handoffs without materializing the deferred report early. When reusing a reviewer or a legacy record, retain its original evidence and mark unavailable observations as unknown; do not backfill unsupported claims.
 
 ## 実行コマンド
 
