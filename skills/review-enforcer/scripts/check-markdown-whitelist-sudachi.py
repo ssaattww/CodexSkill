@@ -141,11 +141,21 @@ def read_target_config(root: Path) -> dict[str, list[str]]:
         print(f"{config_path}: missing. Run this script from the target repository root.", file=sys.stderr)
         raise SystemExit(2)
 
-    data = json.loads(config_path.read_text(encoding="utf-8"))
-    return {
-        "ignoreDirectories": list(data.get("ignoreDirectories") or []),
-        "ignoredPrefixes": [normalize_prefix(prefix) for prefix in data.get("ignoredPrefixes") or []],
-    }
+    try:
+        data = json.loads(config_path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError("expected a JSON object")
+        result: dict[str, list[str]] = {}
+        for key in ("ignoreDirectories", "ignoredPrefixes"):
+            value = data.get(key, [])
+            if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+                raise ValueError(f"{key} must be an array of strings")
+            result[key] = value
+        result["ignoredPrefixes"] = [normalize_prefix(prefix) for prefix in result["ignoredPrefixes"]]
+        return result
+    except (OSError, ValueError) as error:
+        print(f"{config_path}: invalid Markdown target configuration: {error}", file=sys.stderr)
+        raise SystemExit(2) from error
 
 
 def read_whitelist(root: Path, yaml_module, stdin_path: str | None, stdin_text: str | None) -> Whitelist:
@@ -276,6 +286,7 @@ def validate_explicit_targets(
 ) -> None:
     root_resolved = root.resolve()
     errors: list[str] = []
+    seen: set[Path] = set()
     for file_name in explicit_files:
         candidate = resolve_candidate(root, file_name)
         if candidate is None:
@@ -287,6 +298,10 @@ def validate_explicit_targets(
         except ValueError:
             errors.append(f"{file_name}: path is outside the repository.")
             continue
+        if resolved in seen:
+            errors.append(f"{file_name}: duplicate Markdown target.")
+            continue
+        seen.add(resolved)
         if not resolved.exists():
             errors.append(f"{file_name}: file does not exist.")
             continue
@@ -322,19 +337,16 @@ def resolve_candidate(root: Path, file_name: str) -> Path | None:
 def list_changed_files(root: Path) -> set[str]:
     candidates: set[str] = set()
     git_commands = [
-        ["diff", "--name-only", "--diff-filter=ACMR"],
-        ["diff", "--cached", "--name-only", "--diff-filter=ACMR"],
-        ["ls-files", "--others", "--exclude-standard"],
+        ["diff", "--name-only", "-z", "--diff-filter=ACMR"],
+        ["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"],
+        ["ls-files", "--others", "--exclude-standard", "-z"],
     ]
     for args in git_commands:
-        result = subprocess.run(["git", *args], cwd=root, text=True, stdout=subprocess.PIPE, check=False)
+        result = subprocess.run(["git", *args], cwd=root, stdout=subprocess.PIPE, check=False)
         if result.returncode != 0:
             print("Could not enumerate Markdown changes using Git.", file=sys.stderr)
             raise SystemExit(2)
-        for line in result.stdout.splitlines():
-            file_name = line.strip()
-            if file_name:
-                candidates.add(file_name)
+        candidates.update(os.fsdecode(name) for name in result.stdout.split(b"\0") if name)
     return candidates
 
 
@@ -343,7 +355,11 @@ def list_all_target_files(root: Path, target_config: dict[str, list[str]]) -> li
     ignore_directories = set(target_config["ignoreDirectories"])
     ignored_prefixes = target_config["ignoredPrefixes"]
 
-    for current_root, directory_names, file_names in os.walk(root):
+    def fail_walk(error: OSError) -> None:
+        print(f"Could not enumerate Markdown targets: {error}", file=sys.stderr)
+        raise SystemExit(2) from error
+
+    for current_root, directory_names, file_names in os.walk(root, onerror=fail_walk):
         current = Path(current_root)
         relative_current = normalize_path(current.relative_to(root)) if current != root else ""
         directory_names[:] = [

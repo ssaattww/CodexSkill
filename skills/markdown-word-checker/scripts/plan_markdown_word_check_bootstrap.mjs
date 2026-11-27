@@ -4,7 +4,7 @@
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { runBootstrapGit } from './bootstrap-local-git.mjs';
 import { fileURLToPath } from 'node:url';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -52,7 +52,7 @@ function parseArgs(argv) {
 }
 
 function runGit(args) {
-  const result = spawnSync('git', args, { encoding: 'utf8', windowsHide: true });
+  const result = runBootstrapGit(args);
   if (result.error || result.status !== 0) {
     const detail = result.error?.message || result.stderr.trim() || `exit ${result.status}`;
     fail(`Git inspection failed (${args.join(' ')}): ${detail}`, 4);

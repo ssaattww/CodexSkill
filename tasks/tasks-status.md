@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-010: 他のリポジトリへ Markdown 用語検査を導入する
-  - Status: 隔離 Linux と通常修正確認を完了。統合版の Windows と自動 CI の検証を残す
+  - Status: Linux の専用作業場所への導入と診断を確認。先行版の独立最終レビューは不合格。修正差分の必須指摘は解消。Windows 実機、既存の利用先への反映、利用先の CI は未確認
   - Phase: Phase 14
   - Issue: #87
   - PR: #88 (Draft)

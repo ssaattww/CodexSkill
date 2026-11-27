@@ -29,18 +29,20 @@ Issue #87として、用語検査をまだ導入していない他リポジト�
 |---|---|---|
 | R01 | 固定manifest | 既定は上記7パスのみ。`--with-ci` のときだけCI pathを追加。追加・欠落・別名は計画へ混ぜない。manifest外のsourceは無視し、必須sourceの欠落・通常file以外の型は拒否する。計画結果は後続の書き込み許可ではない。 |
 | R02 | 許可位置・非上書き・dry-run | targetは既存Git worktreeのroot。各destinationは許可manifest内に限る。既存ファイル、symlink、dangling symlink、Windows junction/reparse point、非directoryの親が1つでもあれば、変更前に全衝突を報告して停止。forceなし。dry-runは予定先・供給元を表示し、ファイル・ディレクトリ・診断領域を一切作成しない。 |
-| R03 | 失敗時の所有権 | 途中失敗時に削除できるのは、この実行が新規作成したと証明できるfileと空directoryだけ。事前存在物、他プロセスが作成した物、所有を証明できない物は残し、そのpathと理由を診断する。 |
+| R03 | 失敗時の保持 | 失敗後も今回作成した隔離領域を自動削除せず保持する。失敗理由と、作成済みなら領域のパスを標準エラーに表示する。導入失敗後は診断ファイルも書かない。 |
 | R04 | 引数・診断位置 | mode/scope/target/files/outputを副作用前に検査する。不正引数では導入物・診断領域とも作らない。実行診断の正本は既存 `tools/lint/artifacts/` 配下とし、別の自動作成先を追加しない。読み取り専用plannerは診断directoryを作らずstdout/stderrだけに結果を出す。 |
 | R05 | 結果の区別 | 各実行で `stdout.log`、`stderr.log`、`result.json` を保存する。`needs_user_review` はcheckerが未登録語違反を返した状態、`failed` は依存不足・設定不正・対象解決失敗・起動失敗・予期しない終了など実行不能状態。auditの未登録語だけはプロセス成功でも用語合格ではない。enforceの未登録語は非zero。 |
 | R06 | CIの証跡と基準 | checkout直後に期待するPR head SHAと `git rev-parse HEAD` を照合。一致しなければcheckerを起動しない。各run/attemptで新しいrunner-temp diagnostics directoryを作り、既存結果を採用しない。checkout・Python準備actionの内部ログはjob log、artifactにはstep outcomeを記録する。利用可能なshell診断はstdout/stderrと状態を保存し、venv・pip・診断準備を個別にsuccess/failure/not_runで記録する。実行したcheckerの結果だけを収集し、必須diagnosticまたはartifactの欠落・保存失敗はjob failureにする。`always()` でuploadを試みる。初期modeはaudit。未登録語候補はartifactに残し、初期CIをblockingにしない。 |
 
 R02の衝突確認は書き込み時の競合にも対応する。初回確認後に他プロセスがdestinationを作った場合、そのpathを上書きせずR03に従う。作成したdirectoryが途中で他の内容を含むようになった場合は削除しない。
 
-## 導入の安全境界と失敗時の後始末
+## 導入の安全境界と失敗時の保持
 
 bootstrapはworktree rootを明示し、root外へのpath、symlink経由のroot外書き込み、再parse pointを通じた迂回を拒否する。manifestと実出力が一致することを確認してから処理する。
 
-複数ファイル作成は、各作成を排他的に行い、今回作成した対象の識別情報を保つ。途中で失敗した場合は作成物を一つずつ識別してから除去し、同一性を再確認できないfile、既存file、共有・非空directoryは触らない。処理中に所有を区別できる仕組みが示せない実装は受け入れない。診断には残存物、削除した自分所有物、削除できなかった理由を記録する。
+隔離領域の親は、正規化したパスと祖先のファイル識別情報で、元の作業ツリーと同じ場所でも、その配下でもないことを作成前に確認する。Linux では現在のユーザーが所有するモード 0700 の別デバイス上の tmpfs を使う。祖先は所有者と書き込み権限を検査する。Windows では通常ユーザーで、ローカル固定 NTFS 上の明示した作業先を使う。再解析ポイント、所有者、アクセス制御リストを確認し、他の利用者が書き込める場合や属性が不明な場合は拒否する。
+
+導入は実行者が元の作業ツリーと隔離先を単独で使用できる場合に限る。同じアカウントで動く別プロセスによる途中変更まで防ぐ保証はない。排他運用を確認できない場合は既定の読み取り専用計画だけを使う。導入時は `--install --confirm-exclusive --expected-head <sha>` を指定する。対象確認、計画、コピー、コミット照合の Git 呼び出しは、継承した Git 環境変数とシステム・ユーザー設定を使わない共通処理を通す。作成は排他的に行う。失敗時は自動で削除せず、領域を保持して標準エラーにパスと理由を表示する。導入に失敗した後は診断ファイルを追加しない。成功時は `isolated_workspace` に表示されたコピーで検査する。元の作業ツリーには適用されない。
 
 ## 対象範囲と既存checker契約
 
@@ -90,24 +92,26 @@ OS間で一方だけforce、fallback、衝突無視を許さない。Windowsの�
 |---|---|---|---|---|
 | 既存Python writerを無変更で実行 | 適合 | Pythonがあれば実行可能 | R01 manifest固定なし、R02の全衝突・リンク検出と排他的作成なし、R03所有追跡なし、R04専用診断なし、R05部分失敗診断不足。R06 HEAD検査なし | consumer treeへ実行しない |
 | Node.js の読み取り専用の計画 | 適合。Node.js 18 以上が必要 | 対象の作業場所・コミット、固定パス、既存ファイルとハッシュを表示 | 計画の固定、事前確認、無変更を提供 | 既定。計画だけでは導入しない |
-| 同じ計画を使う明示導入コマンド | 適合。追加のパッケージは不要 | 同じコマンドで排他作成と後始末を行う候補。Windows のパスと権限は別途検証 | 作成前に再確認し、自分が作った物だけを片付ける | 隔離した作業場所で検証する候補 |
+| 同じ計画を使う明示導入コマンド | 適合。追加のパッケージは不要 | 同じコマンドで隔離と排他作成を行う候補。Windows のパスと権限は別途検証 | 作成前に分離を確認し、失敗時は隔離領域を保持する | 隔離した作業場所で検証する候補 |
 
-**推奨:** 読み取り専用の計画を既定にする。隔離検証用の導入候補は `bootstrap_markdown_word_check.mjs` を使い、対象、完全なコミット識別子、`--install` を明示した場合だけ固定の7ファイル、または `--with-ci` を含む8ファイルを作る。既存の `tools/lint/` は上書き・移行しない。検証とレビューが終わるまで実際の利用先には使わない。診断は導入物の件数とは分け、`tools/lint/artifacts/bootstrap/` に残す。用語の判定と承認条件は変えない。
+**推奨:** 既定は読み取り専用の計画とする。明示導入では、対象のコミットを独立した専用作業場所にコピーし、その中だけに固定の7資産または明示時の8資産を配置する。既存の利用先は変更しない。所有や書き込み条件、経路やコピーの独立性を確認できない場合は書き込みを停止し、状態を端末へ示す。診断はコピー内に分けて保存する。
 
-### 現在の入口が実装する受け入れ条件
+### 現在の経路と検証状態
+
+Linux の実属性を使った専用領域で8資産、診断3件、期待するコミット、外部オブジェクトの参照なし、元の作業場所の無変更を確認した。Windows、実利用先への反映、利用先の CI は未確認。
 
 | ID | plannerでの状態 | 残る条件 |
 |---|---|---|
 | R01 | 固定7 pathと明示時のみ8番目のCI path、予定hashをJSON/stdoutに表示 | 実書込み結果のmanifest照合 |
 | R02 | targetがGit worktree rootか確認し、既存先/unsafe parentを検出。書込みなし | 排他stageと安全な公開・競合後処理 |
-| R03 | 書込みをしないためcleanup対象なし | writerの所有識別とrollback |
+| R03 | 書込みをしないためcleanup対象なし | 失敗時の隔離領域保持・残存物の識別・理由報告 |
 | R04 | CLI引数を先に検査。plan以外の診断作成なし | 既存 `tools/lint/artifacts/` 配下への安全な診断保存 |
 | R05 | planner実行エラーとdestination拒否をexit codeで区別 | checker実行、unknown/error分類、3診断ファイル |
 | R06 | `--expected-head` があればcheckout HEAD一致を検査 | GHA段階ログ/artifactと実CI確認 |
 
 ## 検証順と非目標
 
-CodexSkill保守は非TDD。まず隔離したGit fixtureでdry-run無変更、固定manifest、衝突全列挙、dangling symlink/reparse point、書き込み競合、途中失敗後の所有物だけの後始末、診断位置、full/changed/files、audit/enforceを確認する。Windowsで先に実行し、同じfixtureと期待結果をLinuxでも確認してからCI templateを検査する。現行CIまたは以前の別SHA成功は新候補の合格根拠にしない。
+CodexSkill保守は非TDD。まず隔離したGit fixtureでdry-run無変更、固定manifest、衝突全列挙、dangling symlink/reparse point、書き込み競合、途中失敗後の隔離領域保持と理由表示、診断位置、full/changed/files、audit/enforceを確認する。Windowsで先に実行し、同じfixtureと期待結果をLinuxでも確認してからCI templateを検査する。現行CIまたは以前の別SHA成功は新候補の合格根拠にしない。
 
 - #79 / PR #80は対象外。
 - Sudachi checkerの用語判定は変更しない。

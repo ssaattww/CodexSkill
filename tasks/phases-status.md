@@ -169,11 +169,11 @@
 
 ## Phase 14: Markdown 用語検査の導入
 
-- Status: In Progress（Windows と統合版の自動 CI を確認する）
+- Status: In Progress（先行版の独立最終レビューは不合格。修正差分の必須指摘は解消、Windows と利用先 CI が残る）
 - Task: T-010 / Issue #87
 - Design: `design/markdown-word-check-bootstrap-design.md`
 - PR: #88 (Draft)
 - Notes:
-  - 既定は計画だけ。別のリポジトリに書くには、対象・期待するコミット・導入の明示が必要。
-  - 隔離 Linux で固定7件／8件、既存先の拒否、自分が作った物だけの後始末、検査・診断エラーを確認。
+  - 既定は計画だけ。明示導入は対象のコミットを専用作業場所へコピーし、その中だけに資産を配置する。元の利用先は変更しない。
+  - Linux の実属性で8資産、診断3件、外部参照なし、元の状態不変を確認。Windows の現行版と利用先の CI は未確認。
   - 既存の用語検査は再利用する。CodexSkill 自身への導入、既存の利用先への移行、公開は含まない。
