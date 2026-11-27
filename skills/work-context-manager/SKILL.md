@@ -97,20 +97,26 @@ Keep execution location separate from `verification_capability`. The caller
 selects an authorized tool and requested location; this core Skill resolves
 the evidence, not a vendor-specific connection or permission policy.
 
-- If the caller has already selected RDC for Windows-specific work, use
-  `CodexProjects/<repository>` under the connected user's home for new base
-  checkouts. Keep existing locations in place. Assign a dedicated worktree to
-  each writing worker and identify it by connection, canonical repository,
-  absolute paths, Git registration, assigned worker, and target HEAD.
-- Report a worktree eligible for cleanup only if the caller has permission,
-  no downstream worker needs it, its final saved HEAD matches the intended
-  remote branch, required evidence is saved outside the worktree, and no
-  uncommitted or untracked changes remain. Recheck its identity and use
-  immediately before cleanup. Retain it if a condition is unknown, a command
-  is running or unconfirmed, or concurrent use cannot be excluded. Do not
-  update the remote or force cleanup to meet a condition. This check does not
-  choose RDC, grant permissions, move existing checkouts, or replace
-  same-resource command checks.
+- Only after the caller selects RDC for Windows-specific work, use
+  `CodexProjects/<repository>` under the connected user's home for a new base
+  checkout. Leave existing locations in place. Each writing worker uses a
+  dedicated worktree named with the task, assigned worker, and a unique ID.
+  Record the connection, canonical repository, absolute base and worktree
+  paths, Git worktree registration, assigned worker, and target HEAD. Reuse
+  only on an exact identity match; for a collision, mismatch, or unknown
+  owner, leave the existing worktree unchanged and record the reason.
+- For those RDC worktrees, assess cleanup only for the creating worker or a
+  verified handoff recipient with current permission for that exact removal.
+  Ownership and handoff do not grant permission. Immediately before cleanup,
+  recheck the identity and permission, final saved HEAD against the intended
+  remote repository and branch, evidence saved outside the worktree including
+  needed Git-ignored files, a clean tracked and untracked state, and no active
+  or downstream use. If a condition fails, is unknown, or concurrent use
+  cannot be excluded, retain the worktree. Do not remove the base checkout,
+  branches, or another worker's files. Do not create a commit, push, reset,
+  or force an operation to make cleanup eligible. This does not choose RDC,
+  grant permission, or replace the same-resource command checks.
+
 - Record the actual machine, shell, absolute working directory, repository,
   branch, HEAD, source state, ownership, and allowed writes before execution.
 - Compare the observed source with the target resolved from authoritative
