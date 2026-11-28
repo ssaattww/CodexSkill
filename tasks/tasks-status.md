@@ -7,10 +7,10 @@
 ## In Progress
 
 - T-011: Issue #104 調査担当への図出力指示を再適用する
-  - Status: 最新 main 起点の後継候補を作成中。新候補の検証・通常レビュー・独立レビュー・CI は未実施
+  - Status: 最新 main 起点の後継候補を公開済み。新候補の標準検証・通常レビュー・独立レビュー・CI結果は未確認
   - Phase: Phase 15
   - Issue: #104
-  - PR: Draft を後続作成
+  - PR: #124 (Draft)
   - Scope: 調査担当向け指示1行と本候補の追跡・比較根拠のみ
   - Verification:
     - Base: `e401662491695e51d0b8a2d8771c8426dd2b01f1`; prior frozen HEAD: `cc42dada0bab8223901206c903b78daecc353c6a`
