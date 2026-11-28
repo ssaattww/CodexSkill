@@ -6,6 +6,13 @@
 
 ## In Progress
 
+- T-010: Issue #76の設計書テンプレートにコード引用例を追加する
+  - Status: 実装と通常差分レビューは完了（必須指摘0件、追加提案0件）。独立最終レビュー待ち
+  - Phase: Phase 14
+  - Issue / PR: Issue #76、Draft PR #123（PR #110の後継、`Refs #76`）
+  - Reviewed implementation HEAD: `09bd446b0a143ab735d7ae9c5985a320a2f96d63`
+  - Normal evidence: `reports/issue-76-pr123-normal-review-20261128141514.md`
+  - Exit Criteria: 通常レビュー記録と同一HEADの検証根拠を保ち、独立最終レビューの必須指摘を解消する。マージは利用者判断
 - T-009: Codex Cloud共有ツールインストーラーのYomiyasu対応
   - Status: 技術 HEAD の通常レビュー `pass_with_held`（必須指摘0件）、Draft PR #100 公開・自動 CI 成功。親の原文確認を取り込んだ非製品3ファイルの保存を進める（記録作成時 `commit_pending`）。後続通常レビュー待ち
   - Phase: Phase 13
