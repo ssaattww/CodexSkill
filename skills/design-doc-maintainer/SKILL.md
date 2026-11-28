@@ -1,6 +1,6 @@
 ---
 name: design-doc-maintainer
-description: Decide whether design documentation must be updated and perform the required design-document maintenance before implementation continues. Use when changes affect public behavior, DSL contracts, external APIs, file formats, configuration formats, workflows, or any behavior that should be reflected in existing design documents rather than implemented ad hoc.
+description: Decide whether design documentation must be updated and perform the required design-document maintenance before implementation continues. Use when changes affect public behavior, DSL contracts, external APIs, file formats, configuration formats, workflows, or when starting a project or deciding where to place a new design document.
 ---
 
 # Design Doc Maintainer
@@ -29,6 +29,11 @@ Before running this skill, gather:
 - current related design documents
 
 ## Run this skill
+
+When starting a project or deciding where a new design document belongs, first
+read the [multi-project document layout guidance](references/multi-project-document-layout.md).
+Use it as an example for large multi-project repositories; preserve the target
+repository's established layout, naming, report paths, and automation.
 
 Run this skill before implementation whenever changes affect:
 
