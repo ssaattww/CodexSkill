@@ -21,6 +21,8 @@
 
 <!-- This section is parent-owned. The child must not infer or rewrite hidden runtime state or authorization evidence. -->
 
+通常の進捗報告には、担当に指定したモデルと推論強度だけを記録する（例：`指定：Sol 6.2 High`）。実際に適用された値とは扱わず、適用結果の欄を通常の進捗報告に追加しない。
+
 - selection inputs (parent, pre-dispatch):
 - selection source (parent, pre-dispatch):
 - observed decomposability (parent, pre-dispatch):
