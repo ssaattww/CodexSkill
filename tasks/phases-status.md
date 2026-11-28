@@ -189,3 +189,14 @@
   - 比較値・行 SHA-256 と旧レビュー／CIを流用しない境界は `tasks/tasks-status.md` に記録
   - 通常レビュー（必須指摘0件）・自動CIの根拠: `reports/issue-104-pr124-normal-review-20261128154105.md`。対象 `79a1a7bec803942d50e0b71c638bf97a6e211a60`、報告保存後のHEADのCIは未確認
   - 独立最終レビュー・予約は未実施。最終マージは親が扱う
+
+## Phase 16: Issue #117 文書配置ガイダンスの後継候補
+
+- Status: In Progress（通常レビュー `pass_with_held`、独立最終レビュー前の準備）
+- Task: T-012 / Issue #117
+- PR: #125 (Draft; PR #120 の後継)
+- Notes:
+  - Phase 14 / T-010 と Phase 15 / T-011 の既存記録を保持し、#117を別枠で追跡する
+  - 基点 `7d43d1d8b5b51d01c3598f32e4da6d34dd3cdc71`。旧技術版の配置規則と最新mainの変更を保持し、指定referenceのみ英訳
+  - 通常レビュー（必須指摘0件）と検証根拠: `reports/issue-117-pr125-normal-review-20261128180938.md`。対象 `4c530b863d0289c70c04773a5ff239ae064f72fd` の自動CI 46173819146、46173819170 は成功。報告保存後のHEADのCIは記録作成時点で未確認
+  - 旧通常・独立レビューを流用しない。独立最終レビュー・予約・マージは未実施
