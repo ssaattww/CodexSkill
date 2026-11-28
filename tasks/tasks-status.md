@@ -6,6 +6,27 @@
 
 ## In Progress
 
+- T-013: Issue #118 の .NET 配置例にプロジェクトファイルと結合テストの位置を示す
+  - Status: Draft PR #126 の固定技術HEADを通常レビュー `pass_with_held`（必須指摘0件）、同一HEADの自動CI成功。通常報告・追跡を保存し、独立最終レビュー待ち
+  - Phase: Phase 17
+  - Issue: #118
+  - PR: #126 (Draft; PR #121 を変更せず後継候補として維持)
+  - Estimate: S
+  - Depends on: 旧Draft PR #121 の技術内容。#117は文書配置規則への参照であり、PR #125のマージは必須依存ではない
+  - Scope: `skills/work-context-manager/SKILL.md` の新規複数プロジェクト .NET 向けツリー例と、通常レビュー報告・本タスクの追跡
+  - Exit Criteria:
+    - 製品・共有ライブラリ・テスト各プロジェクトの `.csproj` と、複数プロジェクトをまたぐ結合テスト用プロジェクトの場所がツリーで分かる
+    - 旧版との技術差分がこの7行だけで、#117の文書配置規則を重複定義しない
+    - 同一技術HEADの通常レビュー結果・既存検査と配布CIを記録し、通常報告・追跡を保存する
+    - 独立最終レビューは後続工程で実施し、マージは行わない
+  - Verification:
+    - Base `7d43d1d8b5b51d01c3598f32e4da6d34dd3cdc71`、通常レビュー対象技術HEAD `0335b31014838ee35cd59b8300f6a9449c2d54b7`
+    - 旧PR #121 attested HEAD `300ca7e408ab39147153ad9957503090ba5a3caa` と比較。技術差分は `.csproj` 5行と IntegrationTests 2行のみ。旧PRはopen / Draftのまま
+    - 通常レビュー `pass_with_held`、必須指摘0件。保留は未マージの#117配置ガイド参照状況で、既存SkillとIssueへのリンク切れ・必須依存はない。詳細: `reports/issue-118-pr126-normal-review-20261128185530.md`
+    - 同一技術HEADのpull_request CI `46177838676`（構成検査、Skill ZIP生成・検証成功）/ `46177838652`（正確なHEAD checkout、標準4検査とsource archive成功）
+    - 通常報告・追跡を含む保存候補の `git diff --check` と `scripts/run_validation.py` 標準4検査（repository / bundle / zip-integrity / zip-contents）は全件pass
+    - Push後HEADの自動CI結果は別に確認し、手動CIは実施しない
+
 - T-011: Issue #104 調査担当への図出力指示を再適用する
   - Status: Draft 公開済み。固定HEADの通常レビュー `pass_with_held`（必須指摘0件）・自動CI成功。独立最終レビュー待ち
   - Phase: Phase 15

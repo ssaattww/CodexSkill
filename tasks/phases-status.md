@@ -189,3 +189,15 @@
   - 比較値・行 SHA-256 と旧レビュー／CIを流用しない境界は `tasks/tasks-status.md` に記録
   - 通常レビュー（必須指摘0件）・自動CIの根拠: `reports/issue-104-pr124-normal-review-20261128154105.md`。対象 `79a1a7bec803942d50e0b71c638bf97a6e211a60`、報告保存後のHEADのCIは未確認
   - 独立最終レビュー・予約は未実施。最終マージは親が扱う
+
+## Phase 17: Issue #118 .NET 配置例の後継候補
+
+- Status: In Progress（通常レビュー `pass_with_held`、独立最終レビュー待ち）
+- Task: T-013 / Issue #118
+- PR: #126 (Draft; PR #121 の後継候補)
+- Notes:
+  - #117 / PR #125 が未マージのままT-012 / Phase 16を使用しているため、並行候補間のtask/phase ID重複を避けてT-013 / Phase 17で追跡する
+  - 基点 `7d43d1d8b5b51d01c3598f32e4da6d34dd3cdc71`。通常レビュー対象の技術HEAD `0335b31014838ee35cd59b8300f6a9449c2d54b7` と旧PR #121 attested HEAD `300ca7e408ab39147153ad9957503090ba5a3caa` を比較し、追加7行以外の技術差分なし
+  - 通常レビューは必須指摘0件、`pass_with_held`。詳細とheld事項: `reports/issue-118-pr126-normal-review-20261128185530.md`
+  - 同一技術HEADの自動CI: 46177838676（buildとSkill ZIP成功）、46177838652（collect、source archive、標準4検査成功）。保存後のHEADの自動CIはpush後に確認し、手動CIは行わない
+  - 通常報告・追跡を保存し、独立最終レビューは親の後続判断に委ねる。マージはしない
