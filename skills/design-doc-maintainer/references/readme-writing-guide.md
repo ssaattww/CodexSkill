@@ -14,29 +14,35 @@ READMEは入口としてすぐ読める長さにし、詳しい設計や運用�
 
 名前と値は架空の例。ルートのコマンドはリポジトリ直下で実行する。
 
-```markdown
+````markdown
 # Acme Session Tools
 Records and replays operator sessions.
 Requires .NET 10 SDK.
-[Overall design](docs/basic-design.md) · [Capture](src/Acme.Capture/README.md) · [Replay](src/Acme.Replay/README.md)
-```
-
-ルートREADMEの起動コマンド（リポジトリ直下で実行）:
+Run from repository root:
 
 ```sh
 dotnet run --project src/Acme.Capture/Acme.Capture.csproj -- --output artifacts/demo.json
 ```
+
+[Overall design][overall-design] · [Capture][capture] · [Replay][replay]
+
+[overall-design]: docs/basic-design.md
+[capture]: src/Acme.Capture/README.md
+[replay]: src/Acme.Replay/README.md
+````
 
 プロジェクト例のコマンドはリポジトリ直下で実行する。設計リンクは `src/Acme.Capture/README.md` からの相対パスで、`src/Acme.Capture/docs/design.md` を指す。
 
-```markdown
+````markdown
 # Acme.Capture
 Records the sample session to `artifacts/demo.json`.
-[Capture design](docs/design.md)
-```
-
-プロジェクトREADMEの利用コマンド（リポジトリ直下で実行）:
+Run from repository root:
 
 ```sh
 dotnet run --project src/Acme.Capture/Acme.Capture.csproj -- --output artifacts/demo.json
 ```
+
+[Capture design][capture-design]
+
+[capture-design]: docs/design.md
+````
