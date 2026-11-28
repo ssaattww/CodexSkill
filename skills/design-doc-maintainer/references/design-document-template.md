@@ -79,11 +79,12 @@
 Gate = runtimeOverrides.Gate ?? profile.Gate,
 ```
 
-<下表は同じ固定コミットの `sim` profile と空の `RuntimeOverrides` を示す[設定値](https://github.com/ibis-ssl/Duck/blob/a89f4a753a9e84b9df880e1c064178ed180da6fb/Tracker/Tracker.DebugHost/appsettings.json)の例。>
+<下表は固定コミットの設定値と実テストに基づく例。1行目は[設定ファイルの `sim` profile](https://github.com/ibis-ssl/Duck/blob/a89f4a753a9e84b9df880e1c064178ed180da6fb/Tracker/Tracker.DebugHost/appsettings.json)、2行目は[テスト入力](https://github.com/ibis-ssl/Duck/blob/a89f4a753a9e84b9df880e1c064178ed180da6fb/Tracker/Tracker.Tests/TrackerConfigurationBindingTests.cs#L248-L265)と[解決値の assertion](https://github.com/ibis-ssl/Duck/blob/a89f4a753a9e84b9df880e1c064178ed180da6fb/Tracker/Tracker.Tests/TrackerConfigurationBindingTests.cs#L45)を示す。>
 
 | キー | profile 値 | runtime override | 適用規則 | 採用値 |
 | --- | --- | --- | --- | --- |
 | `BallTracker.Gate` | `1.0` | 未指定（null） | override が null なら profile 値を使う | `1.0` |
+| `BallTracker.Gate` | `2.5`（`simulation`） | `1.8` | override が指定されていれば profile 値より優先 | `1.8` |
 
 ### 想定事象
 
