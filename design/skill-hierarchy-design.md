@@ -472,6 +472,8 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 ## 標準作業手順
 
+配置未決定の新規文書は、作成前に`design-doc-maintainer`の配置指針を参照する。新規projectの初期文書と、既存projectで`task-consistency-manager`が新設する文書も対象とし、確定済みpathの通常更新には適用しない。この確認は配置のみを扱い、手順6の設計影響判定を置き換えない。
+
 1. workflow開始時にCodexSkillの鮮度を確認する。
 2. 再開時は`restart-handover-manager`で状態を復元する。
 3. `work-context-manager`でauthority、scope、target identity、development policy、validation target、write boundaryを解決する。
@@ -527,7 +529,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
 | `task-breakdown-planner` | issueをtaskとphaseへ分解する | 親が実行 |
-| `task-consistency-manager` | task、phase、実scopeを同期する | 親が実行 |
+| `task-consistency-manager` | task、phase、実scopeを同期する。配置未決定の新規文書は事前確認後に作成する | 親が実行 |
 | `progress-sync-manager` | report、tracking、実結果を同期する | 親が実行 |
 | `restart-handover-manager` | recorded stateから再開位置を復元する | 親が実行 |
 | `handover-memo-writer` | 別chat向けhandover memoを作成する | 親が実行 |
@@ -536,7 +538,7 @@ Release時の共通file複製とrepository相対link書換は行わない。
 
 | Skill | 役割 | 実行方式 |
 | --- | --- | --- |
-| `design-doc-maintainer` | 設計影響と更新対象を判断する | 親が実行 |
+| `design-doc-maintainer` | 設計影響と更新対象を判断し、配置未決定の新規文書には配置指針を示す | 親が実行 |
 | `design-executor` | 決定済み設計変更を編集する | 親が実行 |
 | `tdd-executor` | 対象repositoryが要求するtest-first証拠をcore Skill経由で定義する | 親が実行 |
 | `implementation-executor` | executorを管理し、`implementation-worker`を呼び出すCodex wrapper | 親が実行 |
