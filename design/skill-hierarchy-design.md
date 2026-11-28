@@ -96,7 +96,7 @@ Issue #69では`document-wording-review`を追加してChatGPT配布を9スキ�
 
 Issue #70では既存のChatGPT wrapperを拡張し、通常チャット内の経路とRemote Desktop Commanderで利用者のPCを使う経路を提供した。#70時点の配布は8スキルだった。その後#69統合時には9スキルへ拡張した履歴があるが、#73の基準である#68取り込み後のcurrent mainでは#69の配布追加が欠落している。#73では#70だけを復元するため、現在の配布は実際のbuilderと一致する8スキルとする。通常・独立レビューの責務は変更せず、端末経由で別エージェントを起動することも認めない。
 
-経路の指定と接続ツールの選択はChatGPT wrapperが担う。利用者の明示指定、Project Instructionの順で経路を決め、指定がなければRemote Desktop CommanderによるPC接続を基本経路とする。通常チャットは明示指定時だけ使う。`work-context-manager` はツール固有の処理を持たず、`execution_environment` として実行場所、対象HEAD、未コミット変更の識別情報、作業ツリーの所有者、依存ツールと権限の証拠を扱う。接続できることと `local_execution_available` は別に確認する。
+経路の指定と接続ツールの選択はChatGPT wrapperが担う。今回の本人指定と適用される継続指示・非利用方針・例外、プロジェクトの指定、既存の既定経路の順で解決する。既定は対象に既に定められたもの（本設計の現行既定はRDC接続）を指し、RDCを新たに必須化しない。クラウド版Codexの選択は通常チャット側の作業経路を示すだけで、権限や検証能力を与えない。`work-context-manager` はツール固有の処理を持たず、`execution_environment` として実行場所、対象HEAD、未コミット変更の識別情報、作業ツリーの所有者、依存ツールと権限の証拠を扱う。接続できることと `local_execution_available` は別に確認する。
 
 PC上のファイル操作と検証に加え、PC接続経路の認可されたGit commit／pushはRemote Desktop Commanderで行う。GitHubコネクタはremote repository evidence、Issue・PR・コメント、exact-head CI確認に使う。RDC上のソースをチャット環境へ転送して公開せず、別タスクのワークツリーは変更しない。接続失敗、push失敗、対象不一致は停止理由として残し、無断で別経路へ切り替えない。
 
