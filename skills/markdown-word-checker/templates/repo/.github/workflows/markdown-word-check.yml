@@ -1,0 +1,365 @@
+name: Markdown terminology audit
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "tools/lint/**"
+      - ".github/workflows/markdown-word-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MARKDOWN_WORD_CHECK_MODE: audit
+  EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  markdown-terminology:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Initialize diagnostics before checkout
+        id: diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIAGNOSTICS_DIR="$(mktemp -d "$RUNNER_TEMP/markdown-word-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.XXXXXX")"
+          CHECK_OUTPUT_DIR="$GITHUB_WORKSPACE/tools/lint/artifacts/ci/check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          printf 'diagnostics_dir=%s\n' "$DIAGNOSTICS_DIR" >> "$GITHUB_OUTPUT"
+          printf 'DIAGNOSTICS_DIR=%s\n' "$DIAGNOSTICS_DIR" >> "$GITHUB_ENV"
+          printf 'CHECK_OUTPUT_DIR=%s\n' "$CHECK_OUTPUT_DIR" >> "$GITHUB_ENV"
+          {
+            printf 'run_id=%s\n' "$GITHUB_RUN_ID"
+            printf 'run_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'expected_head=%s\n' "$EXPECTED_HEAD"
+            printf 'action_step_logs=GitHub Actions job log; action stdout/stderr are not exposed to this shell as files\n'
+          } > "$DIAGNOSTICS_DIR/run-context.txt"
+
+      - name: Checkout expected pull request HEAD
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.EXPECTED_HEAD }}
+
+      - name: Record checkout outcome
+        if: ${{ always() }}
+        env:
+          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIAGNOSTICS_DIR="${DIAGNOSTICS_DIR:-$RUNNER_TEMP/markdown-word-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT}"
+          {
+            printf 'outcome=%s\n' "${CHECKOUT_OUTCOME:-unknown}"
+            printf 'stdout_stderr=GitHub Actions job log; action output is not available as files\n'
+          } > "$DIAGNOSTICS_DIR/checkout.result.txt"
+
+      - name: Verify checked out HEAD
+        id: head-check
+        if: ${{ steps.checkout.outcome == 'success' }}
+        env:
+          EXPECTED_HEAD: ${{ env.EXPECTED_HEAD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          if actual_head="$(git rev-parse HEAD 2>"$DIAGNOSTICS_DIR/head.stderr.log")"; then
+            rev_parse_status=0
+          else
+            rev_parse_status=$?
+            actual_head=""
+          fi
+          set -e
+          {
+            printf 'expected_head=%s\n' "$EXPECTED_HEAD"
+            printf 'actual_head=%s\n' "$actual_head"
+            printf 'rev_parse_exit=%s\n' "$rev_parse_status"
+          } > "$DIAGNOSTICS_DIR/head.stdout.log"
+          status=0
+          if [[ $rev_parse_status -ne 0 ]]; then
+            status=1
+            printf 'Could not read checked out HEAD.\n' >> "$DIAGNOSTICS_DIR/head.stderr.log"
+          elif [[ "$actual_head" != "$EXPECTED_HEAD" ]]; then
+            status=1
+            printf 'HEAD mismatch: expected %s, got %s.\n' "$EXPECTED_HEAD" "$actual_head" >> "$DIAGNOSTICS_DIR/head.stderr.log"
+          fi
+          printf 'status=%s\n' "$status" > "$DIAGNOSTICS_DIR/head.result.txt"
+          exit "$status"
+
+      - name: Record HEAD check outcome
+        if: ${{ always() }}
+        env:
+          HEAD_OUTCOME: ${{ steps.head-check.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIAGNOSTICS_DIR="${DIAGNOSTICS_DIR:-$RUNNER_TEMP/markdown-word-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT}"
+          printf 'outcome=%s\n' "${HEAD_OUTCOME:-unknown}" > "$DIAGNOSTICS_DIR/head-check-step.result.txt"
+
+      - name: Prepare repository diagnostics
+        id: repository-diagnostics
+        if: ${{ steps.head-check.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            mkdir -p tools/lint/artifacts/ci
+            if [[ -e "$CHECK_OUTPUT_DIR" || -L "$CHECK_OUTPUT_DIR" ]]; then
+              printf 'Refusing existing current-run output path: %s\n' "$CHECK_OUTPUT_DIR" >&2
+              exit 1
+            fi
+          } >"$DIAGNOSTICS_DIR/repository-diagnostics.stdout.log" 2>"$DIAGNOSTICS_DIR/repository-diagnostics.stderr.log"
+
+      - name: Record repository diagnostics preparation
+        if: ${{ always() }}
+        env:
+          REPOSITORY_DIAGNOSTICS_OUTCOME: ${{ steps.repository-diagnostics.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'outcome=%s\n' "${REPOSITORY_DIAGNOSTICS_OUTCOME:-unknown}" > "$DIAGNOSTICS_DIR/repository-diagnostics.result.txt"
+
+      - name: Set up Python
+        id: python-setup
+        if: ${{ steps.head-check.outcome == 'success' && steps.repository-diagnostics.outcome == 'success' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record Python setup outcome
+        if: ${{ always() }}
+        env:
+          PYTHON_SETUP_OUTCOME: ${{ steps.python-setup.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIAGNOSTICS_DIR="${DIAGNOSTICS_DIR:-$RUNNER_TEMP/markdown-word-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT}"
+          {
+            printf 'outcome=%s\n' "${PYTHON_SETUP_OUTCOME:-unknown}"
+            printf 'stdout_stderr=GitHub Actions job log; action output is not available as files\n'
+          } > "$DIAGNOSTICS_DIR/python-setup.result.txt"
+
+      - name: Install terminology dependencies
+        id: dependencies
+        if: ${{ steps.head-check.outcome == 'success' && steps.repository-diagnostics.outcome == 'success' && steps.python-setup.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          python -m venv tools/lint/.venv >"$DIAGNOSTICS_DIR/venv.stdout.log" 2>"$DIAGNOSTICS_DIR/venv.stderr.log"
+          venv_status=$?
+          set -e
+          if [[ $venv_status -eq 0 ]]; then
+            printf 'status=success\n' > "$DIAGNOSTICS_DIR/venv.result.txt"
+            set +e
+            tools/lint/.venv/bin/python -m pip install -r tools/lint/requirements.txt >"$DIAGNOSTICS_DIR/install.stdout.log" 2>"$DIAGNOSTICS_DIR/install.stderr.log"
+            pip_status=$?
+            set -e
+            if [[ $pip_status -eq 0 ]]; then
+              printf 'status=success\n' > "$DIAGNOSTICS_DIR/pip.result.txt"
+            else
+              printf 'status=failure\nexit=%s\n' "$pip_status" > "$DIAGNOSTICS_DIR/pip.result.txt"
+            fi
+            status=$pip_status
+          else
+            printf 'status=failure\nexit=%s\n' "$venv_status" > "$DIAGNOSTICS_DIR/venv.result.txt"
+            printf 'status=not_run\nreason=venv_creation_failed\n' > "$DIAGNOSTICS_DIR/pip.result.txt"
+            status=$venv_status
+          fi
+          printf 'status=%s\n' "$status" > "$DIAGNOSTICS_DIR/dependencies.result.txt"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      - name: Record dependency setup outcome
+        if: ${{ always() }}
+        env:
+          DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIAGNOSTICS_DIR="${DIAGNOSTICS_DIR:-$RUNNER_TEMP/markdown-word-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT}"
+          if [[ ! -e "$DIAGNOSTICS_DIR/venv.result.txt" && ! -L "$DIAGNOSTICS_DIR/venv.result.txt" ]]; then
+            if [[ "${DEPENDENCIES_OUTCOME:-unknown}" == "skipped" ]]; then
+              printf 'status=not_run\nreason=dependency_step_skipped\n' > "$DIAGNOSTICS_DIR/venv.result.txt"
+            else
+              printf 'status=unknown\nreason=venv_status_missing\n' > "$DIAGNOSTICS_DIR/venv.result.txt"
+            fi
+          fi
+          if [[ ! -e "$DIAGNOSTICS_DIR/pip.result.txt" && ! -L "$DIAGNOSTICS_DIR/pip.result.txt" ]]; then
+            if [[ "${DEPENDENCIES_OUTCOME:-unknown}" == "skipped" ]]; then
+              printf 'status=not_run\nreason=dependency_step_skipped\n' > "$DIAGNOSTICS_DIR/pip.result.txt"
+            else
+              printf 'status=unknown\nreason=pip_status_missing\n' > "$DIAGNOSTICS_DIR/pip.result.txt"
+            fi
+          fi
+          printf 'outcome=%s\n' "${DEPENDENCIES_OUTCOME:-unknown}" > "$DIAGNOSTICS_DIR/dependencies-step.result.txt"
+
+      - name: Run Markdown terminology check
+        id: terminology-check
+        if: ${{ steps.head-check.outcome == 'success' && steps.repository-diagnostics.outcome == 'success' && steps.dependencies.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > "$DIAGNOSTICS_DIR/checker-step.stdout.log"
+          : > "$DIAGNOSTICS_DIR/checker-step.stderr.log"
+          if [[ -e "$CHECK_OUTPUT_DIR" || -L "$CHECK_OUTPUT_DIR" ]]; then
+            printf 'Refusing existing current-run output path: %s\n' "$CHECK_OUTPUT_DIR" >> "$DIAGNOSTICS_DIR/checker-step.stderr.log"
+            printf 'status=not_run\nreason=output_path_exists\n' > "$DIAGNOSTICS_DIR/checker-step.result.txt"
+            exit 1
+          fi
+          set +e
+          if tools/lint/.venv/bin/python tools/lint/scripts/run_markdown_word_check.py \
+            --mode "${MARKDOWN_WORD_CHECK_MODE}" \
+            --scope full \
+            --output-dir "$CHECK_OUTPUT_DIR" \
+            >"$DIAGNOSTICS_DIR/checker-step.stdout.log" 2>"$DIAGNOSTICS_DIR/checker-step.stderr.log"; then
+            status=0
+          else
+            status=$?
+          fi
+          set -e
+          printf 'status=%s\n' "$status" > "$DIAGNOSTICS_DIR/checker-step.result.txt"
+          if grep -Fxq -e "result=pass; diagnostics=$CHECK_OUTPUT_DIR" \
+            -e "result=needs_user_review; diagnostics=$CHECK_OUTPUT_DIR" \
+            -e "result=failed; diagnostics=$CHECK_OUTPUT_DIR" "$DIAGNOSTICS_DIR/checker-step.stdout.log"; then
+            : > "$DIAGNOSTICS_DIR/checker-execution.completed"
+          fi
+          exit "$status"
+
+      - name: Record terminology check outcome
+        if: ${{ always() }}
+        env:
+          TERMINOLOGY_OUTCOME: ${{ steps.terminology-check.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIAGNOSTICS_DIR="${DIAGNOSTICS_DIR:-$RUNNER_TEMP/markdown-word-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT}"
+          {
+            printf 'outcome=%s\n' "${TERMINOLOGY_OUTCOME:-unknown}"
+            if [[ -f "$DIAGNOSTICS_DIR/checker-execution.completed" ]]; then
+              if [[ -s "$CHECK_OUTPUT_DIR/result.json" \
+                && -f "$CHECK_OUTPUT_DIR/stdout.log" \
+                && -f "$CHECK_OUTPUT_DIR/stderr.log" ]]; then
+                mkdir -p "$DIAGNOSTICS_DIR/current-check"
+                cp "$CHECK_OUTPUT_DIR/result.json" "$DIAGNOSTICS_DIR/current-check/result.json"
+                cp "$CHECK_OUTPUT_DIR/stdout.log" "$DIAGNOSTICS_DIR/current-check/stdout.log"
+                cp "$CHECK_OUTPUT_DIR/stderr.log" "$DIAGNOSTICS_DIR/current-check/stderr.log"
+                if ! grep -Eq '"stdout"[[:space:]]*:[[:space:]]*"stdout\.log"' "$DIAGNOSTICS_DIR/current-check/result.json" \
+                  || ! grep -Eq '"stderr"[[:space:]]*:[[:space:]]*"stderr\.log"' "$DIAGNOSTICS_DIR/current-check/result.json"; then
+                  printf 'result_json=invalid_log_references\n'
+                  exit 1
+                fi
+                printf 'result_json=current-check/result.json; logs=current-check/stdout.log,current-check/stderr.log\n'
+              else
+                printf 'result_json_or_logs=missing_after_checker_completion\n'
+                exit 1
+              fi
+            else
+              printf 'result_json=not_examined_checker_did_not_complete\n'
+            fi
+          } > "$DIAGNOSTICS_DIR/terminology-check.result.txt"
+
+      - name: Collect workflow step outcomes
+        if: ${{ always() }}
+        env:
+          DIAGNOSTICS_OUTCOME: ${{ steps.diagnostics.outcome }}
+          REPOSITORY_DIAGNOSTICS_OUTCOME: ${{ steps.repository-diagnostics.outcome }}
+          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+          HEAD_OUTCOME: ${{ steps.head-check.outcome }}
+          PYTHON_SETUP_OUTCOME: ${{ steps.python-setup.outcome }}
+          DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
+          TERMINOLOGY_OUTCOME: ${{ steps.terminology-check.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIAGNOSTICS_DIR="${DIAGNOSTICS_DIR:-$RUNNER_TEMP/markdown-word-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT}"
+          {
+            printf 'diagnostics_init=%s\n' "${DIAGNOSTICS_OUTCOME:-unknown}"
+            printf 'repository_diagnostics=%s\n' "${REPOSITORY_DIAGNOSTICS_OUTCOME:-unknown}"
+            printf 'checkout=%s\n' "${CHECKOUT_OUTCOME:-unknown}"
+            printf 'head_check=%s\n' "${HEAD_OUTCOME:-unknown}"
+            printf 'python_setup=%s\n' "${PYTHON_SETUP_OUTCOME:-unknown}"
+            printf 'dependencies=%s\n' "${DEPENDENCIES_OUTCOME:-unknown}"
+            printf 'terminology_check=%s\n' "${TERMINOLOGY_OUTCOME:-unknown}"
+          } > "$DIAGNOSTICS_DIR/step-outcomes.txt"
+
+      - name: Validate diagnostic completeness
+        if: ${{ always() }}
+        env:
+          DIAGNOSTICS_OUTCOME: ${{ steps.diagnostics.outcome }}
+          REPOSITORY_DIAGNOSTICS_OUTCOME: ${{ steps.repository-diagnostics.outcome }}
+          HEAD_OUTCOME: ${{ steps.head-check.outcome }}
+          DEPENDENCIES_OUTCOME: ${{ steps.dependencies.outcome }}
+          CHECK_OUTCOME: ${{ steps.terminology-check.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIAGNOSTICS_DIR="${DIAGNOSTICS_DIR:-$RUNNER_TEMP/markdown-word-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT}"
+          failed=0
+          if [[ ! -d "$DIAGNOSTICS_DIR" ]]; then
+            printf 'Required diagnostics directory is missing: %s\n' "$DIAGNOSTICS_DIR" >&2
+            exit 1
+          fi
+          for file in run-context.txt checkout.result.txt head-check-step.result.txt repository-diagnostics.result.txt python-setup.result.txt dependencies-step.result.txt venv.result.txt pip.result.txt terminology-check.result.txt step-outcomes.txt; do
+            if [[ ! -s "$DIAGNOSTICS_DIR/$file" ]]; then
+              printf 'Required diagnostic is missing or empty: %s\n' "$file" >&2
+              failed=1
+            fi
+          done
+          if [[ "${DIAGNOSTICS_OUTCOME:-unknown}" != "success" ]]; then
+            printf 'Diagnostics initialization did not succeed: %s\n' "${DIAGNOSTICS_OUTCOME:-unknown}" >&2
+            failed=1
+          fi
+          require_file() {
+            if [[ ! -f "$1" ]]; then
+              printf 'Required diagnostic log is missing: %s\n' "$1" >&2
+              failed=1
+            fi
+          }
+          if [[ "${HEAD_OUTCOME:-skipped}" != "skipped" ]]; then
+            require_file "$DIAGNOSTICS_DIR/head.stdout.log"
+            require_file "$DIAGNOSTICS_DIR/head.stderr.log"
+          fi
+          if [[ "${REPOSITORY_DIAGNOSTICS_OUTCOME:-skipped}" != "skipped" ]]; then
+            require_file "$DIAGNOSTICS_DIR/repository-diagnostics.stdout.log"
+            require_file "$DIAGNOSTICS_DIR/repository-diagnostics.stderr.log"
+          fi
+          venv_status="$(sed -n 's/^status=//p' "$DIAGNOSTICS_DIR/venv.result.txt" 2>/dev/null || true)"
+          if [[ "$venv_status" == "success" || "$venv_status" == "failure" ]]; then
+            require_file "$DIAGNOSTICS_DIR/venv.stdout.log"
+            require_file "$DIAGNOSTICS_DIR/venv.stderr.log"
+          fi
+          pip_status="$(sed -n 's/^status=//p' "$DIAGNOSTICS_DIR/pip.result.txt" 2>/dev/null || true)"
+          if [[ "$pip_status" == "success" || "$pip_status" == "failure" ]]; then
+            require_file "$DIAGNOSTICS_DIR/install.stdout.log"
+            require_file "$DIAGNOSTICS_DIR/install.stderr.log"
+          fi
+          if [[ "${CHECK_OUTCOME:-skipped}" != "skipped" ]]; then
+            require_file "$DIAGNOSTICS_DIR/checker-step.result.txt"
+            require_file "$DIAGNOSTICS_DIR/checker-step.stdout.log"
+            require_file "$DIAGNOSTICS_DIR/checker-step.stderr.log"
+          fi
+          if [[ -f "$DIAGNOSTICS_DIR/checker-execution.completed" ]]; then
+            for file in result.json stdout.log stderr.log; do
+              require_file "$DIAGNOSTICS_DIR/current-check/$file"
+            done
+            if ! grep -Eq '"stdout"[[:space:]]*:[[:space:]]*"stdout\.log"' "$DIAGNOSTICS_DIR/current-check/result.json" \
+              || ! grep -Eq '"stderr"[[:space:]]*:[[:space:]]*"stderr\.log"' "$DIAGNOSTICS_DIR/current-check/result.json"; then
+              printf 'Checker result does not reference the fixed log names in current-check.\n' >&2
+              failed=1
+            fi
+          elif [[ "${CHECK_OUTCOME:-skipped}" == "success" ]]; then
+            printf 'Checker step succeeded without a completion marker.\n' >&2
+            failed=1
+          fi
+          exit "$failed"
+
+      - name: Upload terminology diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: markdown-word-check-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.diagnostics.outputs.diagnostics_dir }}
+          retention-days: 14
+          if-no-files-found: error

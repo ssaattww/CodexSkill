@@ -2,9 +2,20 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-11-26
+- Updated: 2026-11-28
 
 ## In Progress
+
+- T-010: 他のリポジトリへ Markdown 用語検査を導入する
+  - Status: Linux の専用作業場所への導入と診断を確認。先行版の独立最終レビューは不合格。修正差分の必須指摘は解消。Windows 実機、既存の利用先への反映、利用先の CI は未確認
+  - Phase: Phase 14
+  - Issue: #87
+  - PR: #88 (Draft)
+  - Estimate: M
+  - Depends on: 既存の用語検査、対象側の Git、検証時の既存ランタイム
+  - Scope: 導入コマンド、固定資産、ローカル実行と任意 CI。CodexSkill 自身への常設は除外
+  - Exit Criteria: 書き込み前に対象を確認し、既存設定を変えない。両 OS の隔離検証、検査結果と失敗の区別、最終レビュー、対象版の CI が確認できる
+  - Output: `design/markdown-word-check-bootstrap-design.md`、`reports/issue-87-pr88-bootstrap-20261128.md`
 
 - T-009: Codex Cloud共有ツールインストーラーのYomiyasu対応
   - Status: 技術 HEAD の通常レビュー `pass_with_held`（必須指摘0件）、Draft PR #100 公開・自動 CI 成功。親の原文確認を取り込んだ非製品3ファイルの保存を進める（記録作成時 `commit_pending`）。後続通常レビュー待ち

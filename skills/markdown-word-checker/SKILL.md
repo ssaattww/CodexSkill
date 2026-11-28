@@ -54,6 +54,16 @@ Before running this skill, gather:
 9. If exact entry review is required, stop the gate and return the candidates, rationale, target files, and caller report path.
 10. Return per-scope command results, aggregate gate state, classification, user-review needs, and report paths to the caller.
 
+### Repository bootstrap
+
+The current entry is `scripts/plan_markdown_word_check_bootstrap.mjs`. It requires Node.js 18 or newer in the development environment and prints a read-only plan for the fixed seven-file manifest, plus the CI file only when explicitly requested. It verifies the target Git worktree root, optional expected HEAD, source assets, and existing destinations. The plan never edits the target, never invokes the legacy Python writer, and is not authorization to install.
+
+Use the planner only to inspect a new consumer repository. If `tools/lint/` or any destination already exists, stop and report the collision; do not migrate, delete, rename, or overwrite it. Extra files outside the fixed manifest are ignored. Missing required source files and source type mismatches are refusals.
+
+The bootstrap defaults to a read-only plan. Use `--install --confirm-exclusive` with a matching `--expected-head` only after confirming sole use of the source and temporary area for the run. This creates a private checkout and installs only into that copy. Concurrent modification by another process under the same account is not supported. If sole use cannot be confirmed, use only the read-only plan. It does not change the original consumer checkout. Refuse unverified environments before writing and keep unverified leftovers rather than deleting them automatically. Linux isolation has been exercised; Windows, deployment to real consumers and consumer CI are not verified. Keep whitelist and terminology approval unchanged.
+
+The detailed contract is [Markdown word-check bootstrap design](../../design/markdown-word-check-bootstrap-design.md).
+
 ### Codex PostToolUse hook helper
 
 The optional hook helper is an early feedback path. It must not replace the authoring skill call to `markdown-word-checker`, the review-enforcer gate, or the caller's report disposition.

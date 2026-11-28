@@ -48,6 +48,18 @@ Markdown 資料に対し、対象リポジトリの lint 設定を読み込ん�
 
 実際の検査コマンド実行や広い証跡収集は、必要に応じて `sub-agent-task-manager` 経由で sub-agent に委譲できる。
 
+## 他リポジトリへのbootstrap
+
+Issue #87では、repo-local設定がまだないリポジトリへMarkdown用語検査を導入する標準bootstrapを追加する。bootstrapは既存の`markdown-word-checker`を利用し、用語判定規則を別実装しない。
+
+導入後は対象リポジトリの`tools/lint/`だけで実行できる自己完結構成とする。対象リポジトリのroot `package.json`や製品コードには依存せず、Python依存は`tools/lint/.venv`へ閉じ込める。
+
+初回は空の許可一覧で`audit`を行い、未登録語を`needs_user_review`として候補化する。bootstrapは候補を自動登録せず、`term`、`aliases`、`description`、`prh`、対象除外の具体的な変更は既存のexact-entry review契約へ戻す。対象範囲と初期許可一覧が確定した後だけ`enforce`をblocking gateとして使う。
+
+既存ファイルが1件でも存在する場合は書き込み前に停止する。`--dry-run`、一時Git fixtureによる導入検証、WindowsとCI/Linuxで共通のrepo-local設定、成功・利用者レビュー待ち・失敗の診断保存を要求する。
+
+詳細は[Markdown用語検査bootstrap設計](markdown-word-check-bootstrap-design.md)を正とする。CodexSkill自身へ適用する#79 / PR #80は保留であり、bootstrap実装の完了条件には含めない。
+
 ## repo 固有設定の契約
 
 対象リポジトリは、標準形として次を持てる。

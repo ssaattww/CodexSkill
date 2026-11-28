@@ -166,3 +166,14 @@
   - 技術 HEAD `522403500da83fba191fb5fd7c8a1885d15ffa60` の公式固定版導入、照合、再利用を検証し、通常レビュー `pass_with_held`、必須指摘0件を親が原文確認（応答 01a21718-1626-7105-a7c0-727a09d78b79、GPT-6.2 Sol High 指定）。公開 HEAD の pull_request CI 2件と push CI 1件は成功
   - 通常統合報告: `reports/task-t-009-pr100-normal-consolidated-20261126091619.md`（親による原文確認を反映）
   - 残り: 非製品3ファイルの保存コミットと通常 push（親承認済み）、同一 candidate HEAD の全体検証・自動 CI 記録、後続通常レビュー。その後に review-enforcer が予約・凍結と独立最終レビューを扱う。独立最終報告予約・作成、マージ、手動 CI、Duck 依存 pin は未実施
+
+## Phase 14: Markdown 用語検査の導入
+
+- Status: In Progress（先行版の独立最終レビューは不合格。修正差分の必須指摘は解消、Windows と利用先 CI が残る）
+- Task: T-010 / Issue #87
+- Design: `design/markdown-word-check-bootstrap-design.md`
+- PR: #88 (Draft)
+- Notes:
+  - 既定は計画だけ。明示導入は対象のコミットを専用作業場所へコピーし、その中だけに資産を配置する。元の利用先は変更しない。
+  - Linux の実属性で8資産、診断3件、外部参照なし、元の状態不変を確認。Windows の現行版と利用先の CI は未確認。
+  - 既存の用語検査は再利用する。CodexSkill 自身への導入、既存の利用先への移行、公開は含まない。
