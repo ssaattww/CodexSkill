@@ -1,6 +1,6 @@
 ---
 name: design-doc-maintainer
-description: Decide whether design documentation must be updated and perform the required design-document maintenance before implementation continues. Use when changes affect public behavior, DSL contracts, external APIs, file formats, configuration formats, workflows, or when starting a project or deciding where to place a new design, phase/status, task/status, or report document. Existing output paths and updates to documents with an established location do not trigger this placement guidance.
+description: Decide whether design documentation must be updated and perform the required design-document maintenance before implementation continues. Use when changes affect public behavior, DSL contracts, external APIs, file formats, configuration formats, workflows, or any behavior that should be reflected in existing design documents rather than implemented ad hoc. Also consult the layout guidance when deciding where to place any new document, including design, phase/status, task/status, report, or other documents; routine generation or updates at established paths do not trigger this placement guidance.
 ---
 
 # Design Doc Maintainer
@@ -30,10 +30,12 @@ Before running this skill, gather:
 
 ## Run this skill
 
-When starting a project or deciding where a new document belongs, first read
+Before creating a document whose location has not yet been established, read
 the [multi-project document layout guidance](references/multi-project-document-layout.md).
-For a new project, do this once before initial documents are created; preserve
-the target repository's established layout, naming, report paths, and automation.
+This includes new documents added to an existing project. For a new project,
+make the initial placement decision once before creating its first documents.
+Routine generation or updates at established paths do not repeat this placement
+check. A placement check does not replace the design-impact judgment below.
 
 Run this skill before implementation whenever changes affect:
 
