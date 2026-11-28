@@ -1,0 +1,78 @@
+schema_version: 3
+producer:
+  skill: report-output-manager
+  mode: normal_review_fix_verification
+  generated_at: '2026-11-28T09:54:35Z'
+repository: ssaattww/CodexSkill
+issue_or_pr: 'Issue #119 / PR #122'
+branch: docs/issue-119-readme-writing
+base_ref: main
+target:
+  current_head: 69a5616ae89e03856abf0a4047765e2ec8cafca0
+  reviewed_head: 69a5616ae89e03856abf0a4047765e2ec8cafca0
+  commit_range: 04947ca368e71ea3b792681a6d00b25e1302ef59..69a5616ae89e03856abf0a4047765e2ec8cafca0
+verification:
+  capability: local_execution_available
+  technical_head: 69a5616ae89e03856abf0a4047765e2ec8cafca0
+  commit:
+    state: report_commit_pending_at_authoring
+    review_target_sha: 69a5616ae89e03856abf0a4047765e2ec8cafca0
+  push:
+    state: report_push_pending_at_authoring
+    head_sha: null
+  ci:
+    state: passed_for_reviewed_implementation_head
+    runs:
+      - id: 46131769501
+        name: Validate and release
+        conclusion: success
+        head_sha: 69a5616ae89e03856abf0a4047765e2ec8cafca0
+      - id: 46131769493
+        name: PR commit artifacts
+        conclusion: success
+        head_sha: 69a5616ae89e03856abf0a4047765e2ec8cafca0
+review:
+  verdict: pass
+  required_findings: 0
+  new_findings: 0
+  fixed_findings:
+    - id: ISSUE119-NR-001
+      severity: low
+      disposition: resolved
+      summary: ルート README の例における起動対象とリンク先の不一致。
+    - id: ISSUE119-NR-002
+      severity: low
+      disposition: resolved
+      summary: コピー用例に実行場所とコマンドが含まれない。
+  evidence:
+    - 同じ通常レビュー担当がルート用・プロジェクト用例を個別に抽出した。
+    - Pandoc GFM 解析後、両例のリンク、指示、相対パスを確認した。
+    - 上記2件の解消と新規指摘0件を確認した。
+  independent_final_review:
+    formal_completion: not_established_by_this_handoff
+    note: 独立技術判定は正式な完了手続を代替しない。
+authoritative_requirements:
+  - source: user_instruction
+    reference: delegated task
+    summary: 通常レビュー報告と通常引継ぎのみを保存し、独立最終レビューの完了と混同しない。
+scope:
+  - PR #122 の通常レビュー指摘2件の修正確認と証拠保存。
+non_goals:
+  - 実装・指針・配置規則の変更
+  - 独立最終レビューの完了扱い
+  - PR本文・コメント、手動CI、マージ、force push
+files:
+  changed:
+    - reports/issue-119-pr122-normal-review-20261128095435.md
+    - reports/handoffs/issue-119-pr122-normal-review-20261128095435.yaml
+  protected:
+    - reports/issue-119-independent-final-review-20261128.md
+write_boundary:
+  allowed:
+    - 通常レビュー報告・引継ぎの追加
+  forbidden:
+    - 実装、指針、配置規則、独立最終レビュー報告の変更
+    - PR本文・コメント、手動CI、マージ、force push
+next_action:
+  - 報告のみの単一コミットを同じブランチへ通常 push する。
+  - 新 HEAD とその自動CIを確認する。レビュー対象の判定・CIを新 HEAD へ自動継承しない。
