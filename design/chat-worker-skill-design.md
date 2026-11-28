@@ -255,6 +255,14 @@ chatgpt-worker-skills.zip
 
 Release時の共通file複製とrepository相対linkの書換は行わない。
 
+### 版付きZIP asset
+
+版付きRelease／Pre-releaseには、従来の`chatgpt-worker-skills.zip`を維持したうえで、同じ検証済みZIPの別名`chatgpt-worker-skills-<tag>.zip`も添付する。別名はコピーとして作り、原本とSHA-256が一致することを公開前に確認する。rolling Releaseは固定名のみとし、既存の固定名ダウンロードURLと履歴Releaseのasset名を維持する。ZIP内部の構造・内容には版情報を追加しない。
+
+自動Pre-releaseでは計算済みの版タグをそのまま使う。手動Releaseではタグ全体が`^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`に一致する場合だけ別名を作る。不一致タグは置換・正規化せず、警告を記録して版付き別名を追加しない。従来の固定名添付は妨げない。これにより異なるタグのファイル名衝突を避ける。
+
+受入確認では、通常の版付きReleaseとPre-releaseで固定名と版付き別名が同じバイト列であること、rollingのasset名が従来どおりであること、既存の固定名URLが変わらないこと、不許可の手動タグが別名化されないことを確認する。ローカルでは一時ディレクトリとGitHub CLIの記録用stubを使い、upload引数とSHA-256を確認する。Release作成・upload、CI起動、外部通信は行わない。
+
 ## Project Instruction
 
 Skill ZIPとは別に、対象ChatGPT ProjectへProject Instructionを設定する。
