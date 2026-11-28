@@ -2,7 +2,7 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-11-26
+- Updated: 2026-11-28
 
 ## Phase 1: 契約・設計
 
@@ -166,3 +166,14 @@
   - 技術 HEAD `522403500da83fba191fb5fd7c8a1885d15ffa60` の公式固定版導入、照合、再利用を検証し、通常レビュー `pass_with_held`、必須指摘0件を親が原文確認（応答 01a21718-1626-7105-a7c0-727a09d78b79、GPT-6.2 Sol High 指定）。公開 HEAD の pull_request CI 2件と push CI 1件は成功
   - 通常統合報告: `reports/task-t-009-pr100-normal-consolidated-20261126091619.md`（親による原文確認を反映）
   - 残り: 非製品3ファイルの保存コミットと通常 push（親承認済み）、同一 candidate HEAD の全体検証・自動 CI 記録、後続通常レビュー。その後に review-enforcer が予約・凍結と独立最終レビューを扱う。独立最終報告予約・作成、マージ、手動 CI、Duck 依存 pin は未実施
+
+## Phase 14: Issue #76 設計書テンプレートの後継候補
+
+- Status: In Progress（通常レビュー pass、独立最終レビュー待ち）
+- Task: T-010 / Issue #76
+- PR: #123 (Draft; PR #110 の後継)
+- Notes:
+  - テンプレートと既存 Draw.io 図を維持し、コード引用の短いルール・実例を追加した
+  - 通常レビュー結果と検証根拠: `reports/issue-76-pr123-normal-review-20261128141514.md`
+  - `09bd446b0a143ab735d7ae9c5985a320a2f96d63` に対応する pull_request CI 46153015802、46153015881 は成功
+  - 次は親が独立最終レビューを手配する。予約・独立レビュー・マージは未実施
