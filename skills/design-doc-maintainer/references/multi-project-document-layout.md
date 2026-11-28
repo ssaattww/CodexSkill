@@ -12,22 +12,24 @@
 ```text
 <repository>/
 ├── <solution-file>
-├── README.md
-├── <overall-docs>/
-│   ├── <overall-basic-design>
-│   ├── <phase-status-document>
-│   ├── <task-status-document>
-│   └── reports/                 # 採用するレポート規則が許す場合の例
+├── README.md                 # 全体基本設計と各プロジェクトへのリンク
+├── docs/                     # 全体文書の例
+│   ├── basic-design.md
+│   ├── phases-status.md
+│   ├── tasks-status.md
+│   └── reports/              # 既存規則と競合しない場合の例
 └── projects/
-    ├── <project-a>/
-    │   ├── README.md
-    │   └── <project-docs>/
-    │       └── <project-design>
-    └── <project-b>/
+    ├── alpha/
+    │   ├── README.md         # 個別設計へのリンク
+    │   └── docs/
+    │       └── alpha-design.md
+    └── beta/
         ├── README.md
-        └── <project-docs>/
-            └── <project-design>
+        └── docs/
+            └── beta-design.md
 ```
+
+名前は配置関係を示す例であり、採用する名前は既存規則に合わせる。
 
 | 対象 | 置く文書と入口 |
 | --- | --- |
