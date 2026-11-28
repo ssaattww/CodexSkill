@@ -1,6 +1,6 @@
 ---
 name: git-pr-submitter
-description: Create a pull request that packages the current task with sufficient context, validation evidence, and report references. Use when a task has passed implementation, verification, review, and commit stages and is ready to be submitted for integration.
+description: Create a pull request that packages the current task with sufficient context, validation evidence, and report references. Use when writing an Issue body or preparing a pull request for integration after the required verification and review.
 ---
 
 # Git PR Submitter
@@ -27,6 +27,12 @@ Before running this skill, gather:
 - linked issue identifier(s) for the task or an explicit reason why no issue exists
 - review evidence and validation evidence
 - report references needed in the PR body
+
+## Body templates
+
+- Use the [Issue body template](references/issue-body-template.md) when drafting or editing an Issue. Start with the intended outcome, then state the problem, scope, and observable completion conditions. Keep a suspected cause separate from a confirmed one.
+- Use the [PR body template](references/pull-request-body-template.md) when drafting or editing a PR. Put the review decision and its effect first; distinguish changes, scope exclusions, verified evidence, and remaining work. Link directly to the relevant file lines, review, or CI result.
+- Use a short example, a table, or a diagram when it explains a rule better than a long paragraph. Do not copy placeholder instructions or invent evidence. Formatting an Issue or PR does not grant permission to publish it or change its state.
 
 ## Required PR contents
 
