@@ -131,7 +131,7 @@ classification
 ```yaml
 role_plan:
   explicit_agent_type: <role or null>
-  effective_role: <確認できた役割名、または null>
+  effective_role: <role name>
   role_config_evidence: <source or null>
   profile_effect: unchanged | changed | locked | unknown
 planned_runtime_profile:
@@ -529,20 +529,6 @@ single-agent execution policy。review scopeが独立workstreamを含むなら�
 同一taskの実行証拠、未解決の理由、Astraで改善を期待する点を提示してAstra highを提案する。1ターン承認で実行後、追加調査を送る前に再承認する。明示的なtask完了までのgrantが有効なら、同一scope内でそのgrantを確認して継続できる。認証不足だけが原因ならAstraで解決するとは扱わない。
 
 ## 検証方針
-
-Issue #90 の判断は、公開スキーマに指定できる値、ツールが受け付けた結果、実際に適用された値を分けて検査する。
-
-役割なしを正式に確認した場合と、役割が不明な場合は、ともに `effective_role: null` とする。前者は `confirmed_absent` と `profile_effect: unchanged`、後者は `uninspected` と `profile_effect: unknown` で区別する。役割名だけ確認できた場合は、その名前と影響不明を残す。
-
-| 条件 | 期待結果 |
-| --- | --- |
-| role の指定や照会が公開されていない | 公開されていないと記録する。内部 role の影響や継承を判断できなければ停止する。 |
-| role の設定を確認できる | 根拠と影響を残し、実行前に下限と承認条件を確認する。 |
-| role は適用されるが設定が見えない | 影響不明として停止する。 |
-| その呼び出し経路に role が適用されないと正式な根拠で確認できる | 観測結果を記録し、継承・下限・承認・権限を満たす場合だけ進む。 |
-| role が高コストモデルや推論強度へ変更する | 既存の承認条件を満たすまで停止する。 |
-| 指定を受け付けても最終値が見えない | 受付を記録するが、`applied: null` のままにする。 |
-| 指定できるが呼び出しが拒否または結果不明 | 実際の結果を分けて記録し、適用済みとみなさない。 |
 
 CodexSkill repositoryの方針に従いTDDは適用しない。
 

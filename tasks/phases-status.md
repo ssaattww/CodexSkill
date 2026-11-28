@@ -1,12 +1,5 @@
 # Phases Status
 
-## Issue #90: 役割とモデル適用の証跡
-
-- Status: 通常レビュー完了。独立最終レビューと公開は未実施。
-- Task: T-090
-- Scope: 既存の記録形式に証跡を追加する。承認・権限・実行制御は変更しない。
-- Evidence: `reports/issue-90-normal-consolidated-20261128.md`
-
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
 - Updated: 2026-11-26

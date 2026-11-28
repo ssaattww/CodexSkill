@@ -208,7 +208,7 @@ Before spawn, require the runtime call planner to record:
 ```yaml
 role_plan:
   explicit_agent_type: <role or null>
-  effective_role: <observed role name or null>
+  effective_role: <role name>
   role_config_evidence: <path/source or null>
   profile_effect: unchanged | changed | locked | unknown
 planned_runtime_profile:
@@ -244,27 +244,6 @@ An override may pin the model, effort, or both. Continue to classify the task an
 A repository policy that requests Sol `xhigh`, Sol `max`, or Astra creates a candidate but cannot satisfy the approval gate. Astra is never an automatic same/higher-tier availability replacement.
 
 ## Dispatch profile schema
-
-When authoritative evidence excludes role application, record `role_inspection: confirmed_absent`, set `effective_role: null`, and use `profile_effect: unchanged` to mean no role adjustment, not verified final application. If the effective role is unknown, use `effective_role: null`, `role_inspection: uninspected`, and `profile_effect: unknown`. If only its configuration is unknown, preserve the known role name and record the effect as unknown. Never fill `default` without evidence.
-
-Keep the core schema version unchanged. For model, effort, fork, and role observability decisions, add this separately versioned evidence extension to the parent-owned `dispatch_profile`:
-
-```yaml
-dispatch_observability:
-  schema_version: 1
-  schema_evidence: <actual tool schema and relevant values>
-  argument_support:
-    model: supported | unsupported | unknown
-    reasoning_effort: supported | unsupported | unknown
-    fork_turns: supported | unsupported | unknown
-  role_interface: exposed | not_exposed | unknown
-  role_inspection: inspected | uninspected | confirmed_absent
-  role_evidence: <authoritative source or null>
-  call_acceptance: not_called | accepted | rejected | unknown
-  call_evidence: <tool result reference or null>
-```
-
-Before the call, use `not_called` and base argument support on the actual requested values, not the mere presence of a field. After the call, use the observed result to record acceptance; an uncertain response is not a rejection and does not authorize another call. Final application stays in the existing `applied` and observability fields. Do not infer evidence from earlier records that lack this extension or change the Astra authorization extension.
 
 For an ordinary newly dispatched profile before role/runtime planning:
 

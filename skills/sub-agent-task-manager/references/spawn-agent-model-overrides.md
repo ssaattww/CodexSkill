@@ -7,7 +7,6 @@ This reference owns runtime call planning, role/default-role impact analysis, ru
 ## Core contract
 
 - `requested` is a pre-spawn instruction selected by the parent.
-- Public schema support, call acceptance, and final application are three separate facts. Check the actual tool's fields and accepted values for model, reasoning effort, and fork policy; do not equate schema support with backend acceptance or application.
 - `role_plan` is a pre-spawn description of the explicit `agent_type` or effective default role and any model/reasoning changes that role can apply.
 - `planned_runtime_profile` is a pre-spawn expectation after known role/default-role constraints. It is not runtime proof.
 - `applied` is a post-runtime fact. Keep it unset unless the parent can observe a trustworthy final runtime snapshot or another exact application proof.
@@ -25,12 +24,10 @@ This reference owns runtime call planning, role/default-role impact analysis, ru
 
 Treat agent role configuration as part of the call plan, not as an opaque post-call detail.
 
-Record role-interface visibility separately from runtime role inspection. If the public tool exposes no role selection or lookup, record `not_exposed` for the interface. That does not establish that internal/default roles are absent. Record `confirmed_absent` only when authoritative evidence for this exact call path excludes role application; otherwise record `uninspected` if the effect cannot be determined. A known role with inaccessible configuration also remains `uninspected`. Never invent a default role or relabel an unknown effect as unchanged.
-
 Before dispatch:
 
 1. identify explicit `agent_type` when one will be passed
-2. otherwise identify the effective default role from authoritative evidence or record that its presence or effect could not be established
+2. otherwise identify the effective default role that the current runtime will apply
 3. inspect the authoritative role configuration when it is available
 4. record whether the role leaves model/reasoning unchanged, changes them, locks them, or is unknown
 5. derive `planned_runtime_profile` only from known role/config evidence
@@ -41,8 +38,6 @@ The expensive Sol approval gate applies to the role-adjusted plan as well as the
 A role/default role producing Astra must pass its same-task prior-attempt eligibility and scoped approval gate, even when the original requested model was cheaper. Require requested and known planned profile to resolve to Astra high before an Astra call. A role that forces another Astra effort is incompatible; Astra high consent does not authorize it.
 
 If the applicable role/default-role configuration cannot be inspected well enough to determine whether it can change model or reasoning effort, the parent cannot guarantee the expensive-profile gate. Record a role-profile capability gap and stop before dispatch rather than assuming the requested profile will survive role application.
-
-A hidden interface does not lift that stop. A confirmed no-role call path may plan from the remaining proven model, effort, and fork behavior only after the usual floor, inheritance, cost, availability, and authorization checks. An unknown inherited profile remains a capability gap. Use an explicit role only if the actual tool supports it.
 
 A role that forces a profile below the required automatic floor is also a capability/policy mismatch. Do not silently claim the lower role profile satisfies the task.
 
@@ -79,7 +74,7 @@ await collaboration.spawn_agent({
 });
 ```
 
-Omit `agent_type` when the call uses the runtime default role, when the argument is not exposed, or when authoritative runtime evidence rules out role application. Omission alone does not establish any of these conditions; record the reason and evidence separately.
+Omit `agent_type` only when the call intentionally uses the runtime default role. An omitted role is not equivalent to "no role"; account for the effective default role in `role_plan`.
 
 Keep the task request focused on work, scope, evidence, and report rules. A model name written only in `message` does not configure the spawned agent. The call shape is not a substitute for preflight and authorization; Astra needs its operation-bound grant before invoking it.
 
@@ -94,7 +89,7 @@ requested:
   fork_turns: <selected fork policy>
 role_plan:
   explicit_agent_type: <role or null>
-  effective_role: <observed role name or null>
+  effective_role: <role name>
   role_config_evidence: <path/source or null>
   profile_effect: unchanged | changed | locked | unknown
 planned_runtime_profile:
@@ -108,8 +103,6 @@ profile_observability: pending
 `planned_runtime_profile` is planning evidence only. Never rename it to `applied` before runtime proof. Astra additionally requires the `astra_authorization` extension and operation record from its reference.
 
 ## Post-spawn evidence
-
-Use the [selector's core-role and evidence mapping](agent-profile-selection.md#dispatch-profile-schema) to distinguish an unknown role from a call path with confirmed role absence.
 
 When a trustworthy parent-visible final snapshot exists:
 

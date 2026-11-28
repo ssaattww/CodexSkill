@@ -214,7 +214,6 @@ After this skill runs, there should be:
 - a decomposition disposition explaining why multi-agent execution was or was not used
 - a bounded delegated or locally executed work scope
 - for every sub-agent task: `requested`, `role_plan`, `planned_runtime_profile`, and `profile_observability`
-- for every new call covered by the task manager, capture and hand off its complete `dispatch_observability` evidence extension, keeping preflight, call acceptance, and final application separate; preserve original evidence for reviewer continuity without fabricating missing legacy fields
 - exact `applied` evidence when observable, otherwise an explicit `spawn_succeeded_profile_unverified`, inherited, fallback, or capability-gap state without inventing exact model/reasoning values
 - task-bound Astra grant and per-operation usage evidence when applicable
 - synthesis evidence when multiple sub-agents were used

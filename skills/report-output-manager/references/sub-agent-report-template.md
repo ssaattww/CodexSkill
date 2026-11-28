@@ -21,6 +21,8 @@
 
 <!-- This section is parent-owned. The child must not infer or rewrite hidden runtime state or authorization evidence. -->
 
+通常の進捗報告には、担当に指定したモデルと推論強度だけを記録する（例：`指定：Sol 6.2 High`）。実際に適用された値とは扱わず、適用結果の欄を通常の進捗報告に追加しない。
+
 - selection inputs (parent, pre-dispatch):
 - selection source (parent, pre-dispatch):
 - observed decomposability (parent, pre-dispatch):
@@ -37,7 +39,6 @@
 - requested profile (parent, pre-dispatch):
 - agent role / default-role plan (parent, pre-dispatch):
 - role config evidence / profile effect (parent, pre-dispatch):
-- complete [dispatch observability evidence](../../sub-agent-task-manager/references/agent-profile-selection.md#dispatch-profile-schema), including checked schema, role inspection, and call acceptance (parent):
 - planned runtime profile after known role constraints (parent, pre-dispatch):
 - applied profile (parent, post-runtime exact evidence only; null when unverified):
 - application status (parent, post-runtime evidence only):
@@ -45,8 +46,6 @@
 - reviewer continuity (parent, if applicable):
 - fork policy (parent):
 - reasons / constraints (parent):
-
-Preserve this extension in both ordinary reports and deferred-attestation handoffs without materializing the deferred report early. When reusing a reviewer or a legacy record, retain its original evidence and mark unavailable observations as unknown; do not backfill unsupported claims.
 
 ## 実行コマンド
 

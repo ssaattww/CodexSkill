@@ -6,12 +6,6 @@
 
 ## In Progress
 
-- T-090: Issue #90 の役割とモデル適用の証跡を分ける
-  - Status: 通常レビューの必須2件を解消。独立最終レビューと公開は未実施。
-  - Phase: Issue #90
-  - Exit Criteria: 公開機能・受付・適用値を区別し、不明時の既存の停止条件を維持する。
-  - Verification: `reports/issue-90-normal-consolidated-20261128.md`
-
 - T-009: Codex Cloud共有ツールインストーラーのYomiyasu対応
   - Status: 技術 HEAD の通常レビュー `pass_with_held`（必須指摘0件）、Draft PR #100 公開・自動 CI 成功。親の原文確認を取り込んだ非製品3ファイルの保存を進める（記録作成時 `commit_pending`）。後続通常レビュー待ち
   - Phase: Phase 13

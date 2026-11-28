@@ -85,7 +85,6 @@ Use this flow for `new_dispatch`.
 7. read [references/spawn-agent-model-overrides.md](references/spawn-agent-model-overrides.md) and prepare the runtime call plan from `requested`, model availability, fork constraints, and explicit/default agent-role configuration
 8. derive `role_plan` and `planned_runtime_profile`; if the role changes or locks model/reasoning, return the plan through the selector and re-run floor/approval checks before spawn, including Astra eligibility and high-only policy
 9. if role/default-role or inheritance profile impact cannot be inspected well enough to guarantee the expensive-profile gate, record a role-profile capability gap and stop before dispatch
-   - Record public schema evidence, role inspection, and post-call acceptance using the evidence extension in the selector reference. Treat an unexposed role interface as an observability fact, not as grounds to waive this stop or as evidence that the requested profile was applied.
 10. keep `applied: null` while planning; identify which skill files the `sub-agent` must read
 11. resolve report handling without creating duplicate reservations:
     - for `normal_persistence`, call `report-output-manager` normal-persistence phase, reserve the path, and create the standard report file before dispatch
@@ -176,8 +175,6 @@ For `normal_persistence`, also include:
 - instruction not to modify parent-owned `Dispatch profile` values
 
 The parent owns the complete `Dispatch profile` section because the child cannot observe hidden spawn arguments, role application, or final runtime profile state. Astra approval and grant-consumption records are also parent-owned.
-
-Preserve the complete dispatch observability extension with the parent-owned profile evidence in normal reporting and deferred attestation. Reusing an existing reviewer does not authorize reconstructing settings or observations absent from its original record.
 
 ### Deferred-attestation prompt additions
 
