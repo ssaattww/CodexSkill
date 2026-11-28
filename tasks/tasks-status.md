@@ -2,9 +2,30 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-11-26
+- Updated: 2026-11-27
 
 ## In Progress
+
+- T-010: Issue #104 調査担当への図出力指示を追加する
+  - Status: 技術差分の実装・標準検証・通常レビュー `pass_with_held`（親の原本確認、必須指摘0件）、Draft 公開済み。通常報告・追跡は `commit_pending`、追加通常レビュー待ち
+  - Phase: Phase 14
+  - Issue: #104
+  - PR: #105 (Draft)
+  - Estimate: S
+  - Depends on: 既存調査担当向け prompt 要件と標準検証入口
+  - Scope: `skills/sub-agent-task-manager/SKILL.md` の調査担当向け1行、通常報告・追跡のみ
+  - Exit Criteria:
+    - 調査時の不要な図出力を省き、提示に必要な図のみ出力・確認する。図面スキル・設計納品要件は変更しない
+    - 標準検証、通常レビュー証拠、非最終記録の追加通常レビューを確定する
+    - 全非最終変更のコミット・通常レビュー収束後、正確な候補 HEAD の全体検証を1回行い、独立最終工程へ渡す
+  - Output:
+    - `skills/sub-agent-task-manager/SKILL.md`
+    - `reports/issue-104-normal-consolidated-20261127220627.md`
+  - Verification:
+    - 公開技術 HEAD `e965a7085b9f29eaf3175609c6217b321a2e6def`、基点 `dfe07e81d6a1c209f99b908acc8109f70b38a773`。標準検査4件成功、対象 SHA-256・ソース265件・ZIP8件一致。TDD 非適用
+    - 通常レビュー `pass_with_held`、必須指摘0件（親が原本確認、実装とは別担当、GPT-6.2 Sol High を指定。実行時に適用されたプロファイルは未確認。分割なし）。保留は実行時適用のみ。報告・追跡変更は追加通常レビュー対象
+    - 親の Skill-gap は `no skill action needed`（今回の既存 Skill 変更以外）、FP 追加なし
+    - 独立最終レビュー・最終確定 HEAD の全体検証・CI・マージは未実施
 
 - T-009: Codex Cloud共有ツールインストーラーのYomiyasu対応
   - Status: 技術 HEAD の通常レビュー `pass_with_held`（必須指摘0件）、Draft PR #100 公開・自動 CI 成功。親の原文確認を取り込んだ非製品3ファイルの保存を進める（記録作成時 `commit_pending`）。後続通常レビュー待ち
