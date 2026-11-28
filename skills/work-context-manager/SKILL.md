@@ -70,7 +70,7 @@ tests/
   Worker.Tests/
 ```
 
-This is a bootstrap default only: preserve existing repository layouts, do not add these roots to a single-project repository, and do not apply the convention to non-.NET repositories. Carry the applicable choice in the existing repository development-policy context; do not add a separate output field. README and design-document placement follow the repository's documentation guidance and are not defined here.
+This is a bootstrap default only: preserve existing repository layouts, do not add these roots to a single-project repository, and do not apply the convention to non-.NET repositories. Carry the applicable choice in the existing repository development-policy context; do not add a separate output field. README and design-document placement are defined separately. Consult the existing `design-doc-maintainer` Skill and CodexSkill Issue #117 for that guidance; these are references only, not required dependencies, and their placement rules are not repeated here.
 
 ## Scope and safety
 
