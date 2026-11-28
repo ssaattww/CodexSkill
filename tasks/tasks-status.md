@@ -6,6 +6,18 @@
 
 ## In Progress
 
+- CS-76: 想定事象をテストへつなぐ設計書の記入例
+  - Status: 技術版の通常レビュー必須指摘0件、自動 CI 成功。通常記録の確定中。
+  - Issue: #76
+  - PR: #110（Draft）
+  - Phase: Phase CS-76
+  - Estimate: S（残りは通常記録・正式な独立レビュー）
+  - Depends on: 既存の設計書テンプレートとその参照先、確定版の自動 CI。
+  - Handoff: `reports/handoffs/issue-76-pr110-normal-review-20261128.yaml`
+  - Scope: 設計書テンプレートの想定事象、受け入れ条件、テストの対応例。
+  - Exit Criteria: 独立レビューと確定版の自動 CI を確認する。既存設計書の一括移行は含めない。
+  - Report: `reports/issue-76-pr110-normal-review-20261128.md`
+
 - T-009: Codex Cloud共有ツールインストーラーのYomiyasu対応
   - Status: 技術 HEAD の通常レビュー `pass_with_held`（必須指摘0件）、Draft PR #100 公開・自動 CI 成功。親の原文確認を取り込んだ非製品3ファイルの保存を進める（記録作成時 `commit_pending`）。後続通常レビュー待ち
   - Phase: Phase 13

@@ -166,3 +166,13 @@
   - 技術 HEAD `522403500da83fba191fb5fd7c8a1885d15ffa60` の公式固定版導入、照合、再利用を検証し、通常レビュー `pass_with_held`、必須指摘0件を親が原文確認（応答 01a21718-1626-7105-a7c0-727a09d78b79、GPT-6.2 Sol High 指定）。公開 HEAD の pull_request CI 2件と push CI 1件は成功
   - 通常統合報告: `reports/task-t-009-pr100-normal-consolidated-20261126091619.md`（親による原文確認を反映）
   - 残り: 非製品3ファイルの保存コミットと通常 push（親承認済み）、同一 candidate HEAD の全体検証・自動 CI 記録、後続通常レビュー。その後に review-enforcer が予約・凍結と独立最終レビューを扱う。独立最終報告予約・作成、マージ、手動 CI、Duck 依存 pin は未実施
+
+## Phase CS-76: 設計書テンプレートの記入例
+
+- Status: In Progress（通常記録の確定）
+- Task: CS-76 / Issue #76 / Draft PR #110
+- Notes:
+  - テンプレートは既存5節を保ち、事象5件と受け入れ条件3件・テスト5件を対応づけた。
+  - 技術版 `7f1ff0716a8c6e209c47ba71bd13e7b4d8882d19` の通常指摘3件は解消し、自動 CI が成功。
+  - 通常レビュー報告: `reports/issue-76-pr110-normal-review-20261128.md`
+  - 残りは管理記録の通常差分レビュー、確定版の自動 CI、正式な独立最終レビュー。
