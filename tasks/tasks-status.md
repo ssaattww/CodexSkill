@@ -7,7 +7,7 @@
 ## In Progress
 
 - T-011: Issue #104 調査担当への図出力指示を再適用する
-  - Status: 最新 main 起点の後継候補を公開済み。新候補の標準検証・通常レビュー・独立レビュー・CI結果は未確認
+  - Status: Draft 公開済み。固定HEADの通常レビュー `pass_with_held`（必須指摘0件）・自動CI成功。独立最終レビュー待ち
   - Phase: Phase 15
   - Issue: #104
   - PR: #124 (Draft)
@@ -16,6 +16,8 @@
     - Base: `e401662491695e51d0b8a2d8771c8426dd2b01f1`; prior frozen HEAD: `cc42dada0bab8223901206c903b78daecc353c6a`
     - Byte comparison: old approved line and candidate insertion are identical (SHA-256 bd3a529bad8dd1341e642914aaae02fa0ba7a8fc42b614584b122821b9a68d5a, including LF). Old PR base `dfe07e81d6a1c209f99b908acc8109f70b38a773` to frozen HEAD `cc42dada0bab8223901206c903b78daecc353c6a`: 1 insertion / 0 deletions in this file; latest main `e401662491695e51d0b8a2d8771c8426dd2b01f1` to candidate: same 1 / 0. New candidate has no inherited review or CI evidence.
     - 旧版の通常・独立レビューおよび CI は新候補へ流用しない。技術追加は承認済みの1行に限定
+    - 通常レビュー対象 `79a1a7bec803942d50e0b71c638bf97a6e211a60`、報告 `reports/issue-104-pr124-normal-review-20261128154105.md`。必須指摘0件、保留は実際の調査委譲での適用のみ
+    - 同一HEADの自動CI 46159352300（構成検査・ZIP生成/検証成功）、46159352183（収集工程スキップ）は success。報告保存後のHEADのCIは未確認
 - T-010: Issue #76の設計書テンプレートにコード引用例を追加する
   - Status: 実装と通常差分レビューは完了（必須指摘0件、追加提案0件）。独立最終レビュー待ち
   - Phase: Phase 14
