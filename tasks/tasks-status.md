@@ -6,6 +6,20 @@
 
 ## In Progress
 
+- T-012: Issue #117 文書配置ガイダンスを最新main上で英語化する
+  - Status: Draft 公開済み。固定HEADの通常レビュー `pass_with_held`（必須指摘0件）・同一HEAD自動CI成功。通常報告の保存後に独立工程の準備
+  - Phase: Phase 16
+  - Issue: #117
+  - PR: #125 (Draft、旧PR #120の後継)
+  - Estimate: S（残りは独立最終レビュー前の記録確定と検証）
+  - Depends on: 旧技術版 `d122c9a08687762ea081e6e4d29a8f67bd2ebce3`、最新main `7d43d1d8b5b51d01c3598f32e4da6d34dd3cdc71`
+  - Scope: #117の配置規則と関連手順を保持し、指定referenceのみ英訳する。既存の他案件の追跡・人向け文書・他ガイド・旧独立レポート・#118/#119は対象外
+  - Verification:
+    - Reviewed implementation HEAD: `4c530b863d0289c70c04773a5ff239ae064f72fd`。最新mainとの差分5ファイルのうち、旧技術版と相違する#117関連ファイルは指定referenceだけ
+    - 通常報告: `reports/issue-117-pr125-normal-review-20261128180938.md`。同一HEADの自動CI 46173819146（build成功・公開用job skipped）、46173819170（collectと標準4検査成功）。旧レビュー・旧CIを流用しない
+    - GitHubの正式な終了参照は #117 のみ。報告保存後のHEADのCIは記録作成時点で未確認
+  - Exit Criteria: 意味・範囲・参照の保持と同一HEAD検証根拠を保ち、通常報告と追跡を確定し新しい対象の独立最終レビューを通す。マージは利用者判断
+
 - T-011: Issue #104 調査担当への図出力指示を再適用する
   - Status: Draft 公開済み。固定HEADの通常レビュー `pass_with_held`（必須指摘0件）・自動CI成功。独立最終レビュー待ち
   - Phase: Phase 15
