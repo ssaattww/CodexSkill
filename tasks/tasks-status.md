@@ -2,10 +2,20 @@
 
 このファイルは `task-breakdown-planner`、`task-consistency-manager`、`progress-sync-manager` のみが更新する。
 
-- Updated: 2026-11-26
+- Updated: 2026-11-28
 
 ## In Progress
 
+- T-011: Issue #104 調査担当への図出力指示を再適用する
+  - Status: 最新 main 起点の後継候補を作成中。新候補の検証・通常レビュー・独立レビュー・CI は未実施
+  - Phase: Phase 15
+  - Issue: #104
+  - PR: Draft を後続作成
+  - Scope: 調査担当向け指示1行と本候補の追跡・比較根拠のみ
+  - Verification:
+    - Base: `e401662491695e51d0b8a2d8771c8426dd2b01f1`; prior frozen HEAD: `cc42dada0bab8223901206c903b78daecc353c6a`
+    - Byte comparison: old approved line and candidate insertion are identical (SHA-256 bd3a529bad8dd1341e642914aaae02fa0ba7a8fc42b614584b122821b9a68d5a, including LF). Old PR base `dfe07e81d6a1c209f99b908acc8109f70b38a773` to frozen HEAD `cc42dada0bab8223901206c903b78daecc353c6a`: 1 insertion / 0 deletions in this file; latest main `e401662491695e51d0b8a2d8771c8426dd2b01f1` to candidate: same 1 / 0. New candidate has no inherited review or CI evidence.
+    - 旧版の通常・独立レビューおよび CI は新候補へ流用しない。技術追加は承認済みの1行に限定
 - T-010: Issue #76の設計書テンプレートにコード引用例を追加する
   - Status: 実装と通常差分レビューは完了（必須指摘0件、追加提案0件）。独立最終レビュー待ち
   - Phase: Phase 14
