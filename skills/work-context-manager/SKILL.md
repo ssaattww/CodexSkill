@@ -55,6 +55,23 @@ Resolve as much as the available evidence permits:
 
 An Issue or PR identifier is normally sufficient when repository evidence determines the remaining state unambiguously.
 
+## New multi-project .NET repositories
+
+When creating a new repository with multiple .NET projects, use this default unless repository instructions specify another layout:
+
+```text
+Repository.sln              # or Repository.slnx; keep the solution at the root
+src/
+  Api/
+  Worker/
+  Telemetry.Contracts/       # only when shared code needs its own named library
+tests/
+  Api.Tests/
+  Worker.Tests/
+```
+
+This is a bootstrap default only: preserve existing repository layouts, do not add these roots to a single-project repository, and do not apply the convention to non-.NET repositories. Carry the applicable choice in the existing repository development-policy context; do not add a separate output field. README and design-document placement follow the repository's documentation guidance and are not defined here.
+
 ## Scope and safety
 
 - Work on one accepted task or PR scope at a time.
