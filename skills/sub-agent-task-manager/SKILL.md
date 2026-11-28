@@ -202,6 +202,7 @@ For investigation tasks also include:
 - instruction to inspect relevant workspace context directly
 - instruction not to stop at a parent-prepared excerpt when more repository evidence is needed
 - instruction to record checked files and concrete evidence in the report or returned structured evidence, according to persistence mode
+- instruction to skip diagram rendering and image export during investigation by default for efficiency, except when a diagram is needed for the investigation; when presenting findings to the user, export and inspect only the diagrams needed for that presentation
 
 For coding tasks also include:
 

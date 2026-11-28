@@ -177,3 +177,15 @@
   - 通常レビュー結果と検証根拠: `reports/issue-76-pr123-normal-review-20261128141514.md`
   - `09bd446b0a143ab735d7ae9c5985a320a2f96d63` に対応する pull_request CI 46153015802、46153015881 は成功
   - 次は親が独立最終レビューを手配する。予約・独立レビュー・マージは未実施
+
+## Phase 15: Issue #104 調査担当向け図出力指示の後継候補
+
+- Status: In Progress（通常レビュー `pass_with_held`、独立最終レビュー待ち）
+- Task: T-011 / Issue #104
+- PR: #124 (Draft)
+- Notes:
+  - Phase 14 / T-010 の Issue #76 記録を保持し、別枠で後継候補を追跡する
+  - 基点 `e401662491695e51d0b8a2d8771c8426dd2b01f1`。承認済み技術差分は旧固定版と同一の1行のみ
+  - 比較値・行 SHA-256 と旧レビュー／CIを流用しない境界は `tasks/tasks-status.md` に記録
+  - 通常レビュー（必須指摘0件）・自動CIの根拠: `reports/issue-104-pr124-normal-review-20261128154105.md`。対象 `79a1a7bec803942d50e0b71c638bf97a6e211a60`、報告保存後のHEADのCIは未確認
+  - 独立最終レビュー・予約は未実施。最終マージは親が扱う
