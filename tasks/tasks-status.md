@@ -468,3 +468,9 @@
     - `git diff --check` 成功
     - Markdown lintはrepo配線不在のため`unsupported`として記録
     - parentと同じ`gpt-5.6-sol / high` reviewerの再レビューで指摘なし
+
+## Issue #113 / Draft PR #112：本人の継続経路指定
+
+- 技術版 `d8021a7880fcb428e30e2db4ec4e7ccf71a96808`。通常修正確認合格、NR-112-01（Major）解消、必須残数0。
+- 変更範囲は既存3担当スキルの経路選択。親 #75 は継続。
+- 通常レビュー記録：`reports/issue-113-pr112-normal-consolidated-20261128.md`。自動検証は技術版成功、記録を含む版と正式独立レビューは未確認。

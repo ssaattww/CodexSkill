@@ -32,10 +32,14 @@ All four must be installed. Do not replace them with repository-external shared 
 
 ## Execution location
 
-Keep both normal-chat and connected-PC execution available. Follow the user's
-explicit selection, then Project Instruction; otherwise use the connected-PC
-route through Remote Desktop Commander. Normal chat is the fallback only when
-it is explicitly selected or the governing instruction selects it.
+Keep both normal-chat and connected-PC execution available. Resolve the route
+from the user's applicable explicit instruction, including a standing choice
+of cloud for new work chats and its stated exceptions. Otherwise follow Project
+Instruction. If neither selects a route, use the connected PC through Remote
+Desktop Commander.
+A cloud choice selects the normal-chat execution route, not a connected PC.
+Use `work-context-manager` to determine the actual verification capability;
+choosing a route does not grant permissions or select remote-CI-only verification.
 
 For normal chat, use only the current chat's authorized filesystem and
 executor, if actually available. For the connected-PC route, discover the
